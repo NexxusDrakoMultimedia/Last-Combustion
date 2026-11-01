@@ -8,7 +8,7 @@ Nov 2, 2026 · @Pyra Drake
 
 The series' full name is **The Last Combustion of the Petrol Engine World Motorsports Championship**, shortened to *Last Combustion* in everyday use.
 
-The player runs a garage: buying and tuning cars, signing drivers, chasing sponsors, and fighting through a 300+ driver preliminary field to reach the 15-car final.
+The player runs a garage: buying and tuning cars, signing drivers, chasing sponsors, and fighting through a 300+ driver preliminary field to reach the final.
 
 **Design pillars**
 
@@ -16,6 +16,13 @@ The player runs a garage: buying and tuning cars, signing drivers, chasing spons
 - **Rise from nobody.** Every driver starts in a huge field; a gold border is earned, never bought.
 - **Every upgrade is a trade-off.** Parts and weight change your tyre-width limit, your costs and your door sponsors.
 - **The car tells the story.** Trophy decals, garage names and supplier logos make a car's history readable at a glance.
+
+## Technical Stack & Architecture
+
+- **Core Technologies:** Coded in TypeScript, Tailwind CSS, React, and Zustand.
+- **Database Storage:** Web application using SQLite (via WASM/SQL.js in-browser with persistent local database save states).
+- **Desktop/Steam Deployment:** Designed for web execution first, structured for an eventual Steam release using an Electron / Steamworks wrapper.
+- **Development Model:** Fully single-player management game.
 
 ## Game modes
 
@@ -48,9 +55,13 @@ The same drones that film the series also act as its marshals, warning drivers a
 - **Capability.** The drones are high-performance and fully autonomous, with a top speed of 180 km/h (about 112 mph).
 - **Penalties.** Disobeying a drone's signal is penalised.
 
-## Season calendar
+## Season calendar & Timeline
 
-A season is seven rounds on Australian roads, starting in Queensland and moving south to a Targa Tasmania finale. Every course must be a mountain or road course of at least 10 km; urban street circuits are not allowed.
+The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a Targa Tasmania finale. Every course must be a mountain or road course of at least 10 km; urban street circuits are not allowed.
+
+- **Pyra Drake's Birthday & Season Start:** Pyra was born in 1996, celebrating her 35th birthday in Season 1 (2031) and her 40th birthday in Season 6 (2036). The first day of Round 1 practice and the opening ceremony always takes place on her birthday, **March 31st**.
+- **Season Wrap:** The racing season concludes in **mid-October** after Round 7.
+- **Closing Ceremony & Festival:** The Closing Ceremony, Awards Gala, and opening day of the week-long **Drake Motorsports International Motoring Festival** in **Healesville, Victoria** (HQ town of Last Combustion and Pyra's hometown) always take place on **November 11th**.
 
 | Rd | Course | State | Character |
 | --- | --- | --- | --- |
@@ -64,34 +75,36 @@ A season is seven rounds on Australian roads, starting in Queensland and moving 
 
 **Proposed routes**
 
-Each round runs on a loop or an out-and-back course. A prelim run is one lap, and the lap count takes the final past 300 km. Lap lengths are rough estimates that still need measuring on a map.
+Each round runs on a loop or an out-and-back course. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. Lap lengths are rough estimates that still need measuring on a map.
 
 | Rd | Route | Shape | Lap (approx.) | Final laps |
 | --- | --- | --- | --- | --- |
-| 1 | Mount Nebo–Goat Track Loop: The Gap, Mt Nebo Road to Mt Nebo, the Goat Track down to Samford Valley, Samford Road back to The Gap | Loop | \~45 km | 7 |
-| 2 | Mount Seaview Climb: up the Oxley Highway toward Walcha and back, turning at a closed hairpin | Out-and-back | \~50 km | 6 |
-| 3 | Royal National Park Loop: Waterfall, McKell Avenue, Sir Bertram Stevens and Lady Wakehurst Drives to Otford, Princes Highway back to Waterfall | Loop | \~35 km | 9 |
-| 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham village and back | Out-and-back | \~60 km | 5 |
-| 5 | Black Spur–Reefton Loop: Healesville over the Black Spur to Marysville, the Reefton Spur to Warburton, back to Healesville | Loop | \~130 km | 3 |
-| 6 | Otway Loop: Lorne along the Great Ocean Road to Apollo Bay, inland via Skenes Creek, Forrest and Deans Marsh, back to Lorne | Loop | \~110 km | 3 |
-| 7 | Cethana Loop: the Targa Cethana stage roads near Sheffield and the Cethana dam; connecting roads to be chosen | Loop | \~40 km | 8 |
+| 1 | Mount Nebo–Goat Track Loop: The Gap, Mt Nebo Road to Mt Nebo, the Goat Track down to Samford Valley, Samford Road back to The Gap | Loop | ~45 km | 7 |
+| 2 | Mount Seaview Climb: up the Oxley Highway toward Walcha and back, turning at a closed hairpin | Out-and-back | ~50 km | 6 |
+| 3 | Royal National Park Loop: Waterfall, McKell Avenue, Sir Bertram Stevens and Lady Wakehurst Drives to Otford, Princes Highway back to Waterfall | Loop | ~35 km | 9 |
+| 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham village and back | Out-and-back | ~60 km | 5 |
+| 5 | Black Spur–Reefton Loop: Healesville over the Black Spur to Marysville, the Reefton Spur to Warburton, back to Healesville | Loop | ~130 km | 3 |
+| 6 | Otway Loop: Lorne along the Great Ocean Road to Apollo Bay, inland via Skenes Creek, Forrest and Deans Marsh, back to Lorne | Loop | ~110 km | 3 |
+| 7 | Cethana Loop: the Targa Cethana stage roads near Sheffield and the Cethana dam; connecting roads to be chosen | Loop | ~40 km | 8 |
 
-## Weekend format
+## Weekend format & Management Interface
 
 Each round is a 7-day practice week, then 7 days of preliminaries for a field of at least 300 entries, then a final race of at least 300 km for the top 15.
 
-1. **Practice (7 days).** The course opens for practice a week before the prelims, with as many tyre sets as each entry needs.
-2. **Preliminaries (7 days).** A prologue-style time attack: each entry gets exactly one run, and that time sets its placing. Entries start one at a time, at set intervals, in a published running order. The order is seeded: drivers with championship points are spread evenly through the order across all seven days, and everyone else is placed by random draw. Seeding uses the current championship standings; Round 1 uses last season's.
+1. **Practice (7 days).** The course opens for practice a week before the prelims, with as many tyre sets as each entry needs. Round 1 Practice Day 1 always opens on **March 31st**.
+2. **Preliminaries (7 days).** A prologue-style time attack: each entry gets **exactly one lap**, and that time sets its placing. Entries start one at a time, at set intervals, in a published running order. The order is seeded: drivers with championship points are spread evenly through the order across all seven days, and everyone else is placed by random draw. Seeding uses the current championship standings; Round 1 uses last season's.
 3. **Dry and clear only.** Prelim runs are only held in completely dry, non-overcast conditions. A rainy or overcast day becomes an extra practice day and pushes the prelims back a day, so every round gets seven full prelim days. On these gap days, entries may practise on non-racing tyres to save their racing set.
-4. **One racing set.** Once the prelims start, each entry gets one racing set for its prelim run. A wet day pauses the running order, which resumes on the next dry, clear day.
+4. **One racing set.** Once the prelims start, each entry gets one racing set for its single prelim lap. A wet day pauses the running order, which resumes on the next dry, clear day.
 5. **Prelim classification.** Positions 16–31 score points from their prelim placing. Everyone below 31st scores nothing.
 6. **Final race.** The top 15 start the final on a fresh set of race tyres, gridded in prelim order, over a minimum of 300 km, with no pit stops or tyre changes. The final result sets positions 1–15.
 
 **Implementation note:** AI prelim times come from a formula (driver skill, car power and weight, course fit, track temperature roll, random variance). Only the 15-car final is simulated in full.
 
+**Race UI & Simulation View:** Races are presented as a **pure management interface** complete with real-time timing screens (sector splits, delta speeds, tyre life) and an interactive **live map** tracking car locations and drone markers.
+
 **Round timeline (proposed).** A round takes at least 15 days: 7 practice days, 7 prelim days (longer if wet days push them back) and the final race the day after the prelims. With about a week between rounds for repairs and travel, a 7-round season runs roughly 5 months, followed by an off-season for contracts, numbers and car building.
 
-## Points system
+## Points system (Original Era)
 
 The top 31 score each round, from 10 for the win to 0.1 for 31st. The Vanguard (the 15 finalists) takes 90.5 of the 104.5 points available, about 87%. Decimal points are allowed.
 
@@ -119,10 +132,10 @@ The win is worth a full point more than 2nd. From 2nd to 17th, each place drops 
 - free tyres, and large discounts on other parts
 - a reserved place in the assistants' booth (the second booth), a space in the broadcast, team comms and telemetry area. Garages working from it get richer live telemetry (sector splits, tyre life, rivals' pace) and clearer radio to their driver, so their race calls are better informed
 
-## Garages and entries
+## Garages and Field Size
 
-Teams are garages, and a garage can run as many entries as it likes; running more than one is a mark of prestige.
-
+- **Season 1 Baseline:** Starts with exactly **96 garages** and **313 drivers**.
+- **Roster & Growth:** Drivers may join, retire, or transfer freely during the off-season. There is no hard upper or lower limit to total entries, though the trend leans toward growth.
 - **An entry is one car plus one driver.** The entry qualifies, scores points and carries a number. Each one needs its own car, driver, tyre allocation and entry fee.
 - **Garage name on every car.** All of a garage's entries carry its name on the front quarter panels.
 - **Prestige rating.** It rises with the number of entries and the number of gold-bordered drivers, and unlocks better title sponsors and supplier deals.
@@ -139,19 +152,19 @@ Teams are garages, and a garage can run as many entries as it likes; running mor
 
 Numbers 1–40 follow last season's rankings and 41 and up are open to anyone, the champion's number is boxed in black, and a gold border marks anyone who has ever reached a final.
 
-**Race numbers**
+**Race numbers & Special Numbers**
 
 - **Numbers 1–40: last season's rankings.** The driver who finished 1st takes #1, 2nd takes #2, and so on down to #40. A ranked driver may turn down their ranking number and apply for one from 41 up instead.
 - **Numbers 41 and up: open to anyone.** Any driver may apply for any free number from 41 upward. Numbers are re-chosen each season, and last season's holder gets first refusal.
+- **Number #313 (Reserved):** Permanently retired and reserved for founder Pyra Drake.
 - **Clashes:** after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
 - **Black box:** the reigning champion's #1 carries a black box.
 - **Fame:** a number builds recognition over time; changing it resets some of that.
 
-**Gold border (The Vanguard)**
+**Gold and Silver borders**
 
-- Any driver who has qualified for a final, even once, carries a gold border for the rest of their career.
-- Scoring points in 16th–31st does not earn it. Junior Series points scorers carry a silver border instead; a driver who has earned both carries gold.
-- Gold-bordered drivers command higher salaries and more contract leverage.
+- **Gold Border:** Any driver who has qualified for a final, even once, carries a gold border for the rest of their career. Scoring points in 16th–31st does not earn it. Junior Series points scorers carry a silver border instead; a driver who has earned both carries gold. Gold-bordered drivers command higher salaries and more contract leverage.
+- **Silver Border & Junior Rule:** Junior Series points scorers carry a silver border. **Mandatory Rule:** Junior drivers who get a silver border MUST finish their junior season, and MUST enter the Super Series the following season.
 
 **Livery placement (enforced by the series)**
 
@@ -212,6 +225,15 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
 - **Suppliers.** Every part comes from a supplier. Fitting it earns that supplier a door spot and its contingency bonus.
 - **Wear.** Parts wear with race and road distance and need servicing or replacing.
 
+## Founders, Special Vehicles, and Ghost Record
+
+- **Pyra Drake:** Founder and chairwoman of Last Combustion. Born in **1996**, she celebrates her **35th birthday** in Season 1 (2031) and her **40th birthday** in Season 6 (2036). The opening ceremony and Round 1 practice always take place on her birthday, **March 31st**. She is a self-insert character and one of the best drivers in history, but does not actively race in LC main events. Her role is setting the first-ever course records, and her number **#313** is permanently retired.
+- **Drake Motorsports:** Pyra Drake's personal team where she is founder and owner, with her unique vehicle being a fictional Mazda RX-7 expy called the **Homura Spirit R-7** (rotary-powered lightweight sports car).
+- **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
+- **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. 
+  - **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
+  - **Hard.** The ghost faithfully recreates the original driver's qualifying run.
+
 ## Attention flags
 
 Every car's driving data is streamed by telemetry to the central computer at Last Combustion headquarters. The AI there flags drivers it judges to have superior skill, and alerts both the broadcast and every garage's comms room.
@@ -246,8 +268,6 @@ Here μ and σ are the mean and standard deviation of that gap across all driver
 ## Core gameplay loop and progression
 
 Each round, the player prepares in the garage, fights through the prelims, races the final if they make the top 15, and banks the rewards before the next round.
-
-&#91;embedded content: round loop · garage, prelims, final, rewards\]
 
 **Progression has two tracks:**
 
@@ -320,9 +340,9 @@ Bonuses add up through the year and are paid at the end of the season. All AUD a
 
 In 2036 the main championship grows and is rebranded, alongside the launch of a junior series.
 
-- **Rebrand.** The main championship becomes **The Last Combustion of the Petrol Engine World Motorsports Super Series Championship (Last Combustion Super Series**).
+- **Rebrand.** The main championship becomes **The Last Combustion of the Petrol Engine World Motorsports Super Series Championship (Last Combustion Super Series)**.
 - **Bigger final.** The final grows from 15 to 20 cars. Positions 1–20 score from the final, and 21–31 from the prelims.
-- **Bigger prize.** Prize money for 1st–15th rises by half and now extends to 20th (table below). The season champion's prize rises to $15,000,000; bonuses stay at $10,000.
+- **Bigger prize.** Prize money for 1st–15th rises by half and now extends to 20th (table below). The season champion's prize rises to $15,000,000; pole and overtake bonuses rise to $15,000 each.
 
 **Super Series final prize money from 2036 (AUD)**
 
@@ -330,9 +350,9 @@ In 2036 the main championship grows and is rebranded, alongside the launch of a 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | $1,500,000 | 6 | $225,000 | 11 | $90,000 | 16 | $25,000 |
 | 2 | $750,000 | 7 | $150,000 | 12 | $75,000 | 17 | $20,000 |
-| 3 | $450,000 | 8 | $135,000 | 13 | $60,000 | 18 | $15,000 |
-| 4 | $375,000 | 9 | $120,000 | 14 | $45,000 | 19 | $12,500 |
-| 5 | $300,000 | 10 | $105,000 | 15 | $30,000 | 20 | $10,000 |
+| 3 | $375,000 | 8 | $135,000 | 13 | $60,000 | 18 | $15,000 |
+| 4 | $300,000 | 9 | $120,000 | 14 | $45,000 | 19 | $12,500 |
+| 5 | $225,000 | 10 | $105,000 | 15 | $30,000 | 20 | $10,000 |
 
 ## Last Combustion Junior
 
@@ -345,15 +365,7 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
 - **Points and perks.** Junior uses the original 2031 points table: the top 31 score points, with the top 15 scoring from the final. Any points scorer gets free tyres, a reserved place in the assistants' booth and a silver-outlined number.
 - **Prizes.** Junior uses the original 2031 prize money: finalists earn $1,000,000 down to $20,000 by position. The Junior champion, decided on points, wins $10,000,000. Pole and overtake bonuses of $10,000 each build up through the year and are paid at season end.
 - **Numbers.** Junior cars carry a "J" beside their door number, to set them apart from main-series cars.
-
-**Ghost Record**
-
-Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Mazda RX-7 from the course's demo runs. Pyra Drake is the founder and chairwoman of Last Combustion.
-
-Before their run, each driver chooses a mode:
-
-- **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
-- **Hard.** The ghost faithfully recreates the original driver's qualifying run.
+- **Mandatory Promotion:** Junior drivers who earn a silver border MUST complete their junior season, then MUST enter the Super Series the following season.
 
 ## Records and history
 
@@ -371,10 +383,6 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 
 ## Open questions
 
-- [ ] Season months: when the season starts and ends.
-- [ ] Is a prelim run exactly one lap of the course?
 - [ ] Measured lap lengths for each proposed route.
 - [ ] Number of AI garages, and how new garages and drivers enter each year.
-- [ ] A fictional replacement for the Mazda RX-7 in the Ghost Record, to match the fictional-brands rule.
 - [ ] Multiplayer or single-player only.
-- [ ] Tech stack and target platforms.
