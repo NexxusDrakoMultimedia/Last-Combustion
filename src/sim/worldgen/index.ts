@@ -459,7 +459,7 @@ export function generateWorld(seed: string | number): World {
     officials: [
       { name: 'Pyra Drake', role: 'chair', residencePlaceId: 'au-brisbane' },
       { name: 'Declan Marsh', role: 'technical', residencePlaceId: 'au-healesville' },
-      { name: 'Odette Brandt', role: 'interpersonal', residencePlaceId: 'au-healesville' },
+      { name: 'Ingrid Halloran', role: 'interpersonal', residencePlaceId: 'au-healesville' },
     ],
     garages,
     drivers,

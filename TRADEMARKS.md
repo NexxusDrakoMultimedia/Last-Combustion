@@ -10,7 +10,7 @@ The following are trademarks and intellectual property of **Nexxus Drako Multime
 - the Last Combustion **logo**
 - the character **Pyra Drake**
 
-Nexxus Drako Multimedia claims no copyright or trademark in any other character. Declan Marsh, Odette Brandt, Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera are fictional in-game characters, and their names are not reserved (the first four are placeholders that may change).
+Nexxus Drako Multimedia claims no copyright or trademark in any other character. Declan Marsh, Ingrid Halloran, Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera are fictional in-game characters, and their names are not reserved (the first four are placeholders that may change).
 
 The GNU General Public License (version 3 or later) covers the software and the content released under it. It does not give you the right to use these names, the logo or the characters. This is the additional term allowed by section 7(e) of the GPLv3.
 
