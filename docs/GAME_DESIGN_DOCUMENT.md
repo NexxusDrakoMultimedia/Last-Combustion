@@ -57,7 +57,7 @@ The same drones that film the series also act as its marshals, warning drivers a
 
 ## Season calendar & Timeline
 
-The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a Targa Tasmania finale. Every course must be a mountain or road course of at least 10 km; urban street circuits are not allowed.
+The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a finale in Tasmania. Every course must be a mountain or road course of at least 10 km; urban street circuits are not allowed.
 
 - **Pyra Drake's Birthday & Season Start:** Pyra was born in 1996, celebrating her 35th birthday in Season 1 (2031) and her 40th birthday in Season 6 (2036). The first day of Round 1 practice and the opening ceremony always takes place on her birthday, **March 31st**.
 - **Season Wrap:** The racing season concludes in **mid-October** after Round 7.
@@ -71,7 +71,7 @@ The season runs annually from **March to October**. It consists of seven rounds 
 | 4 | Great Alpine Road, Mount Hotham | Vic | High altitude cuts engine power, so light cars close the gap |
 | 5 | Black Spur, Healesville–Narbethong | Vic | Tight, damp forest sweepers; a rhythm test |
 | 6 | Great Ocean Road, Lorne–Apollo Bay | Vic | Coastal cliffs, sea spray, changeable weather; tyre management |
-| 7 | Targa roads, Cethana / Hellyer Gorge | Tas | The finale: technical mountain roads, cold tarmac, big elevation changes |
+| 7 | North-west Tasmania mountain roads, Cethana / Hellyer Gorge | Tas | The finale: technical mountain roads, cold tarmac, big elevation changes |
 
 **Proposed routes**
 
@@ -85,7 +85,7 @@ Each round runs on a loop or an out-and-back course. A preliminary run is **stri
 | 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham village and back | Out-and-back | ~60 km | 5 |
 | 5 | Black Spur–Reefton Loop: Healesville over the Black Spur to Marysville, the Reefton Spur to Warburton, back to Healesville | Loop | ~130 km | 3 |
 | 6 | Otway Loop: Lorne along the Great Ocean Road to Apollo Bay, inland via Skenes Creek, Forrest and Deans Marsh, back to Lorne | Loop | ~110 km | 3 |
-| 7 | Cethana Loop: the Targa Cethana stage roads near Sheffield and the Cethana dam; connecting roads to be chosen | Loop | ~40 km | 8 |
+| 7 | Cethana Loop: the mountain roads near Sheffield and the Cethana dam; connecting roads to be chosen | Loop | ~40 km | 8 |
 
 ## Weekend format & Management Interface
 
@@ -103,6 +103,8 @@ Each round is a 7-day practice week, then 7 days of preliminaries for a field of
 **Race UI & Simulation View:** Races are presented as a **pure management interface** complete with real-time timing screens (sector splits, delta speeds, tyre life) and an interactive **live map** tracking car locations and drone markers.
 
 **Round timeline (proposed).** A round takes at least 15 days: 7 practice days, 7 prelim days (longer if wet days push them back) and the final race the day after the prelims. With about a week between rounds for repairs and travel, a 7-round season runs roughly 5 months, followed by an off-season for contracts, numbers and car building.
+
+**Round timeline from 2036 (proposed).** The Junior round follows the Super Series final at the same venue: Junior practice day 1 is the day after the Super final, then 3 practice days, 5 prelim days and the Junior final the day after, a 9-day block. A round slot becomes 15 + 9 = 24 days. Seven slots (168 days) plus about 5 days between rounds finish in mid-October, so the season still ends on schedule. Garages with entries in both series keep their crews, trucks and tyre stores at the venue between the two events.
 
 ## Points system (Original Era)
 
@@ -144,7 +146,7 @@ Every driver, car and garage races under a flag. Each of the three has its own f
 - **Records.** The flag a driver, car or garage raced under is recorded for every entry, so history shows which flag took each win.
 - **Standings.** Drivers and garages also compete in national standings by flag (see "Standings"). Car flags have no standings.
 - **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed. 
-- **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code, not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
+- **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code (`flag-icons`), not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The chosen set is `lipis/flag-icons` (MIT licence). The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
 
 ## Standings
 
@@ -335,6 +337,47 @@ Sponsors pay for exposure and suppliers pay for results, and both scale with a g
 - **Deal terms.** Length, payments, performance targets, and penalties for missing targets or dropping a supplier's part.
 - **Fame link.** Famous drivers and numbers bring better offers.
 
+## Negotiations
+
+Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each other, and the same system handles every deal. The player negotiates for their garage, or for their driver in Driver manager mode. AI parties negotiate between themselves with the same rules.
+
+**Who negotiates what**
+
+| Between | Terms |
+| --- | --- |
+| Driver and garage | Salary, length, lead or development role, release fee, bonuses, right to match rival offers |
+| Garage and sponsor | Season fee, length, performance targets, bonuses, penalties, exclusivity, title-sponsor status |
+| Garage and manufacturer | Car prices, discounts, factory parts and engineer support, loyalty bonus, which models the garage may switch to |
+| Garage and supplier | Part discounts, contingency bonuses, door spot, exclusivity per part category, supply priority |
+| Driver and sponsor | Personal sponsorship pay and length (important in Driver manager mode) |
+| Driver and manufacturer | Factory-driver and brand-ambassador deals: pay and car use |
+| Manufacturer and supplier | AI-only partnerships that decide which suppliers a manufacturer's cars use and which door logos suit them |
+
+**How a negotiation works**
+
+1. **Opening.** One side makes an offer on a set of terms. The player sets terms with sliders and toggles, and a value meter shows how the other side is likely to react.
+2. **Response.** The other side accepts, counters, or walks away.
+3. **Counters.** Each party has a patience of 3 counters. A lowball offer costs patience, and a party that runs out of patience walks away and will not negotiate again for the rest of the window.
+4. **Valuation.** Each party has a hidden reservation value, the least it will accept, worked out from its needs and its leverage. An offer is accepted when its total value is at least that reservation. Every term has a cash-equivalent value, so a party can accept a lower salary for a longer contract or higher bonuses.
+5. **Leverage.**
+   - Drivers: reputation, fame, gold border, results and flag.
+   - Garages: prestige, results, budget and the quality of their cars.
+   - Sponsors: the exposure they want, shown by fame and broadcast time.
+   - Manufacturers: standing in the Manufacturer Championship and how many of their cars race.
+   - Suppliers: how many cars on the grid use their parts.
+6. **Relationship.** Each pair has a score from -100 to +100, built up by kept deals, paid bonuses, loyalty and broken contracts. It changes patience and moves reservations by up to ±10%.
+7. **Competing offers.** Rival interest, for example after an attention flag, raises a party's reservation by up to 20%. The current partner may have a right to match a rival's offer, which the player can pay for as a term.
+8. **Information.** Reservations are hidden. The player sees a range that narrows with relationship, scouting and past deals.
+9. **Fixed limits.** Negotiation cannot override the rules: the reserved #313, the Equalizer, door-space limits, the same-manufacturer car-switching rule and legality ratings.
+
+**When deals happen**
+
+- **Off-season (Nov 11 – Feb 28).** The main window. Contracts and deals expire at season end and every party negotiates.
+- **During the season.** Sponsors, suppliers and manufacturer supply can be negotiated at any time. A driver can be moved only by paying the release fee. Leaving a deal early triggers its penalties.
+- **AI deals.** Between AI parties, deals are resolved in batches with the same valuation, in descending order of prestige, and they produce headlines.
+
+**Screen.** The Negotiation screen shows the term list, the value meter, the other side's mood and patience, the history of offers and the relationship score, with one-click acceptance of a counter.
+
 ## Career and economy systems
 
 Prize money and sponsors fund the garage, while fame, reputation, rivalries and the media turn results into stories.
@@ -393,7 +436,8 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
 - **Purpose.** A championship for young drivers who have never reached a main-series final.
 - **Eligibility.** Drivers must be 25 or younger and must never have qualified for a main-series final.
 - **Power cap.** Cars may produce no more than 300 PS. A car that makes more as standard can be fitted with an intake restrictor that limits it to 300 PS. A car found over 300 PS is disqualified from the prelims. The Equalizer tyre-width rule still applies.
-- **Format.** Prelims are condensed from 7 days to 5, and the top 15 race the final.
+- **Format.** Practice is condensed to 3 days (proposed) and prelims from 7 days to 5, and the top 15 race the final the day after the prelims.
+- **Schedule.** Each Junior round runs at the same venue straight after the Super Series round: Junior practice day 1 is the day after the Super final race. The same dry-and-clear rule applies to Junior prelims.
 - **Points and perks.** Junior uses the original 2031 points table: the top 31 score points, with the top 15 scoring from the final. Any points scorer gets free tyres, a reserved place in the assistants' booth and a silver-outlined number.
 - **Prizes.** Junior uses the original 2031 prize money: finalists earn $1,000,000 down to $20,000 by position. The Junior champion, decided on points, wins $10,000,000. Pole and overtake bonuses of $10,000 each build up through the year and are paid at season end.
 - **Numbers.** Junior cars carry a "J" beside their door number, to set them apart from main-series cars.
@@ -449,11 +493,11 @@ The full design is large, so development is staged. Each milestone must be playa
 | M1 World generation | A believable 2031 field | Names, 96 garages, 313 drivers, 313 cars, numbers, contracts, calendar | UI beyond a debug viewer |
 | M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, classification, points | Final race, economy |
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, incidents, overtakes, player calls, prize money, timing screens | Live map polish, drones |
-| M4 Garage and economy | The management loop | Car purchase, upgrades, legality, sponsors, drivers' contracts, finances, repairs | Rivalries, media |
+| M4 Garage and economy | The management loop | Car purchase, upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Seven rounds, off-season, rollover to 2032 | All 7 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
 | M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
-| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, achievements, mod loader and Steam Workshop integration, the hidden Founder's career | |
+| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, Steam achievements and cloud saves, mod loader and Steam Workshop integration, the hidden Founder's career | |
 
 **MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race seven rounds, finish the season, and begin 2032 with all records saved.
 
@@ -518,6 +562,9 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `sponsor`, `sponsor_deal` | tier, min_prestige, base_fee, bonuses; garage_id, years, targets |
 | `supplier`, `supplier_deal` | brand, categories, discount, contingency; garage_id, car_id |
 | `trophy` | owner_type (`driver` / `car`), owner_id, kind (`win` / `title`), series, round_id / season_id |
+| `negotiation` | window, party_a_type, party_a_id, party_b_type, party_b_id, kind, status, patience_left |
+| `offer` | negotiation_id, round, from_side, terms (JSON), value, outcome |
+| `relationship` | party_a_type, party_a_id, party_b_type, party_b_id, score |
 | `ledger` | garage_id, date, category, amount, note |
 | `headline` | date, text, driver_id / garage_id (nullable) |
 
@@ -566,6 +613,7 @@ A player can race as Pyra Drake by entering her exact details in Owner-driver se
 - **Starting package (proposed, tunable).** Elite preset stats (Pace 90, Consistency 85, Racecraft 85, Tyre management 85, Composure 85, Wet skill 80, all road affinities 80), high fame and reputation, and her Homura Spirit R-7 as the garage's one car. Cash, staff and sponsors are the normal Owner-driver start, so the rise from nothing is still earned.
 - **Timeline.** She is 35 in 2031, 40 in 2036 and ages and retires like any driver.
 - **Ghost record.** The founder's demo runs still exist as the #313 ghost option, so the player can race against her demo laps.
+- **Achievements.** All achievements are disabled in the Founder's career. Starting it unlocks one hidden achievement of its own, "Founder's Birthday", once per account.
 - **Canon.** The save is marked `founder_career` and is outside the main story (in the standard world, Pyra Drake does not race main events). It is stored and displayed like any other save.
 
 ## Modding (Steam Workshop)
@@ -582,6 +630,10 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 | Manufacturers | New or replacement manufacturers, with home country, type and character |
 | Cars | New or replacement car models: kerb weight, power, drivetrain, price tier, body-shape SVG and livery slots |
 | Tracks | New or replacement courses: route, sectors, road type, climate profile, vector map path |
+| Parts | New or replacement parts and their stats, prices and legality ratings |
+| Sponsors | New or replacement sponsors, their tiers, fees, targets and personalities |
+| Suppliers | New or replacement suppliers, categories, discounts and contingency terms |
+| Balance data | Coefficients in `balance.json`, such as the cost baseline and formula weights |
 
 **Package format.** A mod is a folder with `mod.json` (id, name, version, author, supported game versions, dependencies, load-order hint, list of the areas it touches), `data/` for the JSON files, `art/` for SVGs and `text/en.json` for any new text keys. The real-counterpart reference mapping is optional (`mod_mapping.json`, see "Fictional manufacturers and cars").
 
@@ -590,11 +642,18 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 - **Stable IDs.** Everything a mod adds has a stable ID with the mod's prefix. Replacing a base item uses the base item's ID.
 - **Load order.** Mods load in order and the last to change an item wins. A conflict report names every override.
 - **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, 10 km minimum course length, sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
+- **Balance mods.** A mod that changes balance data is labelled in the save and its records are kept apart from default-world records.
 - **Safety.** Data only: no code, and SVGs are sanitised to remove scripts and external references.
 - **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
 - **Calendar with mods.** A track mod can replace any of the seven rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km.
 - **Saves.** A career records the mods used, with their versions, and mods are fixed when the career is created. A missing or changed mod warns before loading. Modded careers are labelled, and their records are not mixed into default-world records.
 - **Steam Workshop.** Mods are published, subscribed to and updated through Steamworks in the desktop build. The web build installs mods from local files.
+
+## Achievements and cloud saves
+
+- **Achievements.** Steam achievements are enabled in the desktop build, awarded for milestones such as first points, first final, gold border, first win, a season title, a Garage, Manufacturer or nations title, a Hall of Fame entry, a 10-season career and a rivalry. They are tracked from the event log. The web build keeps a local list.
+- **Founder's career.** All achievements are disabled for that save. Starting it unlocks one secret achievement, "Founder's Birthday", and nothing else.
+- **Cloud saves.** Steam Cloud syncs saves. Each save is one `.lcsave` file containing the database, its schema version, the mod list and a preview. On a sync conflict the newer file wins and the older one is kept as a backup copy that the player can restore. The web build stores saves in the browser and can export and import `.lcsave` files.
 
 ## Localisation
 
@@ -867,15 +926,20 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Owner-driver starts solo.** One car, one entry, no staff.
 - **Language.** English only, with all text externalised for later translation.
 - **Modding.** Steam Workshop support for starting garages, drivers and stats, name lists, manufacturers, cars and tracks.
-- **Founder's career.** A hidden Easter egg start as Pyra Drake.
+- **Founder's career.** A hidden Easter egg start as Pyra Drake. It disables achievements and unlocks its own secret achievement.
+- **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
+- **Flag artwork.** `lipis/flag-icons` (MIT).
+- **Round 7 name.** The protected event name is not used. The round is the North-west Tasmania mountain roads.
+- **Junior schedule.** Junior practice day 1 is the day after the Super final, at the same venue.
+- **Modding scope.** Mods may also change parts, sponsors, suppliers and balance data.
+- **Steam.** Achievements and cloud saves are enabled.
 
 **Open**
 
 - [ ] Measured lap lengths for each proposed route (needed before M2 course data).
 - [ ] Final tuning of the cost baseline and formula coefficients (via the 10-season headless sim).
-- [ ] Choose the flag artwork set and confirm its licence at M0 (candidates include Noto Color Emoji flags and `flag-icons`).
-- [ ] Whether the real "Targa" event name used for Round 7 is a protected event brand, as opposed to the road names, which are fine.
+- [ ] Confirm that `flag-icons` covers every flag emoji (add art from another open-licence set for any gap).
 - [ ] Legal review of the real-counterpart mapping, and the Workshop policy for real-brand car mods.
-- [ ] How Junior rounds fit the calendar: the same weekend as the Super Series, or on separate dates.
-- [ ] Whether mods may also change parts, sponsors, suppliers and balance data (not in the first mod scope).
-- [ ] Steam features beyond the Workshop: achievements and cloud saves (and whether Founder's career earns achievements).
+- [ ] Junior practice length (3 days proposed) and whether garages need extra crew for back-to-back events.
+- [ ] Whether careers with balance-changing mods still earn achievements.
+- [ ] Tuning of negotiation values: patience, relationship effects and reservation formulas.
