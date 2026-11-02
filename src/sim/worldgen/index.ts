@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import easterJson from '../../../data/easter_drivers.json';
 import { equalizerMm } from '../equalizer';
 import { createRng, type RandomStream } from '../rng';
 import { wearFromKm } from '../wear';
@@ -57,6 +58,8 @@ const COLOUR_PAIRS: readonly (readonly [string, string])[] = [
   ['#212529', '#ffc300'],
   ['#003049', '#d62828'],
 ];
+
+const easterDrivers = easterJson.drivers;
 
 const placesByCountry = new Map<string, typeof places>();
 for (const place of places) {
@@ -150,6 +153,8 @@ function makeDriver(rng: RandomStream, id: number, options: DriverOptions = {}):
     id,
     name: personName(rng, nationality, gender),
     gender,
+    identity: gender === 'female' ? 'feminine' : 'masculine',
+    easterEgg: false,
     birthDate: birthDate.toISOString().slice(0, 10),
     nationality,
     flag,
@@ -237,6 +242,23 @@ export function generateWorld(seed: string | number): World {
   // --- drivers ---
   const dRng = rng.stream('worldgen:drivers');
   const drivers: Driver[] = Array.from({ length: cfg.entries }, (_, i) => makeDriver(dRng, i + 1));
+  // The hidden characters take twelve seats in every field, with maximum potential.
+  const easterRng = rng.stream('worldgen:easter');
+  const seats = easterRng.shuffle(drivers.map((_, i) => i)).slice(0, easterDrivers.length);
+  easterDrivers.forEach((e, n) => {
+    const d = drivers[seats[n] as number] as Driver;
+    const country = placesByCountry.has(e.flag) ? e.flag : HOST_COUNTRY;
+    const heritage = (e as { heritage?: string }).heritage;
+    d.name = e.name;
+    d.gender = e.identity === 'feminine' ? 'female' : 'male';
+    d.identity = e.identity as Driver['identity'];
+    d.nationality = e.flag;
+    d.flag = e.flag;
+    d.hometownPlaceId = placeIn(easterRng, heritage === 'gb-eng' ? 'GB' : country);
+    d.residencePlaceId = d.hometownPlaceId;
+    d.potential = 99;
+    d.easterEgg = true;
+  });
   // Season 1 is the series' first year: nobody has a gold border, points or history yet.
   const garageOf = dealDrivers(dRng, drivers, sizes);
 
@@ -390,10 +412,18 @@ export function generateWorld(seed: string | number): World {
     });
   }
 
+  // --- identity: a few drivers are non-binary (a separate stream keeps the rest of the world the same) ---
+  const identityRng = rng.stream('worldgen:identity');
+  for (const d of drivers) {
+    if (!d.easterEgg && identityRng.chance(balance.driver.nonBinaryShare))
+      d.identity = 'non_binary';
+  }
+
   // --- nicknames: some drivers have a handle that suits how they race ---
   const nickRng = rng.stream('worldgen:nicknames');
   const usedNicknames = new Set<string>();
   for (const d of drivers) {
+    if (d.easterEgg) continue;
     if (!nickRng.chance(nameLists.nicknameShare)) continue;
     d.nickname = nickname(
       nickRng,

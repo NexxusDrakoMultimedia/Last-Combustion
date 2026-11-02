@@ -291,6 +291,29 @@ The Equalizer is the series' only real technical rule: a car's maximum tyre widt
 
 **Driver development (built).** Each rollover, every driver who carries on grows or declines: up to 27 their pace closes 20% of the gap to their potential and other stats gain about 1.5; from 33 pace falls by half a point per year over the threshold (judgement stats at half that rate), with a little noise, drawn from `rollover:<year>:growth`. Pace never rises above potential. Numbers are in `data/balance.json` (`season.progression`).
 
+**World changes (built, first version).** The UK and Spanish events are data in `data/flags.json` (`worldChanges`: the window, the Spain gate, each event's chance, prerequisites, regions and target flags, and the union's long names). `planWorldChanges` draws each event's year from its named stream when the career is made, and `applyWorldChanges` runs when a season starts: people whose hometown (or a garage whose base) is in the region move to the new flag, flag names are recorded in the `flag_name` table, and the event goes in `world_event`. When the United Kingdom ends, anyone still carrying `GB` goes to England's flag. Cars keep their flag, which follows the maker. Not built yet: the hidden second flag, headlines and cards, and the Ultimate Vyktory forcing.
+
+**Driver identity (built).** A driver is described as masculine, feminine or non-binary (`driver.identity`; about 4% of drivers are non-binary, `worldgen.driver.nonBinaryShare`, drawn from a separate stream so it never changes the rest of a world). It shows as pronouns (he/him, she/her, they/them, from `locales/en.json`) and as the male sign (♂), female sign (♀) or the combined male and female sign (⚥). `driver.gender` stays as the name pool the name came from and has no other use. Rookies get the same chance each season.
+
+**Hidden drivers (built).** Twelve fictional driver characters, trademarks of Nexxus Drako Multimedia, take twelve seats in the starting field of every career (`data/easter_drivers.json`, seats chosen from the named stream `worldgen:easter`). They keep their generated pace and other stats, have maximum potential (99), and carry a dragon emoji (🐉) with a deliberately cryptic hint, "The dragon blood flows through this one." Nothing else explains them. They race under their own nations until the Vyktory rename happens in a career, when they take the Vyktory flag (`AU`).
+
+| Driver | Nation | Identity |
+| --- | --- | --- |
+| Alyx Southgate | England (`GB`, hometown in England) | Non-binary |
+| Kalliope Northbridge | Singapore | Non-binary |
+| Svetlana Reznikov | Ukraine | Feminine |
+| Haruka Nakano | Japan | Feminine |
+| Skyla Morrison | Australia | Feminine |
+| Violet Trethvick | Ireland | Feminine |
+| Alexis North | Australia | Non-binary |
+| Dae Blake | New Zealand | Non-binary |
+| Samuel Goldsmith | Bahamas | Masculine |
+| Jack Monkhouse | Australia | Masculine |
+| Aisi Smith | Tuvalu | Non-binary |
+| Elli Richter | Liechtenstein | Feminine |
+
+The Vyktory rename itself is now built too: `planWorldChanges` rolls it once per career (1 in 31,031,996, for 2032) and `applyVyktory` renames Australia and moves the hidden drivers.
+
 **Layout handicap (built).** As in the real series, four-wheel-drive and mid-engine cars are handicapped: their maximum tyre width is 10 mm less than the kerb-weight figure (`data/balance.json`, `upgrades.handicapMm`, so mods can tune it). A car model's listed limit is the base figure; each car's own limit and tyre width apply the handicap, and scrutineering checks against it.
 
 **Awards at the flag (built).** Everything a race earns is given out when it ends: prize money, the gold border for a driver's first final, a win decal on the winning driver and car, and any new titles. Pole and overtaking bonuses add up through the year and are paid at the end of the season with the champion's prize (more bonus kinds can be added to `season_bonus`), and the shield decals for the champions are added then.
