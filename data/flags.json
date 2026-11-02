@@ -77,6 +77,34 @@
     "NL": {
       "short": "Netherlands",
       "long": "Kingdom of the Netherlands"
+    },
+    "gb-eng": {
+      "short": "England",
+      "long": "Kingdom of England"
+    },
+    "gb-wls": {
+      "short": "Wales",
+      "long": "Principality of Wales"
+    },
+    "gb-sct": {
+      "short": "Scotland",
+      "long": "Republic of Scotland"
+    },
+    "es-pv": {
+      "short": "Basque",
+      "long": "Basque Country"
+    },
+    "es-ct": {
+      "short": "Catalonia",
+      "long": "Catalonian Republic"
+    },
+    "es-ga": {
+      "short": "Galicia",
+      "long": "Republic of Galicia"
+    },
+    "ic": {
+      "short": "Canary Islands",
+      "long": "Republic of the Canary Islands"
     }
   },
   "renames": [
@@ -90,5 +118,95 @@
       "art": "assets/flags/vyktory.svg",
       "achievement": "vyktory"
     }
-  ]
+  ],
+  "worldChanges": {
+    "windowStart": 2034,
+    "windowEnd": 2070,
+    "gates": [
+      {
+        "id": "spain",
+        "stream": "world:independence:spain",
+        "chance": 0.25
+      }
+    ],
+    "events": [
+      {
+        "id": "northern-ireland",
+        "stream": "world:reunification:northern-ireland",
+        "chance": 0.75,
+        "from": "GB",
+        "to": "IE",
+        "regions": ["Northern Ireland"]
+      },
+      {
+        "id": "scotland",
+        "stream": "world:independence:scotland",
+        "chance": 0.6,
+        "from": "GB",
+        "to": "gb-sct",
+        "regions": ["Scotland"]
+      },
+      {
+        "id": "wales",
+        "stream": "world:independence:wales",
+        "chance": 0.4,
+        "after": ["northern-ireland", "scotland"],
+        "from": "GB",
+        "to": "gb-wls",
+        "regions": ["Wales"],
+        "also": [
+          {
+            "regions": ["England"],
+            "to": "gb-eng"
+          }
+        ],
+        "retires": "GB"
+      },
+      {
+        "id": "catalonia",
+        "stream": "world:independence:catalonia",
+        "chance": 0.6,
+        "gate": "spain",
+        "from": "ES",
+        "to": "es-ct",
+        "regions": ["Catalonia"]
+      },
+      {
+        "id": "basque",
+        "stream": "world:independence:basque",
+        "chance": 0.6,
+        "gate": "spain",
+        "from": "ES",
+        "to": "es-pv",
+        "regions": ["Basque Country"]
+      },
+      {
+        "id": "galicia",
+        "stream": "world:independence:galicia",
+        "chance": 0.4,
+        "gate": "spain",
+        "from": "ES",
+        "to": "es-ga",
+        "regions": ["Galicia"]
+      },
+      {
+        "id": "canaries",
+        "stream": "world:independence:canaries",
+        "chance": 0.25,
+        "gate": "spain",
+        "from": "ES",
+        "to": "ic",
+        "regions": ["Canary Islands"]
+      }
+    ],
+    "unionNames": {
+      "flag": "GB",
+      "byDone": {
+        "": "United Kingdom of Great Britain and Northern Ireland",
+        "northern-ireland": "United Kingdom of Great Britain",
+        "scotland": "United Kingdom of England, Wales and Northern Ireland",
+        "northern-ireland+scotland": "United Kingdom of England and Wales"
+      }
+    }
+  }
 }

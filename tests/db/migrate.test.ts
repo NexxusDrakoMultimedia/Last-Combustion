@@ -71,6 +71,7 @@ describe('migrate', () => {
       'almanac',
       'titles',
       'trophies',
+      'world_events',
     ]);
   });
 

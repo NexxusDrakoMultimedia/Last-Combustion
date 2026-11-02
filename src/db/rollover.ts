@@ -10,6 +10,7 @@ import { buildCalendar, makeRookie, RESERVED_NUMBER } from '../sim/worldgen';
 import { ROAD_TYPES } from '../sim/worldgen/types';
 import { seasonBalance } from '../sim/worldgen/data';
 import { readCareer } from './career';
+import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
 
 export interface Rollover {
@@ -18,6 +19,7 @@ export interface Rollover {
   rookies: number;
   contractsRenewed: number;
   entries: number;
+  worldChanges: AppliedChange[];
 }
 
 /**
@@ -247,6 +249,7 @@ export function startNextSeason(db: Database): Rollover {
       insert.run([seasonId, p.e.garage_id as number, p.driverId, p.e.car_id as number, number]);
     }
     insert.free();
+    const worldChanges = applyWorldChanges(db, year);
     db.run('UPDATE career SET game_date = ? WHERE id = 1', [`${year}-02-01`]);
     db.exec('COMMIT');
     return {
@@ -255,6 +258,7 @@ export function startNextSeason(db: Database): Rollover {
       rookies: replaced.size,
       contractsRenewed: renewed.length,
       entries: entries.length,
+      worldChanges,
     };
   } catch (error) {
     db.exec('ROLLBACK');

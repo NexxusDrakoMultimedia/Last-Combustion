@@ -1334,5 +1334,37 @@
     "country": "ES",
     "lat": 41.55,
     "lon": 2.11
+  },
+  {
+    "id": "gb-belfast",
+    "name": "Belfast",
+    "region": "Northern Ireland",
+    "country": "GB",
+    "lat": 54.6,
+    "lon": -5.93
+  },
+  {
+    "id": "es-bilbao",
+    "name": "Bilbao",
+    "region": "Basque Country",
+    "country": "ES",
+    "lat": 43.26,
+    "lon": -2.93
+  },
+  {
+    "id": "es-vigo",
+    "name": "Vigo",
+    "region": "Galicia",
+    "country": "ES",
+    "lat": 42.24,
+    "lon": -8.72
+  },
+  {
+    "id": "es-las-palmas",
+    "name": "Las Palmas",
+    "region": "Canary Islands",
+    "country": "ES",
+    "lat": 28.12,
+    "lon": -15.44
   }
 ]
