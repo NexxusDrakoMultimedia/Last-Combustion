@@ -936,7 +936,7 @@ The project follows common industry practice from the first commit (milestone M0
 | `balance.yml` | Nightly, manual | Runs the headless multi-season sim and fails if balance statistics drift beyond set limits |
 | `docs.yml` | Pull request | Markdown lint, link check, API docs build |
 | `release.yml` | Tag push `v*` | Release automation: changelog, web build, Electron builds for Windows, macOS and Linux, checksums, GitHub Release |
-| `pages.yml` | Release | Deploy the web build to GitHub Pages |
+| `pages.yml` | Merge to `main`, release | Deploy the web build to GitHub Pages at `lc.nexxusdrako.au` (a custom domain, so the build uses the root path) |
 
 Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with actions pinned to versions or commit hashes.
 

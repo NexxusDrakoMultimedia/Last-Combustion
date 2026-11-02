@@ -32,7 +32,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
         env:
-          BASE_URL: /${{ github.event.repository.name }}/
+          # Served from the root of a custom domain (lc.nexxusdrako.au), not a sub-path.
+          BASE_URL: /
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
