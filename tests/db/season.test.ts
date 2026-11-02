@@ -78,8 +78,7 @@ describe('standings through a season', () => {
     expect(scalar(db, 'SELECT COUNT(*) FROM season_bonus WHERE paid = 0')).toBe(0);
   });
 
-  it('gives a gold border to every driver who reached a final this season', () => {
-    expect(end.goldBorders).toBeGreaterThan(0);
+  it('left the gold borders, win decals and prizes to each race, and adds only the shield decals', () => {
     expect(
       scalar(
         db,
@@ -87,18 +86,14 @@ describe('standings through a season', () => {
            (SELECT e.driver_id FROM result r JOIN entry e ON e.id = r.entry_id WHERE r.final_pos IS NOT NULL)`,
       ),
     ).toBe(0);
+    expect(scalar(db, "SELECT COUNT(*) FROM trophy WHERE kind = 'win'")).toBe(12);
+    expect(scalar(db, "SELECT COUNT(*) FROM trophy WHERE kind = 'title'")).toBe(2);
     expect(
-      Number(
-        scalar(
-          db,
-          'SELECT COUNT(DISTINCT driver_id) FROM entry e JOIN result r ON r.entry_id = e.id WHERE r.final_pos IS NOT NULL',
-        ),
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM trophy WHERE kind = 'title' AND owner_type = 'driver' AND owner_id = ${end.championDriverId}`,
       ),
-    ).toBeLessThanOrEqual(
-      end.goldBorders +
-        0 +
-        Number(scalar(db, 'SELECT COUNT(*) FROM driver WHERE gold_border_year < 2031')),
-    );
+    ).toBe(1);
   });
 
   it('saves the final tables, and cannot be run twice', () => {

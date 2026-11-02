@@ -263,7 +263,7 @@ Numbers 1–40 follow last season's rankings (and the top 40 must take them) and
 - **Season 1 (2031).** The series has no history, so there is no ranking: every number except #313 is open, and 1–40 are handed out like any other number. There is no black box and nobody has a gold border until the first final is raced.
 - **Numbers 41 and up: open to anyone.** Any driver may apply for any free number from 41 upward. Numbers are re-chosen each season, and last season's holder gets first refusal.
 - **Number #313 (Reserved):** Permanently retired and reserved for founder Pyra Drake.
-- **Clashes** (decided by the series office under Odette Brandt): after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
+- **Clashes** (decided by the series office under Ingrid Halloran): after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
 - **Black box:** the reigning champion's #1 carries a black box.
 - **Fame:** a number builds recognition over time; changing it resets some of that. Taking a ranked number (1 to 40) does not reset it: the driver keeps the number fame they have built, and the fame of a ranked number they hold carries on in the same way.
 - **Preferred number.** Each driver has a preferred number, the one they chose for themselves (stored as `driver.preferred_number`, set when they are created). It stays part of their legacy, shown on their profile and in the records, even while a ranked number has to be worn, and a driver who is no longer ranked can go back to it (with first refusal, see above).
@@ -286,6 +286,12 @@ A supplier's logo can only go on the doors if one of its parts is fitted to the 
 ## Technical regulations
 
 The Equalizer is the series' only real technical rule: a car's maximum tyre width is set by its kerb weight. There are no power limits, no ballast, no budget cap and no success ballast.
+
+**Layout handicap (built).** As in the real series, four-wheel-drive and mid-engine cars are handicapped: their maximum tyre width is 10 mm less than the kerb-weight figure (`data/balance.json`, `upgrades.handicapMm`, so mods can tune it). A car model's listed limit is the base figure; each car's own limit and tyre width apply the handicap, and scrutineering checks against it.
+
+**Awards at the flag (built).** Everything a race earns is given out when it ends: prize money, the gold border for a driver's first final, a win decal on the winning driver and car, and any new titles. Pole and overtaking bonuses add up through the year and are paid at the end of the season with the champion's prize (more bonus kinds can be added to `season_bonus`), and the shield decals for the champions are added then.
+
+**Name generators and nicknames (built).** People, garages, cars and nicknames come from themed, categorised generators (`data/names/`): garages from eleven themes (heritage, engineering, animal, place, myth, speed, vintage, touge, bush, business, colour), car models by category (hypercar, supercar, JDM, sports, domestic, other) with real model names denied, and nicknames such as "The Midnight Ghost" chosen from the road a driver calls home and how they race. About 40% of drivers have one. One nation in twenty is picked with no weighting at all. Drivers also earn titles (`data/titles.json`) for career feats, as in Wangan Midnight and Tokyo Xtreme Racer, and equip one.
 
 ```latex
 \text{Max tyre width (mm)} = \frac{\text{Kerb weight (kg)}}{5} + 40
@@ -340,12 +346,12 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
 
 - **Pyra Drake:** Founder and chairwoman of Last Combustion. Born in **1996**, she celebrates her **35th birthday** in Season 1 (2031) and her **40th birthday** in Season 6 (2036). The opening ceremony and Round 1 practice always take place on her birthday, **March 31st**. She is a self-insert character and one of the best drivers in history, but does not actively race in LC main events. Her role is setting the first-ever course records, and her number **#313** is permanently retired. Her hometown is Healesville, Victoria, and she lives in Brisbane, Queensland.
 - **Drake Motorsports:** Pyra Drake's personal team, based in **Brisbane**, Queensland, where she is founder and owner, with her unique vehicle being a fictional Mazda RX-7 expy called the **Homura Spirit R-7** (rotary-powered lightweight sports car).
-- **Series management (Declan Marsh and Odette Brandt):** two administrators who are not related to Pyra or to each other run the day-to-day operations of Last Combustion from the Healesville headquarters, where they both live. Pyra remains chairwoman.
+- **Series management (Declan Marsh and Ingrid Halloran):** two administrators who are not related to Pyra or to each other run the day-to-day operations of Last Combustion from the Healesville headquarters, where they both live. Pyra remains chairwoman.
   - **Declan Marsh**, technical administrator, runs the technical side: the regulations and the Equalizer, scrutineering, telemetry, the drone fleet and the attention-flag AI. In the game he issues technical bulletins, scrutineering rulings and rule-change announcements.
-  - **Odette Brandt**, interpersonal administrator, runs the interpersonal side: relations with garages, drivers, sponsors, suppliers and the media. In the game she handles number clashes, penalty appeals, entry disputes, ceremonies and the headlines about the series.
+  - **Ingrid Halloran**, interpersonal administrator, runs the interpersonal side: relations with garages, drivers, sponsors, suppliers and the media. In the game she handles number clashes, penalty appeals, entry disputes, ceremonies and the headlines about the series.
   - They appear as senders of messages and in the headlines, and they never race.
   - **Ageing.** They age like everyone else, and a successor takes over when they retire or die: one of their children or an unrelated person in a similar role (see "Commentary team", "Ageing and succession").
-  - **Fictional characters.** "Declan Marsh" and "Odette Brandt" are fictional people, unrelated to any real person, and their names are placeholders that Nexxus may change.
+  - **Fictional characters.** "Declan Marsh" and "Ingrid Halloran" are fictional people, unrelated to any real person, and their names are placeholders that Nexxus may change.
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
 - **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. In Season 1 there is no last year, so the ghost is Pyra Drake's #313 demo run only.
   - **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
@@ -415,7 +421,7 @@ Incidents are rolled per sector from the incident formula (see "Formulas"), then
 | Prelims | Wildlife on the road | Kangaroos and other animals can cross the road; drones warn, and a late warning costs a mistake | Drone alert; driver composure decides the reaction |
 | Prelims | Blocked course | A stopped car brings the drone stop signal; the next runner is held and restarted | Accept the restart or protest |
 | Final | Mistake and spin | Time lost (1–4 s and 10–25 s) | Push, balance or conserve calls |
-| Final | Contact | Two cars touch; time penalty, damage, and rivalry heat | Appeal to Odette Brandt's office |
+| Final | Contact | Two cars touch; time penalty, damage, and rivalry heat | Appeal to Ingrid Halloran's office |
 | Final | Mechanical failure | Engine, brakes, gearbox or tyre trouble from worn parts | Conserve to reach the flag, or retire |
 | Final | Weather change | Rain, or a damp patch, arrives part-way | Wet skill and tyre calls matter |
 | Final | Lost grip | An over-driven tyre set loses grip in the last kilometres | Conserve earlier |
@@ -455,7 +461,7 @@ A storyline is a short arc of connected beats, built from the records and shown 
 - **Choices.** Some beats give the player a choice: how to answer the press, whether to accept a sponsor's request, whether to protest. The choice changes the outcome and moves fans, reputation or relationships.
 - **Outcomes.** Each storyline pays out in fans, reputation, relationship changes, sponsor interest and headlines, and writes to the history.
 - **Pacing.** At most three storylines are highlighted for the player at a time, and the rest play out in the headlines. AI garages and drivers have storylines too.
-- **Events.** Between rounds and at the festival, event cards bring stories to the player: press days, charity drives, a visit from Pyra Drake, technical bulletins from Declan Marsh and disputes handled by Odette Brandt.
+- **Events.** Between rounds and at the festival, event cards bring stories to the player: press days, charity drives, a visit from Pyra Drake, technical bulletins from Declan Marsh and disputes handled by Ingrid Halloran.
 - **Seasons.** Season-level arcs track the title fight, the Garage and Manufacturer Championships, driver retirements and new entrants, and the yearly lineup refreshes.
 - **Moddable.** Templates, incident tables and rivalry weights are data files, so mods can add or change them.
 
@@ -659,10 +665,10 @@ Every run and race has a commentary team. The four commentators are fictional ch
 - **Voices.** Reece is calm and technical, Alistair is warm and quick, Kazumi is quiet and precise, and José Antonio is confident and blunt.
 - **Who speaks.** Each moment (an incident, a rivalry, a storyline beat, a fan milestone, an auction) is tagged with a topic, and the commentator whose areas match speaks first, with another adding a comment. Alistair carries the live action.
 - **Text.** Lines are templates with keys, so they are translatable and can be changed by mods (see "Localisation" and "Incidents, rivalries and storylines").
-- **Fictional characters and their inspirations.** The four commentators are fictional characters and trademarks and intellectual property of Nexxus Drako Multimedia. Reece Calloway is based on Nexxus's friend Jay, and Alistair Thorne on another friend, Luca. Kazumi Aikawa is Nexxus's own creation. José Antonio Carrera is based on the rival character from the football-management game *Let's Make a Soccer Team!*. Only first names are recorded here: no real surnames or personal details about the two friends appear anywhere in the project, and everything about the characters' in-game lives is invented. The names of every character except Pyra Drake, Kazumi Aikawa and José Antonio Carrera (that is, Declan Marsh, Odette Brandt, Reece Calloway and Alistair Thorne) are placeholders that Nexxus may change at any time, and so are the names of the characters' children and successors. The names live only in data (`data/commentators.json` and the series-staff data in world generation), never in the rules, so renaming one is a data change. Their consent to the likeness is an open item (see "Decisions and open questions").
+- **Fictional characters.** The four commentators are fictional characters, separate from any real person or existing game character, and Nexxus Drako Multimedia claims no copyright or trademark in them (or in any character other than Pyra Drake). Kazumi Aikawa is Nexxus's own creation. The names of every character except Pyra Drake, Kazumi Aikawa and José Antonio Carrera (that is, Declan Marsh, Ingrid Halloran, Reece Calloway and Alistair Thorne) are placeholders that Nexxus may change at any time, and so are the names of the characters' children and successors. The names live only in data (`data/commentators.json` and the series-staff data in world generation), never in the rules, so renaming one is a data change. Everything about the characters' in-game lives is invented, and no real surnames or personal details of real people appear anywhere in the project.
 - **Data.** The team lives in `data/commentators.json`, with each commentator's flag and home town as places in the places list.
 
-**Ageing and succession.** Declan Marsh, Odette Brandt and the four commentators are fictional people who age in real game time, like every other character. They have invented birth dates (stored with the rest of their data and never taken from real people).
+**Ageing and succession.** Declan Marsh, Ingrid Halloran and the four commentators are fictional people who age in real game time, like every other character. They have invented birth dates (stored with the rest of their data and never taken from real people).
 
 - **Retirement and death.** Each has a retirement age (around 65 to 72, drawn once from the named stream `worldgen:staff`) and the same death model as other characters. When they retire or die, a headline and a farewell event card mark the moment, and the role passes on.
 - **Successors.** The role passes to either one of their fictional children or an unrelated person of a similar role, chosen when the vacancy opens from the named stream `worldgen:staff` (about 60% a child, if there is an adult one; otherwise an outsider). A child keeps the family surname, the parent's expertise and home town. An outsider is generated to fit the role: a similar background, expertise and voice type, a different name, and their own flag and home town. Either way the successor gets their own personality and traits (see "Personalities and traits"), and a new commentator keeps the "speaks about" areas of the role with a small shift in emphasis. A new technical or interpersonal administrator inherits the technical or interpersonal duties and message style.
@@ -909,7 +915,7 @@ The game is licensed under the **GNU General Public License, version 3 or (at th
 - **Scope.** All code and all first-party data, art, audio and text are GPL-3.0-or-later unless a file says otherwise. `LICENSE` holds the licence text, every source file carries an `SPDX-License-Identifier` header, and the repository follows the REUSE specification.
 - **Dependencies and assets.** Only GPL-compatible licences are allowed: MIT, BSD, ISC, Apache-2.0, MPL-2.0, LGPL, CC0, CC BY and CC BY-SA 4.0 (one-way compatible), and SIL OFL fonts. Licences that are not compatible (non-commercial, no-derivatives, proprietary) are blocked by a licence check in CI. Third-party licences are listed in `CREDITS.md` and shown in-game. `flag-icons` is MIT, so it complies.
 - **Source.** The source is public. The About screen links to the exact source tag of the running build.
-- **Names and IP.** The game name "Last Combustion", its logo and the characters Pyra Drake, Declan Marsh, Odette Brandt and the four commentators (Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera) are trademarks and intellectual property of **Nexxus Drako Multimedia**. The GPL covers the software and content licensed under it, but it does not give anyone the right to use these names, the logo or the characters. Forks must use a different name and logo and may not present the characters as their own. `TRADEMARKS.md` states the policy (GPLv3 section 7 allows declining trademark rights). The copyright holder named in every SPDX header is Nexxus Drako Multimedia.
+- **Names and IP.** The game name "Last Combustion", its logo and the character Pyra Drake are trademarks and intellectual property of **Nexxus Drako Multimedia**. No other character is claimed: Nexxus makes no copyright or trademark claim on anyone but Pyra. The GPL covers the software and content licensed under it, but it does not give anyone the right to use the name, the logo or Pyra Drake. Forks must use a different name and logo and may not present Pyra as their own. `TRADEMARKS.md` states the policy (GPLv3 section 7 allows declining trademark rights). The copyright holder named in every SPDX header is Nexxus Drako Multimedia.
 - **Mods must be GPL-compatible.** Mods are data files read at runtime, and their authors keep their copyright, but every mod must carry a GPL-compatible licence to be loaded or listed. See "Modding".
 - **Easter egg.** The Founder's career check stores a hash of the normalised details, not the plain text, so browsing the source does not spoil it. This document is the only plain-text record.
 
@@ -1135,7 +1141,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 - **Saves.** A career records the mods used, with their versions, and mods are fixed when the career is created. A missing or changed mod warns before loading. Modded careers are labelled, and their records are not mixed into default-world records.
 - **Distribution.** Mods go in a local `mods/` folder (or are imported in the web build). A mod index, a public repository of mod listings with download links, feeds an in-game mod browser. If a Steam release goes ahead, Steam Workshop is added as a second source through the optional Steam module.
 - **Mod licence (mandatory).** `mod.json` must declare a `license` as an SPDX identifier, and the mod folder must include the licence text. Only GPL-compatible licences are accepted: GPL-3.0-or-later, GPL-3.0-only, AGPL-3.0, LGPL-3.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC, Apache-2.0, MPL-2.0, Unlicense, CC0-1.0, CC-BY-4.0 and CC-BY-SA-4.0 (and OFL-1.1 for fonts). A mod with a missing, unknown or incompatible licence (including non-commercial, no-derivatives or "all rights reserved") is rejected by the loader and the mod index. All art, audio and fonts inside a mod must also be GPL-compatible, and the licence is shown in the mod manager.
-- **Names in mods.** A mod may say it is made "for Last Combustion" or "compatible with Last Combustion" but may not use the logo, imply it is official, or use the Pyra Drake, Declan Marsh, Odette Brandt or commentator characters without permission (see `TRADEMARKS.md`).
+- **Names in mods.** A mod may say it is made "for Last Combustion" or "compatible with Last Combustion" but may not use the logo, imply it is official, or use the Pyra Drake character without permission (see `TRADEMARKS.md`).
 - **Hosting policy.** Wherever we host mods or the index, we follow the standard DMCA takedown procedure, and we claim no responsibility for modifications that private players make or apply.
 
 ## Achievements and cloud saves
@@ -1498,7 +1504,7 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
   - **How it works.** All colours come from CSS custom properties (design tokens such as `surface`, `ink`, `ink-muted`, `accent`, `surface-brand`, `on-brand`, `line`, `focus`, and the status colours `success`, `warning`, `danger`), set by a `data-theme` attribute on the page. No component hard-codes a colour. The first launch follows the operating system's light or dark setting, and the player can override it.
   - **Fixed colours.** Race content keeps its own colours in every theme, because it is data: garage liveries and number boxes, flags, the gold border, and course maps. Themes recolour the interface around them only.
   - **Accessibility holds in every theme.** Text meets WCAG AA contrast (4.5:1 for body text, 3:1 for large text and icons), the focus ring is always visible, and status colours are colour-blind safe (success is blue, not green) and always paired with a word or icon.
-  - **Mods.** A theme is a data file (`data/themes.json`: a name and a token map), so mods can add themes. Themes that fail the contrast check are not listed. The NDM theme is shipped with the game, but the NDM logos, artwork and the characters stay reserved (see `TRADEMARKS.md`), and the fonts are loaded by the interface and not used for text in a way that needs a licence we lack.
+  - **Mods.** A theme is a data file (`data/themes.json`: a name and a token map), so mods can add themes. Themes that fail the contrast check are not listed. The NDM theme is shipped with the game, but the NDM logos, artwork and Pyra Drake stay reserved (see `TRADEMARKS.md`), and the fonts are loaded by the interface and not used for text in a way that needs a licence we lack.
   - **Fonts.** Display text uses Orbitron and body text uses Exo 2 (both SIL Open Font Licence, which is compatible with the GPL); HK Modular is not used in the game because it is licensed through Canva. Both fonts are bundled with the game and recorded in `CREDITS.md`, so the game does not load fonts from the internet at run time.
   - **Build order.** The token layer and the three themes arrive with the first real screens in M4, and the Settings control with the screen flow.
 
@@ -1512,7 +1518,7 @@ Branding and social media are planned work for after the first playable season (
 - **Owner and identity.** The game, its logo and its characters belong to Nexxus Drako Multimedia (NDM) and sit under the NDM identity: maroon and gold, flat colour, no gradients or drop shadows, Orbitron and Exo 2 for web type (see "Themes" and the `design-system` repository). The game's own logo and key art are separate from the NDM logos and follow the same rules.
 - **Voice.** Warm, direct and identity-forward, in Australian English, with display lines in uppercase and running text in sentence case, and no emoji used as decoration. Every public-facing page carries the Acknowledgement of Country and NDM's statements, with the Intersex-Inclusive Progress Pride flag as the only pride flag, exactly as the design system requires.
 - **Web home.** The playable web build is at `lc.nexxusdrako.au`, and the Google tag there is loaded only after the visitor accepts cookies.
-- **Mods and forks** may say they are made "for" or "compatible with" Last Combustion, but not use the logo or characters (see `TRADEMARKS.md`).
+- **Mods and forks** may say they are made "for" or "compatible with" Last Combustion, but not use the logo or Pyra Drake (see `TRADEMARKS.md`).
 
 **To do, in order**
 
@@ -1573,7 +1579,7 @@ Branding and social media are planned work for after the first playable season (
 - **Manufacturer lineups.** 31 manufacturers and 96 launch models (2 to 5 per manufacturer, no era cut-off); lineups refresh about every five years.
 - **Driver gear.** Helmets, suits, gloves, boots and trinkets boost driver attributes (capped at +10 each), with set bonuses; data-driven and moddable.
 - **Commentary team.** Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera.
-- **Series management.** Declan Marsh (technical) and Odette Brandt (interpersonal) run the day-to-day of the series from Healesville; Drake Motorsports is based in Brisbane.
+- **Series management.** Declan Marsh (technical) and Ingrid Halloran (interpersonal) run the day-to-day of the series from Healesville; Drake Motorsports is based in Brisbane.
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
 - **Flag artwork.** `lipis/flag-icons` (MIT), checked: complete except Ceuta & Melilla, which uses the Spanish flag.
@@ -1583,7 +1589,7 @@ Branding and social media are planned work for after the first playable season (
 - **Mod hosting policy.** Standard DMCA takedown. No responsibility is claimed for modifications by private players.
 - **Platform features.** Achievements and cloud saves are enabled through a platform interface that works without Steam.
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
-- **IP.** The name, logo, Pyra Drake and the fictional characters Declan Marsh and Odette Brandt belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
+- **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved; no other character is claimed (see `TRADEMARKS.md`).
 - **Calendar.** Six closed loops, run clockwise around the country from South Australia (Round 1) to Western Australia (2), Queensland (3), New South Wales (4) and Victoria (5–6), ending at Healesville, the series' home. No out-and-back courses. Tasmania, the Northern Territory and the ACT are not in the base calendar and are open to mods.
 - **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. All six lap lengths are measured.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
@@ -1598,6 +1604,4 @@ Branding and social media are planned work for after the first playable season (
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and the artwork of the Drake characters are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
-- [ ] Confirm that the two friends Jay and Luca agree to characters being based on them (first names only), and keep it recorded outside the repository.
-- [ ] Review the use of the rival character from *Let's Make a Soccer Team!* as an inspiration for José Antonio Carrera, so the likeness stays clear of the original's intellectual property.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).

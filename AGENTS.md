@@ -7,7 +7,7 @@ Guidance for AI coding agents (and a quick reference for people) working on **La
 - A single-player management game: TypeScript, React 19, Tailwind 4, Zustand, SQLite in the browser (SQL.js), built with Vite. Electron desktop builds come later.
 - The design is in `docs/GAME_DESIGN_DOCUMENT.md`. It is the source of truth for rules and numbers. Change it in the same pull request as any code that changes behaviour.
 - Work is staged in milestones M0 to M8 (see "Scope and build order" in the GDD). M0 (foundations), M1 (world generation) and M2 (prelims) are done; check `CHANGELOG.md` for the current state.
-- Licence: GPL-3.0-or-later. The name, logo and the Drake characters are reserved (see `TRADEMARKS.md`).
+- Licence: GPL-3.0-or-later. The name, logo and Pyra Drake are reserved; no other character is claimed (see `TRADEMARKS.md`).
 
 ## Setup and commands
 

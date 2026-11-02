@@ -1,0 +1,310 @@
+{
+  "themes": {
+    "night": {
+      "label": "Night",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}", "{noun} of the {dark}"],
+      "words": {
+        "adj": [
+          "Midnight",
+          "Phantom",
+          "Moonlit",
+          "Nocturnal",
+          "Shadow",
+          "Silent",
+          "Black",
+          "Twilight",
+          "Blackout",
+          "Umbral",
+          "Starless",
+          "Vesper"
+        ],
+        "noun": [
+          "Ghost",
+          "Comet",
+          "Fox",
+          "Raven",
+          "Owl",
+          "Wraith",
+          "Blade",
+          "Runner",
+          "Specter",
+          "Hunter",
+          "Rider"
+        ],
+        "dark": ["Night", "Dark", "Hour", "Witching Hour", "Dead of Night", "Blackout"]
+      }
+    },
+    "mountain": {
+      "label": "Mountain",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}", "{noun} of the {peak}"],
+      "words": {
+        "adj": [
+          "Mountain",
+          "Summit",
+          "Ridge",
+          "Alpine",
+          "Highland",
+          "Granite",
+          "Cloud",
+          "Crag",
+          "Peak",
+          "Snowline",
+          "Stone"
+        ],
+        "noun": [
+          "Hawk",
+          "Goat",
+          "Eagle",
+          "Lion",
+          "Climber",
+          "Demon",
+          "Master",
+          "King",
+          "Ghost",
+          "Sprinter"
+        ],
+        "peak": ["Pass", "Summit", "Range", "Ridge", "Gorge", "Escarpment", "Cloud Line"]
+      }
+    },
+    "coast": {
+      "label": "Coast",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}"],
+      "words": {
+        "adj": [
+          "Coastal",
+          "Salt",
+          "Surf",
+          "Tidal",
+          "Breakwater",
+          "Blue",
+          "Harbour",
+          "Clifftop",
+          "Seaside",
+          "Windswept",
+          "Sandy"
+        ],
+        "noun": [
+          "Gull",
+          "Marlin",
+          "Shark",
+          "Wave",
+          "Rider",
+          "Cruiser",
+          "Tide",
+          "Comet",
+          "Dolphin",
+          "Drifter",
+          "Wind"
+        ]
+      }
+    },
+    "forest": {
+      "label": "Forest",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}"],
+      "words": {
+        "adj": [
+          "Forest",
+          "Green",
+          "Mossy",
+          "Timber",
+          "Fern",
+          "Canopy",
+          "Wild",
+          "Deep",
+          "Wet",
+          "Misty",
+          "Hollow"
+        ],
+        "noun": [
+          "Fox",
+          "Wolf",
+          "Stag",
+          "Hunter",
+          "Ranger",
+          "Bat",
+          "Hawk",
+          "Phantom",
+          "Lynx",
+          "Dancer",
+          "Racer"
+        ]
+      }
+    },
+    "wet": {
+      "label": "Wet weather",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}"],
+      "words": {
+        "adj": [
+          "Rain",
+          "Storm",
+          "Thunder",
+          "Monsoon",
+          "Drizzle",
+          "Slick",
+          "Aquaplane",
+          "Deluge",
+          "Squall",
+          "Cloudburst",
+          "Soaked"
+        ],
+        "noun": [
+          "Master",
+          "King",
+          "Dancer",
+          "Rider",
+          "Fish",
+          "Ghost",
+          "Falcon",
+          "Hunter",
+          "Spirit",
+          "Weaver",
+          "Charmer"
+        ]
+      }
+    },
+    "aggressive": {
+      "label": "Aggressive",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}"],
+      "words": {
+        "adj": [
+          "Mad",
+          "Wild",
+          "Savage",
+          "Ruthless",
+          "Fearless",
+          "Reckless",
+          "Brutal",
+          "Feral",
+          "Furious",
+          "Merciless",
+          "Manic",
+          "Rabid"
+        ],
+        "noun": [
+          "Dog",
+          "Bull",
+          "Hammer",
+          "Wrecker",
+          "Demon",
+          "Brawler",
+          "Shark",
+          "Rhino",
+          "Viper",
+          "Cannon",
+          "Bruiser",
+          "Butcher"
+        ]
+      }
+    },
+    "smooth": {
+      "label": "Smooth",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}"],
+      "words": {
+        "adj": [
+          "Silken",
+          "Velvet",
+          "Glass",
+          "Liquid",
+          "Gentle",
+          "Quiet",
+          "Calm",
+          "Elegant",
+          "Fluent",
+          "Precise",
+          "Clinical",
+          "Surgical"
+        ],
+        "noun": [
+          "Professor",
+          "Surgeon",
+          "Scalpel",
+          "Artist",
+          "Maestro",
+          "Metronome",
+          "Clockwork",
+          "Swan",
+          "Ghost",
+          "Blade",
+          "Poet",
+          "Sage"
+        ]
+      }
+    },
+    "veteran": {
+      "label": "Veteran and legend",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}", "{noun} of {place}"],
+      "words": {
+        "adj": [
+          "Old",
+          "Grey",
+          "Iron",
+          "Eternal",
+          "Undying",
+          "Legendary",
+          "Ageless",
+          "Last",
+          "Veteran",
+          "Timeless",
+          "Immortal"
+        ],
+        "noun": [
+          "Guard",
+          "Master",
+          "Legend",
+          "Warhorse",
+          "Fox",
+          "Lion",
+          "Fossil",
+          "Titan",
+          "Hand",
+          "Patriarch",
+          "Sensei"
+        ],
+        "place": [
+          "the",
+          "Road",
+          "the Pass",
+          "the Mountain",
+          "Healesville",
+          "the Gorge",
+          "the Coast",
+          "the West"
+        ]
+      }
+    },
+    "rookie": {
+      "label": "Rookie and prodigy",
+      "patterns": ["{adj} {noun}", "The {adj} {noun}"],
+      "words": {
+        "adj": [
+          "Young",
+          "Rising",
+          "Baby",
+          "Prodigy",
+          "Fresh",
+          "Little",
+          "Bright",
+          "Brash",
+          "Hungry",
+          "Next",
+          "Green",
+          "Wild-card"
+        ],
+        "noun": [
+          "Gun",
+          "Lion",
+          "Cub",
+          "Talent",
+          "Comet",
+          "Spark",
+          "Star",
+          "Pup",
+          "Challenger",
+          "Upstart",
+          "Kid",
+          "Hope"
+        ]
+      }
+    }
+  }
+}

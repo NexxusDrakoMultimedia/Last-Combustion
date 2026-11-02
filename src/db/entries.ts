@@ -72,7 +72,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
     `SELECT e.id AS entry_id, e.car_id, e.garage_id, e.race_number, e.driver_id,
             d.name, d.gender, d.birth_date, d.nationality, d.flag, d.hometown_place_id, d.residence_place_id,
             d.pace, d.consistency, d.racecraft, d.tyre_management, d.composure, d.wet_skill, d.potential,
-            d.home_road_type, d.fans, d.fame, d.reputation, d.gold_border_year,
+            d.home_road_type, d.fans, d.fame, d.reputation, d.gold_border_year, d.nickname,
             c.kerb_kg_current, c.tyre_width_mm, c.wear, c.wear_offset, c.road_km, c.race_km,
             m.base_ps, m.layout, m.tier
        FROM entry e
@@ -105,6 +105,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
       fame: r.fame as number,
       reputation: r.reputation as number,
       goldBorderYear: r.gold_border_year as number | null,
+      nickname: (r.nickname as string | null) ?? null,
     };
     return {
       entryId: r.entry_id as number,

@@ -2,7 +2,8 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import partsJson from '../../data/parts.json';
 import { upkeepFactor } from './economy';
-import type { Tier } from './worldgen/types';
+import { equalizerMm } from './equalizer';
+import type { Layout, Tier } from './worldgen/types';
 import { upgradeBalance } from './worldgen/data';
 
 export type PartCategory =
@@ -55,9 +56,9 @@ export function part(id: string): PartData {
   return found;
 }
 
-/** The Equalizer: the widest legal tyre for a kerb weight (see the GDD, "Technical regulations"). */
-export function maxTyreWidthMm(kerbKg: number): number {
-  return Math.round(kerbKg / 5 + 40);
+/** The Equalizer: the widest legal tyre for a kerb weight and layout (see the GDD, "Technical regulations"). */
+export function maxTyreWidthMm(kerbKg: number, layout?: Layout): number {
+  return equalizerMm(kerbKg, layout);
 }
 
 /** What a part costs for a car of a tier: supercars cost more to keep up. */
@@ -74,6 +75,8 @@ export interface BaseCar {
   ps: number;
   kerbKg: number;
   tyreMm: number;
+  /** The drivetrain layout, which sets the Equalizer handicap. */
+  layout?: Layout;
 }
 
 /** The power and rating changes of a set of fitted parts. */
@@ -109,7 +112,10 @@ export function fitParts(base: BaseCar, fitted: readonly PartData[]): FittedCar 
   return {
     ps: Math.round(base.ps * (1 + effects.psPct)),
     kerbKg,
-    tyreWidthMm: Math.max(upgradeBalance.minTyreMm, Math.min(wanted, maxTyreWidthMm(kerbKg))),
+    tyreWidthMm: Math.max(
+      upgradeBalance.minTyreMm,
+      Math.min(wanted, maxTyreWidthMm(kerbKg, base.layout)),
+    ),
     bonus: effects.bonus,
   };
 }
@@ -125,9 +131,10 @@ export function scrutineer(
   kerbKg: number,
   tyreWidthMm: number,
   fitted: readonly PartData[],
+  layout?: Layout,
 ): ScrutineeringResult {
   const failures: ScrutineeringResult['failures'] = [];
-  if (tyreWidthMm > maxTyreWidthMm(kerbKg)) failures.push('tyres');
+  if (tyreWidthMm > maxTyreWidthMm(kerbKg, layout)) failures.push('tyres');
   if (legalityScore(fitted) < 0) failures.push('legality');
   return { legal: failures.length === 0, failures };
 }

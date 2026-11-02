@@ -335,7 +335,11 @@
       "aero",
       "wheels"
     ],
-    "minTyreMm": 170
+    "minTyreMm": 170,
+    "handicapMm": {
+      "AWD": 10,
+      "MR": 10
+    }
   },
   "negotiation": {
     "counterMargins": [0.15, 0.07, 0.02],
