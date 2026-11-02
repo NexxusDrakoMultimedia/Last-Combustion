@@ -75,6 +75,7 @@ describe('migrate', () => {
       'identity',
       'easter_egg',
       'owner',
+      'starter',
     ]);
   });
 

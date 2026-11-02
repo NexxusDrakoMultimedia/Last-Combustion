@@ -2,13 +2,25 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { formatDate, formatLapTime, formatMoney, t } from '../i18n';
 import { useCareerStore } from '../state/career.store';
+import { StarterChoice } from './StarterChoice';
 import { button, panel } from './styles';
 
 /** The season hub: the garage, the calendar, the running buttons, results and the table. */
 export function Hub() {
   const s = useCareerStore();
-  const { hub, status, nextRound, nextFinal, prelims, final, seasonEnd, rollover, notice } = s;
-  const busy = status === 'busy';
+  const {
+    hub,
+    starter,
+    status,
+    nextRound,
+    nextFinal,
+    prelims,
+    final,
+    seasonEnd,
+    rollover,
+    notice,
+  } = s;
+  const busy = status === 'busy' || starter !== undefined;
   if (!hub) return null;
   const allDone = hub.rounds.every((r) => r.status === 'complete');
   const ended = hub.seasonStatus === 'complete';
@@ -39,6 +51,8 @@ export function Hub() {
           </>
         )}
       </section>
+
+      <StarterChoice />
 
       <section aria-labelledby="season-heading" className={panel}>
         <h2 id="season-heading" className="text-xl font-semibold">

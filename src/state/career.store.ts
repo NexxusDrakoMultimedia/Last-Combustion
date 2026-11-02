@@ -11,6 +11,12 @@ import { nextRoundNumber, playPrelims, type PrelimSummary } from '../db/prelims'
 import { hubView, type HubView } from '../db/hub';
 import { foundPlayerGarage, type OwnerSetup } from '../db/player';
 import { endSeason, type SeasonEnd } from '../db/season';
+import {
+  chooseStarter,
+  createStarterOffers,
+  starterOffers,
+  type StarterOffers,
+} from '../db/starter';
 import { startNextSeason, type Rollover } from '../db/rollover';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
@@ -40,12 +46,14 @@ interface CareerState {
   final: FinalSummary | undefined;
   settlement: RoundSettlement | undefined;
   hub: HubView | undefined;
+  starter: StarterOffers | undefined;
   seasonEnd: SeasonEnd | undefined;
   rollover: Rollover | undefined;
   slotsInUse: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
   startCareer(setup: OwnerSetup): Promise<void>;
+  chooseStarter(carId: number, driverId: number): Promise<void>;
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
   runNextPrelims(): Promise<void>;
@@ -74,6 +82,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       nextRound: nextRoundNumber(db),
       nextFinal: nextFinalRound(db),
       hub: hubView(db),
+      starter: starterOffers(db),
     });
 
   const run = async (action: () => Promise<Notice | undefined>) => {
@@ -99,6 +108,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     final: undefined,
     settlement: undefined,
     hub: undefined,
+    starter: undefined,
     seasonEnd: undefined,
     rollover: undefined,
     slotsInUse: 0,
@@ -117,6 +127,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         });
         persistWorld(db, generateWorld(masterSeed));
         foundPlayerGarage(db, setup);
+        createStarterOffers(db);
         openDb?.close();
         openDb = db;
         set({
@@ -127,6 +138,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           rollover: undefined,
         });
         refresh(db);
+        return undefined;
+      }),
+
+    chooseStarter: (carId, driverId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        chooseStarter(openDb, carId, driverId);
+        refresh(openDb);
         return undefined;
       }),
 

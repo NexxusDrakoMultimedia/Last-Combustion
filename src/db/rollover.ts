@@ -8,9 +8,9 @@ import { retires } from '../sim/rollover';
 import { ageOn } from '../sim/junior';
 import { buildCalendar, makeRookie, RESERVED_NUMBER } from '../sim/worldgen';
 import { balance as workBalance } from '../sim/worldgen/data';
-import { ROAD_TYPES } from '../sim/worldgen/types';
 import { seasonBalance } from '../sim/worldgen/data';
 import { readCareer } from './career';
+import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
 
@@ -60,12 +60,7 @@ export function startNextSeason(db: Database): Rollover {
     // Retirements: a retiring driver's seat goes to a rookie, who is signed on the same terms but a smaller salary.
     const replaced = new Map<number, number>();
     let nextDriverId = Number(db.exec('SELECT MAX(id) FROM driver')[0]!.values[0]![0]) + 1;
-    const placeIds = new Map(
-      all(db, 'SELECT id, stable_id FROM place').map((p) => [
-        p.stable_id as string,
-        p.id as number,
-      ]),
-    );
+    const placeIds = placeIdMap(db);
     for (const e of entries) {
       const age = ageOn(e.birth_date as string, `${year}-01-01`);
       if (e.retired_year !== null || e.is_player === 1 || !retires(retireRng, age)) continue;
@@ -76,37 +71,16 @@ export function startNextSeason(db: Database): Rollover {
         ageMax: seasonBalance.rookieAgeMax,
         paceMean: seasonBalance.rookiePaceMean,
       });
-      db.run(
-        `INSERT INTO driver (id, name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id,
-                             pace, consistency, racecraft, tyre_management, composure, wet_skill, potential,
-                             home_road_type, fans, fame, reputation, gold_border_year, nickname, identity)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, NULL, NULL, ?)`,
-        [
-          rookie.id,
-          rookie.name,
-          rookie.gender,
-          rookie.birthDate,
-          rookie.nationality,
-          rookie.flag,
-          placeIds.get(rookie.hometownPlaceId)!,
-          placeIds.get(rookie.residencePlaceId)!,
-          rookie.pace,
-          rookie.consistency,
-          rookie.racecraft,
-          rookie.tyreManagement,
-          rookie.composure,
-          rookie.wetSkill,
-          rookie.potential,
-          rookie.homeRoadType,
-          identityRng.chance(workBalance.driver.nonBinaryShare) ? 'non_binary' : rookie.identity,
-        ],
+      insertDriver(
+        db,
+        {
+          ...rookie,
+          identity: identityRng.chance(workBalance.driver.nonBinaryShare)
+            ? 'non_binary'
+            : rookie.identity,
+        },
+        placeIds,
       );
-      for (const type of ROAD_TYPES)
-        db.run('INSERT INTO driver_road_affinity (driver_id, road_type, rating) VALUES (?, ?, ?)', [
-          rookie.id,
-          type,
-          rookie.affinities[type],
-        ]);
       const old = all(
         db,
         'SELECT garage_id, role, salary, release_fee FROM contract WHERE driver_id = ? ORDER BY end_year DESC LIMIT 1',
