@@ -38,5 +38,6 @@
   "pronoun.feminine.possessive": "her",
   "pronoun.non_binary.subject": "they",
   "pronoun.non_binary.object": "them",
-  "pronoun.non_binary.possessive": "their"
+  "pronoun.non_binary.possessive": "their",
+  "easter.dragon.hint": "The dragon blood flows through this one."
 }

@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
-import { applyWorldChanges, currentFlagName } from '../../src/db/worldchanges';
+import { applyVyktory, applyWorldChanges, currentFlagName } from '../../src/db/worldchanges';
 import { persistWorld } from '../../src/db/world';
 import { planWorldChanges, worldChangeData } from '../../src/sim/worldchanges';
 import { generateWorld } from '../../src/sim/worldgen';
@@ -74,6 +74,25 @@ describe('applying world changes', () => {
     expect(currentFlagName(career('names'), 'AU')).toEqual({
       short: 'Australia',
       long: 'Commonwealth of Australia',
+    });
+  });
+});
+
+describe('the hidden drivers and Vyktory', () => {
+  it('seats twelve hidden drivers with maximum potential, and moves them to the Vyktory flag with the rename', () => {
+    const db = career('hidden');
+    expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE easter_egg = 1')).toBe(12);
+    expect(scalar(db, 'SELECT MIN(potential) FROM driver WHERE easter_egg = 1')).toBe(99);
+    expect(
+      scalar(db, "SELECT COUNT(*) FROM driver WHERE easter_egg = 1 AND flag <> 'AU'"),
+    ).toBeGreaterThan(5);
+    expect(scalar(db, 'SELECT COUNT(DISTINCT identity) FROM driver WHERE easter_egg = 1')).toBe(3);
+    const change = applyVyktory(db, 2032);
+    expect(change.drivers).toBe(12);
+    expect(scalar(db, "SELECT COUNT(*) FROM driver WHERE easter_egg = 1 AND flag = 'AU'")).toBe(12);
+    expect(currentFlagName(db, 'AU')).toEqual({
+      short: 'Vyktory',
+      long: 'Commonwealth of Vyktory',
     });
   });
 });

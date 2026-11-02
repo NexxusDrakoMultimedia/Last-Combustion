@@ -81,7 +81,32 @@ export function applyWorldChanges(db: Database, year: number): AppliedChange[] {
     ]);
     applied.push({ id: event.id, year, ...moved });
   }
+  const vyktory = worldChangeData.vyktory;
+  const when = plan.get(vyktory.id);
+  if (when !== null && when !== undefined && when <= year && !done.has(vyktory.id)) {
+    applied.push(applyVyktory(db, year));
+  }
   return applied;
+}
+
+/**
+ * The rare rename: Australia becomes the Commonwealth of Vyktory. The code stays `AU`, so the hidden
+ * characters, who race under their own nations until now, take the Vyktory flag, which is `AU`.
+ */
+export function applyVyktory(db: Database, year: number): AppliedChange {
+  const v = worldChangeData.vyktory;
+  db.run(
+    'INSERT OR REPLACE INTO flag_name (flag, from_year, short_name, long_name) VALUES (?, ?, ?, ?)',
+    [v.flag, year, v.short, v.long],
+  );
+  db.run('UPDATE driver SET flag = ? WHERE easter_egg = 1 AND retired_year IS NULL', [v.flag]);
+  const drivers = db.getRowsModified();
+  db.run('INSERT INTO world_event (event_id, year, payload) VALUES (?, ?, ?)', [
+    v.id,
+    year,
+    JSON.stringify({ flag: v.flag, drivers }),
+  ]);
+  return { id: v.id, year, drivers, garages: 0 };
 }
 
 /** The short and long name a flag goes by now (it changes when the world does). */

@@ -1366,5 +1366,45 @@
     "country": "ES",
     "lat": 28.12,
     "lon": -15.44
+  },
+  {
+    "id": "sg-singapore",
+    "name": "Singapore",
+    "region": "Singapore",
+    "country": "SG",
+    "lat": 1.35,
+    "lon": 103.82
+  },
+  {
+    "id": "ua-kyiv",
+    "name": "Kyiv",
+    "region": "Kyiv",
+    "country": "UA",
+    "lat": 50.45,
+    "lon": 30.52
+  },
+  {
+    "id": "bs-nassau",
+    "name": "Nassau",
+    "region": "New Providence",
+    "country": "BS",
+    "lat": 25.05,
+    "lon": -77.35
+  },
+  {
+    "id": "tv-funafuti",
+    "name": "Funafuti",
+    "region": "Funafuti",
+    "country": "TV",
+    "lat": -8.52,
+    "lon": 179.2
+  },
+  {
+    "id": "li-vaduz",
+    "name": "Vaduz",
+    "region": "Vaduz",
+    "country": "LI",
+    "lat": 47.14,
+    "lon": 9.52
   }
 ]

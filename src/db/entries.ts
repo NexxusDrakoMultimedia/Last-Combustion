@@ -70,7 +70,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
   const rows = all(
     db,
     `SELECT e.id AS entry_id, e.car_id, e.garage_id, e.race_number, e.driver_id,
-            d.name, d.gender, d.identity, d.birth_date, d.nationality, d.flag, d.hometown_place_id, d.residence_place_id,
+            d.name, d.gender, d.identity, d.easter_egg, d.birth_date, d.nationality, d.flag, d.hometown_place_id, d.residence_place_id,
             d.pace, d.consistency, d.racecraft, d.tyre_management, d.composure, d.wet_skill, d.potential,
             d.home_road_type, d.fans, d.fame, d.reputation, d.gold_border_year, d.nickname,
             c.kerb_kg_current, c.tyre_width_mm, c.wear, c.wear_offset, c.road_km, c.race_km,
@@ -88,6 +88,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
       name: r.name as string,
       gender: r.gender as 'male' | 'female',
       identity: r.identity as Identity,
+      easterEgg: r.easter_egg === 1,
       birthDate: r.birth_date as string,
       nationality: r.nationality as string,
       flag: r.flag as string,

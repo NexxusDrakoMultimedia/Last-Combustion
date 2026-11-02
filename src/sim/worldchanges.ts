@@ -25,6 +25,15 @@ interface WorldChangeData {
   gates: { id: string; stream: string; chance: number }[];
   events: WorldChange[];
   unionNames: { flag: string; byDone: Record<string, string> };
+  vyktory: {
+    id: string;
+    stream: string;
+    oneIn: number;
+    year: number;
+    flag: string;
+    short: string;
+    long: string;
+  };
 }
 
 export const worldChangeData = flagsJson.worldChanges as WorldChangeData;
@@ -51,6 +60,8 @@ export function planWorldChanges(masterSeed: string): Map<string, number | null>
     }
     plan.set(event.id, Math.max(year, ...(before as number[])));
   }
+  const v = worldChangeData.vyktory;
+  plan.set(v.id, rng.stream(v.stream).chance(1 / v.oneIn) ? v.year : null);
   return plan;
 }
 

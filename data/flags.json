@@ -105,6 +105,26 @@
     "ic": {
       "short": "Canary Islands",
       "long": "Republic of the Canary Islands"
+    },
+    "SG": {
+      "short": "Singapore",
+      "long": "Republic of Singapore"
+    },
+    "UA": {
+      "short": "Ukraine",
+      "long": "Ukraine"
+    },
+    "BS": {
+      "short": "Bahamas",
+      "long": "Commonwealth of the Bahamas"
+    },
+    "TV": {
+      "short": "Tuvalu",
+      "long": "Tuvalu"
+    },
+    "LI": {
+      "short": "Liechtenstein",
+      "long": "Principality of Liechtenstein"
     }
   },
   "renames": [
@@ -207,6 +227,15 @@
         "scotland": "United Kingdom of England, Wales and Northern Ireland",
         "northern-ireland+scotland": "United Kingdom of England and Wales"
       }
+    },
+    "vyktory": {
+      "id": "vyktory",
+      "stream": "world:easter:vyktory",
+      "oneIn": 31031996,
+      "year": 2032,
+      "flag": "AU",
+      "short": "Vyktory",
+      "long": "Commonwealth of Vyktory"
     }
   }
 }

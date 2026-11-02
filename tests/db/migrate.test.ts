@@ -73,6 +73,7 @@ describe('migrate', () => {
       'trophies',
       'world_events',
       'identity',
+      'easter_egg',
     ]);
   });
 
