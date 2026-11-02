@@ -306,3 +306,20 @@ describe('team orders', () => {
     expect(free).toBeGreaterThan(0);
   });
 });
+
+describe('worn parts', () => {
+  it('make mechanical trouble more likely than fresh parts', () => {
+    const s = setup('parts-wear');
+    const trouble = (partWear: number) => {
+      let n = 0;
+      for (let i = 0; i < 40; i++) {
+        const entries = s.finalists.map((e) => ({ ...e, car: { ...e.car, partWear } }));
+        const race = new FinalRace({ ...input(s, entries), seed: `pw-${i}` });
+        race.runToEnd();
+        n += race.events.filter((e) => e.type === 'mechanical_warning').length;
+      }
+      return n;
+    };
+    expect(trouble(100)).toBeGreaterThan(trouble(0));
+  });
+});

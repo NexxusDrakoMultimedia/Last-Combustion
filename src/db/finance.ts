@@ -6,6 +6,7 @@ import { feePerRound } from '../sim/sponsors';
 import { economyBalance } from '../sim/worldgen/data';
 import type { Tier } from '../sim/worldgen/types';
 import { all } from './entries';
+import { crashRepairCost } from './repairs';
 
 export interface RoundSettlement {
   roundNumber: number;
@@ -45,7 +46,7 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
 
   const rows = all(
     db,
-    `SELECT e.garage_id, e.id AS entry_id, r.prelim_pos, m.tier, p.latitude AS lat, p.longitude AS lon
+    `SELECT e.garage_id, e.id AS entry_id, r.prelim_pos, r.dnf_reason, m.tier, m.price_new, p.latitude AS lat, p.longitude AS lon
        FROM entry e
        JOIN result r ON r.entry_id = e.id AND r.round_id = ?
        JOIN car c ON c.id = e.car_id
@@ -84,6 +85,14 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         ['servicing', costs.servicing],
         ['travel', costs.travel],
       ];
+      // A crash in the round (a prelim run or the final) costs a repair bill.
+      const repairs = entries
+        .filter((e) => e.dnf_reason === 'crash')
+        .reduce((sum, e) => sum + crashRepairCost(e.price_new as number), 0);
+      if (repairs > 0) {
+        lines.push(['repairs', repairs]);
+        costs.total += repairs;
+      }
       for (const [category, amount] of lines) {
         db.run(
           'INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, ?, ?, ?, ?, ?)',

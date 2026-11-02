@@ -8,6 +8,7 @@ import { courses, finalBalance, pointsTables, prizeTables } from '../sim/worldge
 import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
 import { all, loadEntries } from './entries';
+import { wearParts } from './repairs';
 
 export interface FinalSummary {
   roundNumber: number;
@@ -241,9 +242,10 @@ export function playFinal(
       const raceKmTotal = Math.round(entry.raceKm + c.km);
       db.run('UPDATE car SET race_km = ?, wear = ? WHERE id = ?', [
         raceKmTotal,
-        wearFromKm(entry.roadKm, raceKmTotal, entry.tier),
+        Math.max(0, wearFromKm(entry.roadKm, raceKmTotal, entry.tier) - entry.wearOffset),
         entry.carId,
       ]);
+      wearParts(db, entry.carId, c.km, 'race', entry.tier);
     }
     db.run("UPDATE round SET status = 'complete' WHERE id = ?", [roundId]);
     db.exec('COMMIT');

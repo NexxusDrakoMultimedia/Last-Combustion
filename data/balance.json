@@ -373,5 +373,11 @@
     "maxYears": 3,
     "supplierStrength": 50,
     "manufacturerStrength": 60
+  },
+  "repairs": {
+    "partWearFactor": 2,
+    "servicingShare": 0.25,
+    "restorationShare": 0.12,
+    "crashShare": 0.03
   }
 }
