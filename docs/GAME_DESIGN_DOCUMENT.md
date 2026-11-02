@@ -563,6 +563,8 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 8. **Information.** Reservations are hidden. The player sees a range that narrows with relationship, scouting and past deals.
 9. **Fixed limits.** Negotiation cannot override the rules: the reserved #313, the Equalizer, door-space limits, the same-manufacturer car-switching rule and legality ratings.
 
+**Built so far (M4, negotiation).** The core rules and driver contracts are built. Every party has a hidden walk-away value `F × m` (or `F ÷ m` for a payer), with leverage capped at ±0.2, a relationship effect of ±10% and a rival effect of up to +20%. A party accepts at or past that value; otherwise it counters (asking 15%, then 7%, then 2% better) and loses a point of patience, or two or three for a lowball under 80% or 60% of its value, and it walks away when its patience runs out. A driver that has walked away will not negotiate with that garage again that year. A driver's contract is valued at the salary plus 5% for each extra year (they like security), so a longer deal can be cheaper per season, and the garage pays a release fee of half the salary per year left to the driver's old garage. Relationships are stored per pair (+5 for a kept deal, +10 for a renewal). In this part a driver can only be signed when they have no entry this season with another garage (the off-season move). Sponsors, suppliers, manufacturers, bonuses and rival interest come next.
+
 **Starting values (v1, tunable)**
 
 - **Fair value.** Each term has a fair value `F` in AUD per season.

@@ -9,6 +9,7 @@ import { migration0005 } from './0005_economy';
 import { migration0006 } from './0006_market';
 import { migration0007 } from './0007_parts';
 import { migration0008 } from './0008_auctions';
+import { migration0009 } from './0009_negotiation';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -20,4 +21,5 @@ export const migrations: readonly Migration[] = [
   migration0006,
   migration0007,
   migration0008,
+  migration0009,
 ];

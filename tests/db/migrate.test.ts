@@ -31,6 +31,7 @@ describe('migrate', () => {
       'market',
       'parts',
       'auctions',
+      'negotiation',
     ]);
   });
 
