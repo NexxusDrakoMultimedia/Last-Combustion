@@ -71,3 +71,5 @@ The simulation worker (`src/workers`), the rest of the economy and every gamepla
 `src/db/rollover.ts` starts the next season (retirements, rookies, contracts, numbers, calendar, entries) using `src/sim/rollover.ts`.
 
 `src/sim/worldchanges.ts` plans the UK and Spanish flag changes for a career and `src/db/worldchanges.ts` applies them when a season starts (tables from migration 0018).
+
+`src/db/player.ts` founds the player's garage and `src/db/hub.ts` builds the read-model for the hub. The screens are `src/ui/NewCareer.tsx` and `src/ui/Hub.tsx`, driven by `src/state/career.store.ts`.

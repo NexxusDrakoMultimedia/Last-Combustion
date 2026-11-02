@@ -314,6 +314,8 @@ The Equalizer is the series' only real technical rule: a car's maximum tyre widt
 
 The Vyktory rename itself is now built too: `planWorldChanges` rolls it once per career (1 in 31,031,996, for 2032) and `applyVyktory` renames Australia and moves the hidden drivers.
 
+**First screens (built, plain).** The title screen is the Garage owner setup: the owner's name, how they are described, date of birth (18 to 50), and the garage's name, flag and two colours. `foundPlayerGarage` makes the smallest starting garage the player's (the field stays at 96 garages and 313 entries), with $250,000, prestige 1, 5 fans and its one entry kept as the starting driver and car; picking the starter car from three and the driver from five is still to come. The hub shows the garage, the calendar, buttons to run the next prelims and final, end the season and start the next, and the drivers' table, plus save, load and export. The old debug panel is gone.
+
 **Layout handicap (built).** As in the real series, four-wheel-drive and mid-engine cars are handicapped: their maximum tyre width is 10 mm less than the kerb-weight figure (`data/balance.json`, `upgrades.handicapMm`, so mods can tune it). A car model's listed limit is the base figure; each car's own limit and tyre width apply the handicap, and scrutineering checks against it.
 
 **Awards at the flag (built).** Everything a race earns is given out when it ends: prize money, the gold border for a driver's first final, a win decal on the winning driver and car, and any new titles. Pole and overtaking bonuses add up through the year and are paid at the end of the season with the champion's prize (more bonus kinds can be added to `season_bonus`), and the shield decals for the champions are added then.
