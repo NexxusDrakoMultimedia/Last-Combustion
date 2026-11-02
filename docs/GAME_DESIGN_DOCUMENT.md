@@ -236,17 +236,18 @@ Every series keeps five championship tables, all calculated from the same round 
 
 ## Numbers, borders and liveries
 
-Numbers 1–40 follow last season's rankings and 41 and up are open to anyone, the champion's number is boxed in black, and a gold border marks anyone who has ever reached a final.
+Numbers 1–40 follow last season's rankings (and the top 40 must take them) and 41 and up are open to anyone, the champion's number is boxed in black, and a gold border marks anyone who has ever reached a final.
 
 **Race numbers & Special Numbers**
 
-- **Numbers 1–40: last season's rankings.** From 2032 onwards the driver who finished 1st takes #1, 2nd takes #2, and so on down to #40. A ranked driver may turn down their ranking number and apply for one from 41 up instead.
+- **Numbers 1–40: last season's rankings, and mandatory.** From 2032 onwards the driver who finished 1st must take #1, 2nd must take #2, and so on down to #40. A ranked driver cannot turn their number down. If a ranked driver is not racing in the Super Series this season (retired, or moved to the Junior Series), their number is free, and it goes to the best-ranked racing driver after 40 who has no number yet. Everyone else applies for a number from 41 up. The rule is built as `rankingNumbers` in `src/sim/numbers.ts`; the season rollover that applies it comes in M5.
 - **Season 1 (2031).** The series has no history, so there is no ranking: every number except #313 is open, and 1–40 are handed out like any other number. There is no black box and nobody has a gold border until the first final is raced.
 - **Numbers 41 and up: open to anyone.** Any driver may apply for any free number from 41 upward. Numbers are re-chosen each season, and last season's holder gets first refusal.
 - **Number #313 (Reserved):** Permanently retired and reserved for founder Pyra Drake.
 - **Clashes** (decided by the series office under Odette Brandt): after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
 - **Black box:** the reigning champion's #1 carries a black box.
-- **Fame:** a number builds recognition over time; changing it resets some of that.
+- **Fame:** a number builds recognition over time; changing it resets some of that. Taking a ranked number (1 to 40) does not reset it: the driver keeps the number fame they have built, and the fame of a ranked number they hold carries on in the same way.
+- **Preferred number.** Each driver has a preferred number, the one they chose for themselves (stored as `driver.preferred_number`, set when they are created). It stays part of their legacy, shown on their profile and in the records, even while a ranked number has to be worn, and a driver who is no longer ranked can go back to it (with first refusal, see above).
 
 **Gold and Silver borders**
 
@@ -754,14 +755,14 @@ Positions 1–20 score from the final and 21–31 from the prelims. Total availa
 In 2036 the series adds a junior championship: **The Last Combustion of the Petrol Engine World Motorsports Junior Series Championship**, known as *Last Combustion Junior*.
 
 - **Purpose.** A championship for young drivers who have never reached a main-series final.
-- **Eligibility.** Drivers must be 25 or younger and must never have qualified for a main-series final.
+- **Eligibility.** Drivers must be 25 or younger on 1 March of the season (the day the season starts, so a driver who has turned 26 cannot compete), and must never have qualified for a main-series final. A driver who raced in the Super Series before 2036 can move down to Junior only if they have never scored a point there (any of the top 31 in a prelim or the final). A driver who has moved up cannot come back (see "Mandatory Promotion"). The checks are built as `juniorEligibility` in `src/sim/junior.ts`.
 - **Power cap.** Cars may produce no more than **313 kW** (about 426 PS, at 0.7355 kW per PS). A car that makes more as standard can be fitted with an intake restrictor that limits it to 313 kW. A car found over 313 kW is disqualified from the prelims. The Equalizer tyre-width rule still applies. Car data is stored in PS, so the cap is checked as `PS × 0.7355 ≤ 313`.
 - **Format.** Practice is condensed to 3 days and prelims from 7 days to 5, and the top 15 race the final the day after the prelims.
 - **Schedule.** Each Junior round runs at the same venue straight after the Super Series round: Junior practice day 1 is the day after the Super final race. The same dry-and-clear rule applies to Junior prelims.
 - **Points and perks.** Junior uses the original 2031 points table: the top 31 score points, with the top 15 scoring from the final. Any points scorer gets free tyres, a reserved place in the assistants' booth and a silver-outlined number.
 - **Prizes.** Junior uses the original 2031 prize money: finalists earn $1,000,000 down to $20,000 by position. The Junior champion, decided on points, wins $10,000,000. Pole and overtake bonuses of $10,000 each build up through the year and are paid at season end.
 - **Numbers.** Junior cars carry a "J" beside their door number, to set them apart from main-series cars.
-- **Mandatory Promotion:** Junior drivers who earn a silver border MUST complete their junior season, then MUST enter the Super Series the following season.
+- **Mandatory Promotion:** Junior drivers who earn a silver border MUST complete their junior season, then MUST enter the Super Series the following season. **There is no way back:** a driver who has moved up from Junior after earning a silver-bordered number in their final Junior season can never return to the Junior Series, even if they are still 25 or younger and even if they lose their Super Series seat. A driver over 25 cannot compete in Junior at all.
 - **Shared garages.** Junior and Super entries belong to the same garages. One garage record runs entries in both series, and Junior entries use the garage's own name, flag and livery with the Junior "J" marking.
   - **Costs and mechanics.** Each Junior entry pays its own entry fee, tyres and mechanic time, drawn from the same budget and workforce.
   - **Prestige.** Junior entries count toward a garage's prestige at half the weight of a Super Series entry.

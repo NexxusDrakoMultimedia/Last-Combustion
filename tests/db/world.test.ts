@@ -22,9 +22,20 @@ function freshWorld(): Database {
 }
 
 describe('persisting a world', () => {
-  it('writes every table and the migrated schema is at version 9', () => {
+  it('records each driver’s own number as their preferred number', () => {
     const db = freshWorld();
-    expect(getSchemaVersion(db)).toBe(9);
+    expect(
+      scalar(
+        db,
+        'SELECT COUNT(*) FROM driver d JOIN entry e ON e.driver_id = d.id WHERE d.preferred_number = e.race_number',
+      ),
+    ).toBe(313);
+    expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE preferred_number IS NULL')).toBe(0);
+  });
+
+  it('writes every table and the migrated schema is at version 10', () => {
+    const db = freshWorld();
+    expect(getSchemaVersion(db)).toBe(10);
     expect(readWorldSummary(db)).toEqual({
       garages: 96,
       drivers: 313,

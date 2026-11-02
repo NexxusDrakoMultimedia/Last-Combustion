@@ -166,7 +166,9 @@
   },
   "junior": {
     "powerCapKw": 313,
-    "kwPerPs": 0.7355
+    "kwPerPs": 0.7355,
+    "maxAge": 25,
+    "ageDate": "03-01"
   },
   "final": {
     "startGapSeconds": 1.5,
