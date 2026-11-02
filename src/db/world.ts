@@ -4,6 +4,7 @@ import type { Database } from 'sql.js';
 import { carModels, commentators, courses, manufacturers, places } from '../sim/worldgen/data';
 import { buildAllSectors } from '../sim/courses/sectors';
 import { gearItems, gearSuppliers } from '../sim/gear';
+import { partSuppliers, parts } from '../sim/upgrades';
 import { ROAD_TYPES, type World } from '../sim/worldgen/types';
 
 /** Writes a generated world into an empty, migrated database. */
@@ -235,6 +236,30 @@ export function persistWorld(db: Database, world: World): void {
     run(
       'INSERT INTO driver_gear (driver_id, item_id) VALUES (?, ?)',
       world.loadouts.map((l) => [l.driverId, id(itemId, l.itemId)]),
+    );
+    const partSupplierId = new Map(partSuppliers.map((s, i) => [s.id, i + 1]));
+    run(
+      'INSERT INTO part_supplier (id, stable_id, name, home_country) VALUES (?, ?, ?, ?)',
+      partSuppliers.map((s, i) => [i + 1, s.id, s.name, s.homeCountry]),
+    );
+    run(
+      'INSERT INTO part (id, stable_id, supplier_id, category, grade, name, price, ps_pct, delta_kg, delta_grip, delta_handling, delta_traction, tyre_mm, legality_cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      parts.map((p, i) => [
+        i + 1,
+        p.id,
+        id(partSupplierId, p.supplierId),
+        p.category,
+        p.grade,
+        p.name,
+        p.price,
+        p.psPct,
+        p.deltaKg,
+        p.deltaGrip,
+        p.deltaHandling,
+        p.deltaTraction,
+        p.tyreMm,
+        p.legalityCost,
+      ]),
     );
     db.exec('COMMIT');
   } catch (error) {

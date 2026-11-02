@@ -7,6 +7,7 @@ import { wearFromKm } from '../sim/wear';
 import { courses } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { all, loadEntries, type Row } from './entries';
+import { scrutineerCar } from './upgrades';
 
 /** The next round that has not been run yet, or null when the season is done. */
 export function nextRoundNumber(db: Database): number | null {
@@ -24,6 +25,8 @@ export interface PrelimSummary {
   gapDays: number;
   finishers: number;
   dnfs: number;
+  /** Entries that failed scrutineering and did not run. */
+  disqualified: number;
   qualifiers: number;
   top: { position: number; raceNumber: number; driver: string; timeMs: number }[];
 }
@@ -77,7 +80,10 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
   ))
     points.set(p.entry_id as number, p.total as number);
 
-  const loaded = loadEntries(db, season.id as number);
+  const allLoaded = loadEntries(db, season.id as number);
+  // Scrutineering: a car over the Equalizer or not road legal does not get to run.
+  const disqualified = allLoaded.filter((e) => !scrutineerCar(db, e.carId).legal);
+  const loaded = allLoaded.filter((e) => !disqualified.includes(e));
   const names = new Map(loaded.map((e) => [e.entryId, e.driver.name]));
   const entries: PrelimEntry[] = loaded.map((e) => ({
     entryId: e.entryId,
@@ -124,6 +130,9 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
         r.dnfReason,
       ]);
     }
+    for (const e of disqualified) {
+      insertResult.run([roundId, e.entryId, null, null, null, null, 0, 0, 'disqualified']);
+    }
     insertResult.free();
     const insertEvent = db.prepare(
       'INSERT INTO event_log (round_id, scope, occurred_on, km, type, entry_id, payload) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -164,6 +173,7 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
     gapDays: outcome.schedule.days.filter((d) => d.kind === 'gap').length,
     finishers: finishers.length,
     dnfs: outcome.results.length - finishers.length,
+    disqualified: disqualified.length,
     qualifiers: outcome.results.filter((r) => r.qualifies).length,
     top: finishers.slice(0, 5).map((r) => ({
       position: r.position as number,
