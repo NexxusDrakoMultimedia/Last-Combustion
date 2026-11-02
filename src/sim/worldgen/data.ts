@@ -25,6 +25,7 @@ export const economyBalance = balanceJson.economy;
 export const upgradeBalance = balanceJson.upgrades;
 export const negotiationBalance = balanceJson.negotiation;
 export const sponsorBalance = balanceJson.sponsors;
+export const dealBalance = balanceJson.deals;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Flags that no driver, car or garage may race under (see the GDD, "Flags"). */
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */

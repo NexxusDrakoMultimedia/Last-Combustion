@@ -363,5 +363,15 @@
     "feePerFame": 400,
     "maxYears": 3,
     "roundsPerSeason": 6
+  },
+  "deals": {
+    "supplierBase": 0.05,
+    "supplierPerPrestige": 0.001,
+    "manufacturerBase": 0.03,
+    "manufacturerPerPrestige": 0.0012,
+    "cap": 0.15,
+    "maxYears": 3,
+    "supplierStrength": 50,
+    "manufacturerStrength": 60
   }
 }

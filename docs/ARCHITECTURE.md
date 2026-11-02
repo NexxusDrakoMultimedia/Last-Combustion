@@ -56,4 +56,6 @@ Negotiation: `src/sim/negotiation.ts` has the pure rules (walk-away value, patie
 
 Sponsors: `src/sim/sponsors.ts` has the sponsor list (`data/sponsors.json`), eligibility by prestige and the fair title fee, and `src/db/sponsors.ts` has `approachableSponsors`, `openSponsorNegotiation`, `offerSponsorDeal` and `activeSponsorDeal`; `settleRound` pays each garage its sponsor's share of the season fee (migration 0011 adds `sponsor` and `sponsor_deal` and rebuilds `negotiation` and `offer` so negotiations can be about sponsors too).
 
+Deals: `src/sim/deals.ts` has the fair supplier and manufacturer discounts, and `src/db/deals.ts` has `openDealNegotiation`, `offerDeal` and `activeDiscount`, which `fitPart` and `buyNewCar` use to price parts and new cars (migration 0012 adds `supplier_deal` and `manufacturer_deal` and rebuilds the negotiation tables again).
+
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.

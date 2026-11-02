@@ -16,7 +16,7 @@ beforeAll(async () => {
   SQL = await loadSql();
 });
 
-describe('rebuilding the negotiation tables (schema version 11)', () => {
+describe('rebuilding the negotiation tables (schema versions 11 and 12)', () => {
   it('keeps existing negotiations and offers, and allows the new kind', () => {
     const db = openDatabase(SQL);
     migrate(db, migrations.slice(0, 10));
@@ -65,6 +65,7 @@ describe('migrate', () => {
       'negotiation',
       'preferred_number',
       'sponsors',
+      'deals',
     ]);
   });
 
