@@ -7,6 +7,7 @@ import { wearFromKm } from '../sim/wear';
 import { courses } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { all, loadEntries, type Row } from './entries';
+import { wearParts } from './repairs';
 import { scrutineerCar } from './upgrades';
 
 /** The next round that has not been run yet, or null when the season is done. */
@@ -154,9 +155,10 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
       const raceKm = Math.round(entry.raceKm + added);
       db.run('UPDATE car SET race_km = ?, wear = ? WHERE id = ?', [
         raceKm,
-        wearFromKm(entry.roadKm, raceKm, entry.tier),
+        Math.max(0, wearFromKm(entry.roadKm, raceKm, entry.tier) - entry.wearOffset),
         entry.carId,
       ]);
+      wearParts(db, entry.carId, added, 'race', entry.tier);
     }
     db.exec('COMMIT');
   } catch (error) {

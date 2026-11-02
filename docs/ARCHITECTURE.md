@@ -58,4 +58,6 @@ Sponsors: `src/sim/sponsors.ts` has the sponsor list (`data/sponsors.json`), eli
 
 Deals: `src/sim/deals.ts` has the fair supplier and manufacturer discounts, and `src/db/deals.ts` has `openDealNegotiation`, `offerDeal` and `activeDiscount`, which `fitPart` and `buyNewCar` use to price parts and new cars (migration 0012 adds `supplier_deal` and `manufacturer_deal` and rebuilds the negotiation tables again).
 
+Repairs: `src/db/repairs.ts` has `wearParts` (called when a round adds kilometres), `serviceParts`, `restoreChassis` and `crashRepairCost`; `loadEntries` passes the most worn part's wear to the simulation, `settleRound` charges crash repairs, and the chassis wear offset keeps a restoration from being undone (migration 0013 adds `car_part.wear` and `car.wear_offset`).
+
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Milestone M4, eighth part (repairs and servicing): part wear that raises the chance of mechanical trouble, servicing parts, restoring the chassis, and repair bills for crashes (schema version 13). This completes the economy milestone apart from screens.
 - Milestone M4, seventh part (supplier and manufacturer deals): negotiating a discount on a supplier's parts or a manufacturer's new cars (fair discount 5% or 3% plus a little per prestige point, up to 15%), applied automatically to parts and new-car prices (schema version 12).
 - Design: interface references (principles from F1 Glory and Lapwerks) and the token layers the screens will use.
 - Milestone M4, sixth part (sponsors): twelve fictional sponsors in four tiers, negotiating a title-sponsor deal (the sponsor pays no more than its walk-away fee, counters lower or walks away), and sponsors paying a sixth of the season fee each round (schema version 11).

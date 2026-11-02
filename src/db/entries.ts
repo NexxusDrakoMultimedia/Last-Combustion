@@ -32,6 +32,8 @@ export interface LoadedEntry {
   tier: Tier;
   roadKm: number;
   raceKm: number;
+  /** Chassis wear taken off by restorations. */
+  wearOffset: number;
 }
 
 /** Loads every main-series entry of a season with its driver (gear applied) and car. */
@@ -52,13 +54,18 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
     gear.set(g.driver_id as number, list);
   }
   const fitted = new Map<number, PartData[]>();
+  const partWear = new Map<number, number>();
   for (const f of all(
     db,
-    'SELECT cp.car_id, p.stable_id FROM car_part cp JOIN part p ON p.id = cp.part_id ORDER BY cp.id',
+    'SELECT cp.car_id, cp.wear, p.stable_id FROM car_part cp JOIN part p ON p.id = cp.part_id ORDER BY cp.id',
   )) {
     const list = fitted.get(f.car_id as number) ?? [];
     list.push(part(f.stable_id as string));
     fitted.set(f.car_id as number, list);
+    partWear.set(
+      f.car_id as number,
+      Math.max(partWear.get(f.car_id as number) ?? 0, f.wear as number),
+    );
   }
   const rows = all(
     db,
@@ -66,7 +73,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
             d.name, d.gender, d.birth_date, d.nationality, d.flag, d.hometown_place_id, d.residence_place_id,
             d.pace, d.consistency, d.racecraft, d.tyre_management, d.composure, d.wet_skill, d.potential,
             d.home_road_type, d.fans, d.fame, d.reputation, d.gold_border_year,
-            c.kerb_kg_current, c.tyre_width_mm, c.wear, c.road_km, c.race_km,
+            c.kerb_kg_current, c.tyre_width_mm, c.wear, c.wear_offset, c.road_km, c.race_km,
             m.base_ps, m.layout, m.tier
        FROM entry e
        JOIN driver d ON d.id = e.driver_id
@@ -111,6 +118,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
           return {
             ps: Math.round((r.base_ps as number) * (1 + effects.psPct)),
             bonus: effects.bonus,
+            partWear: partWear.get(r.car_id as number) ?? 0,
           };
         })(),
         kerbKg: r.kerb_kg_current as number,
@@ -121,6 +129,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
       tier: r.tier as Tier,
       roadKm: r.road_km as number,
       raceKm: r.race_km as number,
+      wearOffset: r.wear_offset as number,
     };
   });
 }

@@ -348,7 +348,11 @@ export class FinalRace {
       let failed = false;
       if (!crashed) {
         const pMech =
-          cfg.mechanical.pPerSector * (1 + (car.entry.car.wear / cfg.mechanical.wearScale) ** 2);
+          cfg.mechanical.pPerSector *
+          (1 +
+            (Math.max(car.entry.car.wear, car.entry.car.partWear ?? 0) /
+              cfg.mechanical.wearScale) **
+              2);
         if (car.warning) {
           // A warning from last sector: a conserving driver limps on, otherwise the car fails.
           car.warning = false;

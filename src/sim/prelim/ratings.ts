@@ -20,6 +20,8 @@ export interface CarSpec {
   layout: Layout;
   /** 0 is new, 100 is worn out. */
   wear: number;
+  /** The wear (0-100) of the most worn fitted part, which raises the chance of mechanical trouble. */
+  partWear?: number;
   /** Rating changes from fitted parts (see `fitParts`). */
   bonus?: { grip: number; handling: number; traction: number };
 }

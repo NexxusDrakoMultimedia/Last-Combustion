@@ -66,6 +66,7 @@ describe('migrate', () => {
       'preferred_number',
       'sponsors',
       'deals',
+      'repairs',
     ]);
   });
 
