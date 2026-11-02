@@ -13,6 +13,7 @@ import {
 } from '../sim/upgrades';
 import type { Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
+import { dealPrice } from './deals';
 import { all } from './entries';
 
 /** The parts fitted to a car, in the order they were fitted. */
@@ -82,7 +83,16 @@ export function fitPart(db: Database, garageId: number, carId: number, partId: s
   if (car.garage_id !== garageId) throw new Error('The garage does not own this car.');
   if (car.kind !== 'racing') throw new Error('Parts cannot be fitted to a car that is for sale.');
   const garage = all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!;
-  const price = partPrice(wanted, car.tier as Tier);
+  const supplier = all(db, 'SELECT supplier_id FROM part WHERE stable_id = ?', [wanted.id])[0];
+  const price = supplier
+    ? dealPrice(
+        db,
+        'supplier',
+        garageId,
+        supplier.supplier_id as number,
+        partPrice(wanted, car.tier as Tier),
+      )
+    : partPrice(wanted, car.tier as Tier);
   if ((garage.cash as number) < price) throw new Error('The garage cannot afford this part.');
   const row = all(db, 'SELECT id FROM part WHERE stable_id = ?', [wanted.id])[0];
   if (!row) throw new Error(`The part "${wanted.id}" is not in this career.`);
