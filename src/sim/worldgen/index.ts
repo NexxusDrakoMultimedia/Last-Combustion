@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { createRng, type RandomStream } from '../rng';
+import { wearFromKm } from '../wear';
 import { buildCalendar } from './calendar';
 import {
   HOST_COUNTRY,
@@ -196,15 +197,6 @@ function tierWeight(tier: CarModelData['tier'], prestige: number): number {
   }
 }
 
-const ODOMETER: Record<string, [number, number]> = {
-  starter: [60000, 180000],
-  mid: [30000, 120000],
-  premium: [10000, 60000],
-  elite: [5000, 40000],
-  hyper: [500, 8000],
-  unique: [1000, 40000],
-};
-
 /** Generates the 2031 world for a master seed. Pure and deterministic. */
 export function generateWorld(seed: string | number): World {
   const rng = createRng(seed);
@@ -220,30 +212,19 @@ export function generateWorld(seed: string | number): World {
   // --- drivers ---
   const dRng = rng.stream('worldgen:drivers');
   const drivers: Driver[] = Array.from({ length: cfg.entries }, (_, i) => makeDriver(dRng, i + 1));
-  const byPace = [...drivers].sort((a, b) => b.pace - a.pace || a.id - b.id);
-  const gold = new Set(byPace.slice(0, cfg.goldDrivers).map((d) => d.id));
-  for (const d of drivers)
-    if (gold.has(d.id)) {
-      d.pace = Math.max(d.pace, cfg.driver.goldPaceMin);
-      d.potential = Math.max(d.potential, d.pace);
-      d.goldBorderYear = 2030;
-    }
+  // Season 1 is the series' first year: nobody has a gold border, points or history yet.
   const garageOf = dealDrivers(dRng, drivers, sizes);
 
   // --- garage records ---
   const members = sizes.map((): Driver[] => []);
   drivers.forEach((d, i) => members[garageOf[i] as number]?.push(d));
   const garages: Garage[] = sizes.map((size, index) => {
-    const goldCount = (members[index] as Driver[]).filter((d) => gold.has(d.id)).length;
     const isDrake = index === drakeIndex;
     const hostFlag = gRng.chance(cfg.garage.australianFlagShare);
     const flag = isDrake || hostFlag ? HOST_COUNTRY : pickNationality(gRng);
     const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
     const prestige = clamp(
-      cfg.garage.prestigeBase +
-        cfg.garage.prestigePerEntry * size +
-        cfg.garage.prestigePerGoldDriver * goldCount +
-        (isDrake ? 15 : 0),
+      cfg.garage.prestigeBase + cfg.garage.prestigePerEntry * size + (isDrake ? 15 : 0),
       1,
       100,
     );
@@ -277,28 +258,13 @@ export function generateWorld(seed: string | number): World {
     };
   });
 
-  // --- race numbers: 1-40 by pre-season ranking, the rest open (41 up) ---
+  // --- race numbers: no earlier season exists to rank, so every number but #313 is open ---
   const nRng = rng.stream('worldgen:numbers');
-  const ranking = drivers
-    .map((d) => ({
-      d,
-      key:
-        overallRating(d) +
-        (gold.has(d.id) ? 10 : 0) +
-        nRng.normal(0, 5) +
-        (garages[garageOf[d.id - 1] as number] as Garage).prestige * 0.05,
-    }))
-    .sort((a, b) => b.key - a.key);
-  const numberOf = new Map<number, number>();
-  ranking.slice(0, cfg.topNumbered).forEach(({ d }, i) => numberOf.set(d.id, i + 1));
   const openNumbers = nRng.shuffle(
-    Array.from({ length: 360 }, (_, i) => i + cfg.topNumbered + 1).filter(
-      (n) => n !== RESERVED_NUMBER,
-    ),
+    Array.from({ length: cfg.numberPool }, (_, i) => i + 1).filter((n) => n !== RESERVED_NUMBER),
   );
-  ranking
-    .slice(cfg.topNumbered)
-    .forEach(({ d }, i) => numberOf.set(d.id, openNumbers[i] as number));
+  const numberOf = new Map<number, number>();
+  drivers.forEach((d, i) => numberOf.set(d.id, openNumbers[i] as number));
 
   // --- cars: exact type mix, supercars go to the most prestigious garages ---
   const cRng = rng.stream('worldgen:cars');
@@ -312,7 +278,7 @@ export function generateWorld(seed: string | number): World {
         : Math.round(cfg.entries * cfg.carTypeMix[type]);
     assigned += typeQuota[type];
   });
-  const garagePower = garages.map((g) => g.prestige + cRng.normal(0, 15));
+  const garagePower = garages.map((g) => g.prestige + cRng.normal(0, 6));
   const slots = drivers
     .map((d) => ({ d, power: garagePower[garageOf[d.id - 1] as number] as number }))
     .sort((a, b) => b.power - a.power || a.d.id - b.d.id);
@@ -344,7 +310,16 @@ export function generateWorld(seed: string | number): World {
       pool,
       pool.map((m) => tierWeight(m.tier, garage.prestige)),
     );
-    const [lo, hi] = ODOMETER[model.tier] as [number, number];
+    const carCfg = cfg.cars;
+    const age = cRng.int(0, carCfg.maxAgeYears[model.tier as keyof typeof carCfg.maxAgeYears]);
+    const roadKm =
+      Math.round(
+        (age *
+          cRng.float(carCfg.roadKmPerYear[0] as number, carCfg.roadKmPerYear[1] as number) *
+          carCfg.usageFactor[model.tier as keyof typeof carCfg.usageFactor] +
+          cRng.int(50, 500)) /
+          10,
+      ) * 10;
     const car: Car = {
       id: cars.length + 1,
       modelId: model.id,
@@ -352,8 +327,10 @@ export function generateWorld(seed: string | number): World {
       flag: (makerById.get(model.manufacturerId) as { homeCountry: string }).homeCountry,
       fans: 0,
       garageId: garage.id,
-      odometerKm: Math.round(cRng.float(lo, hi) / 100) * 100,
-      condition: cRng.int(60, 100),
+      modelYear: SEASON_YEAR - age,
+      roadKm,
+      raceKm: 0,
+      wear: wearFromKm(roadKm, 0, model.tier),
       kerbKg: model.kerbKg,
       tyreWidthMm: model.maxTyreMm,
     };
@@ -369,8 +346,10 @@ export function generateWorld(seed: string | number): World {
     flag: 'JP',
     fans: 0,
     garageId: (garages[drakeIndex] as Garage).id,
-    odometerKm: 24000,
-    condition: 100,
+    modelYear: 2022,
+    roadKm: 24000,
+    raceKm: 0,
+    wear: wearFromKm(24000, 0, 'unique'),
     kerbKg: spirit.kerbKg,
     tyreWidthMm: spirit.maxTyreMm,
   });
@@ -389,23 +368,12 @@ export function generateWorld(seed: string | number): World {
   // --- reputation and fans ---
   const fRng = rng.stream('worldgen:fans');
   const f = cfg.fans;
-  const topFive = new Set(
-    byPace
-      .filter((d) => gold.has(d.id))
-      .slice(0, 5)
-      .map((d) => d.id),
-  );
-  const logUniform = (min: number, max: number) =>
-    Math.round(Math.exp(fRng.float(Math.log(min), Math.log(max))));
   for (const d of drivers) {
-    if (topFive.has(d.id)) d.fans = logUniform(f.topFiveMin, f.topFiveMax);
-    else if (gold.has(d.id)) d.fans = logUniform(f.goldMin, f.goldMax);
-    else
-      d.fans = Math.round(
-        clamp(Math.exp(fRng.normal(Math.log(f.unknownMedian), 0.6)), f.unknownMin, f.unknownMax),
-      );
+    d.fans = Math.round(
+      clamp(Math.exp(fRng.normal(Math.log(f.unknownMedian), 0.6)), f.unknownMin, f.unknownMax),
+    );
     d.fame = Math.round(fameFromFans(d.fans) * 10) / 10;
-    d.reputation = gold.has(d.id) ? fRng.int(30, 70) : fRng.int(5, 35);
+    d.reputation = fRng.int(5, 35);
   }
   const garageDriverFans = garages.map(() => 0);
   drivers.forEach((d) => {
@@ -449,8 +417,7 @@ export function generateWorld(seed: string | number): World {
     staff.forEach((d, rank) => {
       const length = kRng.int(1, 3);
       const salary =
-        Math.round((fairSalary(overallRating(d), gold.has(d.id)) * kRng.float(0.7, 1.1)) / 100) *
-        100;
+        Math.round((fairSalary(overallRating(d), false) * kRng.float(0.7, 1.1)) / 100) * 100;
       contracts.push({
         driverId: d.id,
         garageId: g.id,

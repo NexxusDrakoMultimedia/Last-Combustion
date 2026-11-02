@@ -7,9 +7,10 @@ import {
   DRAKE_MOTORSPORTS,
   RESERVED_NUMBER,
   fameFromFans,
+  overallRating,
 } from '../../src/sim/worldgen';
 import { buildCalendar, addDays } from '../../src/sim/worldgen/calendar';
-import { balance, carModels, manufacturers, nameLists, places } from '../../src/sim/worldgen/data';
+import { carModels, manufacturers, nameLists, places } from '../../src/sim/worldgen/data';
 
 const world = generateWorld('2031');
 const model = (id: string) => carModels.find((m) => m.id === id)!;
@@ -39,22 +40,19 @@ describe('world size', () => {
 
 describe('race numbers', () => {
   const numbers = world.entries.map((e) => e.raceNumber);
-  it('are unique and never use the reserved #313', () => {
+  it('are unique, never use the reserved #313, and all come from 1 to 400', () => {
     expect(new Set(numbers).size).toBe(313);
     expect(numbers).not.toContain(RESERVED_NUMBER);
+    expect(Math.min(...numbers)).toBeGreaterThanOrEqual(1);
+    expect(Math.max(...numbers)).toBeLessThanOrEqual(400);
   });
 
-  it('give 1-40 to the ranked drivers and 41 and up to everyone else', () => {
-    for (let n = 1; n <= 40; n++) expect(numbers).toContain(n);
-    expect(numbers.filter((n) => n > 40)).toHaveLength(273);
-  });
-
-  it('give the best-ranked numbers to strong drivers', () => {
-    const top = world.entries
-      .filter((e) => e.raceNumber <= 10)
-      .map((e) => world.drivers[e.driverId - 1]!.pace);
+  it('are not tied to driver strength, because the series has no earlier season to rank', () => {
     const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
-    expect(mean(top)).toBeGreaterThan(mean(world.drivers.map((d) => d.pace)) + 10);
+    const paceOf = (e: (typeof world.entries)[number]) => world.drivers[e.driverId - 1]!.pace;
+    const low = world.entries.filter((e) => e.raceNumber <= 100).map(paceOf);
+    const high = world.entries.filter((e) => e.raceNumber > 300).map(paceOf);
+    expect(Math.abs(mean(low) - mean(high))).toBeLessThan(5);
   });
 });
 
@@ -73,9 +71,27 @@ describe('cars', () => {
   it('are all legal under the Equalizer and have unique chassis numbers', () => {
     for (const car of world.cars) {
       expect(car.tyreWidthMm).toBeLessThanOrEqual(Math.round(car.kerbKg / 5 + 40));
-      expect(car.condition).toBeGreaterThanOrEqual(60);
     }
     expect(new Set(world.cars.map((c) => c.chassisNo)).size).toBe(world.cars.length);
+  });
+
+  it('give every chassis a model year, road kilometres and wear, and no racing history yet', () => {
+    for (const car of world.cars) {
+      expect(car.modelYear).toBeLessThanOrEqual(2031);
+      expect(car.modelYear).toBeGreaterThanOrEqual(2031 - 25);
+      expect(car.roadKm).toBeGreaterThan(0);
+      expect(car.raceKm).toBe(0);
+      expect(car.wear).toBeGreaterThanOrEqual(0);
+      expect(car.wear).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it('wear older, harder-used cars more than newer ones', () => {
+    const wear = (pred: (c: (typeof world.cars)[number]) => boolean) => {
+      const list = world.cars.filter(pred);
+      return list.reduce((s, c) => s + c.wear, 0) / list.length;
+    };
+    expect(wear((c) => c.modelYear <= 2015)).toBeGreaterThan(wear((c) => c.modelYear >= 2026));
   });
 
   it('put supercars mostly with the more prestigious garages', () => {
@@ -173,10 +189,8 @@ describe('drivers', () => {
     }
   });
 
-  it('have 20 gold-bordered drivers, all strong', () => {
-    const gold = world.drivers.filter((d) => d.goldBorderYear !== null);
-    expect(gold).toHaveLength(20);
-    expect(gold.every((d) => d.pace >= balance.driver.goldPaceMin)).toBe(true);
+  it('start with no gold or silver borders: 2031 is the first year and there is no history', () => {
+    expect(world.drivers.every((d) => d.goldBorderYear === null)).toBe(true);
   });
 
   it('mostly come from and live in the country they race for', () => {
@@ -194,14 +208,13 @@ describe('drivers', () => {
 });
 
 describe('fans and fame', () => {
-  it('follow the starting values', () => {
-    const gold = world.drivers
-      .filter((d) => d.goldBorderYear !== null)
-      .sort((a, b) => b.fans - a.fans);
-    expect(gold.slice(0, 5).every((d) => d.fans >= 1_000_000 && d.fans <= 3_000_000)).toBe(true);
-    expect(gold.slice(5).every((d) => d.fans >= 50_000 && d.fans <= 800_000)).toBe(true);
-    const unknown = world.drivers.filter((d) => d.goldBorderYear === null);
-    expect(unknown.every((d) => d.fans >= 100 && d.fans <= 2000)).toBe(true);
+  it('start every driver as an unknown with 100 to 2,000 fans', () => {
+    for (const d of world.drivers) {
+      expect(d.fans).toBeGreaterThanOrEqual(100);
+      expect(d.fans).toBeLessThanOrEqual(2000);
+      expect(d.reputation).toBeGreaterThanOrEqual(5);
+      expect(d.reputation).toBeLessThanOrEqual(35);
+    }
   });
 
   it('keep fame derived from fans', () => {
@@ -251,14 +264,15 @@ describe('contracts', () => {
     }
   });
 
-  it('pay gold-bordered drivers far more than unknown ones', () => {
-    const mean = (gold: boolean) => {
-      const list = world.contracts.filter(
-        (c) => (world.drivers[c.driverId - 1]!.goldBorderYear !== null) === gold,
-      );
-      return list.reduce((s, c) => s + c.salary, 0) / list.length;
-    };
-    expect(mean(true)).toBeGreaterThan(mean(false) * 4);
+  it('pay stronger drivers more', () => {
+    const rated = world.contracts.map((c) => ({
+      salary: c.salary,
+      rating: overallRating(world.drivers[c.driverId - 1]!),
+    }));
+    const top = rated.filter((r) => r.rating >= 55);
+    const bottom = rated.filter((r) => r.rating < 40);
+    const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    expect(mean(top.map((r) => r.salary))).toBeGreaterThan(mean(bottom.map((r) => r.salary)) * 3);
   });
 });
 
@@ -314,7 +328,7 @@ describe('generation', () => {
           new Set(numbers).size === 313 &&
           !numbers.includes(RESERVED_NUMBER) &&
           new Set(w.garages.map((g) => g.name)).size === 96 &&
-          w.drivers.filter((d) => d.goldBorderYear !== null).length === 20 &&
+          w.drivers.every((d) => d.goldBorderYear === null) &&
           w.garages.every((g) => w.entries.some((e) => e.garageId === g.id))
         );
       }),

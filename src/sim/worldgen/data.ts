@@ -14,6 +14,7 @@ export const manufacturers = manufacturersJson as ManufacturerData[];
 export const carModels = carModelsJson as CarModelData[];
 export const courses = coursesJson as CourseData[];
 export const balance = balanceJson.worldgen;
+export const wearBalance = balanceJson.wear;
 export const populations = flagsJson.populations as Record<string, number>;
 
 export interface NameLists {

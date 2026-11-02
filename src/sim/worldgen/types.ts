@@ -108,8 +108,14 @@ export interface Car {
   flag: string;
   fans: number;
   garageId: number;
-  odometerKm: number;
-  condition: number;
+  /** The model year of this actual chassis. */
+  modelYear: number;
+  /** Everyday and travel kilometres. */
+  roadKm: number;
+  /** Practice, prelim and race kilometres, which wear a car ten times as much. */
+  raceKm: number;
+  /** 0 is new, 100 is worn out. */
+  wear: number;
   kerbKg: number;
   tyreWidthMm: number;
 }

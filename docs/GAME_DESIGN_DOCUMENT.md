@@ -123,7 +123,7 @@ Every round runs on a closed loop. The six rounds are far apart, so the gaps bet
 Each round is a 7-day practice week, then 7 days of preliminaries for a field of at least 300 entries, then a final race of at least 300 km for the top 15.
 
 1. **Practice (7 days).** The course opens for practice a week before the prelims, with as many tyre sets as each entry needs. Round 1 Practice Day 1 always opens on **March 31st**.
-2. **Preliminaries (7 days).** A prologue-style time attack: each entry gets **exactly one lap**, and that time sets its placing. Entries start one at a time, at set intervals, in a published running order. The order is seeded: drivers with championship points are spread evenly through the order across all seven days, and everyone else is placed by random draw. Seeding uses the current championship standings; Round 1 uses last season's.
+2. **Preliminaries (7 days).** A prologue-style time attack: each entry gets **exactly one lap**, and that time sets its placing. Entries start one at a time, at set intervals, in a published running order. The order is seeded: drivers with championship points are spread evenly through the order across all seven days, and everyone else is placed by random draw. Seeding uses the current championship standings. In Season 1 (2031) there are no earlier standings and no points yet, so the Round 1 running order is a random draw.
 3. **Dry and clear only.** Prelim runs are only held in completely dry, non-overcast conditions. A rainy or overcast day becomes an extra practice day and pushes the prelims back a day, so every round gets seven full prelim days. On these gap days, entries may practise on non-racing tyres to save their racing set.
 4. **One racing set.** Once the prelims start, each entry gets one racing set for its single prelim lap. A wet day pauses the running order, which resumes on the next dry, clear day.
 5. **Prelim classification.** Positions 16–31 score points from their prelim placing. Everyone below 31st scores nothing.
@@ -219,7 +219,8 @@ Numbers 1–40 follow last season's rankings and 41 and up are open to anyone, t
 
 **Race numbers & Special Numbers**
 
-- **Numbers 1–40: last season's rankings.** The driver who finished 1st takes #1, 2nd takes #2, and so on down to #40. A ranked driver may turn down their ranking number and apply for one from 41 up instead.
+- **Numbers 1–40: last season's rankings.** From 2032 onwards the driver who finished 1st takes #1, 2nd takes #2, and so on down to #40. A ranked driver may turn down their ranking number and apply for one from 41 up instead.
+- **Season 1 (2031).** The series has no history, so there is no ranking: every number except #313 is open, and 1–40 are handed out like any other number. There is no black box and nobody has a gold border until the first final is raced.
 - **Numbers 41 and up: open to anyone.** Any driver may apply for any free number from 41 upward. Numbers are re-chosen each season, and last season's holder gets first refusal.
 - **Number #313 (Reserved):** Permanently retired and reserved for founder Pyra Drake.
 - **Clashes** (decided by the series office under Joshua Drake): after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
@@ -288,7 +289,8 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
 - **Course setups.** Gearing, suspension and tyre width can be changed between rounds to suit each course.
 - **Road legality.** Every part has a legality rating. A car that stops being road legal fails scrutineering and can't be driven home.
 - **Suppliers.** Every part comes from a supplier. Fitting it earns that supplier a door spot and its contingency bonus.
-- **Wear.** Parts wear with race and road distance and need servicing or replacing.
+- **Wear.** Parts and the chassis wear with distance and need servicing or replacing. Racing kilometres wear a car ten times as much as everyday and travel kilometres (see "Wear and reliability").
+- **Model year.** Every actual chassis has its own model year. A car built before a model's latest refresh is still a car of that model; its age and use set its wear and value.
 
 ## Founders, Special Vehicles, and Ghost Record
 
@@ -300,7 +302,7 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
   - They appear as senders of messages and in the headlines, and they never race.
   - **Fictional characters.** "Brian Drake" and "Joshua Drake" are not real people. They are based on and named after Pyra's real half-brothers; the surname Drake and everything about their in-game lives are invented. No real surnames or personal details about the real people are recorded in the project.
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
-- **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs.
+- **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. In Season 1 there is no last year, so the ghost is Pyra Drake's #313 demo run only.
   - **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
   - **Hard.** The ghost faithfully recreates the original driver's qualifying run.
 
@@ -570,9 +572,9 @@ Gains are a share of the current series audience `S`, so a big moment is bigger 
 
 **Starting values**
 
-- New unknown drivers start with 100–2,000 fans (median about 800).
+- Every driver starts as an unknown with 100–2,000 fans (median about 800).
 - A new garage starts with 50.
-- The seeded gold-bordered drivers start with 50,000–800,000, and the top five with 1–3 million.
+- In Season 1 nobody has a gold border or any reputation beyond 5–35, because the series is new and there is no history. Gold borders are earned from Round 1's final onwards.
 - Garage, car and flag counts in Season 1 are built from their drivers using the shares above.
 
 **Uses**
@@ -646,6 +648,39 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
   - **Promotion.** A Junior driver who must move up can be kept by the same garage or released to another.
   - **Extra crew.** Optional but beneficial. A garage can hire extra mechanics for the Junior block. Each one speeds repairs and car changeovers between the two events and lowers the chance of setup errors. Without them the garage still runs both series by splitting its crew.
 
+## Auction house and car trading
+
+Cars change hands through dealers, private negotiation and the auction house. A chassis is a one-off with a story, so every sale shows its full provenance.
+
+**Provenance.** Every lot shows the chassis record: model and model year, road km and race km, wear, previous owners and garages, drivers who raced it, results and incidents, and its **left quarter panel history**: the car's own trophy and shield decals (race wins and championships), which stay with the car whatever happens to the driver's right-side decals. The chassis fan count (see "Fans") is shown too.
+
+**Where to buy**
+
+| Route | What it is |
+| --- | --- |
+| Dealers | New cars of any model still on sale, at the new price with the tier and manufacturer discounts, negotiated with the manufacturer |
+| Used market | Fixed-price listings of ordinary used cars, refreshed each week |
+| Auction house | Timed auctions of specific chassis, run weekly online and as live events at the Healesville festival in November |
+| Private negotiation | The player approaches the owner of a particular chassis (a garage, a collector or a manufacturer) and negotiates a sale with the normal negotiation system |
+
+**Auctions**
+
+- **Lots.** Each lot is one chassis with a reserve price, a closing time and its provenance. The auction house lists retired-model cars and famous chassis alongside everyday ones.
+- **Bidding.** Players and AI garages bid. A bid must beat the current price by the minimum increment (2% of the price, at least $500). A bid in the last minutes extends the close by two minutes, so there is no sniping.
+- **Fees.** The buyer pays a 10% premium on top of the hammer price, and the seller pays a 5% fee. An unsold lot (below reserve) is withdrawn and may be offered again at a lower reserve.
+- **AI bidders.** Each AI garage has a budget and a want-list drawn from its profile. Its maximum bid is the car's value times a personal factor of 0.8 to 1.2, and rises for a chassis with a famous history.
+- **Selling.** The player can consign a chassis, choosing a reserve. Selling a car with an entry means finding a replacement car (the same-manufacturer rule applies in season).
+
+**Value.** The value of a chassis is `base × wear factor × provenance factor`.
+
+- **Base** is the used price from the price tiers, for its model and model year.
+- **Wear factor** is `1 − 0.006 × wear`, so a worn-out car is worth far less, while racing kilometres cost it more than road kilometres because they wear it more.
+- **Provenance factor** rewards a good record: `1 + 0.03 × wins + 0.25 × championships` for the left-quarter-panel decals, plus `0.00000015 × chassis fans` (so a chassis with a million fans is worth 15% more), capped at 5×. A famous chassis can sell for many times the price of an identical car with no history.
+
+**Negotiated purchases.** Buying a particular chassis from its owner is a negotiation like any other: price, payment terms, a right of first refusal on a later sale, and optional extras such as the spare parts, the logbook or the owner's driver for a season. The seller's reservation rises with the chassis's provenance and with rival interest.
+
+**Records.** Every sale writes to the car's history (seller, buyer, price, route) and to the garages' ledgers, and a famous sale makes the headlines.
+
 ## Records and history
 
 The game keeps a permanent, detailed history of every race, driver, garage and car, so any career can be looked back on in full.
@@ -655,10 +690,10 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 | Race (each round) | Course, dates, conditions on every day, wet-day delays, running order, every prelim time, final grid and result, gaps, tyre condition at the flag, attention flags, penalties and incidents |
 | Driver | Every entry and result, numbers held each season, garages driven for, cars driven, points by round and season, finals reached, wins, titles, date the gold border was earned, attention flags, contracts and salary history |
 | Garage | Founding date, entries each season, drivers signed and released, cars owned, Garage Championship results, prestige over time, sponsors and suppliers, prize money earned |
-| Car | Its own identity (chassis number), make and model, owners and garages, drivers, kerb weight and tyre width at each round, parts and suppliers fitted at each round, door logos, trophy decals, results, odometer including everyday road use |
+| Car | Its own identity (chassis number), make and model, owners and garages, drivers, model year, kerb weight and tyre width at each round, parts and suppliers fitted at each round, door logos, trophy decals, results, road km and race km, wear, sales and auction history |
 
 - **Leaderboards** are built from these records: season standings (drivers, garages, manufacturers and nations), course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
-- **Car histories follow the car.** A car sold to another garage keeps its left-rear decals and its full record, so a famous chassis carries its story with it. The driver's right-rear decals go with the driver.
+- **Car histories follow the car.** A car sold to another garage keeps its left-rear decals (its left quarter panel history) and its full record, so a famous chassis carries its story with it, and the sale price reflects it. The driver's right-rear decals go with the driver.
 
 ---
 
@@ -676,7 +711,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | M1 World generation | A believable 2031 field | Names, 96 garages, 313 drivers, 313 cars, numbers, contracts, calendar | UI beyond a debug viewer |
 | M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, prelim and practice incidents, classification, points | Final race, economy |
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, mid-race incidents with pauses, overtakes, player calls, prize money, timing screens | Live map polish, drones |
-| M4 Garage and economy | The management loop | Car purchase, upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
+| M4 Garage and economy | The management loop | Car purchase (dealers, used market, auction house, private negotiation), upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
 | M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
@@ -830,7 +865,7 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
 | `manufacturer` | stable_id, name, home_country, type (`hypercar` / `supercar` / `sports` / `jdm` / `domestic` / `other`), character, next_refresh_year |
 | `car_model` | manufacturer_id, stable_id, name, tier, base_kerb_kg, max_tyre_mm, base_ps, layout, price_new, generation, introduced_year, retired_year (nullable), predecessor_id (nullable) |
-| `car` | car_model_id, chassis_no, flag, fans, garage_id, odometer_km, condition, kerb_kg_current |
+| `car` | car_model_id, chassis_no, model_year, flag, fans, garage_id, road_km, race_km, wear, kerb_kg_current, tyre_width_mm |
 | `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
 | `car_part` | car_id, part_id, installed_date, wear |
 | `entry` | season_id, garage_id, driver_id, car_id, race_number, series (`main` / `junior`), fee_paid |
@@ -842,6 +877,10 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `sponsor`, `sponsor_deal` | tier, min_prestige, base_fee, bonuses; garage_id, years, targets |
 | `supplier`, `supplier_deal` | brand, categories, discount, contingency; garage_id, car_id |
 | `trophy` | owner_type (`driver` / `car`), owner_id, kind (`win` / `title`), series, round_id / season_id |
+| `car_ownership` | car_id, garage_id, from_date, to_date (nullable), price, route (`new` / `used` / `auction` / `private`) |
+| `auction` | opens, closes, kind (`weekly` / `festival`), location |
+| `auction_lot` | auction_id, car_id, seller_garage_id, reserve, final_price (nullable), buyer_garage_id (nullable), status |
+| `auction_bid` | lot_id, bidder_garage_id, amount, placed_at |
 | `negotiation` | window_kind, party_a_type, party_a_id, party_b_type, party_b_id, kind, status, patience_left |
 | `offer` | negotiation_id, round_no, from_side, terms (JSON), value, outcome |
 | `relationship` | party_a_type, party_a_id, party_b_type, party_b_id, score |
@@ -1018,7 +1057,14 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 **Weather.** Each day for a round is rolled from a course climate profile: `dry_clear`, `overcast`, `wet`. Only `dry_clear` allows prelim runs. Rounds are guaranteed to finish: if more than 14 days pass since the planned prelim start, the series declares remaining runs "dry-enough" on the next overcast day.
 
-**Wear and reliability.** Every part has `wear` from 0 to 100 and a reliability curve. Wear rises with race km and road km. A part above 85 wear has a rising failure chance each sector; failure during a run causes a retirement.
+**Wear and reliability.** Every chassis and every part has `wear` from 0 (new) to 100 (worn out). Wear is added per kilometre, and the kind of kilometre matters:
+
+- **Road km** (everyday driving, delivery work and travel between rounds): `0.0004` wear per km.
+- **Race km** (practice, prelim laps and finals): `0.004` wear per km, ten times as much.
+- **Tier factor.** Both are multiplied by 0.8 (Starter), 1.0 (Mid), 1.2 (Premium), 1.5 (Elite) or 2.0 (Hyper), matching the supercar upkeep rules.
+- **Examples.** A mid-tier car that covers 60,000 road km has 24 wear. One season of racing is about 1,200 km, which adds roughly 5 wear. Servicing resets part wear and has a cost; chassis wear can only be reduced by a restoration.
+- **Failure.** A part above 85 wear has a rising failure chance each sector; failure during a run causes a retirement.
+- **Season 1.** Every chassis starts with some road km and no race km, because the series has never raced before.
 
 ## Fictional manufacturers and cars
 
@@ -1031,7 +1077,7 @@ The game ships only fictional manufacturers and models, so no licences are neede
 - **Field mix (Season 1, 313 cars):** 3% hypercars, 47% supercars (half the field), 22% JDM, 15% sports, 10% Australian domestic and 3% other. New garages and underdogs start in JDM, sports and domestic cars, and supercars are the aspiration.
 - **Stats are indicative.** Kerb weight and power are rounded starting values chosen to fit the game's balance, not exact real specifications. A mod that imports the real car replaces them. Max tyre width uses the Equalizer (`kg / 5 + 40`).
 
-**Price tiers.** `price_new ≈ ($15,000 + $280 × PS) × tier multiplier`. Used cars sell at 40–70% of new depending on age and odometer.
+**Price tiers.** `price_new ≈ ($15,000 + $280 × PS) × tier multiplier`. Used cars sell at 40–70% of new depending on age, wear and provenance (see "Auction house and car trading").
 
 | Tier | Multiplier | Typical used price | Notes |
 | --- | --- | --- | --- |
@@ -1187,7 +1233,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 Manufacturers do not stand still. Each one refreshes its lineup about every five years (a random interval of 4 to 6 years, first due between 2034 and 2037), and the 96 launch models are only the 2031 starting point.
 
 - **What changes.** At a refresh a manufacturer replaces one or two of its models with next-generation successors (about 5–12% more power, 0–4% lighter, a higher price and a generation number in the name), and it may add a new sport derivative of an existing model.
-- **Limits.** A manufacturer always has between 2 and 5 models on sale. If a refresh would take it above 5, its oldest model is retired. Retired models stay in the database, so existing cars and the records keep their history; they simply stop appearing in new-car sales.
+- **Limits.** A manufacturer always has between 2 and 5 models on sale. If a refresh would take it above 5, its oldest model is retired. A retired model only means it can no longer be bought new. Every chassis already built keeps racing and keeps its history, and it can still be traded on the used market and at auction.
 - **Unique cars.** One-off cars such as the Homura Spirit R-7 are never refreshed.
 - **Timing.** The refresh runs in the yearly rollover (see "World generation and AI"), and the headlines report new models.
 - **Mods.** A mod may supply its own successors, which then replace the generated ones.
@@ -1205,11 +1251,11 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 **Season 1 world (96 garages, 313 drivers).**
 
 - **Garage sizes.** 1 to 8 entries per garage, averaging about 3.3, and adding up to 313 entries across 96 garages (the player's garage and entry are part of that total).
-- **Prestige.** Set from entry count and any gold-bordered drivers (in Season 1, about 20 seeded drivers start gold-bordered as past finalists).
+- **Prestige.** Set from entry count and any gold-bordered drivers. In Season 1 nobody has a gold border, so prestige comes from entry count alone.
 - **Names.** Drivers and garages are generated from name pools weighted toward Australian and a broad international mix. Pools are in `names.json` and must avoid real people and trademarks.
 - **Car sector fit.** Generated cars get a base fit drawn from a normal distribution: supercars mean 0.52, SD 0.12; JDM and sports cars mean 0.46, SD 0.10 (tuned in `tools/balance/prelim_check.py`).
-- **Skill distribution.** Driver Pace is drawn from a normal distribution (mean 45, SD 12, clamped 20–85); the ~20 seeded gold-bordered drivers are 60–85. Potential is Pace plus 0–25.
-- **Number assignment.** Season 1 numbers 1–40 are assigned to the 40 seeded top drivers by a pre-season ranking; the rest take numbers from 41 up. #313 is reserved.
+- **Skill distribution.** Driver Pace is drawn from a normal distribution (mean 45, SD 12, clamped 20–85); nobody starts gold-bordered or stands out through history, so the strongest drivers simply come from the top of the distribution. Potential is Pace plus 0–25.
+- **Number assignment.** Season 1 has no ranking to follow, so numbers are drawn at random from 1 to 400, excluding the reserved #313.
 
 **Yearly rollover.**
 
@@ -1232,6 +1278,7 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 | Cars and workshop | Buy/sell cars, fit parts, set course setups, see legality and Equalizer limit live |
 | Drivers and contracts | Roster, free agents, scouting with attention-flag leads, negotiation |
 | Sponsors and suppliers | Offers, active deals, door-logo layout |
+| Auction house | Lots with full provenance (including the left quarter panel history), bidding, consignment and private offers |
 | Round hub | Calendar for the 15+ days, weather, running order, practice controls |
 | Practice and prelim view | Timing screen, live map, ghost choice, per-entry results |
 | Final race view | Timing tower, sector splits, tyre life, player calls, drone events |
@@ -1289,6 +1336,9 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 - **Modding.** Mods for starting garages, drivers and stats, name lists, manufacturers, cars, tracks, parts, sponsors, suppliers and balance data, each with a mandatory GPL-compatible licence.
 - **Careers over time.** An owner who dies or retires is replaced by a new character in the same world; a retiring owner-driver becomes a garage owner; a driver can found a garage at any time for a fee, with funding set by fame and reputation.
 - **Incidents, rivalries and storylines.** Mid-race incidents, rivalries (heat and levels) and data-driven storylines run across practice, prelims, races, events and seasons.
+- **Auction house.** Specific chassis are bought at auction or by negotiation, with their left quarter panel history and provenance included in the price.
+- **Chassis.** Every raced chassis has its own model year and wear, with racing km wearing ten times as much as road km.
+- **First year.** 2031 is the series' first year: nobody starts gold-bordered, and numbers and the Round 1 order are drawn at random.
 - **Manufacturer lineups.** 31 manufacturers and 96 launch models (2 to 5 per manufacturer, no era cut-off); lineups refresh about every five years.
 - **Series management.** Brian Drake (technical) and Joshua Drake (interpersonal) run the day-to-day of the series from Healesville; Drake Motorsports is based in Brisbane.
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.

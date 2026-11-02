@@ -145,7 +145,7 @@ export function persistWorld(db: Database, world: World): void {
       world.drivers.flatMap((d) => ROAD_TYPES.map((type) => [d.id, type, d.affinities[type]])),
     );
     run(
-      'INSERT INTO car (id, car_model_id, chassis_no, flag, fans, garage_id, odometer_km, condition, kerb_kg_current, tyre_width_mm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO car (id, car_model_id, chassis_no, flag, fans, garage_id, model_year, road_km, race_km, wear, kerb_kg_current, tyre_width_mm) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       world.cars.map((c) => [
         c.id,
         id(modelId, c.modelId),
@@ -153,8 +153,10 @@ export function persistWorld(db: Database, world: World): void {
         c.flag,
         c.fans,
         c.garageId,
-        c.odometerKm,
-        c.condition,
+        c.modelYear,
+        c.roadKm,
+        c.raceKm,
+        c.wear,
         c.kerbKg,
         c.tyreWidthMm,
       ]),

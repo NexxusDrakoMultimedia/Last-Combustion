@@ -20,14 +20,11 @@
       "domestic": 0.1,
       "other": 0.03
     },
-    "goldDrivers": 20,
-    "topNumbered": 40,
     "driver": {
       "paceMean": 45,
       "paceSd": 12,
       "paceMin": 20,
       "paceMax": 85,
-      "goldPaceMin": 60,
       "ageMean": 29,
       "ageSd": 7,
       "ageMin": 18,
@@ -45,7 +42,6 @@
       "australianFlagShare": 0.7,
       "prestigeBase": 2,
       "prestigePerEntry": 4,
-      "prestigePerGoldDriver": 12,
       "cashBase": 50000,
       "cashPerPrestige": 4000
     },
@@ -54,10 +50,6 @@
       "unknownMedian": 800,
       "unknownMin": 100,
       "unknownMax": 2000,
-      "goldMin": 50000,
-      "goldMax": 800000,
-      "topFiveMin": 1000000,
-      "topFiveMax": 3000000,
       "garageStart": 50,
       "garageShareOfDrivers": 0.4,
       "carShareOfDriver": 0.3,
@@ -77,6 +69,39 @@
       "intervalMaxYears": 6,
       "maxModels": 5,
       "minModels": 2
+    },
+    "numberPool": 400,
+    "cars": {
+      "maxAgeYears": {
+        "starter": 25,
+        "mid": 20,
+        "premium": 12,
+        "elite": 15,
+        "hyper": 8,
+        "unique": 15
+      },
+      "roadKmPerYear": [6000, 14000],
+      "usageFactor": {
+        "starter": 1.2,
+        "mid": 1.0,
+        "premium": 0.5,
+        "elite": 0.3,
+        "hyper": 0.15,
+        "unique": 0.3
+      }
     }
+  },
+  "wear": {
+    "roadPerKm": 0.0004,
+    "racePerKm": 0.004,
+    "tierFactor": {
+      "starter": 0.8,
+      "mid": 1.0,
+      "premium": 1.2,
+      "elite": 1.5,
+      "hyper": 2.0,
+      "unique": 1.0
+    },
+    "partFailureFrom": 85
   }
 }

@@ -143,8 +143,10 @@ export const migration0002: Migration = {
       flag              TEXT NOT NULL,
       fans              INTEGER NOT NULL,
       garage_id         INTEGER NOT NULL REFERENCES garage (id),
-      odometer_km       INTEGER NOT NULL,
-      condition         INTEGER NOT NULL CHECK (condition BETWEEN 0 AND 100),
+      model_year        INTEGER NOT NULL,
+      road_km           INTEGER NOT NULL CHECK (road_km >= 0),
+      race_km           INTEGER NOT NULL CHECK (race_km >= 0),
+      wear              REAL NOT NULL CHECK (wear BETWEEN 0 AND 100),
       kerb_kg_current   INTEGER NOT NULL,
       tyre_width_mm     INTEGER NOT NULL,
       CHECK (tyre_width_mm <= CAST(ROUND(kerb_kg_current / 5.0 + 40) AS INTEGER))
