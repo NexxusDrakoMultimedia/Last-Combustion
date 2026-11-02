@@ -264,7 +264,7 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
 
 ## Founders, Special Vehicles, and Ghost Record
 
-- **Pyra Drake:** Founder and chairwoman of Last Combustion. Born in **1996**, she celebrates her **35th birthday** in Season 1 (2031) and her **40th birthday** in Season 6 (2036). The opening ceremony and Round 1 practice always take place on her birthday, **March 31st**. She is a self-insert character and one of the best drivers in history, but does not actively race in LC main events. Her role is setting the first-ever course records, and her number **#313** is permanently retired.
+- **Pyra Drake:** Founder and chairwoman of Last Combustion. Born in **1996**, she celebrates her **35th birthday** in Season 1 (2031) and her **40th birthday** in Season 6 (2036). The opening ceremony and Round 1 practice always take place on her birthday, **March 31st**. She is a self-insert character and one of the best drivers in history, but does not actively race in LC main events. Her role is setting the first-ever course records, and her number **#313** is permanently retired. Her hometown is Healesville, Victoria, and she lives in Brisbane, Queensland.
 - **Drake Motorsports:** Pyra Drake's personal team where she is founder and owner, with her unique vehicle being a fictional Mazda RX-7 expy called the **Homura Spirit R-7** (rotary-powered lightweight sports car).
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
 - **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. 
@@ -326,7 +326,7 @@ Every driver has hidden potential and visible stats that grow with experience, a
 | Road affinity | Separate ratings for forest, coast, mountain and night roads |
 | Potential | Hidden ceiling for growth |
 
-- **Profile.** Age, nationality, number, fame, reputation, contract and salary.
+- **Profile.** Age, nationality, flag, hometown, residence, number, fans, fame, reputation, contract and salary.
 - **Growth and decline.** Stats rise with experience on each kind of road and fall slowly with age.
 - **Contracts.** Length, salary, lead or development role, and a release fee. Rival garages can make offers, especially after attention flags.
 - **Junior pathway.** Junior drivers who reach a Super Series final earn gold and leave Junior eligibility.
@@ -400,10 +400,10 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 Prize money and sponsors fund the garage, while fame, reputation, rivalries and the media turn results into stories.
 
 - **Prize money.** Each round pays prize money to the 15 finalists, weighted heavily to the win (table below). Placings outside the final earn no prize money. The season champion, decided on points, wins a $10,000,000 championship prize, and performance bonuses build up through the year. Prize money and sponsors are a garage's main income.
-- **Fame and reputation.** Two separate ratings. Fame is popularity with fans, built from broadcast moments, attention flags and overtakes. Reputation is respect in the paddock, built from consistent results and clean racing. Sponsors chase fame; top garages hire on reputation.
+- **Fame and reputation.** Two separate ratings. Fame is the 0–100 rating derived from fan count (see "Fans"), built from broadcast moments, attention flags and overtakes. Reputation is respect in the paddock, built from consistent results and clean racing. Sponsors chase fame; top garages hire on reputation.
 - **Driver development.** Drivers have stats that grow with experience on each kind of road: forest, coast, mountain and night. A driver can be brilliant on mountain roads and weak on coastal ones.
 - **Rivalries.** Repeated close finishes or contact between two drivers create a rivalry. Rivals racing each other draw extra broadcast attention and fame.
-- **Awards.** Rookie of the Year, most attention flags in a season, and a Hall of Fame for retired champions.
+- **Awards.** Rookie of the Year, most attention flags in a season, Fan Favourite (largest fan gain), and a Hall of Fame for retired champions.
 - **Damage and repairs.** Crashes cost money and time. Entries are road cars, so a car that can't be repaired can't be driven on the road either.
 - **Daily life.** Road distance between rounds adds wear to the car. Delivery driving gives a small income, which helps drivers early in their careers.
 - **Commentary and media.** A commentary team and news headlines between rounds, generated from the records (for example, "#247 reaches their first final").
@@ -427,6 +427,76 @@ Prize money and sponsors fund the garage, while fame, reputation, rivalries and 
 | Overtake in the final race | $10,000 each |
 
 Bonuses add up through the year and are paid at the end of the season. All AUD amounts are the reference yen figures divided by 100.
+
+## Fans
+
+Fan counts are a constant talking point in the commentary, the headlines and the broadcast graphics. Every driver, car, garage and flag has a fan count, and so does the series as a whole.
+
+**What is counted**
+
+| Subject | What its fans are |
+| --- | --- |
+| Driver | People who follow this driver, wherever they race |
+| Car | People who follow this particular chassis, and its history stays with the car when it is sold |
+| Garage | People who follow the garage and its name |
+| Flag | The fans behind a nation: a national base plus a share of the fans of the drivers and garages racing under that flag |
+| Series | The worldwide audience of Last Combustion |
+
+- **Not added together.** Fans overlap (one person can follow a driver, a car and a garage), so the counts are shown separately and are not summed, except by the explicit shares below.
+- **Fame is derived from fans.** The fame rating (0–100) used in negotiations and sponsor deals is calculated from the fan count: `fame = clamp(12.5 × log10(fans ÷ 10), 0, 100)`. So 10 fans is fame 0, 1,000 fans is 25, 100,000 is 50, 10 million is 75 and 1 billion is 100. Reputation (respect in the paddock) is separate.
+
+**Where fans come from (v1, tunable)**
+
+Gains are a share of the current series audience `S`, so a big moment is bigger in a bigger series:
+
+| Moment | Driver gains |
+| --- | --- |
+| Race win | 1.0% of `S` |
+| 2nd or 3rd | 0.4% |
+| Rest of the final | 0.1% |
+| Points scorer in 16th–31st | 0.01% |
+| Pole position | 0.3% |
+| Attention flag | 0.6% |
+| Overtake in the final | 0.02% each |
+| Spectacular crash (highlight reel) | 0.15% |
+| Close finish with a rival | 0.1% |
+| Round held in the driver's home state (hometown bonus) | gains ×1.2 |
+| Penalty, disqualification or reckless crash | -0.05% |
+| Changing number or flag | lose 10% of fans |
+| Season of inactivity | lose 3% of fans |
+| Each year after retirement | lose 5% of fans |
+
+**Shares between subjects**
+
+- **Garage.** Gains 40% of what its current drivers gain, plus its own gains from Garage Championship results, and keeps half of a departing driver's contribution.
+- **Car.** Gains 30% of what the driver gains while driving it, so a famous chassis builds a following.
+- **Flag.** Gains 15% of what its drivers and garages gain, on top of the national base. National base = `population × 0.1%`, ×20 for Australia as the host nation.
+- **Series.** Starts at 30 million in 2031 and grows 8% a year, plus 0.5% for each attention flag, 1% for the closing festival, and 10% for the Junior launch in 2036. Individual fan counts are capped at 40% of the series audience.
+
+**Starting values**
+
+- New unknown drivers start with 100–2,000 fans (median about 800).
+- A new garage starts with 50.
+- The seeded gold-bordered drivers start with 50,000–800,000, and the top five with 1–3 million.
+- Garage, car and flag counts in Season 1 are built from their drivers using the shares above.
+
+**Uses**
+
+- **Money.** Sponsor deals use fame (and so fans). Garages earn merchandise income of about $0.05 per garage fan per season, paid at season end.
+- **Negotiation and prestige.** Fame is a leverage factor, and fan milestones raise a garage's prestige.
+- **Story.** Headlines and commentary report fan milestones (for example "#247 reaches 100,000 fans"), a car's fans appear in the broadcast graphics, and the About screen shows the series audience.
+- **Awards.** A Fan Favourite award goes to the driver with the largest fan gain in the season.
+
+## Driver origins: hometown and residence
+
+Every driver has a **hometown** (where they grew up) and a **residence** (where they live now). Both usually match the flag the driver races under, but not always, so a driver may race for one country, come from another and live in a third.
+
+- **Generation.** Hometown is in the flag's country 92% of the time. Residence is in the flag's country 70% of the time; for a driver whose flag is not Australia, 20% live in Australia (to be near the series) and 10% live elsewhere. For Australian-flag drivers, 95% live in Australia.
+- **Places.** Hometown and residence are chosen from a places list (town or city, region or state, country, latitude and longitude). The planned source is the GeoNames cities dataset (CC BY 4.0, to be confirmed). The list is moddable.
+- **Hometown effects.** It sets the starting home road type (+10 affinity) and gives a fan bonus when a round is held in the driver's home state.
+- **Residence effects.** Daily roads near the residence slowly train that road type's affinity, delivery driving income depends on the local area, and the garage's travel cost is set by the distance from its base to each venue: `$2,000 + $1.00 per km`, about $3,500 on average. The base of an Owner-driver's garage is their residence.
+- **Moving.** A driver can move in the off-season for $5,000. It takes effect from the next season.
+- **Pyra Drake.** Her hometown is **Healesville**, Victoria, and her residence is **Brisbane**, Queensland.
 
 ## 2036 expansion
 
@@ -512,7 +582,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, classification, points | Final race, economy |
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, incidents, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase, upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
-| M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
+| M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
 | M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
 | M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
@@ -649,18 +719,21 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `career` | mode, owner_name, owner_gender, owner_birth_date, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool), schema_version |
 | `career_mod` | career_id, mod_id, version, load_order |
 | `standing_snapshot` | season_id, series, table (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
-| `season` | year, era (`original` / `super`), final_size, status |
+| `season` | year, era (`original` / `super`), final_size, series_fans, status |
+| `place` | name, region, country (ISO code), latitude, longitude |
+| `flag_fans` | flag (ISO code), season_id, fans |
+| `fan_log` | subject_type, subject_id, date, delta, reason |
 | `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
 | `course` | name, state, shape (always `loop`), lap_km, final_laps, road_type, altitude_m, night (bool), outline (JSON: viewBox, path, points with cumulative km) |
 | `sector` | course_id, order, surface (always `sealed`), start_km, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
 | `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
-| `garage` | name, home_state, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
-| `driver` | name, gender, birth_date, nationality, flag, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
+| `garage` | name, home_state, base_place_id, fans, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
+| `driver` | name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id, fans, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
 | `driver_road_affinity` | driver_id, road_type, rating |
 | `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
 | `manufacturer` | stable_id, name, home_country, type, character, prestige_multiplier |
 | `car_model` | manufacturer_id, stable_id, name, base_kerb_kg, base_ps, drivetrain, price_new, legality_base |
-| `car` | car_model_id, chassis_no, flag, garage_id, odometer_km, condition, kerb_kg_current |
+| `car` | car_model_id, chassis_no, flag, fans, garage_id, odometer_km, condition, kerb_kg_current |
 | `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
 | `car_part` | car_id, part_id, installed_date, wear |
 | `entry` | season_id, garage_id, driver_id, car_id, race_number, series (`main` / `junior`), fee_paid |
@@ -697,7 +770,7 @@ Records described in "Records and history" are all derivable from these tables; 
 | Owner-driver | One person who is both owner and driver: the owner details above plus the driver details below | 18 to 30 |
 | Driver manager | The driver only: name, gender, flag, number and the driver details below | Always 18 (the date of birth is set automatically) |
 
-**Driver details (Owner-driver and Driver manager).** Spend 100 points across Pace, Consistency, Racecraft, Tyre management, Composure and Wet skill (min 20, max 60 each at start). Pick a home road type (+10 affinity), a name, gender, flag and race number. Potential is hidden. In Garage owner mode the first hired driver is chosen from the 5 offered.
+**Driver details (Owner-driver and Driver manager).** Spend 100 points across Pace, Consistency, Racecraft, Tyre management, Composure and Wet skill (min 20, max 60 each at start). Pick a hometown and a residence (see "Driver origins"), a home road type (+10 affinity), a name, gender, flag and race number. Potential is hidden. In Garage owner mode the first hired driver is chosen from the 5 offered.
 
 **Owner-driver growth.** The Owner-driver starts solo with one car and one entry, which is the player. The first hired mechanic, second car and second driver are unlocked by earnings and prestige, in the same way as in Garage owner mode.
 
@@ -727,7 +800,7 @@ Driver mode is not available for the unlock: the Driver manager's driver always 
 
 - **No hints.** The setup screen treats every field normally. Number 313 and an age of 35 are rejected as usual when the rest does not match, with the standard messages. The Founder's career starts only when the player confirms and every field for the chosen mode matches. Name and garage match ignoring case and surrounding spaces.
 - **Overrides.** The #313 reservation is lifted for this career only. In Owner-driver mode the 18–30 age rule is lifted too, since she is 35 in 2031. In Garage owner mode her age already fits the 18–50 range, and the rule needs no override. In this world #313 belongs to the player and the NPC founder is replaced, so there is never a second Pyra Drake.
-- **Starting package (proposed, tunable).** Her Homura Spirit R-7 is the garage's one car, with high fame and reputation. Cash, staff and sponsors are the normal start for the mode, so the rise from nothing is still earned.
+- **Starting package (proposed, tunable).** Her Homura Spirit R-7 is the garage's one car. She has about 3 million fans (fame about 68), Drake Motorsports about 1.2 million and the R-7 about 800,000. Her hometown is Healesville and her residence is Brisbane, set automatically (they are not part of the unlock). Cash, staff and sponsors are the normal start for the mode, so the rise from nothing is still earned.
   - **Owner-driver.** She is the driver, with elite preset stats (Pace 90, Consistency 85, Racecraft 85, Tyre management 85, Composure 85, Wet skill 80, all road affinities 80), and races as #313.
   - **Garage owner.** She is the owner and does not race, matching her role as chairwoman. The garage's first entry carries #313 and a driver chosen from the 5 offered.
 - **Timeline.** She is 35 in 2031, 40 in 2036 and ages and retires like any driver.
@@ -801,7 +874,7 @@ The game is English-only at launch, but all text is externalised so translation 
 | Hypercar | $2,000,000+ (see price tiers) |
 | Part price range | $400 (filter, pads) to $60,000 (turbo kit / engine build) |
 | Mechanic wage | $500 per week each |
-| Travel and accommodation | $3,500 per round per garage (the rounds are far apart), plus $750 per extra entry |
+| Travel and accommodation | $2,000 plus $1.00 per km from the garage's base to the venue (about $3,500 on average), plus $750 per extra entry |
 | Servicing | $1,200 per round per entry at Starter tier (see supercar upkeep) |
 | Driver salary, unknown | $0–$20,000 per season (often paid in sponsor product) |
 | Driver salary, gold border | $60,000–$400,000 per season; champions higher |
@@ -1035,6 +1108,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 | Door suppliers | Suppliers whose logos appear on a car's doors |
 | Ghost record | The projected ghost car in prelim sessions |
 | Nations standings | Points tables by the flag drivers or garages race under |
+| Fans | The follower count of a driver, car, garage, flag or the series |
+| Hometown / residence | Where a driver grew up / where they live now |
 | Founder's career | The hidden Owner-driver start as Pyra Drake |
 
 ## Decisions and open questions
