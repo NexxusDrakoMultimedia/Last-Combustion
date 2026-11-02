@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { beforeEach, describe, expect, it } from 'vitest';
+import { latestSchemaVersion } from '../../src/db/migrate';
 import { loadSql } from '../../src/db/sql';
 import { createMemoryPlatform } from '../../src/platform/memory';
 import { useCareerStore } from '../../src/state/career.store';
@@ -24,7 +25,8 @@ describe('career store', () => {
     const store = useCareerStore.getState();
     await store.createTestCareer();
     expect(useCareerStore.getState().career?.mode).toBe('garage_owner');
-    expect(useCareerStore.getState().schemaVersion).toBe(1);
+    expect(useCareerStore.getState().schemaVersion).toBe(latestSchemaVersion());
+    expect(useCareerStore.getState().world?.entries).toBe(313);
 
     await useCareerStore.getState().saveSlot1();
     expect(useCareerStore.getState().slotsInUse).toBe(1);
