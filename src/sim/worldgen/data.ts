@@ -23,6 +23,8 @@ export const juniorBalance = balanceJson.junior;
 export const finalBalance = balanceJson.final;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Flags that no driver, car or garage may race under (see the GDD, "Flags"). */
+/** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
+export const flagNames = flagsJson.names as Record<string, { short: string; long: string }>;
 export const excludedFlags = new Set(flagsJson.excluded);
 
 export interface NameLists {

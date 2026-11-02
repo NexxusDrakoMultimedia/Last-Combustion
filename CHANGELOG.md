@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Milestone M3 final race: the sector-by-sector final engine with traffic and overtaking, contact, drone stops, player calls and team orders, tyre life, mechanical trouble and mid-race rain, plus a database layer that plays the final, pays prize and overtake money and records timing (schema version 4). A temporary "run the final" button in the foundations check screen.
 - Prelim weather: after 14 blocked days the weather is capped at overcast, and sun is guaranteed after 28.
 - Design: themable interface with Light, Dark and NDM (Nexxus Drako Multimedia brand) themes.
+- Every flag has a short name and a long name (for example Australia and Commonwealth of Australia).
 - Flags are limited to nations and territories recognised by the FIA, IOC or FIFA. Excluded flags (Antarctica, Arab League, ASEAN, CEFTA, East African Community, United Nations) in `data/flags.json`, with a test that no world uses them.
 - Design: Brian and Joshua Drake and the four commentators age normally, and a child or an unrelated person in a similar role takes over on retirement or death.
 - Design: personalities and RPG-style traits for drivers (full), cars and garages (light), added to the Game Design Document.

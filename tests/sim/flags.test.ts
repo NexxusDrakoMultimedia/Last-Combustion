@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { describe, expect, it } from 'vitest';
 import { generateWorld } from '../../src/sim/worldgen';
-import { excludedFlags, populations } from '../../src/sim/worldgen/data';
+import { excludedFlags, flagNames, populations } from '../../src/sim/worldgen/data';
 
 describe('excluded flags', () => {
   it('lists Antarctica and the international organisations', () => {
@@ -21,5 +21,14 @@ describe('excluded flags', () => {
       ...world.flagFans.map((f) => f.flag),
     ]);
     for (const code of used) expect(excludedFlags.has(code)).toBe(false);
+  });
+
+  it('gives every flag a short name and a long name', () => {
+    for (const code of Object.keys(populations)) {
+      const names = flagNames[code];
+      expect(names?.short.length).toBeGreaterThan(0);
+      expect(names?.long.length).toBeGreaterThanOrEqual(names?.short.length ?? 0);
+    }
+    expect(flagNames.AU).toEqual({ short: 'Australia', long: 'Commonwealth of Australia' });
   });
 });
