@@ -4,6 +4,8 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   carValue,
+  dealerBuybackPrice,
+  listingPrice,
   distanceKm,
   newCarPrice,
   provenanceFactor,
@@ -128,5 +130,17 @@ describe('round costs', () => {
     const two = roundCosts({ entries: 2, top31: 0, upkeep: [1, 1], distanceKm: 0 });
     expect(one.servicing).toBe(4800);
     expect(two.travel - one.travel).toBe(750);
+  });
+});
+
+describe('dealer prices', () => {
+  it('pays 80% of value and asks 110%, so a dealer always makes a margin', () => {
+    expect(dealerBuybackPrice(100_000)).toBe(80_000);
+    expect(listingPrice(100_000)).toBe(110_000);
+    fc.assert(
+      fc.property(fc.integer({ min: 1000, max: 5_000_000 }), (value) => {
+        expect(listingPrice(value)).toBeGreaterThan(dealerBuybackPrice(value));
+      }),
+    );
   });
 });

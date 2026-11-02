@@ -292,6 +292,18 @@
         "lat": -37.65,
         "lon": 145.52
       }
+    },
+    "market": {
+      "dealerBuyback": 0.8,
+      "listingMarkup": 1.1,
+      "listings": 12,
+      "tierWeights": {
+        "starter": 4,
+        "mid": 4,
+        "premium": 2,
+        "elite": 1,
+        "hyper": 0.25
+      }
     }
   }
 }
