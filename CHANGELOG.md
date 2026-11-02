@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Prelim weather: after 14 blocked days the weather is capped at overcast, and sun is guaranteed after 28.
 - Design: themable interface with Light, Dark and NDM (Nexxus Drako Multimedia brand) themes.
 - Design: England, Scotland, Wales and Northern Ireland race as the United Kingdom until a random future year when the UK splits in three and Northern Ireland joins Ireland.
+- Design: the Basque Country, Catalonia, Galicia and the Canary Islands can each become independent from Spain at a random future point.
 - Every flag has a short name and a long name (for example Australia and Commonwealth of Australia).
 - Flags are limited to nations and territories recognised by the FIA, IOC or FIFA. Excluded flags (Antarctica, Arab League, ASEAN, CEFTA, East African Community, United Nations) in `data/flags.json`, with a test that no world uses them.
 - Design: Brian and Joshua Drake and the four commentators age normally, and a child or an unrelated person in a similar role takes over on retirement or death.
