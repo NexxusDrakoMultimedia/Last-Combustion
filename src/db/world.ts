@@ -258,7 +258,9 @@ const count = (db: Database, table: string): number =>
 export function readWorldSummary(db: Database): WorldSummary | undefined {
   if (count(db, 'season') === 0) return undefined;
   return {
-    garages: count(db, 'garage'),
+    garages: Number(
+      db.exec("SELECT COUNT(*) FROM garage WHERE kind = 'racing'")[0]?.values[0]?.[0] ?? 0,
+    ),
     drivers: count(db, 'driver'),
     cars: count(db, 'car'),
     entries: count(db, 'entry'),

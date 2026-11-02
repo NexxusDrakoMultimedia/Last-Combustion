@@ -101,3 +101,13 @@ export function roundCosts(input: RoundCostInput): RoundCosts {
   const total = entryFees + tyres + practiceOnly + servicing + travel;
   return { entryFees, tyres: tyres + practiceOnly, servicing, travel, total };
 }
+
+/** What a dealer pays for a car: a share of its value. */
+export function dealerBuybackPrice(value: number): number {
+  return Math.round(value * cfg().market.dealerBuyback);
+}
+
+/** What a dealer asks for a used car: its value plus the dealer's margin. */
+export function listingPrice(value: number): number {
+  return Math.round(value * cfg().market.listingMarkup);
+}
