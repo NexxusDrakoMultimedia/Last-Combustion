@@ -17,6 +17,8 @@ import {
   starterOffers,
   type StarterOffers,
 } from '../db/starter';
+import { ownedCars, setEntryCar, type OwnedCar } from '../db/garage';
+import { buyUsedCar, openListings, refreshUsedMarket, type Listing } from '../db/market';
 import { startNextSeason, type Rollover } from '../db/rollover';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
@@ -29,6 +31,12 @@ import { getServices } from './services';
  * "Technical architecture").
  */
 let openDb: Database | undefined;
+
+/** The player's garage id, or null before one exists. */
+function playerGarageId(db: Database): number | null {
+  const v = db.exec('SELECT id FROM garage WHERE is_player = 1')[0]?.values[0]?.[0];
+  return typeof v === 'number' ? v : null;
+}
 
 export interface Notice {
   key: MessageKey;
@@ -47,6 +55,8 @@ interface CareerState {
   settlement: RoundSettlement | undefined;
   hub: HubView | undefined;
   starter: StarterOffers | undefined;
+  cars: OwnedCar[];
+  listings: Listing[];
   seasonEnd: SeasonEnd | undefined;
   rollover: Rollover | undefined;
   slotsInUse: number;
@@ -54,6 +64,8 @@ interface CareerState {
   createTestCareer(): Promise<void>;
   startCareer(setup: OwnerSetup): Promise<void>;
   chooseStarter(carId: number, driverId: number): Promise<void>;
+  buyListing(listingId: number): Promise<void>;
+  raceCar(carId: number): Promise<void>;
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
   runNextPrelims(): Promise<void>;
@@ -83,6 +95,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       nextFinal: nextFinalRound(db),
       hub: hubView(db),
       starter: starterOffers(db),
+      cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
+      listings: openListings(db),
     });
 
   const run = async (action: () => Promise<Notice | undefined>) => {
@@ -109,6 +123,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     settlement: undefined,
     hub: undefined,
     starter: undefined,
+    cars: [],
+    listings: [],
     seasonEnd: undefined,
     rollover: undefined,
     slotsInUse: 0,
@@ -128,6 +144,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         persistWorld(db, generateWorld(masterSeed));
         foundPlayerGarage(db, setup);
         createStarterOffers(db);
+        refreshUsedMarket(db);
         openDb?.close();
         openDb = db;
         set({
@@ -145,6 +162,30 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       run(async () => {
         if (!openDb) return undefined;
         chooseStarter(openDb, carId, driverId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    buyListing: (listingId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        buyUsedCar(openDb, garageId, listingId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    raceCar: (carId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        const entry = openDb.exec(
+          "SELECT race_number FROM entry WHERE garage_id = ? AND series = 'main' AND season_id = (SELECT MAX(id) FROM season) ORDER BY race_number LIMIT 1",
+          [garageId],
+        )[0]?.values[0]?.[0];
+        if (garageId === null || typeof entry !== 'number') return undefined;
+        setEntryCar(openDb, garageId, entry, carId);
         refresh(openDb);
         return undefined;
       }),
