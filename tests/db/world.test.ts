@@ -22,9 +22,9 @@ function freshWorld(): Database {
 }
 
 describe('persisting a world', () => {
-  it('writes every table and the migrated schema is at version 8', () => {
+  it('writes every table and the migrated schema is at version 9', () => {
     const db = freshWorld();
-    expect(getSchemaVersion(db)).toBe(8);
+    expect(getSchemaVersion(db)).toBe(9);
     expect(readWorldSummary(db)).toEqual({
       garages: 96,
       drivers: 313,
@@ -59,7 +59,7 @@ describe('persisting a world', () => {
     expect(
       scalar(
         db,
-        "SELECT p.name FROM series_official o JOIN place p ON p.id = o.residence_place_id WHERE o.name = 'Brian Drake'",
+        "SELECT p.name FROM series_official o JOIN place p ON p.id = o.residence_place_id WHERE o.name = 'Declan Marsh'",
       ),
     ).toBe('Healesville');
   });

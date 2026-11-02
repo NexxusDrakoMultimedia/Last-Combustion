@@ -334,5 +334,25 @@
       "wheels"
     ],
     "minTyreMm": 170
+  },
+  "negotiation": {
+    "counterMargins": [0.15, 0.07, 0.02],
+    "lowballWalkShare": [0.6, 0.8],
+    "patience": 3,
+    "patienceBonusAt": 50,
+    "leverageCap": 0.2,
+    "relationshipEffect": 0.1,
+    "rivalEffect": 0.2,
+    "leverageScale": 500,
+    "yearsPremium": 0.05,
+    "releaseFeeShare": 0.5,
+    "relationship": {
+      "keptDeal": 5,
+      "paidBonus": 3,
+      "renewed": 10,
+      "brokenContract": -10,
+      "walkedOut": -20,
+      "decayPerSeason": 1
+    }
   }
 }

@@ -52,4 +52,6 @@ Upgrades: `src/sim/upgrades.ts` holds the parts (`data/parts.json`), the Equaliz
 
 Auctions: `src/sim/auction.ts` has the increments, fees and `resolveLot` (proxy bidding), and `src/db/auction.ts` has `openAuction`, `openLots`, `consignCar`, `placeBid` and `closeAuction`; `createUsedCar` in `src/db/market.ts` makes the private sellers' cars for both the market and the auctions (migration 0008 adds `auction`, `auction_lot` and `auction_bid`).
 
+Negotiation: `src/sim/negotiation.ts` has the pure rules (walk-away value, patience, counters, `respond`, contract value and release fee, all from the `negotiation` block of `data/balance.json`), and `src/db/negotiation.ts` has relationships, `openDriverNegotiation` and `offerDriverContract` (migration 0009 adds `negotiation`, `offer` and `relationship`).
+
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.
