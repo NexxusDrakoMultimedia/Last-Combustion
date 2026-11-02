@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
-import { carModels, courses, manufacturers, places } from '../sim/worldgen/data';
+import { carModels, commentators, courses, manufacturers, places } from '../sim/worldgen/data';
+import { buildAllSectors } from '../sim/courses/sectors';
+import { gearItems, gearSuppliers } from '../sim/gear';
 import { ROAD_TYPES, type World } from '../sim/worldgen/types';
 
 /** Writes a generated world into an empty, migrated database. */
@@ -180,6 +182,59 @@ export function persistWorld(db: Database, world: World): void {
     run(
       'INSERT INTO flag_fans (flag, season_id, fans) VALUES (?, ?, ?)',
       world.flagFans.map((f) => [f.flag, seasonId, f.fans]),
+    );
+    run(
+      'INSERT INTO sector (course_id, sector_order, surface, start_km, length_m, corner_density, straight_m, elevation_change_m, width_m, overtake_spot, ref_seconds) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      buildAllSectors().map((x) => [
+        id(courseId, x.courseId),
+        x.order,
+        x.surface,
+        x.startKm,
+        x.lengthM,
+        x.cornerDensity,
+        x.straightM,
+        x.elevationChangeM,
+        x.widthM,
+        x.overtakeSpot ? 1 : 0,
+        x.refSeconds,
+      ]),
+    );
+    run(
+      'INSERT INTO commentator (id, stable_id, name, flag, hometown_place_id, background, role, focus, voice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      commentators.map((c, i) => [
+        i + 1,
+        c.id,
+        c.name,
+        c.flag,
+        id(placeId, c.hometownPlaceId),
+        c.background,
+        c.role,
+        JSON.stringify(c.focus),
+        c.voice,
+      ]),
+    );
+    const supplierId = new Map(gearSuppliers.map((s, i) => [s.id, i + 1]));
+    const itemId = new Map(gearItems.map((g, i) => [g.id, i + 1]));
+    run(
+      'INSERT INTO gear_supplier (id, stable_id, name, home_country) VALUES (?, ?, ?, ?)',
+      gearSuppliers.map((s, i) => [i + 1, s.id, s.name, s.homeCountry]),
+    );
+    run(
+      'INSERT INTO gear_item (id, stable_id, name, slot, tier, supplier_id, price, stats) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      gearItems.map((g, i) => [
+        i + 1,
+        g.id,
+        g.name,
+        g.slot,
+        g.tier,
+        g.supplierId ? id(supplierId, g.supplierId) : null,
+        g.price,
+        JSON.stringify(g.stats),
+      ]),
+    );
+    run(
+      'INSERT INTO driver_gear (driver_id, item_id) VALUES (?, ?)',
+      world.loadouts.map((l) => [l.driverId, id(itemId, l.itemId)]),
     );
     db.exec('COMMIT');
   } catch (error) {

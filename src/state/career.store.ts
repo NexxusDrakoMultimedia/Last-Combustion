@@ -5,6 +5,7 @@ import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
+import { nextRoundNumber, playPrelims, type PrelimSummary } from '../db/prelims';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
@@ -27,9 +28,12 @@ interface CareerState {
   schemaVersion: number | undefined;
   career: CareerRow | undefined;
   world: WorldSummary | undefined;
+  nextRound: number | null;
+  prelims: PrelimSummary | undefined;
   slotsInUse: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
+  runNextPrelims(): Promise<void>;
   saveSlot1(): Promise<void>;
   loadSlot1(): Promise<void>;
   exportFile(): Promise<void>;
@@ -51,6 +55,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       schemaVersion: getSchemaVersion(db),
       career: readCareer(db),
       world: readWorldSummary(db),
+      nextRound: nextRoundNumber(db),
     });
 
   const run = async (action: () => Promise<Notice | undefined>) => {
@@ -70,6 +75,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     schemaVersion: undefined,
     career: undefined,
     world: undefined,
+    nextRound: null,
+    prelims: undefined,
     slotsInUse: 0,
     notice: undefined,
 
@@ -87,6 +94,17 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         });
         persistWorld(openDb, generateWorld(masterSeed));
         refresh(openDb);
+        return undefined;
+      }),
+
+    runNextPrelims: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextRoundNumber(openDb);
+        if (round === null) return undefined;
+        const summary = playPrelims(openDb, round);
+        refresh(openDb);
+        set({ prelims: summary });
         return undefined;
       }),
 

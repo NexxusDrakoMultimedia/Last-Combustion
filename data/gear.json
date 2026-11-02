@@ -1,0 +1,390 @@
+{
+  "suppliers": [
+    {
+      "id": "brumby",
+      "name": "Brumby Gear",
+      "homeCountry": "AU"
+    },
+    {
+      "id": "vanta",
+      "name": "Vanta Safety",
+      "homeCountry": "IT"
+    },
+    {
+      "id": "kinetic",
+      "name": "Kinetic Works",
+      "homeCountry": "JP"
+    },
+    {
+      "id": "nordlys",
+      "name": "Nordlys Racewear",
+      "homeCountry": "SE"
+    }
+  ],
+  "items": [
+    {
+      "id": "helmet-brumby-road",
+      "name": "Brumby Road Helmet",
+      "slot": "helmet",
+      "tier": "basic",
+      "supplierId": "brumby",
+      "price": 600,
+      "stats": {
+        "composure": 1
+      }
+    },
+    {
+      "id": "helmet-vanta-circuit",
+      "name": "Vanta Circuit Helmet",
+      "slot": "helmet",
+      "tier": "club",
+      "supplierId": "vanta",
+      "price": 3500,
+      "stats": {
+        "composure": 2,
+        "consistency": 1
+      }
+    },
+    {
+      "id": "helmet-kinetic-aero",
+      "name": "Kinetic Aero Helmet",
+      "slot": "helmet",
+      "tier": "pro",
+      "supplierId": "kinetic",
+      "price": 18000,
+      "stats": {
+        "composure": 3,
+        "pace": 2,
+        "wetSkill": 1
+      }
+    },
+    {
+      "id": "helmet-nordlys-carbon",
+      "name": "Nordlys Carbon Helmet",
+      "slot": "helmet",
+      "tier": "elite",
+      "supplierId": "nordlys",
+      "price": 95000,
+      "stats": {
+        "composure": 4,
+        "pace": 3,
+        "consistency": 2,
+        "racecraft": 1
+      }
+    },
+    {
+      "id": "suit-brumby-overalls",
+      "name": "Brumby Overalls",
+      "slot": "suit",
+      "tier": "basic",
+      "supplierId": "brumby",
+      "price": 500,
+      "stats": {
+        "consistency": 1
+      }
+    },
+    {
+      "id": "suit-vanta-fireproof",
+      "name": "Vanta Fireproof Suit",
+      "slot": "suit",
+      "tier": "club",
+      "supplierId": "vanta",
+      "price": 3000,
+      "stats": {
+        "consistency": 2,
+        "tyreManagement": 1
+      }
+    },
+    {
+      "id": "suit-nordlys-thermal",
+      "name": "Nordlys Thermal Suit",
+      "slot": "suit",
+      "tier": "pro",
+      "supplierId": "nordlys",
+      "price": 20000,
+      "stats": {
+        "consistency": 3,
+        "tyreManagement": 2,
+        "wetSkill": 2
+      }
+    },
+    {
+      "id": "suit-kinetic-race",
+      "name": "Kinetic Race Suit",
+      "slot": "suit",
+      "tier": "elite",
+      "supplierId": "kinetic",
+      "price": 110000,
+      "stats": {
+        "consistency": 4,
+        "tyreManagement": 3,
+        "composure": 2,
+        "pace": 1
+      }
+    },
+    {
+      "id": "gloves-brumby-driving",
+      "name": "Brumby Driving Gloves",
+      "slot": "gloves",
+      "tier": "basic",
+      "supplierId": "brumby",
+      "price": 300,
+      "stats": {
+        "racecraft": 1
+      }
+    },
+    {
+      "id": "gloves-kinetic-grip",
+      "name": "Kinetic Grip Gloves",
+      "slot": "gloves",
+      "tier": "club",
+      "supplierId": "kinetic",
+      "price": 2500,
+      "stats": {
+        "racecraft": 2,
+        "tyreManagement": 1
+      }
+    },
+    {
+      "id": "gloves-vanta-touch",
+      "name": "Vanta Touch Gloves",
+      "slot": "gloves",
+      "tier": "pro",
+      "supplierId": "vanta",
+      "price": 14000,
+      "stats": {
+        "racecraft": 3,
+        "pace": 2,
+        "tyreManagement": 1
+      }
+    },
+    {
+      "id": "gloves-nordlys-precision",
+      "name": "Nordlys Precision Gloves",
+      "slot": "gloves",
+      "tier": "elite",
+      "supplierId": "nordlys",
+      "price": 75000,
+      "stats": {
+        "racecraft": 4,
+        "tyreManagement": 3,
+        "pace": 2,
+        "consistency": 1
+      }
+    },
+    {
+      "id": "boots-brumby-driving",
+      "name": "Brumby Driving Boots",
+      "slot": "boots",
+      "tier": "basic",
+      "supplierId": "brumby",
+      "price": 450,
+      "stats": {
+        "pace": 1
+      }
+    },
+    {
+      "id": "boots-vanta-pedal",
+      "name": "Vanta Pedal Boots",
+      "slot": "boots",
+      "tier": "club",
+      "supplierId": "vanta",
+      "price": 2800,
+      "stats": {
+        "pace": 2,
+        "consistency": 1
+      }
+    },
+    {
+      "id": "boots-kinetic-pedal",
+      "name": "Kinetic Pedal Boots",
+      "slot": "boots",
+      "tier": "pro",
+      "supplierId": "kinetic",
+      "price": 16000,
+      "stats": {
+        "pace": 3,
+        "racecraft": 2,
+        "tyreManagement": 1
+      }
+    },
+    {
+      "id": "boots-nordlys-titanium",
+      "name": "Nordlys Titanium Boots",
+      "slot": "boots",
+      "tier": "elite",
+      "supplierId": "nordlys",
+      "price": 88000,
+      "stats": {
+        "pace": 4,
+        "racecraft": 3,
+        "composure": 2,
+        "consistency": 1
+      }
+    },
+    {
+      "id": "trinket-worn-dice",
+      "name": "Worn Dice",
+      "slot": "trinket",
+      "tier": "club",
+      "supplierId": null,
+      "price": 2200,
+      "stats": {
+        "composure": 2,
+        "consistency": 1
+      }
+    },
+    {
+      "id": "trinket-wattle-sprig",
+      "name": "Wattle Sprig",
+      "slot": "trinket",
+      "tier": "club",
+      "supplierId": null,
+      "price": 2000,
+      "stats": {
+        "wetSkill": 3
+      }
+    },
+    {
+      "id": "trinket-road-map",
+      "name": "Folded Road Map",
+      "slot": "trinket",
+      "tier": "club",
+      "supplierId": null,
+      "price": 2400,
+      "stats": {
+        "affinityMountain": 3
+      }
+    },
+    {
+      "id": "trinket-pocket-torch",
+      "name": "Pocket Torch",
+      "slot": "trinket",
+      "tier": "club",
+      "supplierId": null,
+      "price": 2400,
+      "stats": {
+        "affinityNight": 3
+      }
+    },
+    {
+      "id": "trinket-beach-shell",
+      "name": "Beach Shell",
+      "slot": "trinket",
+      "tier": "club",
+      "supplierId": null,
+      "price": 2400,
+      "stats": {
+        "affinityCoast": 3
+      }
+    },
+    {
+      "id": "trinket-gum-leaf",
+      "name": "Forest Gum Leaf",
+      "slot": "trinket",
+      "tier": "club",
+      "supplierId": null,
+      "price": 2400,
+      "stats": {
+        "affinityForest": 3
+      }
+    },
+    {
+      "id": "trinket-brass-stopwatch",
+      "name": "Brass Stopwatch",
+      "slot": "trinket",
+      "tier": "pro",
+      "supplierId": null,
+      "price": 15000,
+      "stats": {
+        "pace": 3,
+        "consistency": 3
+      }
+    },
+    {
+      "id": "trinket-dashboard-saint",
+      "name": "Dashboard Saint",
+      "slot": "trinket",
+      "tier": "pro",
+      "supplierId": null,
+      "price": 13000,
+      "stats": {
+        "composure": 4,
+        "wetSkill": 2
+      }
+    },
+    {
+      "id": "trinket-garage-key",
+      "name": "Old Garage Key",
+      "slot": "trinket",
+      "tier": "pro",
+      "supplierId": null,
+      "price": 14000,
+      "stats": {
+        "racecraft": 3,
+        "tyreManagement": 3
+      }
+    },
+    {
+      "id": "trinket-drone-lens",
+      "name": "Drone Lens Charm",
+      "slot": "trinket",
+      "tier": "elite",
+      "supplierId": null,
+      "price": 70000,
+      "stats": {
+        "consistency": 3,
+        "composure": 3,
+        "wetSkill": 3
+      }
+    },
+    {
+      "id": "trinket-border-coin",
+      "name": "Border Coin",
+      "slot": "trinket",
+      "tier": "elite",
+      "supplierId": null,
+      "price": 0,
+      "stats": {
+        "pace": 3,
+        "composure": 3,
+        "racecraft": 3
+      }
+    },
+    {
+      "id": "trinket-founders-coin",
+      "name": "Founder's Coin",
+      "slot": "trinket",
+      "tier": "legendary",
+      "supplierId": null,
+      "price": 0,
+      "stats": {
+        "pace": 4,
+        "composure": 4,
+        "consistency": 4,
+        "racecraft": 2
+      }
+    }
+  ],
+  "setBonuses": {
+    "2": {
+      "composure": 1
+    },
+    "3": {
+      "composure": 2,
+      "consistency": 1
+    },
+    "4": {
+      "composure": 3,
+      "consistency": 2
+    }
+  },
+  "statCap": 10,
+  "budgets": {
+    "basic": [1, 2],
+    "club": [3, 4],
+    "pro": [6, 8],
+    "elite": [9, 12],
+    "legendary": [12, 16]
+  }
+}

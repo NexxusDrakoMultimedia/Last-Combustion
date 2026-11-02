@@ -22,9 +22,9 @@ function freshWorld(): Database {
 }
 
 describe('persisting a world', () => {
-  it('writes every table and the migrated schema is at version 2', () => {
+  it('writes every table and the migrated schema is at version 3', () => {
     const db = freshWorld();
-    expect(getSchemaVersion(db)).toBe(2);
+    expect(getSchemaVersion(db)).toBe(3);
     expect(readWorldSummary(db)).toEqual({
       garages: 96,
       drivers: 313,
@@ -38,6 +38,10 @@ describe('persisting a world', () => {
     expect(scalar(db, 'SELECT COUNT(*) FROM course')).toBe(6);
     expect(scalar(db, 'SELECT COUNT(*) FROM driver_road_affinity')).toBe(313 * 4);
     expect(scalar(db, 'SELECT COUNT(*) FROM series_official')).toBe(3);
+    expect(scalar(db, 'SELECT COUNT(*) FROM commentator')).toBe(4);
+    expect(scalar(db, 'SELECT COUNT(*) FROM sector')).toBeGreaterThan(100);
+    expect(scalar(db, 'SELECT COUNT(*) FROM gear_item')).toBe(28);
+    expect(scalar(db, 'SELECT COUNT(*) FROM driver_gear')).toBeGreaterThan(1000);
   });
 
   it('keeps every foreign key valid', () => {
