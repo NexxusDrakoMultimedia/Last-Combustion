@@ -33,6 +33,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Changed
 
+- The Junior Series power cap is 313 kW (about 426 PS) instead of 300 PS.
 - Starting fan counts are small to match a brand-new series: the series starts at 200,000 fans, drivers at 10–400 and garages at 5.
 - 2031 is the series' first year: nobody starts gold-bordered, race numbers are drawn at random and there is no history. Retired car models only stop being sold new.
 - The car roster is now 31 manufacturers and 96 models (hypercar, supercar, sports, JDM, Australian domestic and other), with 2 to 5 models per manufacturer.

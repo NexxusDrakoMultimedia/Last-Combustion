@@ -163,5 +163,9 @@
     "pole": {
       "bonus": 10000
     }
+  },
+  "junior": {
+    "powerCapKw": 313,
+    "kwPerPs": 0.7355
   }
 }

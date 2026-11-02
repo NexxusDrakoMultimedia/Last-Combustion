@@ -680,7 +680,7 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
 
 - **Purpose.** A championship for young drivers who have never reached a main-series final.
 - **Eligibility.** Drivers must be 25 or younger and must never have qualified for a main-series final.
-- **Power cap.** Cars may produce no more than 300 PS. A car that makes more as standard can be fitted with an intake restrictor that limits it to 300 PS. A car found over 300 PS is disqualified from the prelims. The Equalizer tyre-width rule still applies.
+- **Power cap.** Cars may produce no more than **313 kW** (about 426 PS, at 0.7355 kW per PS). A car that makes more as standard can be fitted with an intake restrictor that limits it to 313 kW. A car found over 313 kW is disqualified from the prelims. The Equalizer tyre-width rule still applies. Car data is stored in PS, so the cap is checked as `PS × 0.7355 ≤ 313`.
 - **Format.** Practice is condensed to 3 days and prelims from 7 days to 5, and the top 15 race the final the day after the prelims.
 - **Schedule.** Each Junior round runs at the same venue straight after the Super Series round: Junior practice day 1 is the day after the Super final race. The same dry-and-clear rule applies to Junior prelims.
 - **Points and perks.** Junior uses the original 2031 points table: the top 31 score points, with the top 15 scoring from the final. Any points scorer gets free tyres, a reserved place in the assistants' booth and a silver-outlined number.
@@ -1043,7 +1043,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 
 Four numbers run through the game as a quiet signature: **31**, **96**, **313** and **31396** (313 and 96 written together). The game calls them **arc numbers** and never explains them, and they are never spelled out in the interface beyond that name.
 
-- **Where they already sit.** 31 is the number of scoring positions and Pyra Drake's birthday date (31 March), 96 is the number of starting garages and of launch car models, and 313 is the reserved race number and the size of the starting field. Nothing about this is highlighted in the game.
+- **Where they already sit.** 31 is the number of scoring positions and Pyra Drake's birthday date (31 March), 96 is the number of starting garages and of launch car models, and 313 is the reserved race number, the size of the starting field and the Junior Series power cap in kilowatts. Nothing about this is highlighted in the game.
 - **Achievements.** A small group of achievements is built on them. Each is called an "arc" achievement, its text mentions only "an arc number", and the number appears only as a hidden threshold or progress counter.
 
 | Achievement | What it asks for |

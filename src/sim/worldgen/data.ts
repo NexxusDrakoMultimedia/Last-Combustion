@@ -18,6 +18,7 @@ export const courses = coursesJson as CourseData[];
 export const balance = balanceJson.worldgen;
 export const wearBalance = balanceJson.wear;
 export const simBalance = balanceJson.sim;
+export const juniorBalance = balanceJson.junior;
 export const populations = flagsJson.populations as Record<string, number>;
 
 export interface NameLists {
