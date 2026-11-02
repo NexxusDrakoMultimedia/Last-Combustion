@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 ### Changed
 
 - Course lap length capped at 80 km. Round 5 now runs Healesville–Narbethong–Toolangi–Chum Creek, and Round 6 is the shorter Lorne–Kennett River run.
+- Courses use sealed roads only; no dirt or gravel.
 - Mods must carry a GPL-compatible licence.
 
 ### Added

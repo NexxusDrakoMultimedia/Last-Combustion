@@ -58,7 +58,7 @@ The same drones that film the series also act as its marshals, warning drivers a
 
 ## Season calendar & Timeline
 
-The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a finale in Tasmania. Every course must be a mountain or road course with a lap of 10 to 80 km; urban street circuits are not allowed.
+The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a finale in Tasmania. Every course must be a mountain or road course with a lap of 10 to 80 km on sealed (paved) public roads only, with no dirt or gravel; urban street circuits are not allowed.
 
 - **Pyra Drake's Birthday & Season Start:** Pyra was born in 1996, celebrating her 35th birthday in Season 1 (2031) and her 40th birthday in Season 6 (2036). The first day of Round 1 practice and the opening ceremony always takes place on her birthday, **March 31st**.
 - **Season Wrap:** The racing season concludes in **mid-October** after Round 7.
@@ -640,7 +640,7 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `season` | year, era (`original` / `super`), final_size, status |
 | `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
 | `course` | name, state, shape (`loop` / `out_and_back`), lap_km, final_laps, road_type, altitude_m, night (bool) |
-| `sector` | course_id, order, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
+| `sector` | course_id, order, surface (always `sealed`), length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
 | `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
 | `garage` | name, home_state, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
 | `driver` | name, gender, birth_date, nationality, flag, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
@@ -748,7 +748,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 
 - **Stable IDs.** Everything a mod adds has a stable ID with the mod's prefix. Replacing a base item uses the base item's ID.
 - **Load order.** Mods load in order and the last to change an item wins. A conflict report names every override.
-- **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, lap length between 10 and 80 km, sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
+- **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, lap length between 10 and 80 km, every sector sealed (a course with any unsealed surface is rejected), sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
 - **Balance mods.** A mod that changes balance data is labelled in the save, its records are kept apart from default-world records, and achievements are disabled for that career.
 - **Safety.** Data only: no code, and SVGs are sanitised to remove scripts and external references.
 - **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
@@ -1052,7 +1052,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
 - **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
 - **Mod licences.** GPL-compatible licences are mandatory for mods.
-- **Lap length.** Maximum 80 km (minimum 10 km). Round 5 runs Healesville–Narbethong–Toolangi–Chum Creek and Round 6 is a shorter Lorne–Kennett River run.
+- **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. Round 5 runs Healesville–Narbethong–Toolangi–Chum Creek and Round 6 is a shorter Lorne–Kennett River run.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
 - **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
 - **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
@@ -1060,6 +1060,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Open**
 
+- [ ] Check that every proposed route is fully sealed, in particular the Goat Track (Round 1), the Narbethong–Toolangi link (Round 5) and the connecting roads near Cethana (Round 7). Replace any unsealed section with a sealed alternative.
 - [ ] Measured lap lengths for each proposed route (needed before M2 course data). Estimates only so far, because the mapping services (OpenStreetMap routing) are blocked in the design session. Choose and confirm the Narbethong–Toolangi link road for Round 5 and that the Round 6 roads connect as described. Round 5 is about 60 km, so it sits right at 5 laps (300 km) and becomes 6 laps if measured shorter.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
