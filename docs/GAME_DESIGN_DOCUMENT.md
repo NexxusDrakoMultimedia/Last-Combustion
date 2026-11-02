@@ -661,7 +661,7 @@ The game is licensed under the **GNU General Public License, version 3 or (at th
 - **Scope.** All code and all first-party data, art, audio and text are GPL-3.0-or-later unless a file says otherwise. `LICENSE` holds the licence text, every source file carries an `SPDX-License-Identifier` header, and the repository follows the REUSE specification.
 - **Dependencies and assets.** Only GPL-compatible licences are allowed: MIT, BSD, ISC, Apache-2.0, MPL-2.0, LGPL, CC0, CC BY and CC BY-SA 4.0 (one-way compatible), and SIL OFL fonts. Licences that are not compatible (non-commercial, no-derivatives, proprietary) are blocked by a licence check in CI. Third-party licences are listed in `CREDITS.md` and shown in-game. `flag-icons` is MIT, so it complies.
 - **Source.** The source is public. The About screen links to the exact source tag of the running build.
-- **Names and IP.** The game name "Last Combustion", its logo and the character Pyra Drake are trademarks and intellectual property of **Nexxus Drako Multimedia**. The GPL covers the software and content licensed under it, but it does not give anyone the right to use these names, the logo or the character. Forks must use a different name and logo and may not present the character as their own. `TRADEMARKS.md` states the policy (GPLv3 section 7 allows declining trademark rights). The copyright holder named in every SPDX header is Nexxus Drako Multimedia.
+- **Names and IP.** The game name "Last Combustion", its logo and the characters Pyra Drake, Brian Drake and Joshua Drake are trademarks and intellectual property of **Nexxus Drako Multimedia**. The GPL covers the software and content licensed under it, but it does not give anyone the right to use these names, the logo or the character. Forks must use a different name and logo and may not present the character as their own. `TRADEMARKS.md` states the policy (GPLv3 section 7 allows declining trademark rights). The copyright holder named in every SPDX header is Nexxus Drako Multimedia.
 - **Mods must be GPL-compatible.** Mods are data files read at runtime, and their authors keep their copyright, but every mod must carry a GPL-compatible licence to be loaded or listed. See "Modding".
 - **Easter egg.** The Founder's career check stores a hash of the normalised details, not the plain text, so browsing the source does not spoil it. This document is the only plain-text record.
 
@@ -876,7 +876,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 - **Saves.** A career records the mods used, with their versions, and mods are fixed when the career is created. A missing or changed mod warns before loading. Modded careers are labelled, and their records are not mixed into default-world records.
 - **Distribution.** Mods go in a local `mods/` folder (or are imported in the web build). A mod index, a public repository of mod listings with download links, feeds an in-game mod browser. If a Steam release goes ahead, Steam Workshop is added as a second source through the optional Steam module.
 - **Mod licence (mandatory).** `mod.json` must declare a `license` as an SPDX identifier, and the mod folder must include the licence text. Only GPL-compatible licences are accepted: GPL-3.0-or-later, GPL-3.0-only, AGPL-3.0, LGPL-3.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC, Apache-2.0, MPL-2.0, Unlicense, CC0-1.0, CC-BY-4.0 and CC-BY-SA-4.0 (and OFL-1.1 for fonts). A mod with a missing, unknown or incompatible licence (including non-commercial, no-derivatives or "all rights reserved") is rejected by the loader and the mod index. All art, audio and fonts inside a mod must also be GPL-compatible, and the licence is shown in the mod manager.
-- **Names in mods.** A mod may say it is made "for Last Combustion" or "compatible with Last Combustion" but may not use the logo, imply it is official, or use the Pyra Drake character without permission (see `TRADEMARKS.md`).
+- **Names in mods.** A mod may say it is made "for Last Combustion" or "compatible with Last Combustion" but may not use the logo, imply it is official, or use the Pyra Drake, Brian Drake or Joshua Drake characters without permission (see `TRADEMARKS.md`).
 - **Hosting policy.** Wherever we host mods or the index, we follow the standard DMCA takedown procedure, and we claim no responsibility for modifications that private players make or apply.
 
 ## Achievements and cloud saves
@@ -1174,7 +1174,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Modding scope.** Mods may also change parts, sponsors, suppliers and balance data.
 - **Platform features.** Achievements and cloud saves are enabled through a platform interface that works without Steam.
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
-- **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
+- **IP.** The name, logo, Pyra Drake and the fictional characters Brian and Joshua Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
 - **Mod licences.** GPL-compatible licences are mandatory for mods.
 - **Calendar.** Six closed loops, run clockwise around the country from South Australia (Round 1) to Western Australia (2), Queensland (3), New South Wales (4) and Victoria (5–6), ending at Healesville, the series' home. No out-and-back courses. Tasmania, the Northern Territory and the ACT are not in the base calendar and are open to mods.
 - **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. All six lap lengths are measured.
@@ -1190,7 +1190,6 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - [ ] Legal review of the ODbL attribution for the saved course outlines.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
-- [ ] Legal review of `TRADEMARKS.md`, and how the logo and Pyra Drake artwork are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
+- [ ] Legal review of `TRADEMARKS.md`, and how the logo and the artwork of the Drake characters are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
 - [ ] Confirm that the real half-brothers agree to a character being based on and named after them, and keep it recorded outside the repository.
-- [ ] Whether the fictional characters Brian and Joshua Drake are covered by the same IP reservation as Pyra Drake in `TRADEMARKS.md`.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).

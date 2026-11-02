@@ -8,9 +8,9 @@ The following are trademarks and intellectual property of **Nexxus Drako Multime
 
 - the game name **Last Combustion** (and the full series names, such as *The Last Combustion of the Petrol Engine World Motorsports Championship*)
 - the Last Combustion **logo**
-- the character **Pyra Drake**
+- the characters **Pyra Drake**, **Brian Drake** and **Joshua Drake** (Brian and Joshua are fictional characters)
 
-The GNU General Public License (version 3 or later) covers the software and the content released under it. It does not give you the right to use these names, the logo or the character. This is the additional term allowed by section 7(e) of the GPLv3.
+The GNU General Public License (version 3 or later) covers the software and the content released under it. It does not give you the right to use these names, the logo or the characters. This is the additional term allowed by section 7(e) of the GPLv3.
 
 ## What you may do
 
@@ -22,7 +22,7 @@ The GNU General Public License (version 3 or later) covers the software and the 
 
 - Use the name, logo or Pyra Drake in the name or branding of a fork or other product.
 - Suggest that a fork, mod or product is made, approved or supported by Nexxus Drako Multimedia.
-- Use the logo or depict or use the character Pyra Drake in a mod or fork.
+- Use the logo or depict or use the characters Pyra Drake, Brian Drake or Joshua Drake in a mod or fork.
 
 Forks must be renamed and must replace the logo.
 
