@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Junior Series eligibility rules: drivers must be 25 or younger on 1 March, must never have reached a main-series final, and cannot move back to Junior once promoted (`juniorEligibility`).
 - A driver's preferred number is recorded (their own number stays part of their legacy and their number fame when a ranked number has to be taken); schema version 10.
 - Race numbers 1 to 40 are now mandatory for last season's top 40 (they cannot be turned down), with `rankingNumbers` filling the numbers of drivers who are not racing from the next best-ranked drivers.
 - Milestone M4, fifth part (negotiation): the negotiation rules (hidden walk-away values, patience, counters, relationships) and driver contracts: open a negotiation, make offers, get counters or a walk-out, sign the driver and pay the release fee (schema version 9).

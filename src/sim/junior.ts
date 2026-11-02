@@ -16,3 +16,38 @@ export const isJuniorLegal = (ps: number): boolean => psToKw(ps) <= JUNIOR_POWER
 
 /** The power a car makes once a restrictor limits it to the Junior cap, in PS. */
 export const restrictedPs = (ps: number): number => Math.min(ps, kwToPs(JUNIOR_POWER_CAP_KW));
+
+/** A driver's age in whole years on a date (both as ISO dates). */
+export function ageOn(birthDate: string, date: string): number {
+  const [by, bm, bd] = birthDate.split('-').map(Number) as [number, number, number];
+  const [y, m, d] = date.split('-').map(Number) as [number, number, number];
+  return y - by - (m < bm || (m === bm && d < bd) ? 1 : 0);
+}
+
+export interface JuniorCandidate {
+  birthDate: string;
+  /** Whether the driver has ever qualified for a main-series final. */
+  qualifiedForFinal: boolean;
+  /** Whether the driver has already moved up to the Super Series (after a silver border). */
+  promoted: boolean;
+}
+
+export interface JuniorEligibility {
+  eligible: boolean;
+  /** Why not: too old, already reached a final, or already moved up and cannot go back. */
+  reasons: ('too_old' | 'reached_final' | 'promoted')[];
+}
+
+/**
+ * Whether a driver may race in the Junior Series in a season. A driver must be 25 or younger on
+ * the first of March of the season, must never have qualified for a main-series final, and cannot
+ * move back to Junior once they have moved up to the Super Series.
+ */
+export function juniorEligibility(driver: JuniorCandidate, seasonYear: number): JuniorEligibility {
+  const reasons: JuniorEligibility['reasons'] = [];
+  const cutoff = `${seasonYear}-${juniorBalance.ageDate}`;
+  if (ageOn(driver.birthDate, cutoff) > juniorBalance.maxAge) reasons.push('too_old');
+  if (driver.qualifiedForFinal) reasons.push('reached_final');
+  if (driver.promoted) reasons.push('promoted');
+  return { eligible: reasons.length === 0, reasons };
+}

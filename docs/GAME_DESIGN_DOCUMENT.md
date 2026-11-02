@@ -755,14 +755,14 @@ Positions 1–20 score from the final and 21–31 from the prelims. Total availa
 In 2036 the series adds a junior championship: **The Last Combustion of the Petrol Engine World Motorsports Junior Series Championship**, known as *Last Combustion Junior*.
 
 - **Purpose.** A championship for young drivers who have never reached a main-series final.
-- **Eligibility.** Drivers must be 25 or younger and must never have qualified for a main-series final.
+- **Eligibility.** Drivers must be 25 or younger on 1 March of the season (the day the season starts, so a driver who has turned 26 cannot compete), and must never have qualified for a main-series final. A driver who has moved up cannot come back (see "Mandatory Promotion"). The checks are built as `juniorEligibility` in `src/sim/junior.ts`.
 - **Power cap.** Cars may produce no more than **313 kW** (about 426 PS, at 0.7355 kW per PS). A car that makes more as standard can be fitted with an intake restrictor that limits it to 313 kW. A car found over 313 kW is disqualified from the prelims. The Equalizer tyre-width rule still applies. Car data is stored in PS, so the cap is checked as `PS × 0.7355 ≤ 313`.
 - **Format.** Practice is condensed to 3 days and prelims from 7 days to 5, and the top 15 race the final the day after the prelims.
 - **Schedule.** Each Junior round runs at the same venue straight after the Super Series round: Junior practice day 1 is the day after the Super final race. The same dry-and-clear rule applies to Junior prelims.
 - **Points and perks.** Junior uses the original 2031 points table: the top 31 score points, with the top 15 scoring from the final. Any points scorer gets free tyres, a reserved place in the assistants' booth and a silver-outlined number.
 - **Prizes.** Junior uses the original 2031 prize money: finalists earn $1,000,000 down to $20,000 by position. The Junior champion, decided on points, wins $10,000,000. Pole and overtake bonuses of $10,000 each build up through the year and are paid at season end.
 - **Numbers.** Junior cars carry a "J" beside their door number, to set them apart from main-series cars.
-- **Mandatory Promotion:** Junior drivers who earn a silver border MUST complete their junior season, then MUST enter the Super Series the following season.
+- **Mandatory Promotion:** Junior drivers who earn a silver border MUST complete their junior season, then MUST enter the Super Series the following season. **There is no way back:** a driver who has moved up from Junior after earning a silver-bordered number in their final Junior season can never return to the Junior Series, even if they are still 25 or younger and even if they lose their Super Series seat. A driver over 25 cannot compete in Junior at all.
 - **Shared garages.** Junior and Super entries belong to the same garages. One garage record runs entries in both series, and Junior entries use the garage's own name, flag and livery with the Junior "J" marking.
   - **Costs and mechanics.** Each Junior entry pays its own entry fee, tyres and mechanic time, drawn from the same budget and workforce.
   - **Prestige.** Junior entries count toward a garage's prestige at half the weight of a Super Series entry.
