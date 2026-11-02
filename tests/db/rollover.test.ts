@@ -40,8 +40,14 @@ function playedSeason(seed: string): Database {
 describe('starting the next season', () => {
   let db: Database;
   let result: ReturnType<typeof startNextSeason>;
+  const before = new Map<number, number>();
   beforeAll(() => {
     db = playedSeason('rollover');
+    for (const [id, pace] of db.exec('SELECT id, pace FROM driver')[0]!.values as [
+      number,
+      number,
+    ][])
+      before.set(id, pace);
     result = startNextSeason(db);
   }, 180_000);
 
@@ -105,6 +111,22 @@ describe('starting the next season', () => {
       ),
     ).toBe(0);
     expect(db.exec('PRAGMA foreign_key_check')).toEqual([]);
+  });
+
+  it('develops the drivers who carry on: the young gain and the old slip', () => {
+    const rows = db.exec(
+      `SELECT d.id, d.birth_date, d.pace FROM driver d WHERE d.retired_year IS NULL AND d.id <= 313`,
+    )[0]!.values as [number, string, number][];
+    const changed = rows.filter(([id, , pace]) => before.get(id) !== pace).length;
+    expect(changed).toBeGreaterThan(100);
+    const avg = (pick: (born: number) => boolean) => {
+      const diffs = rows
+        .filter(([, born]) => pick(Number(born.slice(0, 4))))
+        .map(([id, , pace]) => pace - before.get(id)!);
+      return diffs.reduce((t, x) => t + x, 0) / diffs.length;
+    };
+    expect(avg((born) => born >= 2008)).toBeGreaterThan(0);
+    expect(avg((born) => born <= 1994)).toBeLessThan(0);
   });
 
   it('cannot start twice, or before the season ends', () => {
