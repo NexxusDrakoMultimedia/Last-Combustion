@@ -46,4 +46,6 @@ This is the working summary of how the code is organised. The design reasons liv
 
 `FinalRace` in `src/sim/final/engine.ts` plays a final sector by sector (`tyres.ts` holds the wear and grip rules), and `playFinal` in `src/db/final.ts` reads the qualifiers from the database, runs the race and writes results, prize money, timing rows and wear (migration 0004).
 
-The simulation worker (`src/workers`), the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.
+The economy starts with `src/sim/economy.ts` (used prices, car value, round costs and distance, all from the `economy` block of `data/balance.json`), `src/db/market.ts` (`buyNewCar`, `modelsOnSale`, `valueOfCar`) and `src/db/finance.ts` (`settleRound` charges each garage its running costs, `garageFinance` summarises the ledger); migration 0005 adds `car_ownership`.
+
+The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.

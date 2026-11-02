@@ -20,6 +20,7 @@ test('creates, saves and reloads a career in the browser', async ({ page }) => {
   await page.getByRole('button', { name: messages['debug.runFinal'] }).click();
   await expect(page.getByText(/Round 1 final: \d+ finished/)).toBeVisible();
   await expect(page.getByText(/Winner: #\d+/)).toBeVisible();
+  await expect(page.getByText(/Round 1 costs: \d+ garages paid/)).toBeVisible();
 
   await page.getByRole('button', { name: messages['debug.saveSlot1'] }).click();
   await expect(page.getByText('1 save slot in use')).toBeVisible();

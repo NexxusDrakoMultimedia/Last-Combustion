@@ -235,5 +235,63 @@
     },
     "overtakeBonus": 10000,
     "classifiedShare": 0.5
+  },
+  "economy": {
+    "usedShareOfNew": {
+      "start": 0.7,
+      "perYear": 0.05,
+      "floor": 0.4
+    },
+    "wearValuePerPoint": 0.006,
+    "provenance": {
+      "perWin": 0.03,
+      "perChampionship": 0.25,
+      "perFan": 1.5e-7,
+      "cap": 5
+    },
+    "tierUpkeep": {
+      "starter": 1,
+      "mid": 1,
+      "premium": 1.5,
+      "elite": 2.5,
+      "hyper": 4,
+      "unique": 4
+    },
+    "costs": {
+      "entryFee": 3000,
+      "raceTyres": 1500,
+      "practiceTyres": 2100,
+      "servicing": 1200,
+      "travelBase": 2000,
+      "travelPerKm": 1,
+      "travelPerExtraEntry": 750,
+      "partsTop31Discount": 0.3
+    },
+    "venues": {
+      "round-1": {
+        "lat": -34.95,
+        "lon": 138.75
+      },
+      "round-2": {
+        "lat": -33.64,
+        "lon": 115.03
+      },
+      "round-3": {
+        "lat": -27.4,
+        "lon": 152.78
+      },
+      "round-4": {
+        "lat": -34.64,
+        "lon": 150.78
+      },
+      "round-5": {
+        "lat": -37.51,
+        "lon": 145.75
+      },
+      "round-6": {
+        "lat": -37.65,
+        "lon": 145.52
+      }
+    }
   }
 }

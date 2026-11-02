@@ -787,6 +787,8 @@ Cars change hands through dealers, private negotiation and the auction house. A 
 - **AI bidders.** Each AI garage has a budget and a want-list drawn from its profile. Its maximum bid is the car's value times a personal factor of 0.8 to 1.2, and rises for a chassis with a famous history.
 - **Selling.** The player can consign a chassis, choosing a reserve. Selling a car with an entry means finding a replacement car (the same-manufacturer rule applies in season).
 
+**Built so far (M4, first part).** New cars from dealers at the list price less any negotiated discount (a model is for sale from its introduced year until it retires, and one-off cars are never for sale), used base prices of 70% of new falling 5% a year to a floor of 40%, the value formula below with a chassis's race wins counted from the results, and the `car_ownership` history. Each garage with entries is charged its round costs (entry fee, tyres, servicing and travel from its base to the venue, see "Cost baseline") once the round's prelims are done. The used market, auction house, private sales and selling to a dealer come in the next parts, because they need cars that belong to nobody (a market owner), which the current schema does not allow.
+
 **Value.** The value of a chassis is `base × wear factor × provenance factor`.
 
 - **Base** is the used price from the price tiers, for its model and model year.
