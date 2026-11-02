@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Milestone M4, fourth part (auction house): weekly and festival auctions of used cars with reserves, proxy bidding, a 2% minimum raise, a 10% buyer premium and a 5% seller fee, consigning your own cars, and computer garages that bid at 0.8 to 1.2 times a car's value (schema version 8).
 - The four commentators are recorded as trademarks and intellectual property of Nexxus Drako Multimedia (`TRADEMARKS.md`), with their inspirations noted in the design (first names only).
 - Milestone M4, third part (upgrades and legality): 30 aftermarket parts in ten categories and three grades from six suppliers, buying and fitting them (one per category, priced by tier), their effect on power, weight, grip, handling and traction in the prelims and finals, the Equalizer kept true when weight changes, a road-legality budget, and scrutineering that disqualifies illegal cars from the prelims (schema version 7).
 - Milestone M4, second part (used market): selling a car to a dealer (80% of its value, listed at 110%), buying used cars from a market of 12 ordinary used cars, and a hidden market garage that owns cars while they are for sale (schema version 6).
