@@ -92,5 +92,12 @@
   "starter.drivers": "Driver",
   "starter.car": "{model}, {year}, {km, number} km, {wear}% worn, worth {value}",
   "starter.driver": "{name} {sign}, age {age}. Pace {pace}, consistency {consistency}, racecraft {racecraft}, tyres {tyres}, composure {composure}, wet {wet}.",
-  "starter.confirm": "Confirm choice"
+  "starter.confirm": "Confirm choice",
+  "market.cars": "Your cars",
+  "market.car": "{model}, {year}, {km, number} km, {wear}% worn, worth {value}",
+  "market.racing": "Racing as #{number}",
+  "market.use": "Race this car",
+  "market.heading": "Used market",
+  "market.listing": "{model}, {year}, {km, number} km, {wear}% worn, asking {price}",
+  "market.buy": "Buy"
 }
