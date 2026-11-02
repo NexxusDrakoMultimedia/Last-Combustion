@@ -38,6 +38,34 @@ The game has three career modes, all endless and all starting as an underdog wit
 - **Endless play.** Seasons continue past 2036, with drivers ageing and retiring and new generations arriving.
 - **Fictional brands.** All cars and manufacturers are fictional, so no licensing is needed.
 
+## Careers over time
+
+The player's character ages like everyone else, and the career carries on when the character's role changes. The world is never lost.
+
+**Death**
+
+- Characters die only of age or illness. Race deaths are not modelled: drones and rescue crews keep them out of the game, and a serious crash causes injury and time out, not death.
+- Annual chance of death: 0.2% under 60, 1% at 60–69, 3% at 70–79, 8% at 80–89 and 20% from 90.
+
+**Garage owner**
+
+- If the owner dies, or the player retires them (allowed in any off-season), the player creates a **new character** who takes over the same garage in the same world: its cars, drivers, cash, fans and records. The successor can be a relative (sharing the surname) or an unrelated buyer.
+- A new owner is created like any other owner (age 18 to 50) with a new name, gender, date of birth and hometown. The garage keeps its name, flag and colours, which the successor may change.
+- Handover is not free. Relationships with sponsors, suppliers and drivers each drop by 20 and recover through normal dealings. A headline and a memorial mark the change.
+
+**Owner-driver**
+
+- When the owner-driver retires from racing (any off-season after at least one season, and forced at 50), the same character becomes a **Garage owner**. Their driver record stays in the history, they keep their fans (which fade after retirement as in "Fans"), and the garage's seat is filled by a driver the player hires.
+- From then on the character follows the Garage owner rules, including succession.
+
+**Driver manager**
+
+- A driver can **found a garage at any time**, including mid-season, and becomes an **Owner-driver**. The driver's contract with their old garage must be bought out at its release fee or run to its end, and the new garage's entries start from the next round after its entry fees are paid.
+- **Founding fee:** $50,000, paid from the driver's cash.
+- **Funding that carries over** depends on fame and reputation: `carry % = clamp((fame + reputation) ÷ 200, 20%, 100%)`. The new garage starts with `(cash − fee) × carry %`. The rest stays with the driver as a personal reserve, which they may lend to the garage later at no interest. Personal sponsorship deals transfer at `carry %` of their remaining value if the sponsor agrees (see "Negotiations").
+- The garage also starts with 25% of the driver's fans, and prestige of `1 + fame ÷ 10`.
+- A Driver manager who retires can either found a garage the same way and continue as a Garage owner, or end the career with a retrospective and Hall of Fame entry if they qualify.
+
 ## Setting
 
 The year is 2031. Combustion cars are still legal and everyday on Australian roads, and every car in the series is a road-legal car its owner actually drives.
@@ -194,7 +222,7 @@ Numbers 1–40 follow last season's rankings and 41 and up are open to anyone, t
 - **Numbers 1–40: last season's rankings.** The driver who finished 1st takes #1, 2nd takes #2, and so on down to #40. A ranked driver may turn down their ranking number and apply for one from 41 up instead.
 - **Numbers 41 and up: open to anyone.** Any driver may apply for any free number from 41 upward. Numbers are re-chosen each season, and last season's holder gets first refusal.
 - **Number #313 (Reserved):** Permanently retired and reserved for founder Pyra Drake.
-- **Clashes:** after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
+- **Clashes** (decided by the series office under Joshua Drake): after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
 - **Black box:** the reigning champion's #1 carries a black box.
 - **Fame:** a number builds recognition over time; changing it resets some of that.
 
@@ -232,7 +260,7 @@ The Equalizer is the series' only real technical rule: a car's maximum tyre widt
 - **The trade-off.** Light cars get more tyre width per kilo, so they corner better; heavy, powerful cars keep their straight-line advantage.
 - **A maximum, not a fixed size.** Teams may run narrower tyres than their limit.
 - **Road legal; everything else is free.** Any registered, road-legal car powered by an internal combustion engine, with any engine, power level, aero or parts, as long as it stays road legal. Electric cars are not allowed. Hybrids may enter only with their kinetic energy-recovery system removed.
-- **Scrutineering.** Kerb weight, tyre width and road legality are checked after each run and race. Tyres over the limit mean disqualification.
+- **Scrutineering.** Kerb weight, tyre width and road legality are checked after each run and race by the series' technical team under Brian Drake. Tyres over the limit mean disqualification.
 - **Tyres.** One very resilient all-weather compound for everyone, supplied by Ironbark Tyre Co. and made to the Last Combustion spec. Each set lasts almost exactly one final race distance before it needs replacing. Allocation: unlimited sets in practice, one racing set for the prelim run, and one fresh set for the final race. Non-racing tyres are allowed on wet gap days during the prelims. There are no pit stops or tyre changes, so the race set runs the full final. Hard driving, wheelspin and sliding use up tyre life faster: a driver who overdrives can lose grip in the final kilometres, while a smooth driver keeps it to the flag.
 - **Sporting penalties.** Time penalties for causing contact or cutting the course.
 
@@ -265,7 +293,11 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
 ## Founders, Special Vehicles, and Ghost Record
 
 - **Pyra Drake:** Founder and chairwoman of Last Combustion. Born in **1996**, she celebrates her **35th birthday** in Season 1 (2031) and her **40th birthday** in Season 6 (2036). The opening ceremony and Round 1 practice always take place on her birthday, **March 31st**. She is a self-insert character and one of the best drivers in history, but does not actively race in LC main events. Her role is setting the first-ever course records, and her number **#313** is permanently retired. Her hometown is Healesville, Victoria, and she lives in Brisbane, Queensland.
-- **Drake Motorsports:** Pyra Drake's personal team where she is founder and owner, with her unique vehicle being a fictional Mazda RX-7 expy called the **Homura Spirit R-7** (rotary-powered lightweight sports car).
+- **Drake Motorsports:** Pyra Drake's personal team, based in **Brisbane**, Queensland, where she is founder and owner, with her unique vehicle being a fictional Mazda RX-7 expy called the **Homura Spirit R-7** (rotary-powered lightweight sports car).
+- **Series management (Brian and Joshua Drake):** Pyra's brothers run the day-to-day operations of Last Combustion from the Healesville headquarters, where they both live. Pyra remains chairwoman.
+  - **Brian Drake** runs the technical side: the regulations and the Equalizer, scrutineering, telemetry, the drone fleet and the attention-flag AI. In the game he issues technical bulletins, scrutineering rulings and rule-change announcements.
+  - **Joshua Drake** runs the interpersonal side: relations with garages, drivers, sponsors, suppliers and the media. In the game he handles number clashes, penalty appeals, entry disputes, ceremonies and the headlines about the series.
+  - They appear as senders of messages and in the headlines, and they never race.
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
 - **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. 
   - **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
@@ -716,7 +748,9 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 
 | Table | Key fields |
 | --- | --- |
-| `career` | mode, owner_name, owner_gender, owner_birth_date, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool), schema_version |
+| `career` | mode, character_id, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool), schema_version |
+| `character` | career_id, kind (`owner` / `driver` / `owner_driver`), name, gender, birth_date, hometown_place_id, residence_place_id, personal_cash, start_date, end_date, end_reason (`death` / `retired` / `became_owner` / `founded_garage`), predecessor_id |
+| `series_official` | name, role (`technical` / `interpersonal` / `chair`), residence_place_id |
 | `career_mod` | career_id, mod_id, version, load_order |
 | `standing_snapshot` | season_id, series, table (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
 | `season` | year, era (`original` / `super`), final_size, series_fans, status |
@@ -800,7 +834,7 @@ Driver mode is not available for the unlock: the Driver manager's driver always 
 
 - **No hints.** The setup screen treats every field normally. Number 313 and an age of 35 are rejected as usual when the rest does not match, with the standard messages. The Founder's career starts only when the player confirms and every field for the chosen mode matches. Name and garage match ignoring case and surrounding spaces.
 - **Overrides.** The #313 reservation is lifted for this career only. In Owner-driver mode the 18–30 age rule is lifted too, since she is 35 in 2031. In Garage owner mode her age already fits the 18–50 range, and the rule needs no override. In this world #313 belongs to the player and the NPC founder is replaced, so there is never a second Pyra Drake.
-- **Starting package (proposed, tunable).** Her Homura Spirit R-7 is the garage's one car. She has about 3 million fans (fame about 68), Drake Motorsports about 1.2 million and the R-7 about 800,000. Her hometown is Healesville and her residence is Brisbane, set automatically (they are not part of the unlock). Cash, staff and sponsors are the normal start for the mode, so the rise from nothing is still earned.
+- **Starting package (proposed, tunable).** Her Homura Spirit R-7 is the garage's one car. She has about 3 million fans (fame about 68), Drake Motorsports about 1.2 million and the R-7 about 800,000. Her hometown is Healesville and her residence is Brisbane, set automatically (they are not part of the unlock). Drake Motorsports is based in Brisbane. Cash, staff and sponsors are the normal start for the mode, so the rise from nothing is still earned.
   - **Owner-driver.** She is the driver, with elite preset stats (Pace 90, Consistency 85, Racecraft 85, Tyre management 85, Composure 85, Wet skill 80, all road affinities 80), and races as #313.
   - **Garage owner.** She is the owner and does not race, matching her role as chairwoman. The garage's first entry carries #313 and a driver chosen from the 5 offered.
 - **Timeline.** She is 35 in 2031, 40 in 2036 and ages and retires like any driver.
@@ -1127,6 +1161,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Starting ages.** Garage owner 18–50, Owner-driver 18–30, Driver manager always 18.
 - **Language.** English only, with all text externalised for later translation.
 - **Modding.** Mods for starting garages, drivers and stats, name lists, manufacturers, cars, tracks, parts, sponsors, suppliers and balance data.
+- **Careers over time.** An owner who dies or retires is replaced by a new character in the same world; a retiring owner-driver becomes a garage owner; a driver can found a garage at any time for a fee, with funding set by fame and reputation.
+- **Series management.** Brian Drake (technical) and Joshua Drake (interpersonal) run the day-to-day of the series from Healesville; Drake Motorsports is based in Brisbane.
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
 - **Flag artwork.** `lipis/flag-icons` (MIT).
@@ -1154,4 +1190,5 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and Pyra Drake artwork are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
+- [ ] Whether Brian and Joshua Drake (and the wider Drake family) are covered by the same IP reservation as Pyra Drake in `TRADEMARKS.md`.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).
