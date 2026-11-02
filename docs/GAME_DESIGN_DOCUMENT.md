@@ -66,6 +66,22 @@ The player's character ages like everyone else, and the career carries on when t
 - The garage also starts with 25% of the driver's fans, and prestige of `1 + fame ÷ 10`.
 - A Driver manager who retires can either found a garage the same way and continue as a Garage owner, or end the career with a retrospective and Hall of Fame entry if they qualify.
 
+**Each save is a universe**
+
+- A save holds one self-contained universe: its own world, history, almanac, records, rivalries and storylines, built from its master seed. Saves never share anything, and nothing carries between them except the player's settings and achievements.
+- The universe goes on without the player. The series, the other garages, the drivers and the history do not stop when the player's career does.
+
+**When a career fails**
+
+- **Failure ends the career, not the universe.** A garage can go bankrupt (cash below zero with no way to pay its bills at a season's end, after a sale of its cars and a bank-style bailout that the player may refuse), the owner or driver can die or retire with no one to carry on, or the player can simply walk away from the garage. The garage then ceases to operate (its closing year goes in the almanac, as in "Records and history"), its cars and staff are sold or released into the world's markets, and its history stays.
+- **The player then chooses between three paths:**
+  - **Reincarnate in the same universe** as a **new character**, who may be a relative of the old one (sharing the surname and some history) or unrelated, in an existing garage or in a **new, unrelated garage** that the new character founds. Rivals, sponsors and records carry on, and the new character starts with their own reputation and, as in "Starting conditions", the usual start for their role.
+  - **Take over an existing garage** in the same universe (as a new owner), if one is for sale or has failed and left a vacancy.
+  - **Reset the universe**, which deletes the save and starts a new one with a new master seed.
+- **The old career is remembered.** The failed career appears in the universe's history and Hall of Shame or Fame as it deserves, the almanac keeps its entries, and the commentary and headlines may refer to it.
+- **Achievements and the Founder's career.** Achievements are not lost when a career fails, and reincarnating does not count as starting a new game for achievements that need one.
+- **Data.** The `character` table's `end_reason` gains a `bankrupt` and an `abandoned` value, and the garage's `closed_year` is set when it stops operating.
+
 ## Setting
 
 The year is 2031. Combustion cars are still legal and everyday on Australian roads, and every car in the series is a road-legal car its owner actually drives.
@@ -980,7 +996,7 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | Table | Key fields |
 | --- | --- |
 | `career` | mode, character_id, master_seed, start_year, game_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool) |
-| `character` | career_id, kind (`owner` / `driver` / `owner_driver`), name, gender, birth_date, hometown_place_id, residence_place_id, personal_cash, start_date, end_date, end_reason (`death` / `retired` / `became_owner` / `founded_garage`), predecessor_id |
+| `character` | career_id, kind (`owner` / `driver` / `owner_driver`), name, gender, birth_date, hometown_place_id, residence_place_id, personal_cash, start_date, end_date, end_reason (`death` / `retired` / `became_owner` / `founded_garage` / `bankrupt` / `abandoned`), predecessor_id |
 | `series_official` | name, role (`technical` / `interpersonal` / `chair`), residence_place_id |
 | `career_mod` | career_id, mod_id, version, load_order |
 | `standing_snapshot` | season_id, series, table_kind (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
