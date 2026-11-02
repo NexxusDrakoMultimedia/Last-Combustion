@@ -32,3 +32,10 @@ path = "data/courses/outlines.json"
 precedence = "override"
 SPDX-FileCopyrightText = "OpenStreetMap contributors; Nexxus Drako Multimedia"
 SPDX-License-Identifier = "ODbL-1.0"
+
+# The Vyktory flag easter egg (a fictional nation of Nexxus Drako Multimedia).
+[[annotations]]
+path = "assets/flags/vyktory.svg"
+precedence = "override"
+SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
+SPDX-License-Identifier = "GPL-3.0-or-later"

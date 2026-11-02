@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Design: themable interface with Light, Dark and NDM (Nexxus Drako Multimedia brand) themes.
 - Design: the United Kingdom can shrink over a career (Northern Ireland joining Ireland, Scotland leaving, never Wales before them), with the long name changing to match.
 - Design: the Basque Country, Catalonia, Galicia and the Canary Islands can each become independent from Spain at a random future point.
+- Design and data: a very rare easter egg (1 in 31,031,996 per career) renames Australia the Commonwealth of Vyktory in 2032, with its own flag and a secret achievement.
 - Every flag has a short name and a long name (for example Australia and Commonwealth of Australia).
 - Flags are limited to nations and territories recognised by the FIA, IOC or FIFA. Excluded flags (Antarctica, Arab League, ASEAN, CEFTA, East African Community, United Nations) in `data/flags.json`, with a test that no world uses them.
 - Design: Brian and Joshua Drake and the four commentators age normally, and a child or an unrelated person in a similar role takes over on retirement or death.
