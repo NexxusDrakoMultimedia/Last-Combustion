@@ -5,6 +5,7 @@ import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
+import { settleRound, type RoundSettlement } from '../db/finance';
 import { nextFinalRound, playFinal, type FinalSummary } from '../db/final';
 import { nextRoundNumber, playPrelims, type PrelimSummary } from '../db/prelims';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
@@ -33,6 +34,7 @@ interface CareerState {
   nextFinal: number | null;
   prelims: PrelimSummary | undefined;
   final: FinalSummary | undefined;
+  settlement: RoundSettlement | undefined;
   slotsInUse: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
@@ -84,6 +86,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     nextFinal: null,
     prelims: undefined,
     final: undefined,
+    settlement: undefined,
     slotsInUse: 0,
     notice: undefined,
 
@@ -121,8 +124,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const round = nextFinalRound(openDb);
         if (round === null) return undefined;
         const summary = playFinal(openDb, round);
+        const settlement = settleRound(openDb, round);
         refresh(openDb);
-        set({ final: summary });
+        set({ final: summary, settlement });
         return undefined;
       }),
 

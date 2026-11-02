@@ -17,6 +17,7 @@ export function DebugPanel() {
     nextFinal,
     prelims,
     final,
+    settlement,
   } = useCareerStore();
   const {
     createTestCareer,
@@ -155,6 +156,15 @@ export function DebugPanel() {
               </li>
             )}
           </>
+        )}
+        {settlement && (
+          <li>
+            {t('debug.settlement', {
+              round: settlement.roundNumber,
+              garages: settlement.garages,
+              total: settlement.total,
+            })}
+          </li>
         )}
         <li>{t('debug.slots', { count: slotsInUse })}</li>
         {notice && <li>{t(notice.key, notice.values)}</li>}

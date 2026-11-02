@@ -78,5 +78,5 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 
 ## Security
 
-- The game has no accounts, server or telemetry. Mods are data only, and SVG from mods must be sanitised.
+- The game has no accounts, server or in-game telemetry. The only analytics is the Google tag on the web build on GitHub Pages, loaded only after the visitor accepts a cookie prompt, and only when the build has the `VITE_GTAG_ID` secret (see `src/platform/analytics.ts`); never commit the ID; local, test and desktop builds carry none. Mods are data only, and SVG from mods must be sanitised.
 - Do not commit secrets or tokens. Report vulnerabilities as described in `SECURITY.md`.
