@@ -428,6 +428,30 @@ Every driver has hidden potential and visible stats that grow with experience, a
 - **Contracts.** Length, salary, lead or development role, and a release fee. Rival garages can make offers, especially after attention flags.
 - **Junior pathway.** Junior drivers who reach a Super Series final earn gold and leave Junior eligibility.
 
+## Personalities and traits
+
+Drivers, cars and garages have traits, in the manner of an RPG. Traits give each one a recognisable character, make choices more than a stat comparison, and feed the incident, rivalry and storyline systems. Traits are data (`data/traits.json`), so mods can add or change them.
+
+**Drivers (full depth).** Each driver has a personality and 2 to 4 traits.
+
+- **Personality.** Five axes from 0 to 100: Temperament (calm to fiery), Ambition, Loyalty, Sociability and Discipline. They are generated with the world, drift slowly with events, and are visible only as descriptive words until the player has worked with the driver.
+- **Traits.** Named, with a clear effect and sometimes a drawback. Examples: *Wet-weather Wizard* (wet skill bonus), *Tyre Whisperer* (less tyre loss), *Hot-headed* (higher contact chance, bigger rivalry gain), *Clutch* (composure bonus in the final), *Media Darling* (faster fan growth), *Homebody* (better on home road type, unhappy far from residence), *Loyal* (accepts renewals, rarely listens to rival offers), *Mercenary* (follows the money), *Mentor* (raises a teammate's potential growth), *Glass Jaw* (composure drops after a crash).
+- **Earned traits.** Traits can be gained or lost through career events (a first win, a serious crash, a long rivalry), up to a cap of four.
+- **Where they act.** Race calls and team orders (a hot-headed driver may ignore "hold"), negotiations (ambition and loyalty shift asking price and willingness to move), incidents and rivalries, and storyline cards.
+
+**Cars (light).** Each chassis has up to 2 traits that come from its model and its history, such as *Balanced*, *Peaky power*, *Heavy front*, *Tyre eater*, *Cooks its brakes*, *Reliable*, *Restored* (a repaired car) or *Provenance* (auction-house history). Traits are small modifiers to the existing car ratings, wear or mechanical risk, and are shown on the car and at auction.
+
+**Garages (light).** Each garage has a culture with 1 or 2 traits, such as *Family outfit*, *Data-driven*, *Penny-pincher*, *Talent factory*, *Old guard* or *Showboat*. They shape AI behaviour (spending, risk, how they treat young drivers, which sponsors they court), what a player garage's staff and drivers expect, and the tone of storylines.
+
+**Rules.**
+
+- Traits never replace stats. A trait is worth about +-1 to 3 rating points or a clear behavioural change, and every strong upside has a cost.
+- All trait values and probabilities live in `data/traits.json` and `data/balance.json`, and generation uses the named stream `worldgen:traits`, so the same seed gives the same personalities.
+- Trait names and descriptions are in `locales/en.json`.
+- Founder's-career characters and the commentary team carry fixed traits written by hand.
+
+**Build order.** M4 (negotiation) adds personality to driver generation and contracts, M5 adds earned traits and driver-development effects, M6 adds trait-driven incidents, rivalries and storylines. Car and garage traits arrive with the auction house and AI garage behaviour in M4.
+
 ## Driver gear
 
 Drivers wear gear that adjusts and boosts their attributes: a helmet, a race suit, gloves, boots and up to two trinkets. Gear belongs to the driver, not the car, so it follows them to any garage.
