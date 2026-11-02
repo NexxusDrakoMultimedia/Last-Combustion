@@ -379,5 +379,10 @@
     "servicingShare": 0.25,
     "restorationShare": 0.12,
     "crashShare": 0.03
+  },
+  "season": {
+    "championPrize": 10000000,
+    "bestResultsPerRound": 2,
+    "rounds": 6
   }
 }

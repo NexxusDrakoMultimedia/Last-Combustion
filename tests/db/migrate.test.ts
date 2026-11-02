@@ -67,6 +67,8 @@ describe('migrate', () => {
       'sponsors',
       'deals',
       'repairs',
+      'standings',
+      'almanac',
     ]);
   });
 
