@@ -5,6 +5,7 @@ import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
+import { nextFinalRound, playFinal, type FinalSummary } from '../db/final';
 import { nextRoundNumber, playPrelims, type PrelimSummary } from '../db/prelims';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
@@ -29,11 +30,14 @@ interface CareerState {
   career: CareerRow | undefined;
   world: WorldSummary | undefined;
   nextRound: number | null;
+  nextFinal: number | null;
   prelims: PrelimSummary | undefined;
+  final: FinalSummary | undefined;
   slotsInUse: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
   runNextPrelims(): Promise<void>;
+  runNextFinal(): Promise<void>;
   saveSlot1(): Promise<void>;
   loadSlot1(): Promise<void>;
   exportFile(): Promise<void>;
@@ -56,6 +60,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       career: readCareer(db),
       world: readWorldSummary(db),
       nextRound: nextRoundNumber(db),
+      nextFinal: nextFinalRound(db),
     });
 
   const run = async (action: () => Promise<Notice | undefined>) => {
@@ -76,7 +81,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     career: undefined,
     world: undefined,
     nextRound: null,
+    nextFinal: null,
     prelims: undefined,
+    final: undefined,
     slotsInUse: 0,
     notice: undefined,
 
@@ -105,6 +112,17 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const summary = playPrelims(openDb, round);
         refresh(openDb);
         set({ prelims: summary });
+        return undefined;
+      }),
+
+    runNextFinal: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextFinalRound(openDb);
+        if (round === null) return undefined;
+        const summary = playFinal(openDb, round);
+        refresh(openDb);
+        set({ final: summary });
         return undefined;
       }),
 

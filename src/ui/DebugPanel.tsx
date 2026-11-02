@@ -6,10 +6,27 @@ import { useCareerStore } from '../state/career.store';
 
 /** A temporary panel that proves the foundations work end to end. Removed once real screens exist. */
 export function DebugPanel() {
-  const { status, schemaVersion, career, world, slotsInUse, notice, nextRound, prelims } =
-    useCareerStore();
-  const { createTestCareer, runNextPrelims, saveSlot1, loadSlot1, exportFile, refreshSlots } =
-    useCareerStore();
+  const {
+    status,
+    schemaVersion,
+    career,
+    world,
+    slotsInUse,
+    notice,
+    nextRound,
+    nextFinal,
+    prelims,
+    final,
+  } = useCareerStore();
+  const {
+    createTestCareer,
+    runNextPrelims,
+    runNextFinal,
+    saveSlot1,
+    loadSlot1,
+    exportFile,
+    refreshSlots,
+  } = useCareerStore();
   const busy = status === 'busy';
   const hasCareer = career !== undefined;
 
@@ -69,6 +86,14 @@ export function DebugPanel() {
         >
           {t('debug.runPrelims')}
         </button>
+        <button
+          type="button"
+          className={button}
+          disabled={busy || nextFinal === null}
+          onClick={() => void runNextFinal()}
+        >
+          {t('debug.runFinal')}
+        </button>
       </div>
       <ul className="space-y-1 text-sm text-zinc-300" aria-live="polite">
         {schemaVersion !== undefined && <li>{t('debug.schema', { version: schemaVersion })}</li>}
@@ -105,6 +130,27 @@ export function DebugPanel() {
                   raceNumber: prelims.top[0].raceNumber,
                   driver: prelims.top[0].driver,
                   time: formatLapTime(prelims.top[0].timeMs),
+                })}
+              </li>
+            )}
+          </>
+        )}
+        {final && (
+          <>
+            <li>
+              {t('debug.final', {
+                round: final.roundNumber,
+                finishers: final.finishers,
+                retirements: final.retirements,
+                overtakes: final.overtakes,
+              })}
+            </li>
+            {final.podium[0] && (
+              <li>
+                {t('debug.winner', {
+                  raceNumber: final.podium[0].raceNumber,
+                  driver: final.podium[0].driver,
+                  time: formatLapTime(Math.round(final.podium[0].timeSeconds * 1000)),
                 })}
               </li>
             )}

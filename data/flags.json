@@ -15,5 +15,68 @@
     "CA": 40000000,
     "IE": 5300000,
     "NL": 17800000
+  },
+  "excluded": ["AQ", "ARAB", "ASEAN", "CEFTA", "EAC", "UN"],
+  "names": {
+    "AU": {
+      "short": "Australia",
+      "long": "Commonwealth of Australia"
+    },
+    "NZ": {
+      "short": "New Zealand",
+      "long": "New Zealand"
+    },
+    "GB": {
+      "short": "United Kingdom",
+      "long": "United Kingdom of Great Britain and Northern Ireland"
+    },
+    "US": {
+      "short": "United States",
+      "long": "United States of America"
+    },
+    "JP": {
+      "short": "Japan",
+      "long": "Japan"
+    },
+    "DE": {
+      "short": "Germany",
+      "long": "Federal Republic of Germany"
+    },
+    "IT": {
+      "short": "Italy",
+      "long": "Italian Republic"
+    },
+    "FR": {
+      "short": "France",
+      "long": "French Republic"
+    },
+    "SE": {
+      "short": "Sweden",
+      "long": "Kingdom of Sweden"
+    },
+    "BR": {
+      "short": "Brazil",
+      "long": "Federative Republic of Brazil"
+    },
+    "KR": {
+      "short": "South Korea",
+      "long": "Republic of Korea"
+    },
+    "ZA": {
+      "short": "South Africa",
+      "long": "Republic of South Africa"
+    },
+    "CA": {
+      "short": "Canada",
+      "long": "Canada"
+    },
+    "IE": {
+      "short": "Ireland",
+      "long": "Ireland"
+    },
+    "NL": {
+      "short": "Netherlands",
+      "long": "Kingdom of the Netherlands"
+    }
   }
 }

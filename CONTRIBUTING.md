@@ -1,6 +1,6 @@
 # Contributing to Last Combustion
 
-Thank you for helping. The full rules are in the "Engineering standards and tooling" section of the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md). The short version:
+Thank you for helping. If you are an AI coding agent, read [AGENTS.md](AGENTS.md) first. The full rules are in the "Engineering standards and tooling" section of the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md). The short version:
 
 - **Licence.** The project is GPL-3.0-or-later. By contributing you agree your work is released under it. Sign off every commit (`git commit -s`) to certify the [Developer Certificate of Origin](https://developercertificate.org/).
 - **Branches.** Work on a short-lived branch and open a pull request into `main`. Keep each pull request focused.
