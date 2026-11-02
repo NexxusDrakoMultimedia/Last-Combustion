@@ -29,5 +29,15 @@
   "debug.settlement": "Round {round} costs: {garages} garages paid ${total, number} in entry fees, tyres, servicing and travel.",
   "debug.winner": "Winner: #{raceNumber} {driver}, {time}",
   "debug.prelims": "Round {round} prelims: {prelimDays} prelim days, final on {finalDate}. {finishers} set a time, {dnfs} did not finish, {qualifiers} reach the final.",
-  "debug.pole": "Pole: #{raceNumber} {driver} in {time}"
+  "debug.pole": "Pole: #{raceNumber} {driver} in {time}",
+  "pronoun.masculine.subject": "he",
+  "pronoun.masculine.object": "him",
+  "pronoun.masculine.possessive": "his",
+  "pronoun.feminine.subject": "she",
+  "pronoun.feminine.object": "her",
+  "pronoun.feminine.possessive": "her",
+  "pronoun.non_binary.subject": "they",
+  "pronoun.non_binary.object": "them",
+  "pronoun.non_binary.possessive": "their",
+  "easter.dragon.hint": "The dragon blood flows through this one."
 }

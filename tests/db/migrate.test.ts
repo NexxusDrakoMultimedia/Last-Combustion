@@ -71,6 +71,9 @@ describe('migrate', () => {
       'almanac',
       'titles',
       'trophies',
+      'world_events',
+      'identity',
+      'easter_egg',
     ]);
   });
 

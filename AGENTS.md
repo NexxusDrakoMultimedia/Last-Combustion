@@ -7,7 +7,7 @@ Guidance for AI coding agents (and a quick reference for people) working on **La
 - A single-player management game: TypeScript, React 19, Tailwind 4, Zustand, SQLite in the browser (SQL.js), built with Vite. Electron desktop builds come later.
 - The design is in `docs/GAME_DESIGN_DOCUMENT.md`. It is the source of truth for rules and numbers. Change it in the same pull request as any code that changes behaviour.
 - Work is staged in milestones M0 to M8 (see "Scope and build order" in the GDD). M0 (foundations), M1 (world generation) and M2 (prelims) are done; check `CHANGELOG.md` for the current state.
-- Licence: GPL-3.0-or-later. The name, logo and Pyra Drake are reserved; no other character is claimed (see `TRADEMARKS.md`).
+- Licence: GPL-3.0-or-later. The name, logo, Pyra Drake and the hidden driver characters are reserved; no other character is claimed (see `TRADEMARKS.md`).
 
 ## Setup and commands
 
@@ -50,6 +50,7 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 - **Data, not code, for numbers.** Balance values live in `data/balance.json`; reference data lives in `data/`. Mods use the same files, so keep schemas stable.
 - **Licences.** Only add dependencies and assets with GPL-compatible licences, and record third-party assets in `CREDITS.md`. `pnpm licenses` must pass.
 - **File headers.** New source files start with `SPDX-License-Identifier: GPL-3.0-or-later` and `SPDX-FileCopyrightText: Nexxus Drako Multimedia`.
+- **Hidden drivers.** Twelve hidden driver characters live in `data/easter_drivers.json`. In the game they show only a dragon mark with a cryptic hint; do not explain them in player-facing text, and do not copy their names into other code, tests or docs apart from the GDD.
 - **Easter egg.** Do not write the Founder's career unlock details into code, comments, tests or logs in plain text, and do not mention it in player-facing text (see the GDD).
 - **Real brands.** Cars, manufacturers and people in the shipped data are fictional. Real counterparts belong only in the GDD and the optional mod mapping, never in `data/`.
 - **Real people.** Do not add real surnames or personal details of real individuals anywhere.

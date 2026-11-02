@@ -30,7 +30,8 @@
       "ageMin": 18,
       "ageMax": 48,
       "femaleShare": 0.25,
-      "differentFlagShare": 0.05
+      "differentFlagShare": 0.05,
+      "nonBinaryShare": 0.04
     },
     "origins": {
       "hometownInFlagCountry": 0.92,

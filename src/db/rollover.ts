@@ -7,9 +7,11 @@ import { develop } from '../sim/progression';
 import { retires } from '../sim/rollover';
 import { ageOn } from '../sim/junior';
 import { buildCalendar, makeRookie, RESERVED_NUMBER } from '../sim/worldgen';
+import { balance as workBalance } from '../sim/worldgen/data';
 import { ROAD_TYPES } from '../sim/worldgen/types';
 import { seasonBalance } from '../sim/worldgen/data';
 import { readCareer } from './career';
+import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
 
 export interface Rollover {
@@ -18,6 +20,7 @@ export interface Rollover {
   rookies: number;
   contractsRenewed: number;
   entries: number;
+  worldChanges: AppliedChange[];
 }
 
 /**
@@ -41,6 +44,7 @@ export function startNextSeason(db: Database): Rollover {
   const rng = createRng(career.masterSeed);
   const retireRng = rng.stream(`rollover:${year}:retire`);
   const rookieRng = rng.stream(`rollover:${year}:rookies`);
+  const identityRng = rng.stream(`rollover:${year}:identity`);
   const growthRng = rng.stream(`rollover:${year}:growth`);
 
   const entries = all(
@@ -75,8 +79,8 @@ export function startNextSeason(db: Database): Rollover {
       db.run(
         `INSERT INTO driver (id, name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id,
                              pace, consistency, racecraft, tyre_management, composure, wet_skill, potential,
-                             home_road_type, fans, fame, reputation, gold_border_year, nickname)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, NULL, NULL)`,
+                             home_road_type, fans, fame, reputation, gold_border_year, nickname, identity)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, NULL, NULL, ?)`,
         [
           rookie.id,
           rookie.name,
@@ -94,6 +98,7 @@ export function startNextSeason(db: Database): Rollover {
           rookie.wetSkill,
           rookie.potential,
           rookie.homeRoadType,
+          identityRng.chance(workBalance.driver.nonBinaryShare) ? 'non_binary' : rookie.identity,
         ],
       );
       for (const type of ROAD_TYPES)
@@ -247,6 +252,7 @@ export function startNextSeason(db: Database): Rollover {
       insert.run([seasonId, p.e.garage_id as number, p.driverId, p.e.car_id as number, number]);
     }
     insert.free();
+    const worldChanges = applyWorldChanges(db, year);
     db.run('UPDATE career SET game_date = ? WHERE id = 1', [`${year}-02-01`]);
     db.exec('COMMIT');
     return {
@@ -255,6 +261,7 @@ export function startNextSeason(db: Database): Rollover {
       rookies: replaced.size,
       contractsRenewed: renewed.length,
       entries: entries.length,
+      worldChanges,
     };
   } catch (error) {
     db.exec('ROLLBACK');

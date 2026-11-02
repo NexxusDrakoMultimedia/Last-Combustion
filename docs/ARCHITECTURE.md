@@ -69,3 +69,5 @@ The simulation worker (`src/workers`), the rest of the economy and every gamepla
 `src/sim/names/generate.ts` expands themed patterns from `data/names/` into garage, car and nickname strings. `src/sim/titles.ts` and `src/db/titles.ts` define and award driver titles (tables from migrations 0016 and 0017). `src/sim/equalizer.ts` holds the tyre-width rule and the 4WD and mid-engine handicap.
 
 `src/db/rollover.ts` starts the next season (retirements, rookies, contracts, numbers, calendar, entries) using `src/sim/rollover.ts`.
+
+`src/sim/worldchanges.ts` plans the UK and Spanish flag changes for a career and `src/db/worldchanges.ts` applies them when a season starts (tables from migration 0018).
