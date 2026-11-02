@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Milestone M4, fifth part (negotiation): the negotiation rules (hidden walk-away values, patience, counters, relationships) and driver contracts: open a negotiation, make offers, get counters or a walk-out, sign the driver and pay the release fee (schema version 9).
+- The two series administrators are now Declan Marsh (technical) and Odette Brandt (interpersonal), unrelated to Pyra, and the driving analyst and lead commentator are now Reece Calloway and Alistair Thorne (all four names are placeholders).
 - Milestone M4, fourth part (auction house): weekly and festival auctions of used cars with reserves, proxy bidding, a 2% minimum raise, a 10% buyer premium and a 5% seller fee, consigning your own cars, and computer garages that bid at 0.8 to 1.2 times a car's value (schema version 8).
 - The four commentators are recorded as trademarks and intellectual property of Nexxus Drako Multimedia (`TRADEMARKS.md`), with their inspirations noted in the design (first names only).
 - Milestone M4, third part (upgrades and legality): 30 aftermarket parts in ten categories and three grades from six suppliers, buying and fitting them (one per category, priced by tier), their effect on power, weight, grip, handling and traction in the prelims and finals, the Equalizer kept true when weight changes, a road-legality budget, and scrutineering that disqualifies illegal cars from the prelims (schema version 7).
@@ -24,12 +26,12 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Design: hidden heritage (dual nationality) for people from regions that can change flag, so their stats count for both their current and future nations.
 - Every flag has a short name and a long name (for example Australia and Commonwealth of Australia).
 - Flags are limited to nations and territories recognised by the FIA, IOC or FIFA. Excluded flags (Antarctica, Arab League, ASEAN, CEFTA, East African Community, United Nations) in `data/flags.json`, with a test that no world uses them.
-- Design: Brian and Joshua Drake and the four commentators age normally, and a child or an unrelated person in a similar role takes over on retirement or death.
+- Design: the two series administrators and the four commentators age normally, and a child or an unrelated person in a similar role takes over on retirement or death.
 - Design: personalities and RPG-style traits for drivers (full), cars and garages (light), added to the Game Design Document.
 - `AGENTS.md` for AI coding agents (and `CLAUDE.md` pointing to it).
 - Milestone M2 prelim simulation: course sectors built from the saved outlines, car ratings and the lap-time model, weather and extra practice days, the 7-day running order, practice and prelim incidents (mistakes, spins, crashes, wildlife, blocked course), classification, points and pole, racing kilometres and wear, and a database layer that plays a round (schema version 3).
 - Driver gear: helmets, suits, gloves, boots and trinkets that boost attributes, with tiers, set bonuses and a cap, starting gear for AI drivers, and database tables.
-- The commentary team: Jayden Darra, Luke Winters, Kazumi Aikawa and José Antonio Carrera.
+- The commentary team: Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera.
 - Milestone M1 world generation: the 2031 field (96 garages, 313 drivers, 313 entries and cars, race numbers, contracts, fans, hometowns and residences, the six-round calendar), deterministic from a master seed and stored in the database (schema version 2).
 - Reference data in `/data`: 31 manufacturers and 96 car models, 164 places, name pools for 15 nationalities, courses, flag populations and world-generation balance values.
 - Manufacturer lineups that refresh about every five years (`src/sim/lineups.ts`).
@@ -41,7 +43,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Game Design Document with rules, setting, calendar, points, standings, negotiations, fans, modding and licensing.
 - Development specification: milestones, architecture, data model, formulas, a car roster of 60 models mapped to real cars for modding, world generation, screens and engineering standards.
 - Fan counts for drivers, cars, garages, flags and the series, and driver hometown and residence (Pyra Drake: Healesville and Brisbane).
-- Career succession (owner death or retirement, owner-driver retirement, drivers founding garages) and series management by Brian and Joshua Drake.
+- Career succession (owner death or retirement, owner-driver retirement, drivers founding garages) and series management by two administrators.
 - Route measuring tool and saved course outlines (`tools/routes/`, `data/courses/outlines.json`).
 - Balance prototype script (`tools/balance/prelim_check.py`).
 - Trademark and IP policy draft (`TRADEMARKS.md`), `CREDITS.md`, GNU GPL v3 licence (`LICENSE`), README, contributing guide and this changelog.

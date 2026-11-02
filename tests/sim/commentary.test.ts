@@ -6,8 +6,8 @@ import { commentators, places } from '../../src/sim/worldgen/data';
 describe('commentary team', () => {
   it('has the four commentators with the right homes and flags', () => {
     expect(commentators.map((c) => c.name)).toEqual([
-      'Jayden Darra',
-      'Luke Winters',
+      'Reece Calloway',
+      'Alistair Thorne',
       'Kazumi Aikawa',
       'José Antonio Carrera',
     ]);
@@ -16,8 +16,8 @@ describe('commentary team', () => {
       const place = places.find((p) => p.id === c.hometownPlaceId)!;
       return [place.name, place.country, c.flag];
     };
-    expect(home('jayden-darra')).toEqual(['Brisbane', 'AU', 'AU']);
-    expect(home('luke-winters')).toEqual(['Newcastle upon Tyne', 'GB', 'GB']);
+    expect(home('reece-calloway')).toEqual(['Brisbane', 'AU', 'AU']);
+    expect(home('alistair-thorne')).toEqual(['Newcastle upon Tyne', 'GB', 'GB']);
     expect(home('kazumi-aikawa')).toEqual(['Hakone', 'JP', 'JP']);
     expect(home('jose-antonio-carrera')).toEqual(['Sabadell', 'ES', 'ES']);
   });
