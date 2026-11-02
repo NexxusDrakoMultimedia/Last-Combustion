@@ -989,6 +989,24 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 - **Founder's career.** All achievements are disabled for that save. Starting it unlocks one secret achievement, "Founder's Birthday", and nothing else.
 - **Cloud saves.** Enabled through the platform interface (Steam Cloud in a Steam build, otherwise export/import and an optional auto-sync folder). Each save is one `.lcsave` file containing the database, its schema version, the mod list and a preview. On a sync conflict the newer file wins and the older one is kept as a backup copy that the player can restore. The web build stores saves in the browser and can export and import `.lcsave` files.
 
+## Arc numbers
+
+Four numbers run through the game as a quiet signature: **31**, **96**, **313** and **31396** (313 and 96 written together). The game calls them **arc numbers** and never explains them, and they are never spelled out in the interface beyond that name.
+
+- **Where they already sit.** 31 is the number of scoring positions and Pyra Drake's birthday date (31 March), 96 is the number of starting garages and of launch car models, and 313 is the reserved race number and the size of the starting field. Nothing about this is highlighted in the game.
+- **Achievements.** A small group of achievements is built on them. Each is called an "arc" achievement, its text mentions only "an arc number", and the number appears only as a hidden threshold or progress counter.
+
+| Achievement | What it asks for |
+| --- | --- |
+| Last of the Points | Finish in 31st place, the final scoring position, in any prelim |
+| Ghost of the Founder | Beat Pyra Drake's #313 ghost in a prelim on Hard |
+| A Full Field | Score 96 Garage Championship points in one season |
+| Arc Complete | Reach 31,396 fans with a driver |
+
+- **Rare touches.** Some cosmetic events, such as a drone saluting a driver or a special line in the commentary, fire at odds of 1 in 31,396 per lap and are drawn from the seeded random streams, so they are repeatable.
+- **Tone.** Players are never told these are the designer's favourite numbers. Keep mentions in the game, store text and marketing to the term "arc numbers". This document and the code may name the numbers.
+- **Interaction with other rules.** Arc achievements follow the normal achievement rules (disabled in the Founder's career and in careers using balance-changing mods).
+
 ## Localisation
 
 The game is English-only at launch, but all text is externalised so translation can be added later.
@@ -1318,6 +1336,7 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 | Fans | The follower count of a driver, car, garage, flag or the series |
 | Hometown / residence | Where a driver grew up / where they live now |
 | Founder's career | The hidden Garage owner or Owner-driver start as Pyra Drake |
+| Arc numbers | The four numbers (31, 96, 313, 31396) behind a small group of achievements and rare touches |
 
 ## Decisions and open questions
 
@@ -1336,6 +1355,7 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 - **Modding.** Mods for starting garages, drivers and stats, name lists, manufacturers, cars, tracks, parts, sponsors, suppliers and balance data, each with a mandatory GPL-compatible licence.
 - **Careers over time.** An owner who dies or retires is replaced by a new character in the same world; a retiring owner-driver becomes a garage owner; a driver can found a garage at any time for a fee, with funding set by fame and reputation.
 - **Incidents, rivalries and storylines.** Mid-race incidents, rivalries (heat and levels) and data-driven storylines run across practice, prelims, races, events and seasons.
+- **Arc numbers.** 31, 96, 313 and 31396 feature in a few achievements and rare touches, and appear in the game only as "arc numbers".
 - **Auction house.** Specific chassis are bought at auction or by negotiation, with their left quarter panel history and provenance included in the price.
 - **Chassis.** Every raced chassis has its own model year and wear, with racing km wearing ten times as much as road km.
 - **First year.** 2031 is the series' first year: nobody starts gold-bordered, and numbers and the Round 1 order are drawn at random.

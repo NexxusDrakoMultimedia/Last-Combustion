@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - Reference data in `/data`: 31 manufacturers and 96 car models, 164 places, name pools for 15 nationalities, courses, flag populations and world-generation balance values.
 - Manufacturer lineups that refresh about every five years (`src/sim/lineups.ts`).
 - Design: incidents, rivalries and storylines across practice, prelims, races, events and seasons; an auction house and negotiated car purchases with full chassis provenance.
+- Design: "arc numbers" and the small group of achievements built on them.
 - Every chassis has its own model year, road km, race km and wear; racing km wear a car ten times as much as road km (`src/sim/wear.ts`).
 - Milestone M0 foundations: Vite, React, TypeScript, Tailwind and Zustand scaffold; SQL.js database with numbered migrations; `.lcsave` save files with checksums, three slots plus autosave in IndexedDB; seeded named random streams; externalised English text with ICU messages; platform-services interface; foundations check screen.
 - Engineering setup: ESLint (including a ban on hard-coded UI text), Prettier, EditorConfig, Husky, commitlint, Vitest, fast-check, Playwright, licence check, REUSE compliance, GitHub Actions (CI, end-to-end, CodeQL, dependency review, docs, release, Pages), Dependabot, issue and pull request templates, `SECURITY.md`, `CODE_OF_CONDUCT.md`, architecture notes and decision records.
