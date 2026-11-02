@@ -65,7 +65,7 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 ## Commits and pull requests
 
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`; `!` for breaking changes), enforced by commitlint. Sign off commits (`git commit -s`).
-- Update `CHANGELOG.md` under `[Unreleased]` for user-visible changes (Keep a Changelog format). Versions follow Semantic Versioning.
+- Do not edit `CHANGELOG.md` in pull requests: it stays empty until there is a release. The first release is a simple list of the game's features, written at release time; later releases follow Keep a Changelog. Versions follow Semantic Versioning.
 - Keep pull requests focused. Use the pull request template. Do not merge your own pull request unless asked.
 - Never skip or disable a test to get CI green, and never force-push to a branch someone else is using.
 

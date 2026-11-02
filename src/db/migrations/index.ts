@@ -14,6 +14,8 @@ import { migration0010 } from './0010_preferred_number';
 import { migration0011 } from './0011_sponsors';
 import { migration0012 } from './0012_deals';
 import { migration0013 } from './0013_repairs';
+import { migration0014 } from './0014_standings';
+import { migration0015 } from './0015_almanac';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -30,4 +32,6 @@ export const migrations: readonly Migration[] = [
   migration0011,
   migration0012,
   migration0013,
+  migration0014,
+  migration0015,
 ];

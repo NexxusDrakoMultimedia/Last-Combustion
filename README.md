@@ -1,5 +1,7 @@
 # Last Combustion
 
+_Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft._
+
 A racing driver-management and car-upgrading game about a 2031 racing series for road-legal combustion cars, run on closed Australian public roads. Loosely inspired by _MF Ghost_; all names and branding are original.
 
 **Status:** milestone M0 (foundations) is in place: the project builds, creates a database, and saves and loads careers. There is no gameplay yet. See the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) and the [architecture notes](docs/ARCHITECTURE.md).

@@ -10,6 +10,8 @@ The series' full name is **The Last Combustion of the Petrol Engine World Motors
 
 The player runs a garage: buying and tuning cars, signing drivers, chasing sponsors, and fighting through a 300+ driver preliminary field to reach the final.
 
+**Tagline.** "Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft." It is the official tagline: it appears on the title screen, the store page, the repository and every public page (see "Branding and marketing").
+
 **Design pillars**
 
 - **Driver over horsepower.** The tyre-width Equalizer means smart setup and driver skill beat raw power.
@@ -65,6 +67,22 @@ The player's character ages like everyone else, and the career carries on when t
 - **Funding that carries over** depends on fame and reputation: `carry % = clamp((fame + reputation) ÷ 200, 20%, 100%)`. The new garage starts with `(cash − fee) × carry %`. The rest stays with the driver as a personal reserve, which they may lend to the garage later at no interest. Personal sponsorship deals transfer at `carry %` of their remaining value if the sponsor agrees (see "Negotiations").
 - The garage also starts with 25% of the driver's fans, and prestige of `1 + fame ÷ 10`.
 - A Driver manager who retires can either found a garage the same way and continue as a Garage owner, or end the career with a retrospective and Hall of Fame entry if they qualify.
+
+**Each save is a universe**
+
+- A save holds one self-contained universe: its own world, history, almanac, records, rivalries and storylines, built from its master seed. Saves never share anything, and nothing carries between them except the player's settings and achievements.
+- The universe goes on without the player. The series, the other garages, the drivers and the history do not stop when the player's career does.
+
+**When a career fails**
+
+- **Failure ends the career, not the universe.** A garage can go bankrupt (cash below zero with no way to pay its bills at a season's end, after a sale of its cars and a bank-style bailout that the player may refuse), the owner or driver can die or retire with no one to carry on, or the player can simply walk away from the garage. The garage then ceases to operate (its closing year goes in the almanac, as in "Records and history"), its cars and staff are sold or released into the world's markets, and its history stays.
+- **The player then chooses between three paths:**
+  - **Reincarnate in the same universe** as a **new character**, who may be a relative of the old one (sharing the surname and some history) or unrelated, in an existing garage or in a **new, unrelated garage** that the new character founds. Rivals, sponsors and records carry on, and the new character starts with their own reputation and, as in "Starting conditions", the usual start for their role.
+  - **Take over an existing garage** in the same universe (as a new owner), if one is for sale or has failed and left a vacancy.
+  - **Reset the universe**, which deletes the save and starts a new one with a new master seed.
+- **The old career is remembered.** The failed career appears in the universe's history and Hall of Shame or Fame as it deserves, the almanac keeps its entries, and the commentary and headlines may refer to it.
+- **Achievements and the Founder's career.** Achievements are not lost when a career fails, and reincarnating does not count as starting a new game for achievements that need one.
+- **Data.** The `character` table's `end_reason` gains a `bankrupt` and an `abandoned` value, and the garage's `closed_year` is set when it stops operating.
 
 ## Setting
 
@@ -213,6 +231,7 @@ Every series keeps five championship tables, all calculated from the same round 
 | Garage nations | Flags (garages) | The best two garage results per round among garages racing under that flag |
 
 - **Flag used.** A driver or garage scores for the flag it raced under in that round, as recorded in its history.
+- **Built so far (M5, standings and season end).** The five tables are built (`src/sim/standings.ts`, with `computeStandings` in `src/db/season.ts`): the Driver Championship with its full tiebreak (most wins, then 2nds and so on, then the best prelim time at the final round), and the garage, manufacturer and nation tables from each group's best two results per round (a flag's garages each score their best two first). `endSeason` closes a season once all six rounds are complete: it pays the champion's garage $10,000,000, pays the pole and overtake bonuses that built up through the year, gives a gold border to every driver who reached a final, records the two champions and saves the final tables as `standing_snapshot` rows.
 - **Ties.** Same tiebreak as the driver championship: most wins, then most 2nds, and so on, then best prelim time at the final round.
 - **Rewards.** The Driver and Garage Championships carry the prize money in this document. Manufacturer and nations titles carry prestige and fame only: the winning manufacturer's cars sell and sponsor better the next season, and a winning flag gives its drivers and garages a small fame boost. No extra prize money.
 - **Records.** Titles in every table go into the history and the Hall of Fame.
@@ -823,6 +842,7 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 | Garage | Founding date, entries each season, drivers signed and released, cars owned, Garage Championship results, prestige over time, sponsors and suppliers, prize money earned |
 | Car | Its own identity (chassis number), make and model, owners and garages, drivers, model year, kerb weight and tyre width at each round, parts and suppliers fitted at each round, door logos, trophy decals, results, road km and race km, wear, sales and auction history |
 
+- **The almanac.** There is an almanac of every driver and garage that ever scored a point in the Junior or Super Series. An entry has the full career: total points (with the Junior and Super Series split), seasons that scored, first and last scoring year, wins, finals, titles, and the year they started and ended. Every other driver and garage gets one line: 0 points, the year they started and the year they ended. Someone who retired or stopped operating before ever scoring a point has an end year, and someone still active has the end year blank (\"2031 to present\"). A driver starts in the first season they enter (or, if they never did, the year they turned 18), and a garage in its founding year. It is built as `almanac` in `src/db/almanac.ts`, with `retireDriver` and `closeGarage` recording the end year.
 - **Leaderboards** are built from these records: season standings (drivers, garages, manufacturers and nations), course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
 - **Car histories follow the car.** A car sold to another garage keeps its left-rear decals (its left quarter panel history) and its full record, so a famous chassis carries its story with it, and the sale price reflects it. The driver's right-rear decals go with the driver.
 
@@ -920,7 +940,7 @@ The project follows common industry practice from the first commit (milestone M0
 **Versioning and changelog**
 
 - **Semantic Versioning 2.0.0** for releases: `MAJOR.MINOR.PATCH`. Before 1.0 the minor number follows the milestones (M2 is `0.2.0`), and `1.0.0` is the first full release (M8). Pre-releases use `-alpha.N`, `-beta.N` and `-rc.N`. Release tags are `vX.Y.Z`.
-- **Changelog.** `CHANGELOG.md` follows *Keep a Changelog 1.1.0* (Added, Changed, Deprecated, Removed, Fixed, Security) with an `[Unreleased]` section. Entries are generated from Conventional Commits by release automation and edited by hand when needed.
+- **Changelog.** `CHANGELOG.md` follows *Keep a Changelog 1.1.0* (Added, Changed, Deprecated, Removed, Fixed, Security), but it is empty until there is a release: pull requests do not edit it. The first release (`0.1.0`) is a simple display of the game's features, written when it is released, and later releases list their changes under the usual headings, written at release time (from Conventional Commits and by hand where needed).
 - **Separate versions.** The save schema has an integer version with migrations, the data/mod schema has its own version, and `mod.json` states a SemVer range of supported game versions. Breaking changes to the mod format need a major release and a migration note.
 - **Releases.** Publishing a tag creates a GitHub Release with notes from the changelog and attaches the web build and the desktop builds with checksums.
 
@@ -959,7 +979,7 @@ Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with 
 - `docs/GAME_DESIGN_DOCUMENT.md` (this document), `docs/ARCHITECTURE.md`, architecture decision records in `docs/adr/` (MADR format), a modding guide in `docs/modding/`, and published JSON Schemas for all mod files in `schemas/`.
 - TypeDoc API documentation for the simulation layer. User-facing text lives in `/locales`.
 
-**Definition of done:** the change has tests, passes every required check, updates the changelog and docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
+**Definition of done:** the change has tests, passes every required check, updates the docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
 
 ## Course outlines
 
@@ -978,7 +998,7 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | Table | Key fields |
 | --- | --- |
 | `career` | mode, character_id, master_seed, start_year, game_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool) |
-| `character` | career_id, kind (`owner` / `driver` / `owner_driver`), name, gender, birth_date, hometown_place_id, residence_place_id, personal_cash, start_date, end_date, end_reason (`death` / `retired` / `became_owner` / `founded_garage`), predecessor_id |
+| `character` | career_id, kind (`owner` / `driver` / `owner_driver`), name, gender, birth_date, hometown_place_id, residence_place_id, personal_cash, start_date, end_date, end_reason (`death` / `retired` / `became_owner` / `founded_garage` / `bankrupt` / `abandoned`), predecessor_id |
 | `series_official` | name, role (`technical` / `interpersonal` / `chair`), residence_place_id |
 | `career_mod` | career_id, mod_id, version, load_order |
 | `standing_snapshot` | season_id, series, table_kind (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
@@ -1481,6 +1501,34 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
   - **Mods.** A theme is a data file (`data/themes.json`: a name and a token map), so mods can add themes. Themes that fail the contrast check are not listed. The NDM theme is shipped with the game, but the NDM logos, artwork and the characters stay reserved (see `TRADEMARKS.md`), and the fonts are loaded by the interface and not used for text in a way that needs a licence we lack.
   - **Fonts.** Display text uses Orbitron and body text uses Exo 2 (both SIL Open Font Licence, which is compatible with the GPL); HK Modular is not used in the game because it is licensed through Canva. Both fonts are bundled with the game and recorded in `CREDITS.md`, so the game does not load fonts from the internet at run time.
   - **Build order.** The token layer and the three themes arrive with the first real screens in M4, and the Settings control with the screen flow.
+
+## Branding and marketing
+
+Branding and social media are planned work for after the first playable season (M5), and nothing here is built yet. This section records what is decided and what is still open, so the work can start from it.
+
+**Decided**
+
+- **Name and tagline.** The game is **Last Combustion**, and the tagline is above ("Overview"). The tagline is used exactly as written, with no variations.
+- **Owner and identity.** The game, its logo and its characters belong to Nexxus Drako Multimedia (NDM) and sit under the NDM identity: maroon and gold, flat colour, no gradients or drop shadows, Orbitron and Exo 2 for web type (see "Themes" and the `design-system` repository). The game's own logo and key art are separate from the NDM logos and follow the same rules.
+- **Voice.** Warm, direct and identity-forward, in Australian English, with display lines in uppercase and running text in sentence case, and no emoji used as decoration. Every public-facing page carries the Acknowledgement of Country and NDM's statements, with the Intersex-Inclusive Progress Pride flag as the only pride flag, exactly as the design system requires.
+- **Web home.** The playable web build is at `lc.nexxusdrako.au`, and the Google tag there is loaded only after the visitor accepts cookies.
+- **Mods and forks** may say they are made "for" or "compatible with" Last Combustion, but not use the logo or characters (see `TRADEMARKS.md`).
+
+**To do, in order**
+
+1. **Brand kit:** logo lockups (stacked and horizontal, light and dark), the favicon and avatar, colour and type rules, a one-page style guide, and press-ready key art.
+2. **Store and site pages:** a landing page with the tagline, a short pitch, screenshots and a trailer, a press kit, and the Steam page if the Steam decision goes ahead (see "Platform services").
+3. **Social media:** the accounts and handles (to be chosen), a posting plan around the season calendar (the March 31st season start, round weekends, the November 11th Healesville festival and award nights), highlight clips from the final-race engine and commentary lines, and community channels that match the NDM ones already in use.
+4. **Content hooks:** the commentary team, the almanac and records, headlines and rivalries make shareable moments; a weekly challenge and a "this day in the almanac" post are candidates.
+5. **Community and legal:** a code of conduct for community spaces, a clear policy for fan art and streaming, and the trademark policy kept in step with `TRADEMARKS.md`.
+
+**Open questions**
+
+- Which platforms and handles to use, and who runs them.
+- Whether to run a public beta or a demo, and when.
+- The Steam decision and the store page timing.
+- Whether to commission key art and a trailer, or make them in-house.
+- Press and creator outreach, and how to handle the cookie prompt on marketing pages.
 
 ## Glossary
 
