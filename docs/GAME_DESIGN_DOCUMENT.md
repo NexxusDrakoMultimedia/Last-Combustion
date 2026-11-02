@@ -236,17 +236,18 @@ Every series keeps five championship tables, all calculated from the same round 
 
 ## Numbers, borders and liveries
 
-Numbers 1–40 follow last season's rankings and 41 and up are open to anyone, the champion's number is boxed in black, and a gold border marks anyone who has ever reached a final.
+Numbers 1–40 follow last season's rankings (and the top 40 must take them) and 41 and up are open to anyone, the champion's number is boxed in black, and a gold border marks anyone who has ever reached a final.
 
 **Race numbers & Special Numbers**
 
-- **Numbers 1–40: last season's rankings.** From 2032 onwards the driver who finished 1st takes #1, 2nd takes #2, and so on down to #40. A ranked driver may turn down their ranking number and apply for one from 41 up instead.
+- **Numbers 1–40: last season's rankings, and mandatory.** From 2032 onwards the driver who finished 1st must take #1, 2nd must take #2, and so on down to #40. A ranked driver cannot turn their number down. If a ranked driver is not racing in the Super Series this season (retired, or moved to the Junior Series), their number is free, and it goes to the best-ranked racing driver after 40 who has no number yet. Everyone else applies for a number from 41 up. The rule is built as `rankingNumbers` in `src/sim/numbers.ts`; the season rollover that applies it comes in M5.
 - **Season 1 (2031).** The series has no history, so there is no ranking: every number except #313 is open, and 1–40 are handed out like any other number. There is no black box and nobody has a gold border until the first final is raced.
 - **Numbers 41 and up: open to anyone.** Any driver may apply for any free number from 41 upward. Numbers are re-chosen each season, and last season's holder gets first refusal.
 - **Number #313 (Reserved):** Permanently retired and reserved for founder Pyra Drake.
 - **Clashes** (decided by the series office under Odette Brandt): after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
 - **Black box:** the reigning champion's #1 carries a black box.
-- **Fame:** a number builds recognition over time; changing it resets some of that.
+- **Fame:** a number builds recognition over time; changing it resets some of that. Taking a ranked number (1 to 40) does not reset it: the driver keeps the number fame they have built, and the fame of a ranked number they hold carries on in the same way.
+- **Preferred number.** Each driver has a preferred number, the one they chose for themselves (stored as `driver.preferred_number`, set when they are created). It stays part of their legacy, shown on their profile and in the records, even while a ranked number has to be worn, and a driver who is no longer ranked can go back to it (with first refusal, see above).
 
 **Gold and Silver borders**
 

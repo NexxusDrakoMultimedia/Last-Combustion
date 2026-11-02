@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- A driver's preferred number is recorded (their own number stays part of their legacy and their number fame when a ranked number has to be taken); schema version 10.
+- Race numbers 1 to 40 are now mandatory for last season's top 40 (they cannot be turned down), with `rankingNumbers` filling the numbers of drivers who are not racing from the next best-ranked drivers.
 - Milestone M4, fifth part (negotiation): the negotiation rules (hidden walk-away values, patience, counters, relationships) and driver contracts: open a negotiation, make offers, get counters or a walk-out, sign the driver and pay the release fee (schema version 9).
 - The two series administrators are now Declan Marsh (technical) and Odette Brandt (interpersonal), unrelated to Pyra, and the driving analyst and lead commentator are now Reece Calloway and Alistair Thorne (all four names are placeholders).
 - Milestone M4, fourth part (auction house): weekly and festival auctions of used cars with reserves, proxy bidding, a 2% minimum raise, a 10% buyer premium and a 5% seller fee, consigning your own cars, and computer garages that bid at 0.8 to 1.2 times a car's value (schema version 8).

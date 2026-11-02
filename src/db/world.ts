@@ -180,6 +180,9 @@ export function persistWorld(db: Database, world: World): void {
       "INSERT INTO entry (id, season_id, garage_id, driver_id, car_id, race_number, series) VALUES (?, ?, ?, ?, ?, ?, 'main')",
       world.entries.map((e) => [e.id, seasonId, e.garageId, e.driverId, e.carId, e.raceNumber]),
     );
+    db.run(
+      "UPDATE driver SET preferred_number = (SELECT race_number FROM entry WHERE entry.driver_id = driver.id AND entry.series = 'main' LIMIT 1)",
+    );
     run(
       'INSERT INTO flag_fans (flag, season_id, fans) VALUES (?, ?, ?)',
       world.flagFans.map((f) => [f.flag, seasonId, f.fans]),
