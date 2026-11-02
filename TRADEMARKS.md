@@ -8,7 +8,7 @@ The following are trademarks and intellectual property of **Nexxus Drako Multime
 
 - the game name **Last Combustion** (and the full series names, such as _The Last Combustion of the Petrol Engine World Motorsports Championship_)
 - the Last Combustion **logo**
-- the characters **Pyra Drake**, **Brian Drake**, **Joshua Drake**, **Jayden Darra**, **Luke Winters**, **Kazumi Aikawa** and **José Antonio Carrera** (apart from Pyra Drake, they are fictional characters)
+- the characters **Pyra Drake**, **Brian Drake**, **Joshua Drake**, **Jayden Darra**, **Luke Winters**, **Kazumi Aikawa** and **José Antonio Carrera** (apart from Pyra Drake, they are fictional characters; the names of Brian, Joshua, Jayden and Luke are placeholders that may change)
 
 The GNU General Public License (version 3 or later) covers the software and the content released under it. It does not give you the right to use these names, the logo or the characters. This is the additional term allowed by section 7(e) of the GPLv3.
 
