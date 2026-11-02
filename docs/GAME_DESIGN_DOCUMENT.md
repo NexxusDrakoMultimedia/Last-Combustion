@@ -1136,7 +1136,7 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 **Scrutineering.** After every run: kerb weight and tyre width checked against the Equalizer; road-legality score must be ≥ 0. Failure = disqualification from that run's result; the entry keeps its previous prelim time only if it has one.
 
-**Weather.** Each day for a round is rolled from a course climate profile: `dry_clear`, `overcast`, `wet`. Only `dry_clear` allows prelim runs. Rounds are guaranteed to finish: if more than 14 days pass since the planned prelim start, the series declares remaining runs "dry-enough" on the next overcast day.
+**Weather.** Each day for a round is rolled from a course climate profile: `dry_clear`, `overcast`, `wet`. Only `dry_clear` allows prelim runs. Rounds are guaranteed to finish: the weather settles if the prelims are held up. After 14 blocked days it can be no worse than overcast (the rain stops), and after 28 blocked days it is always dry and clear, so the prelims run.
 
 **Wear and reliability.** Every chassis and every part has `wear` from 0 (new) to 100 (worn out). Wear is added per kilometre, and the kind of kilometre matters:
 

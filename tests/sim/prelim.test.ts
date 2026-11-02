@@ -71,11 +71,35 @@ describe('weather and schedule', () => {
     expect(plan.days.length).toBe(14 + gaps.length);
   });
 
-  it('always finishes, even if it is wet every day', () => {
+  it('caps the weather at overcast after 14 blocked days, even if it is wet every day', () => {
     const wet = { ...course, climate: { dry_clear: 0, overcast: 0, wet: 1 } };
     const plan = planRoundDays(wet, '2031-03-31', createRng('x').stream('w'));
+    const extra = plan.days.slice(7);
+    expect(extra.slice(0, 14).every((d) => d.kind === 'gap' && d.weather === 'wet')).toBe(true);
+    expect(extra.slice(14, 28).every((d) => d.kind === 'gap' && d.weather === 'overcast')).toBe(
+      true,
+    );
+  });
+
+  it('guarantees dry, clear weather after 28 blocked days so the prelims run', () => {
+    const wet = { ...course, climate: { dry_clear: 0, overcast: 0, wet: 1 } };
+    const plan = planRoundDays(wet, '2031-03-31', createRng('x').stream('w'));
+    const extra = plan.days.slice(7);
+    expect(extra.slice(28).every((d) => d.kind === 'prelim' && d.weather === 'dry_clear')).toBe(
+      true,
+    );
     expect(plan.days.filter((d) => d.kind === 'prelim')).toHaveLength(7);
-    expect(plan.days.length).toBeLessThanOrEqual(7 + 28 + 7);
+    expect(plan.days).toHaveLength(7 + 28 + 7);
+  });
+
+  it('never needs more than 28 extra days, and never has rain after 14 of them', () => {
+    for (const seed of ['a', 'b', 'c', 'd']) {
+      const wet = { ...course, climate: { dry_clear: 0.01, overcast: 0.01, wet: 0.98 } };
+      const plan = planRoundDays(wet, '2031-03-31', createRng(seed).stream('w'));
+      const gaps = plan.days.filter((d) => d.kind === 'gap');
+      expect(gaps.length).toBeLessThanOrEqual(28);
+      plan.days.slice(7 + 14).forEach((d) => expect(d.weather).not.toBe('wet'));
+    }
   });
 
   it('puts the final the day after the last prelim day', () => {
