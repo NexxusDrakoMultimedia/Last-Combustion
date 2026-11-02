@@ -69,13 +69,13 @@ export interface SeasonEnd {
   championPoints: number;
   prizePaid: number;
   bonusesPaid: number;
-  goldBorders: number;
 }
 
 /**
  * Closes a season once all six rounds are done: pays the champion's prize and the pole and
- * overtake bonuses that built up through the year, gives gold borders to everyone who reached a
- * final, records the champions and saves the final tables.
+ * overtake bonuses that built up through the year, puts the champion's shield decals on the driver
+ * and the car, records the champions and saves the final tables. Gold borders, trophies and race
+ * prizes are not here: they are given out at the end of each race.
  */
 export function endSeason(db: Database): SeasonEnd {
   const season = all(db, 'SELECT id, year, status FROM season ORDER BY year DESC LIMIT 1')[0];
@@ -128,20 +128,21 @@ export function endSeason(db: Database): SeasonEnd {
     }
     db.run('UPDATE season_bonus SET paid = 1 WHERE season_id = ? AND paid = 0', [seasonId]);
 
-    const before = Number(
-      all(db, 'SELECT COUNT(*) AS n FROM driver WHERE gold_border_year IS NOT NULL')[0]!.n,
-    );
-    db.run(
-      `UPDATE driver SET gold_border_year = ?
-        WHERE gold_border_year IS NULL AND id IN (
-          SELECT e.driver_id FROM result r JOIN round ro ON ro.id = r.round_id
-            JOIN entry e ON e.id = r.entry_id
-           WHERE ro.season_id = ? AND r.final_pos IS NOT NULL)`,
-      [year, seasonId],
-    );
-    const goldBorders =
-      Number(all(db, 'SELECT COUNT(*) AS n FROM driver WHERE gold_border_year IS NOT NULL')[0]!.n) -
-      before;
+    // The champion's shield decal goes on the driver and on the car they drove that season.
+    const championCar = all(
+      db,
+      "SELECT car_id FROM entry WHERE season_id = ? AND driver_id = ? AND series = 'main' LIMIT 1",
+      [seasonId, championDriverId],
+    )[0]!.car_id as number;
+    for (const [ownerType, ownerId] of [
+      ['driver', championDriverId],
+      ['car', championCar],
+    ] as const) {
+      db.run(
+        "INSERT INTO trophy (owner_type, owner_id, kind, series, season_id, earned_on) VALUES (?, ?, 'title', 'main', ?, ?)",
+        [ownerType, ownerId, seasonId, date],
+      );
+    }
 
     const snapshot = db.prepare(
       'INSERT INTO standing_snapshot (season_id, table_kind, subject, after_round, points, wins, position) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -171,7 +172,6 @@ export function endSeason(db: Database): SeasonEnd {
       championPoints: champion.points,
       prizePaid: prize,
       bonusesPaid,
-      goldBorders,
     };
   } catch (error) {
     db.exec('ROLLBACK');

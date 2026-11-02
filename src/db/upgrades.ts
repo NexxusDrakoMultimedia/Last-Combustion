@@ -11,7 +11,7 @@ import {
   type PartData,
   type ScrutineeringResult,
 } from '../sim/upgrades';
-import type { Tier } from '../sim/worldgen/types';
+import type { Layout, Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
 import { dealPrice } from './deals';
 import { all } from './entries';
@@ -33,7 +33,7 @@ export function legalityOf(db: Database, carId: number): number {
 function carRow(db: Database, carId: number) {
   const car = all(
     db,
-    `SELECT c.id, c.garage_id, c.kerb_kg_current, c.tyre_width_mm, m.base_kerb_kg, m.max_tyre_mm, m.base_ps, m.tier,
+    `SELECT c.id, c.garage_id, c.kerb_kg_current, c.tyre_width_mm, m.base_kerb_kg, m.max_tyre_mm, m.base_ps, m.tier, m.layout,
             g.kind
        FROM car c
        JOIN car_model m ON m.id = c.car_model_id
@@ -54,6 +54,7 @@ function refit(db: Database, carId: number): void {
       ps: car.base_ps as number,
       kerbKg: car.base_kerb_kg as number,
       tyreMm: car.max_tyre_mm as number,
+      layout: car.layout as Layout,
     },
     fitted,
   );
@@ -158,5 +159,6 @@ export function scrutineerCar(db: Database, carId: number): ScrutineeringResult 
     car.kerb_kg_current as number,
     car.tyre_width_mm as number,
     fittedParts(db, carId),
+    car.layout as Layout,
   );
 }

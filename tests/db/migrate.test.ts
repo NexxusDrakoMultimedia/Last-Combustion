@@ -69,6 +69,8 @@ describe('migrate', () => {
       'repairs',
       'standings',
       'almanac',
+      'titles',
+      'trophies',
     ]);
   });
 

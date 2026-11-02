@@ -1,0 +1,423 @@
+{
+  "titles": [
+    {
+      "id": "point-scorer",
+      "name": "Point Scorer",
+      "category": "milestone",
+      "rarity": "common",
+      "description": "Scored a first championship point.",
+      "conditions": [
+        {
+          "metric": "points",
+          "atLeast": 0.1
+        }
+      ]
+    },
+    {
+      "id": "top-thirty-regular",
+      "name": "Top Thirty Regular",
+      "category": "milestone",
+      "rarity": "common",
+      "description": "Scored points in three seasons.",
+      "conditions": [
+        {
+          "metric": "seasons",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "finalist",
+      "name": "Finalist",
+      "category": "milestone",
+      "rarity": "common",
+      "description": "Reached a final.",
+      "conditions": [
+        {
+          "metric": "finals",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "final-regular",
+      "name": "Vanguard Regular",
+      "category": "milestone",
+      "rarity": "uncommon",
+      "description": "Reached ten finals.",
+      "conditions": [
+        {
+          "metric": "finals",
+          "atLeast": 10
+        }
+      ]
+    },
+    {
+      "id": "podium-finisher",
+      "name": "Podium Finisher",
+      "category": "milestone",
+      "rarity": "uncommon",
+      "description": "Finished on the podium.",
+      "conditions": [
+        {
+          "metric": "podiums",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "podium-habit",
+      "name": "Podium Habit",
+      "category": "milestone",
+      "rarity": "rare",
+      "description": "Finished on the podium ten times.",
+      "conditions": [
+        {
+          "metric": "podiums",
+          "atLeast": 10
+        }
+      ]
+    },
+    {
+      "id": "race-winner",
+      "name": "Race Winner",
+      "category": "milestone",
+      "rarity": "uncommon",
+      "description": "Won a final.",
+      "conditions": [
+        {
+          "metric": "wins",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "serial-winner",
+      "name": "Serial Winner",
+      "category": "milestone",
+      "rarity": "rare",
+      "description": "Won five finals.",
+      "conditions": [
+        {
+          "metric": "wins",
+          "atLeast": 5
+        }
+      ]
+    },
+    {
+      "id": "dominator",
+      "name": "The Dominator",
+      "category": "milestone",
+      "rarity": "epic",
+      "description": "Won fifteen finals.",
+      "conditions": [
+        {
+          "metric": "wins",
+          "atLeast": 15
+        }
+      ]
+    },
+    {
+      "id": "pole-hunter",
+      "name": "Pole Hunter",
+      "category": "skill",
+      "rarity": "uncommon",
+      "description": "Took pole position three times.",
+      "conditions": [
+        {
+          "metric": "poles",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "qualifying-king",
+      "name": "Qualifying King",
+      "category": "skill",
+      "rarity": "rare",
+      "description": "Took pole position ten times.",
+      "conditions": [
+        {
+          "metric": "poles",
+          "atLeast": 10
+        }
+      ]
+    },
+    {
+      "id": "one-lap-wonder",
+      "name": "One-Lap Wonder",
+      "category": "skill",
+      "rarity": "uncommon",
+      "description": "Took pole but never won a final.",
+      "conditions": [
+        {
+          "metric": "poles",
+          "atLeast": 1
+        },
+        {
+          "metric": "neverWon",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "champion",
+      "name": "Champion",
+      "category": "legacy",
+      "rarity": "epic",
+      "description": "Won the Drivers' Championship.",
+      "conditions": [
+        {
+          "metric": "championships",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "dynasty",
+      "name": "Dynasty",
+      "category": "legacy",
+      "rarity": "legendary",
+      "description": "Won three Drivers' Championships.",
+      "conditions": [
+        {
+          "metric": "championships",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "veteran",
+      "name": "Veteran of the Series",
+      "category": "legacy",
+      "rarity": "rare",
+      "description": "Scored points in ten seasons.",
+      "conditions": [
+        {
+          "metric": "seasons",
+          "atLeast": 10
+        }
+      ]
+    },
+    {
+      "id": "gold-standard",
+      "name": "Gold Standard",
+      "category": "legacy",
+      "rarity": "uncommon",
+      "description": "Earned a gold border.",
+      "conditions": [
+        {
+          "metric": "goldBorder",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "forest-runner",
+      "name": "Forest Runner",
+      "category": "road",
+      "rarity": "uncommon",
+      "description": "Won on a forest road.",
+      "conditions": [
+        {
+          "metric": "winsForest",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "forest-master",
+      "name": "Master of the Trees",
+      "category": "road",
+      "rarity": "rare",
+      "description": "Won three times on forest roads.",
+      "conditions": [
+        {
+          "metric": "winsForest",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "coastal-cruiser",
+      "name": "Coastal Cruiser",
+      "category": "road",
+      "rarity": "uncommon",
+      "description": "Won on a coastal road.",
+      "conditions": [
+        {
+          "metric": "winsCoast",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "king-of-the-coast",
+      "name": "King of the Coast",
+      "category": "road",
+      "rarity": "rare",
+      "description": "Won three times on coastal roads.",
+      "conditions": [
+        {
+          "metric": "winsCoast",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "mountain-goat",
+      "name": "Mountain Goat",
+      "category": "road",
+      "rarity": "uncommon",
+      "description": "Won on a mountain road.",
+      "conditions": [
+        {
+          "metric": "winsMountain",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "mountain-king",
+      "name": "Mountain King",
+      "category": "road",
+      "rarity": "rare",
+      "description": "Won three times on mountain roads.",
+      "conditions": [
+        {
+          "metric": "winsMountain",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "night-owl",
+      "name": "Night Owl",
+      "category": "road",
+      "rarity": "uncommon",
+      "description": "Won a night race.",
+      "conditions": [
+        {
+          "metric": "winsNight",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "midnight-ruler",
+      "name": "Midnight Ruler",
+      "category": "road",
+      "rarity": "rare",
+      "description": "Won three night races.",
+      "conditions": [
+        {
+          "metric": "winsNight",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "rain-dancer",
+      "name": "Rain Dancer",
+      "category": "skill",
+      "rarity": "uncommon",
+      "description": "Won a final in the wet.",
+      "conditions": [
+        {
+          "metric": "wetWins",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "storm-chaser",
+      "name": "Storm Chaser",
+      "category": "skill",
+      "rarity": "rare",
+      "description": "Won three finals in the wet.",
+      "conditions": [
+        {
+          "metric": "wetWins",
+          "atLeast": 3
+        }
+      ]
+    },
+    {
+      "id": "all-roader",
+      "name": "The All-Roader",
+      "category": "road",
+      "rarity": "epic",
+      "description": "Won on forest, coastal, mountain and night roads.",
+      "conditions": [
+        {
+          "metric": "winsForest",
+          "atLeast": 1
+        },
+        {
+          "metric": "winsCoast",
+          "atLeast": 1
+        },
+        {
+          "metric": "winsMountain",
+          "atLeast": 1
+        },
+        {
+          "metric": "winsNight",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "comeback-kid",
+      "name": "Comeback Kid",
+      "category": "skill",
+      "rarity": "rare",
+      "description": "Won a final from outside the top ten on the grid.",
+      "conditions": [
+        {
+          "metric": "comebackWins",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "untouchable",
+      "name": "Untouchable",
+      "category": "skill",
+      "rarity": "rare",
+      "description": "Won a final without touching another car.",
+      "conditions": [
+        {
+          "metric": "cleanWins",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "id": "iron-man",
+      "name": "Iron Man",
+      "category": "skill",
+      "rarity": "uncommon",
+      "description": "Finished ten finals in a row.",
+      "conditions": [
+        {
+          "metric": "finishStreak",
+          "atLeast": 10
+        }
+      ]
+    },
+    {
+      "id": "giant-killer",
+      "name": "Giant Killer",
+      "category": "skill",
+      "rarity": "rare",
+      "description": "Beat a champion in a final.",
+      "conditions": [
+        {
+          "metric": "beatChampions",
+          "atLeast": 1
+        }
+      ]
+    }
+  ]
+}

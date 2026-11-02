@@ -7,6 +7,9 @@ import commentatorsJson from '../../../data/commentators.json';
 import flagsJson from '../../../data/flags.json';
 import manufacturersJson from '../../../data/manufacturers.json';
 import namesJson from '../../../data/names.json';
+import garageThemesJson from '../../../data/names/garages.json';
+import carCategoriesJson from '../../../data/names/cars.json';
+import nicknameThemesJson from '../../../data/names/nicknames.json';
 import placesJson from '../../../data/places.json';
 import pointsJson from '../../../data/points.json';
 import prizesJson from '../../../data/prizes.json';
@@ -29,17 +32,32 @@ export const dealBalance = balanceJson.deals;
 export const repairBalance = balanceJson.repairs;
 export const seasonBalance = balanceJson.season;
 export const populations = flagsJson.populations as Record<string, number>;
-/** Flags that no driver, car or garage may race under (see the GDD, "Flags"). */
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
 export const flagNames = flagsJson.names as Record<string, { short: string; long: string }>;
+/** Flags that no driver, car or garage may race under (see the GDD, "Flags"). */
 export const excludedFlags = new Set(flagsJson.excluded);
 
 export interface NameLists {
   nationalityWeights: Record<string, number>;
   byNationality: Record<string, { male: string[]; female: string[]; surnames: string[] }>;
-  garageWords: { adjectives: string[]; nouns: string[]; suffixes: string[] };
   denyFullNames: string[];
+  /** Chance that a driver's or garage's nation is picked uniformly instead of by weight. */
+  wildcardNationShare: number;
+  /** Chance that a new driver has a nickname. */
+  nicknameShare: number;
 }
+
+/** A themed set of name patterns and the word lists they draw from. */
+export interface NameTheme {
+  label: string;
+  weight?: number;
+  patterns: string[];
+  words: Record<string, string[]>;
+}
+export const garageThemes = garageThemesJson.themes as Record<string, NameTheme>;
+export const carCategories = carCategoriesJson.categories as Record<string, NameTheme>;
+export const denyCarNames = new Set(carCategoriesJson.denyNames);
+export const nicknameThemes = nicknameThemesJson.themes as Record<string, NameTheme>;
 export const nameLists = namesJson as NameLists;
 
 export const commentators = commentatorsJson as Commentator[];

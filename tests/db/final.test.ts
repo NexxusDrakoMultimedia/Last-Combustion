@@ -82,6 +82,49 @@ describe('playing the final of a round', () => {
     ).toBe(1);
   });
 
+  it('hands out gold borders, the winner’s trophy decals and titles at the flag', () => {
+    expect(summary.goldBorders).toBe(15);
+    expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE gold_border_year IS NOT NULL')).toBe(15);
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM driver WHERE gold_border_year IS NOT NULL AND gold_border_year <> 2031`,
+      ),
+    ).toBe(0);
+    expect(scalar(db, "SELECT COUNT(*) FROM event_log WHERE type = 'gold_border'")).toBe(15);
+    const winner = scalar(
+      db,
+      'SELECT e.driver_id FROM result r JOIN entry e ON e.id = r.entry_id WHERE r.final_pos = 1',
+    );
+    const winnerCar = scalar(
+      db,
+      'SELECT e.car_id FROM result r JOIN entry e ON e.id = r.entry_id WHERE r.final_pos = 1',
+    );
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM trophy WHERE kind = 'win' AND owner_type = 'driver' AND owner_id = ${winner}`,
+      ),
+    ).toBe(1);
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM trophy WHERE kind = 'win' AND owner_type = 'car' AND owner_id = ${winnerCar}`,
+      ),
+    ).toBe(1);
+    expect(summary.titlesAwarded).toBeGreaterThan(0);
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM driver_title WHERE driver_id = ${winner} AND title_id = 'race-winner'`,
+      ),
+    ).toBe(1);
+  });
+
+  it('gives a driver who reached the final again no second border or award', () => {
+    expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE gold_border_year IS NOT NULL')).toBe(15);
+  });
+
   it('cannot be run twice, or before the prelims', () => {
     expect(() => playFinal(db, 1)).toThrow();
     expect(() => playFinal(db, 2)).toThrow();
