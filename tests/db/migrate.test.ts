@@ -74,6 +74,7 @@ describe('migrate', () => {
       'world_events',
       'identity',
       'easter_egg',
+      'owner',
     ]);
   });
 

@@ -8,6 +8,10 @@ import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db
 import { settleRound, type RoundSettlement } from '../db/finance';
 import { nextFinalRound, playFinal, type FinalSummary } from '../db/final';
 import { nextRoundNumber, playPrelims, type PrelimSummary } from '../db/prelims';
+import { hubView, type HubView } from '../db/hub';
+import { foundPlayerGarage, type OwnerSetup } from '../db/player';
+import { endSeason, type SeasonEnd } from '../db/season';
+import { startNextSeason, type Rollover } from '../db/rollover';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
@@ -35,9 +39,15 @@ interface CareerState {
   prelims: PrelimSummary | undefined;
   final: FinalSummary | undefined;
   settlement: RoundSettlement | undefined;
+  hub: HubView | undefined;
+  seasonEnd: SeasonEnd | undefined;
+  rollover: Rollover | undefined;
   slotsInUse: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
+  startCareer(setup: OwnerSetup): Promise<void>;
+  finishSeason(): Promise<void>;
+  newSeason(): Promise<void>;
   runNextPrelims(): Promise<void>;
   runNextFinal(): Promise<void>;
   saveSlot1(): Promise<void>;
@@ -63,6 +73,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       world: readWorldSummary(db),
       nextRound: nextRoundNumber(db),
       nextFinal: nextFinalRound(db),
+      hub: hubView(db),
     });
 
   const run = async (action: () => Promise<Notice | undefined>) => {
@@ -87,8 +98,61 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     prelims: undefined,
     final: undefined,
     settlement: undefined,
+    hub: undefined,
+    seasonEnd: undefined,
+    rollover: undefined,
     slotsInUse: 0,
     notice: undefined,
+
+    startCareer: (setup) =>
+      run(async () => {
+        const SQL = await getServices().loadSql();
+        const db = createNewDatabase(SQL);
+        const masterSeed = String(Date.now());
+        createCareer(db, {
+          mode: 'garage_owner',
+          masterSeed,
+          startYear: 2031,
+          difficulty: 'standard',
+        });
+        persistWorld(db, generateWorld(masterSeed));
+        foundPlayerGarage(db, setup);
+        openDb?.close();
+        openDb = db;
+        set({
+          prelims: undefined,
+          final: undefined,
+          settlement: undefined,
+          seasonEnd: undefined,
+          rollover: undefined,
+        });
+        refresh(db);
+        return undefined;
+      }),
+
+    finishSeason: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const seasonEnd = endSeason(openDb);
+        refresh(openDb);
+        set({ seasonEnd });
+        return undefined;
+      }),
+
+    newSeason: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const rollover = startNextSeason(openDb);
+        refresh(openDb);
+        set({
+          rollover,
+          prelims: undefined,
+          final: undefined,
+          settlement: undefined,
+          seasonEnd: undefined,
+        });
+        return undefined;
+      }),
 
     createTestCareer: () =>
       run(async () => {
