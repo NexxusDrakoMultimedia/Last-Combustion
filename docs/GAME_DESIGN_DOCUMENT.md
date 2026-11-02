@@ -539,7 +539,7 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 
 | Table | Key fields |
 | --- | --- |
-| `career` | mode, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool), schema_version |
+| `career` | mode, owner_name, owner_gender, owner_birth_date, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool), schema_version |
 | `career_mod` | career_id, mod_id, version, load_order |
 | `standing_snapshot` | season_id, series, table (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
 | `season` | year, era (`original` / `super`), final_size, status |
@@ -582,7 +582,15 @@ Records described in "Records and history" are all derivable from these tables; 
 | Race number | Open number ≥ 41, random if not chosen | Same | Same |
 | Sponsor | None; first small offer in week 1 | Same | None |
 
-**Driver creation (Owner-driver and Driver manager).** Spend 100 points across Pace, Consistency, Racecraft, Tyre management, Composure and Wet skill (min 20, max 60 each at start). Pick a gender, a date of birth that makes the driver 18 to 30 at the start, a home road type (+10 affinity), a name, flag and race number, and (for owners) the garage name, flag and two livery colours. Potential is hidden.
+**Character creation by mode**
+
+| Mode | Who is created | Age at the start |
+| --- | --- | --- |
+| Garage owner | The owner: name, gender, date of birth, plus the garage name, flag and two livery colours. The owner does not race | 18 to 50 |
+| Owner-driver | One person who is both owner and driver: the owner details above plus the driver details below | 18 to 30 |
+| Driver manager | The driver only: name, gender, flag, number and the driver details below | Always 18 (the date of birth is set automatically) |
+
+**Driver details (Owner-driver and Driver manager).** Spend 100 points across Pace, Consistency, Racecraft, Tyre management, Composure and Wet skill (min 20, max 60 each at start). Pick a home road type (+10 affinity), a name, gender, flag and race number. Potential is hidden. In Garage owner mode the first hired driver is chosen from the 5 offered.
 
 **Owner-driver growth.** The Owner-driver starts solo with one car and one entry, which is the player. The first hired mechanic, second car and second driver are unlocked by earnings and prestige, in the same way as in Garage owner mode.
 
@@ -590,27 +598,31 @@ Records described in "Records and history" are all derivable from these tables; 
 
 ## Hidden Founder's career (Easter egg)
 
-A player can race as Pyra Drake by entering her exact details in Owner-driver setup. Nothing in the game, tutorial, store page or marketing mentions it.
+A player can play as Pyra Drake by entering her exact details in Garage owner or Owner-driver setup. Nothing in the game, tutorial, store page or marketing mentions it.
 
 **Unlock details.** All of these must match at once:
 
 | Field | Value |
 | --- | --- |
-| Mode | Owner-driver |
-| Driver name | Pyra Drake |
+| Mode | Garage owner or Owner-driver |
+| Name | Pyra Drake |
 | Gender | Female |
 | Date of birth | 31 March 1996 |
 | Race number | 313 |
 | Garage name | Drake Motorsports |
-| Driver flag | Australia (`AU`) |
+| Driver flag | Australia (`AU`), Owner-driver only |
 | Garage flag | Australia (`AU`) |
 | Livery colours | Primary `#7f0000`, secondary `#ffd900` |
 
+Driver mode is not available for the unlock: the Driver manager's driver always starts at 18, and Pyra is 35 in 2031.
+
 **How it behaves**
 
-- **No hints.** The setup screen treats every field normally. Number 313 and an age of 35 are rejected as usual when the rest does not match, with the standard messages. The Founder's career starts only when the player confirms and every field matches. Name and garage match ignoring case and surrounding spaces.
-- **Overrides.** The #313 reservation and the 18–30 age rule are lifted for this career only. In this world #313 belongs to the player and the NPC founder is replaced, so there is never a second Pyra Drake.
-- **Starting package (proposed, tunable).** Elite preset stats (Pace 90, Consistency 85, Racecraft 85, Tyre management 85, Composure 85, Wet skill 80, all road affinities 80), high fame and reputation, and her Homura Spirit R-7 as the garage's one car. Cash, staff and sponsors are the normal Owner-driver start, so the rise from nothing is still earned.
+- **No hints.** The setup screen treats every field normally. Number 313 and an age of 35 are rejected as usual when the rest does not match, with the standard messages. The Founder's career starts only when the player confirms and every field for the chosen mode matches. Name and garage match ignoring case and surrounding spaces.
+- **Overrides.** The #313 reservation is lifted for this career only. In Owner-driver mode the 18–30 age rule is lifted too, since she is 35 in 2031. In Garage owner mode her age already fits the 18–50 range, and the rule needs no override. In this world #313 belongs to the player and the NPC founder is replaced, so there is never a second Pyra Drake.
+- **Starting package (proposed, tunable).** Her Homura Spirit R-7 is the garage's one car, with high fame and reputation. Cash, staff and sponsors are the normal start for the mode, so the rise from nothing is still earned.
+  - **Owner-driver.** She is the driver, with elite preset stats (Pace 90, Consistency 85, Racecraft 85, Tyre management 85, Composure 85, Wet skill 80, all road affinities 80), and races as #313.
+  - **Garage owner.** She is the owner and does not race, matching her role as chairwoman. The garage's first entry carries #313 and a driver chosen from the 5 offered.
 - **Timeline.** She is 35 in 2031, 40 in 2036 and ages and retires like any driver.
 - **Ghost record.** The founder's demo runs still exist as the #313 ghost option, so the player can race against her demo laps.
 - **Achievements.** All achievements are disabled in the Founder's career. Starting it unlocks one hidden achievement of its own, "Founder's Birthday", once per account.
@@ -924,9 +936,10 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Road and place names.** Real roads, routes and place names are used as geography and need no licensing.
 - **Junior and Super share garages.** One garage runs entries in both series.
 - **Owner-driver starts solo.** One car, one entry, no staff.
+- **Starting ages.** Garage owner 18–50, Owner-driver 18–30, Driver manager always 18.
 - **Language.** English only, with all text externalised for later translation.
 - **Modding.** Steam Workshop support for starting garages, drivers and stats, name lists, manufacturers, cars and tracks.
-- **Founder's career.** A hidden Easter egg start as Pyra Drake. It disables achievements and unlocks its own secret achievement.
+- **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
 - **Flag artwork.** `lipis/flag-icons` (MIT).
 - **Round 7 name.** The protected event name is not used. The round is the North-west Tasmania mountain roads.
