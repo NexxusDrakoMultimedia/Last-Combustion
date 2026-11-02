@@ -4,6 +4,7 @@ import type { Database } from 'sql.js';
 import { carModels, commentators, courses, manufacturers, places } from '../sim/worldgen/data';
 import { buildAllSectors } from '../sim/courses/sectors';
 import { gearItems, gearSuppliers } from '../sim/gear';
+import { sponsors } from '../sim/sponsors';
 import { partSuppliers, parts } from '../sim/upgrades';
 import { ROAD_TYPES, type World } from '../sim/worldgen/types';
 
@@ -262,6 +263,18 @@ export function persistWorld(db: Database, world: World): void {
         p.deltaTraction,
         p.tyreMm,
         p.legalityCost,
+      ]),
+    );
+    run(
+      'INSERT INTO sponsor (id, stable_id, name, home_country, tier, min_prestige, strength) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      sponsors.map((x, i) => [
+        i + 1,
+        x.id,
+        x.name,
+        x.homeCountry,
+        x.tier,
+        x.minPrestige,
+        x.strength,
       ]),
     );
     db.exec('COMMIT');

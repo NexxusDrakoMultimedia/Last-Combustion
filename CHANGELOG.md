@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Milestone M4, sixth part (sponsors): twelve fictional sponsors in four tiers, negotiating a title-sponsor deal (the sponsor pays no more than its walk-away fee, counters lower or walks away), and sponsors paying a sixth of the season fee each round (schema version 11).
 - Junior Series eligibility rules: drivers must be 25 or younger on 1 March, must never have reached a main-series final, and cannot move back to Junior once promoted, and a Super Series driver can drop down only if they never scored a point (`juniorEligibility`).
 - A driver's preferred number is recorded (their own number stays part of their legacy and their number fame when a ranked number has to be taken); schema version 10.
 - Race numbers 1 to 40 are now mandatory for last season's top 40 (they cannot be turned down), with `rankingNumbers` filling the numbers of drivers who are not racing from the next best-ranked drivers.
