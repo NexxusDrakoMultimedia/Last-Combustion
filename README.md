@@ -14,4 +14,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versionin
 
 ## Licence
 
-GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE).
+Copyright (C) Nexxus Drako Multimedia. GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE).
+
+The name "Last Combustion", its logo and the character Pyra Drake are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).

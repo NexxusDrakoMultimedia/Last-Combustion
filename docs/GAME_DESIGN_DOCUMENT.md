@@ -58,7 +58,7 @@ The same drones that film the series also act as its marshals, warning drivers a
 
 ## Season calendar & Timeline
 
-The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a finale in Tasmania. Every course must be a mountain or road course of at least 10 km; urban street circuits are not allowed.
+The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a finale in Tasmania. Every course must be a mountain or road course with a lap of 10 to 80 km; urban street circuits are not allowed.
 
 - **Pyra Drake's Birthday & Season Start:** Pyra was born in 1996, celebrating her 35th birthday in Season 1 (2031) and her 40th birthday in Season 6 (2036). The first day of Round 1 practice and the opening ceremony always takes place on her birthday, **March 31st**.
 - **Season Wrap:** The racing season concludes in **mid-October** after Round 7.
@@ -70,13 +70,13 @@ The season runs annually from **March to October**. It consists of seven rounds 
 | 2 | Oxley Highway, Wauchope–Walcha | NSW | Long, relentless corners; endurance test for drivers and tyres |
 | 3 | Royal National Park, Sydney | NSW | Forest and coastal roads just south of the city; run at night |
 | 4 | Great Alpine Road, Mount Hotham | Vic | High altitude cuts engine power, so light cars close the gap |
-| 5 | Black Spur, Healesville–Narbethong | Vic | Tight, damp forest sweepers; a rhythm test |
-| 6 | Great Ocean Road, Lorne–Apollo Bay | Vic | Coastal cliffs, sea spray, changeable weather; tyre management |
+| 5 | Chum Creek / Toolangi, Healesville | Vic | Tight, damp forest roads in the hills above the series' home town; a rhythm test |
+| 6 | Great Ocean Road, Lorne–Kennett River | Vic | Coastal cliffs, sea spray, changeable weather; tyre management |
 | 7 | North-west Tasmania mountain roads, Cethana / Hellyer Gorge | Tas | The finale: technical mountain roads, cold tarmac, big elevation changes |
 
 **Proposed routes**
 
-Each round runs on a loop or an out-and-back course. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. Lap lengths are rough estimates that still need measuring on a map.
+Each round runs on a loop or an out-and-back course. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. A lap is at most **80 km** and at least 10 km. Lap lengths are rough, unmeasured estimates that still need measuring on a map. When measured, the final's lap count is the smallest whole number of laps that reaches 300 km.
 
 | Rd | Route | Shape | Lap (approx.) | Final laps |
 | --- | --- | --- | --- | --- |
@@ -84,8 +84,8 @@ Each round runs on a loop or an out-and-back course. A preliminary run is **stri
 | 2 | Mount Seaview Climb: up the Oxley Highway toward Walcha and back, turning at a closed hairpin | Out-and-back | ~50 km | 6 |
 | 3 | Royal National Park Loop: Waterfall, McKell Avenue, Sir Bertram Stevens and Lady Wakehurst Drives to Otford, Princes Highway back to Waterfall | Loop | ~35 km | 9 |
 | 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham village and back | Out-and-back | ~60 km | 5 |
-| 5 | Black Spur–Reefton Loop: Healesville over the Black Spur to Marysville, the Reefton Spur to Warburton, back to Healesville | Loop | ~130 km | 3 |
-| 6 | Otway Loop: Lorne along the Great Ocean Road to Apollo Bay, inland via Skenes Creek, Forrest and Deans Marsh, back to Lorne | Loop | ~110 km | 3 |
+| 5 | Chum Creek–Toolangi Loop: Healesville north on Chum Creek Road through Chum Creek to Toolangi, then back down the Healesville–Kinglake Road to Healesville; connecting roads to be confirmed | Loop | ~35 km | 9 |
+| 6 | Kennett River Run: Lorne along the Great Ocean Road through Wye River to Kennett River and back, turning at a closed junction | Out-and-back | ~45 km | 7 |
 | 7 | Cethana Loop: the mountain roads near Sheffield and the Cethana dam; connecting roads to be chosen | Loop | ~40 km | 8 |
 
 ## Weekend format & Management Interface
@@ -556,8 +556,8 @@ The game is licensed under the **GNU General Public License, version 3 or (at th
 - **Scope.** All code and all first-party data, art, audio and text are GPL-3.0-or-later unless a file says otherwise. `LICENSE` holds the licence text, every source file carries an `SPDX-License-Identifier` header, and the repository follows the REUSE specification.
 - **Dependencies and assets.** Only GPL-compatible licences are allowed: MIT, BSD, ISC, Apache-2.0, MPL-2.0, LGPL, CC0, CC BY and CC BY-SA 4.0 (one-way compatible), and SIL OFL fonts. Licences that are not compatible (non-commercial, no-derivatives, proprietary) are blocked by a licence check in CI. Third-party licences are listed in `CREDITS.md` and shown in-game. `flag-icons` is MIT, so it complies.
 - **Source.** The source is public. The About screen links to the exact source tag of the running build.
-- **Names.** The GPL does not grant rights to the Last Combustion name, logo or the Pyra Drake character. A short trademark policy covers forks and mods (see open questions).
-- **Mods.** Mods are data files read at runtime. Their authors keep their own copyright and choose their own licence. Legal review is listed in the open questions.
+- **Names and IP.** The game name "Last Combustion", its logo and the character Pyra Drake are trademarks and intellectual property of **Nexxus Drako Multimedia**. The GPL covers the software and content licensed under it, but it does not give anyone the right to use these names, the logo or the character. Forks must use a different name and logo and may not present the character as their own. `TRADEMARKS.md` states the policy (GPLv3 section 7 allows declining trademark rights). The copyright holder named in every SPDX header is Nexxus Drako Multimedia.
+- **Mods must be GPL-compatible.** Mods are data files read at runtime, and their authors keep their copyright, but every mod must carry a GPL-compatible licence to be loaded or listed. See "Modding".
 - **Easter egg.** The Founder's career check stores a hash of the normalised details, not the plain text, so browsing the source does not spoil it. This document is the only plain-text record.
 
 **Steam.** The Steamworks SDK is proprietary, and its terms do not mix cleanly with GPL distribution of a combined work, so a Steam release may not be possible. It is treated as optional and undecided.
@@ -748,13 +748,15 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 
 - **Stable IDs.** Everything a mod adds has a stable ID with the mod's prefix. Replacing a base item uses the base item's ID.
 - **Load order.** Mods load in order and the last to change an item wins. A conflict report names every override.
-- **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, 10 km minimum course length, sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
+- **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, lap length between 10 and 80 km, sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
 - **Balance mods.** A mod that changes balance data is labelled in the save, its records are kept apart from default-world records, and achievements are disabled for that career.
 - **Safety.** Data only: no code, and SVGs are sanitised to remove scripts and external references.
 - **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
-- **Calendar with mods.** A track mod can replace any of the seven rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km.
+- **Calendar with mods.** A track mod can replace any of the seven rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km. Lap length must be between 10 and 80 km.
 - **Saves.** A career records the mods used, with their versions, and mods are fixed when the career is created. A missing or changed mod warns before loading. Modded careers are labelled, and their records are not mixed into default-world records.
 - **Distribution.** Mods go in a local `mods/` folder (or are imported in the web build). A mod index, a public repository of mod listings with download links, feeds an in-game mod browser. If a Steam release goes ahead, Steam Workshop is added as a second source through the optional Steam module.
+- **Mod licence (mandatory).** `mod.json` must declare a `license` as an SPDX identifier, and the mod folder must include the licence text. Only GPL-compatible licences are accepted: GPL-3.0-or-later, GPL-3.0-only, AGPL-3.0, LGPL-3.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC, Apache-2.0, MPL-2.0, Unlicense, CC0-1.0, CC-BY-4.0 and CC-BY-SA-4.0 (and OFL-1.1 for fonts). A mod with a missing, unknown or incompatible licence (including non-commercial, no-derivatives or "all rights reserved") is rejected by the loader and the mod index. All art, audio and fonts inside a mod must also be GPL-compatible, and the licence is shown in the mod manager.
+- **Names in mods.** A mod may say it is made "for Last Combustion" or "compatible with Last Combustion" but may not use the logo, imply it is official, or use the Pyra Drake character without permission (see `TRADEMARKS.md`).
 - **Hosting policy.** Wherever we host mods or the index, we follow the standard DMCA takedown procedure, and we claim no responsibility for modifications that private players make or apply.
 
 ## Achievements and cloud saves
@@ -1048,6 +1050,9 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Modding scope.** Mods may also change parts, sponsors, suppliers and balance data.
 - **Platform features.** Achievements and cloud saves are enabled through a platform interface that works without Steam.
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
+- **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
+- **Mod licences.** GPL-compatible licences are mandatory for mods.
+- **Lap length.** Maximum 80 km (minimum 10 km). Round 5 uses Chum Creek and Toolangi and Round 6 is a shorter Lorne–Kennett River run.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
 - **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
 - **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
@@ -1055,9 +1060,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Open**
 
-- [ ] Measured lap lengths for each proposed route (needed before M2 course data).
+- [ ] Measured lap lengths for each proposed route (needed before M2 course data). Estimates only so far, because the mapping services (OpenStreetMap routing) are blocked in the design session. Confirm that the Round 5 and Round 6 roads connect as described.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
-- [ ] Trademark policy for the Last Combustion name, logo and the Pyra Drake character (forks and mods).
+- [ ] Legal review of `TRADEMARKS.md`, and how the logo and Pyra Drake artwork are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).
-- [ ] Whether mod authors are asked to use a GPL-compatible licence.

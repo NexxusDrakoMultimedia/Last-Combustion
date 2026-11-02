@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: Nexxus Drako Multimedia
 """Balance check for the GDD formulas (prototype; reimplement in TypeScript at M2).
 
 Checks that driver skill matters at least as much as car quality (design pillar
