@@ -32,6 +32,7 @@ describe('migrate', () => {
       'parts',
       'auctions',
       'negotiation',
+      'preferred_number',
     ]);
   });
 
