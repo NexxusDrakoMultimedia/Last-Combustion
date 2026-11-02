@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
-- The Google tag on the web build hosted on GitHub Pages (added at build time only; other builds carry none).
+- The Google tag on the web build hosted on GitHub Pages, loaded only after the visitor accepts a cookie prompt (other builds carry none).
 - Milestone M4, first part (economy core): buying new cars from dealers (one-off cars are never for sale), car value from age, wear and provenance, round running costs (entry fees, tyres, servicing, travel) charged to every garage after each round, a garage finance summary, and a `car_ownership` history (schema version 5).
 - GitHub Pages deploys the web build automatically on every merge to `main`, to `lc.nexxusdrako.au` (built for the root path).
 - Milestone M3 final race: the sector-by-sector final engine with traffic and overtaking, contact, drone stops, player calls and team orders, tyre life, mechanical trouble and mid-race rain, plus a database layer that plays the final, pays prize and overtake money and records timing (schema version 4). A temporary "run the final" button in the foundations check screen.

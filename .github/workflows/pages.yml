@@ -36,7 +36,7 @@ jobs:
           BASE_URL: /
           # The web build includes the Google tag; other builds do not. The ID is a secret
           # (a repository or `github-pages` environment secret named GTAG_ID).
-          GTAG_ID: ${{ secrets.GTAG_ID }}
+          VITE_GTAG_ID: ${{ secrets.GTAG_ID }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

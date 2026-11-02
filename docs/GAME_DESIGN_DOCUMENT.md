@@ -923,7 +923,7 @@ The project follows common industry practice from the first commit (milestone M0
 - Node version pinned in `.nvmrc`, pnpm with a committed lockfile.
 - Vitest for unit tests (simulation coverage target 90%), fast-check for property tests, React Testing Library for components, Playwright for end-to-end tests, and axe for accessibility checks.
 - Accessibility target: WCAG 2.1 AA. Performance budgets: a prelim day of 300+ entries simulates in under 2 seconds in the worker, and the web bundle stays under an agreed size.
-- No in-game telemetry and no network calls other than optional mod downloads. The one exception is the Google tag on the web build hosted on GitHub Pages (`lc.nexxusdrako.au`), which is added at build time only when the `GTAG_ID` secret is set (the ID is kept in GitHub secrets, not in the repository), so local, test and desktop (Electron and Steam) builds carry no analytics.
+- No in-game telemetry and no network calls other than optional mod downloads. The one exception is the Google tag on the web build hosted on GitHub Pages (`lc.nexxusdrako.au`), which is only built in when the `GTAG_ID` secret is set (the ID is kept in GitHub secrets, not in the repository) and is loaded only after the visitor accepts a cookie prompt (declining stops it and removes its cookies, and a "Cookie settings" button reopens the choice), so local, test and desktop (Electron and Steam) builds carry no analytics.
 
 **GitHub Actions workflows**
 
