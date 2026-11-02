@@ -1,7 +1,7 @@
 [
   {
-    "id": "jayden-darra",
-    "name": "Jayden Darra",
+    "id": "reece-calloway",
+    "name": "Reece Calloway",
     "flag": "AU",
     "hometownPlaceId": "au-brisbane",
     "background": "Former professional driver",
@@ -10,8 +10,8 @@
     "voice": "Calm and technical; explains what the driver is feeling at the limit."
   },
   {
-    "id": "luke-winters",
-    "name": "Luke Winters",
+    "id": "alistair-thorne",
+    "name": "Alistair Thorne",
     "flag": "GB",
     "hometownPlaceId": "gb-newcastle-upon-tyne",
     "background": "Multisport commentator",

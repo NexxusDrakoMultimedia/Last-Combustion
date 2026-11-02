@@ -59,7 +59,7 @@ describe('persisting a world', () => {
     expect(
       scalar(
         db,
-        "SELECT p.name FROM series_official o JOIN place p ON p.id = o.residence_place_id WHERE o.name = 'Brian Drake'",
+        "SELECT p.name FROM series_official o JOIN place p ON p.id = o.residence_place_id WHERE o.name = 'Declan Marsh'",
       ),
     ).toBe('Healesville');
   });

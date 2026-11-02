@@ -438,8 +438,8 @@ export function generateWorld(seed: string | number): World {
     rounds: calendar,
     officials: [
       { name: 'Pyra Drake', role: 'chair', residencePlaceId: 'au-brisbane' },
-      { name: 'Brian Drake', role: 'technical', residencePlaceId: 'au-healesville' },
-      { name: 'Joshua Drake', role: 'interpersonal', residencePlaceId: 'au-healesville' },
+      { name: 'Declan Marsh', role: 'technical', residencePlaceId: 'au-healesville' },
+      { name: 'Odette Brandt', role: 'interpersonal', residencePlaceId: 'au-healesville' },
     ],
     garages,
     drivers,
