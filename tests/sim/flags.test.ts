@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import flagsJson from '../../data/flags.json';
 import { generateWorld } from '../../src/sim/worldgen';
 import { excludedFlags, flagNames, populations } from '../../src/sim/worldgen/data';
 
@@ -30,5 +32,17 @@ describe('excluded flags', () => {
       expect(names?.long.length).toBeGreaterThanOrEqual(names?.short.length ?? 0);
     }
     expect(flagNames.AU).toEqual({ short: 'Australia', long: 'Commonwealth of Australia' });
+  });
+
+  it('keeps the rare rename valid: an existing flag, a whole-number chance and its art', () => {
+    const renames = flagsJson.renames;
+    expect(renames).toHaveLength(1);
+    for (const rename of renames) {
+      expect(Object.keys(populations)).toContain(rename.flag);
+      expect(Number.isInteger(rename.oneIn)).toBe(true);
+      expect(rename.oneIn).toBeGreaterThan(1_000_000);
+      expect(rename.long.length).toBeGreaterThanOrEqual(rename.short.length);
+      expect(existsSync(rename.art)).toBe(true);
+    }
   });
 });
