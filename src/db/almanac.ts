@@ -21,7 +21,7 @@ export interface AlmanacEntry {
   name: string;
   /** The year they began: the first season a driver entered, or the year a garage was founded. */
   yearStarted: number;
-  /** The year they retired or stopped operating, or null if they are still active. */
+  /** The year they retired or stopped operating, or null (blank) if they are still active. */
   yearEnded: number | null;
   /** Total points in the Junior and Super Series. */
   points: number;
@@ -35,10 +35,10 @@ export interface Almanac {
 }
 
 /**
- * The almanac of every driver and garage that ever scored a point in the Junior or Super Series.
- * One who retired or stopped operating before ever scoring appears only as a line: no points, the
- * year they started and the year they ended. One who is still active and has not scored yet is not
- * in the almanac until they score or leave.
+ * The almanac of every driver and garage: those that ever scored a point in the Junior or Super
+ * Series have full career figures.
+ * One who has not scored appears only as a line: no points, the year they started and the year they
+ * ended. If they are still active the year they ended is blank (shown as "2031 to present").
  */
 export function almanac(db: Database): Almanac {
   const drivers = all(
@@ -85,7 +85,7 @@ export function almanac(db: Database): Almanac {
 
   const build =
     (kind: 'driver' | 'garage') =>
-    (row: Record<string, string | number | null>): AlmanacEntry | null => {
+    (row: Record<string, string | number | null>): AlmanacEntry => {
       const points = Math.round((row.points as number) * 10) / 10;
       const yearEnded = (kind === 'driver' ? row.retired_year : row.closed_year) as number | null;
       const base = {
@@ -111,12 +111,11 @@ export function almanac(db: Database): Almanac {
           },
         };
       }
-      if (yearEnded !== null) return { ...base, points: 0, stats: null };
-      return null;
+      return { ...base, points: 0, stats: null };
     };
   return {
-    drivers: drivers.map(build('driver')).filter((e): e is AlmanacEntry => e !== null),
-    garages: garages.map(build('garage')).filter((e): e is AlmanacEntry => e !== null),
+    drivers: drivers.map(build('driver')),
+    garages: garages.map(build('garage')),
   };
 }
 

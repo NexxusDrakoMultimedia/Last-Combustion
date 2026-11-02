@@ -10,6 +10,8 @@ The series' full name is **The Last Combustion of the Petrol Engine World Motors
 
 The player runs a garage: buying and tuning cars, signing drivers, chasing sponsors, and fighting through a 300+ driver preliminary field to reach the final.
 
+**Tagline.** "Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft." It is the official tagline: it appears on the title screen, the store page, the repository and every public page (see "Branding and marketing").
+
 **Design pillars**
 
 - **Driver over horsepower.** The tyre-width Equalizer means smart setup and driver skill beat raw power.
@@ -840,7 +842,7 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 | Garage | Founding date, entries each season, drivers signed and released, cars owned, Garage Championship results, prestige over time, sponsors and suppliers, prize money earned |
 | Car | Its own identity (chassis number), make and model, owners and garages, drivers, model year, kerb weight and tyre width at each round, parts and suppliers fitted at each round, door logos, trophy decals, results, road km and race km, wear, sales and auction history |
 
-- **The almanac.** There is an almanac of every driver and garage that ever scored a point in the Junior or Super Series. An entry has the full career: total points (with the Junior and Super Series split), seasons that scored, first and last scoring year, wins, finals, titles, and the year they started and ended. A driver or garage that retired or stopped operating before ever scoring a point does not make the almanac beyond one line: 0 points, the year they started and the year they ended. Someone still active who has not scored yet is not in the almanac until they score or leave. A driver starts in the first season they enter (or, if they never did, the year they turned 18), and a garage in its founding year. It is built as `almanac` in `src/db/almanac.ts`, with `retireDriver` and `closeGarage` recording the end year.
+- **The almanac.** There is an almanac of every driver and garage that ever scored a point in the Junior or Super Series. An entry has the full career: total points (with the Junior and Super Series split), seasons that scored, first and last scoring year, wins, finals, titles, and the year they started and ended. Every other driver and garage gets one line: 0 points, the year they started and the year they ended. Someone who retired or stopped operating before ever scoring a point has an end year, and someone still active has the end year blank (\"2031 to present\"). A driver starts in the first season they enter (or, if they never did, the year they turned 18), and a garage in its founding year. It is built as `almanac` in `src/db/almanac.ts`, with `retireDriver` and `closeGarage` recording the end year.
 - **Leaderboards** are built from these records: season standings (drivers, garages, manufacturers and nations), course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
 - **Car histories follow the car.** A car sold to another garage keeps its left-rear decals (its left quarter panel history) and its full record, so a famous chassis carries its story with it, and the sale price reflects it. The driver's right-rear decals go with the driver.
 
@@ -1499,6 +1501,34 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
   - **Mods.** A theme is a data file (`data/themes.json`: a name and a token map), so mods can add themes. Themes that fail the contrast check are not listed. The NDM theme is shipped with the game, but the NDM logos, artwork and the characters stay reserved (see `TRADEMARKS.md`), and the fonts are loaded by the interface and not used for text in a way that needs a licence we lack.
   - **Fonts.** Display text uses Orbitron and body text uses Exo 2 (both SIL Open Font Licence, which is compatible with the GPL); HK Modular is not used in the game because it is licensed through Canva. Both fonts are bundled with the game and recorded in `CREDITS.md`, so the game does not load fonts from the internet at run time.
   - **Build order.** The token layer and the three themes arrive with the first real screens in M4, and the Settings control with the screen flow.
+
+## Branding and marketing
+
+Branding and social media are planned work for after the first playable season (M5), and nothing here is built yet. This section records what is decided and what is still open, so the work can start from it.
+
+**Decided**
+
+- **Name and tagline.** The game is **Last Combustion**, and the tagline is above ("Overview"). The tagline is used exactly as written, with no variations.
+- **Owner and identity.** The game, its logo and its characters belong to Nexxus Drako Multimedia (NDM) and sit under the NDM identity: maroon and gold, flat colour, no gradients or drop shadows, Orbitron and Exo 2 for web type (see "Themes" and the `design-system` repository). The game's own logo and key art are separate from the NDM logos and follow the same rules.
+- **Voice.** Warm, direct and identity-forward, in Australian English, with display lines in uppercase and running text in sentence case, and no emoji used as decoration. Every public-facing page carries the Acknowledgement of Country and NDM's statements, with the Intersex-Inclusive Progress Pride flag as the only pride flag, exactly as the design system requires.
+- **Web home.** The playable web build is at `lc.nexxusdrako.au`, and the Google tag there is loaded only after the visitor accepts cookies.
+- **Mods and forks** may say they are made "for" or "compatible with" Last Combustion, but not use the logo or characters (see `TRADEMARKS.md`).
+
+**To do, in order**
+
+1. **Brand kit:** logo lockups (stacked and horizontal, light and dark), the favicon and avatar, colour and type rules, a one-page style guide, and press-ready key art.
+2. **Store and site pages:** a landing page with the tagline, a short pitch, screenshots and a trailer, a press kit, and the Steam page if the Steam decision goes ahead (see "Platform services").
+3. **Social media:** the accounts and handles (to be chosen), a posting plan around the season calendar (the March 31st season start, round weekends, the November 11th Healesville festival and award nights), highlight clips from the final-race engine and commentary lines, and community channels that match the NDM ones already in use.
+4. **Content hooks:** the commentary team, the almanac and records, headlines and rivalries make shareable moments; a weekly challenge and a "this day in the almanac" post are candidates.
+5. **Community and legal:** a code of conduct for community spaces, a clear policy for fan art and streaming, and the trademark policy kept in step with `TRADEMARKS.md`.
+
+**Open questions**
+
+- Which platforms and handles to use, and who runs them.
+- Whether to run a public beta or a demo, and when.
+- The Steam decision and the store page timing.
+- Whether to commission key art and a trailer, or make them in-house.
+- Press and creator outreach, and how to handle the cookie prompt on marketing pages.
 
 ## Glossary
 

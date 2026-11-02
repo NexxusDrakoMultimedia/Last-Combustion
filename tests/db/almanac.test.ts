@@ -29,10 +29,25 @@ function newCareer(seed = 'almanac-db'): Database {
 }
 
 describe('before anyone has scored', () => {
-  it('is empty: nobody has scored, and nobody has left', () => {
-    const book = almanac(newCareer());
-    expect(book.drivers).toEqual([]);
-    expect(book.garages).toEqual([]);
+  it('lists everyone as a line: no points, the year they started, and no end year while active', () => {
+    const db = newCareer();
+    const book = almanac(db);
+    expect(book.drivers).toHaveLength(313);
+    expect(book.garages).toHaveLength(96);
+    for (const e of [...book.drivers, ...book.garages]) {
+      expect(e.points).toBe(0);
+      expect(e.stats).toBeNull();
+      expect(e.yearEnded).toBeNull();
+    }
+    expect(book.drivers.every((d) => d.yearStarted === 2031)).toBe(true);
+  });
+
+  it('does not list the hidden market garage', () => {
+    const db = newCareer();
+    db.run(
+      "INSERT INTO garage (name, flag, base_place_id, home_state, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile, fans, kind) VALUES ('Used car market', 'AU', 1, 'NSW', '#000000', '#000000', 1, 0, 2031, 0, 'cautious', 0, 'market')",
+    );
+    expect(almanac(db).garages).toHaveLength(96);
   });
 });
 
@@ -43,7 +58,7 @@ describe('after a round', () => {
     playPrelims(db, 1);
   });
 
-  it('holds every driver and garage that scored, with full figures', () => {
+  it('gives every driver and garage that scored full figures, and everyone else a line', () => {
     const book = almanac(db);
     const scorers = Number(
       scalar(
@@ -52,8 +67,11 @@ describe('after a round', () => {
       ),
     );
     expect(scorers).toBe(16);
-    expect(book.drivers).toHaveLength(scorers);
-    for (const d of book.drivers) {
+    expect(book.drivers).toHaveLength(313);
+    const full = book.drivers.filter((d) => d.stats !== null);
+    expect(full).toHaveLength(scorers);
+    expect(book.drivers.filter((d) => d.stats === null).every((d) => d.points === 0)).toBe(true);
+    for (const d of full) {
       expect(d.points).toBeGreaterThan(0);
       expect(d.stats).not.toBeNull();
       expect(d.stats!.superPoints).toBe(d.points);
@@ -63,22 +81,23 @@ describe('after a round', () => {
       expect(d.yearStarted).toBe(2031);
       expect(d.yearEnded).toBeNull();
     }
-    expect(book.garages.length).toBeGreaterThan(0);
-    expect(book.garages.every((g) => g.stats !== null && g.points > 0)).toBe(true);
+    expect(book.garages).toHaveLength(96);
+    expect(book.garages.filter((g) => g.stats !== null).every((g) => g.points > 0)).toBe(true);
+    expect(book.garages.filter((g) => g.stats !== null).length).toBeGreaterThan(0);
   });
 
-  it('leaves out a driver or garage that is still active and has not scored', () => {
-    const book = almanac(db);
+  it('shows an active driver who has not scored as a line with no end year', () => {
     const idle = Number(
       scalar(
         db,
         'SELECT e.driver_id FROM entry e JOIN result r ON r.entry_id = e.id GROUP BY e.driver_id HAVING SUM(r.points) = 0 LIMIT 1',
       ),
     );
-    expect(book.drivers.some((d) => d.id === idle)).toBe(false);
+    const entry = almanac(db).drivers.find((d) => d.id === idle)!;
+    expect(entry).toMatchObject({ points: 0, stats: null, yearStarted: 2031, yearEnded: null });
   });
 
-  it('shows one who retired without ever scoring as just a line: no points, year started and ended', () => {
+  it('gives one who retired without ever scoring the same line with an end year', () => {
     const idle = Number(
       scalar(
         db,

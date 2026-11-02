@@ -8,8 +8,9 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- The official tagline ("Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft.") in the game, the README, the package description and the design, and a branding and marketing plan in the Game Design Document.
 - Design: each save is a self-contained universe, and a failed career (bankruptcy, no successor, walking away) ends only the career: the player can reincarnate as a new character in the same universe, take over or found a garage, or reset the universe.
-- Milestone M5, first part (standings and season end): the five championship tables with the full tiebreak, ending a season (champion prize, bonuses, gold borders, saved tables) and the almanac of every driver and garage that ever scored, with a one-line entry for those who left without scoring (schema versions 14 and 15).
+- Milestone M5, first part (standings and season end): the five championship tables with the full tiebreak, ending a season (champion prize, bonuses, gold borders, saved tables) and the almanac, with full figures for every driver and garage that ever scored and a one-line entry (0 points, year started, year ended or blank while active) for everyone else (schema versions 14 and 15).
 - Milestone M4, eighth part (repairs and servicing): part wear that raises the chance of mechanical trouble, servicing parts, restoring the chassis, and repair bills for crashes (schema version 13). This completes the economy milestone apart from screens.
 - Milestone M4, seventh part (supplier and manufacturer deals): negotiating a discount on a supplier's parts or a manufacturer's new cars (fair discount 5% or 3% plus a little per prestige point, up to 15%), applied automatically to parts and new-car prices (schema version 12).
 - Design: interface references (principles from F1 Glory and Lapwerks) and the token layers the screens will use.
