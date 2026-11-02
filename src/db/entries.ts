@@ -3,6 +3,7 @@
 import type { Database } from 'sql.js';
 import { applyGear, gearItem, type GearItem } from '../sim/gear';
 import type { CarSpec } from '../sim/prelim/ratings';
+import { part, partEffects, type PartData } from '../sim/upgrades';
 import type { Driver, Layout, RoadType, Tier } from '../sim/worldgen/types';
 
 export type Row = Record<string, string | number | null>;
@@ -50,6 +51,15 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
     list.push(gearItem(g.stable_id as string));
     gear.set(g.driver_id as number, list);
   }
+  const fitted = new Map<number, PartData[]>();
+  for (const f of all(
+    db,
+    'SELECT cp.car_id, p.stable_id FROM car_part cp JOIN part p ON p.id = cp.part_id ORDER BY cp.id',
+  )) {
+    const list = fitted.get(f.car_id as number) ?? [];
+    list.push(part(f.stable_id as string));
+    fitted.set(f.car_id as number, list);
+  }
   const rows = all(
     db,
     `SELECT e.id AS entry_id, e.car_id, e.garage_id, e.race_number, e.driver_id,
@@ -96,7 +106,13 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
       raceNumber: r.race_number as number,
       driver: applyGear(raw, gear.get(r.driver_id as number) ?? []),
       car: {
-        ps: r.base_ps as number,
+        ...(() => {
+          const effects = partEffects(fitted.get(r.car_id as number) ?? []);
+          return {
+            ps: Math.round((r.base_ps as number) * (1 + effects.psPct)),
+            bonus: effects.bonus,
+          };
+        })(),
         kerbKg: r.kerb_kg_current as number,
         tyreWidthMm: r.tyre_width_mm as number,
         layout: r.layout as Layout,

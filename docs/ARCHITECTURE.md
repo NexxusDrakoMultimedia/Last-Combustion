@@ -48,4 +48,6 @@ This is the working summary of how the code is organised. The design reasons liv
 
 The economy starts with `src/sim/economy.ts` (used prices, car value, round costs and distance, all from the `economy` block of `data/balance.json`), `src/db/market.ts` (`buyNewCar`, `modelsOnSale`, `valueOfCar`) and `src/db/finance.ts` (`settleRound` charges each garage its running costs, `garageFinance` summarises the ledger); migration 0005 adds `car_ownership`. The used market lives in `src/db/market.ts` too: `sellToDealer` (80% of value, then listed at 110%), `buyUsedCar` and `refreshUsedMarket` (ordinary used cars from private sellers, from the career seed), with a hidden `market` garage (`garage.kind`) that owns cars while they are for sale (migration 0006).
 
+Upgrades: `src/sim/upgrades.ts` holds the parts (`data/parts.json`), the Equalizer, `fitParts` (the spec of a car with parts fitted), the legality score and `scrutineer`; `src/db/upgrades.ts` has `fitPart`, `removePart`, `legalityOf` and `scrutineerCar`; `loadEntries` applies fitted parts to the simulation, and `playPrelims` disqualifies cars that fail scrutineering (migration 0007 adds `part_supplier`, `part` and `car_part`).
+
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.

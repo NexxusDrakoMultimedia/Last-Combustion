@@ -305,5 +305,21 @@
         "hyper": 0.25
       }
     }
+  },
+  "upgrades": {
+    "legalityBudget": 100,
+    "categories": [
+      "engine",
+      "intake_exhaust",
+      "forced_induction",
+      "ecu",
+      "drivetrain",
+      "suspension",
+      "brakes",
+      "weight_reduction",
+      "aero",
+      "wheels"
+    ],
+    "minTyreMm": 170
   }
 }
