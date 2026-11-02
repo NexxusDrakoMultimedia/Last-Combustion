@@ -50,4 +50,6 @@ The economy starts with `src/sim/economy.ts` (used prices, car value, round cost
 
 Upgrades: `src/sim/upgrades.ts` holds the parts (`data/parts.json`), the Equalizer, `fitParts` (the spec of a car with parts fitted), the legality score and `scrutineer`; `src/db/upgrades.ts` has `fitPart`, `removePart`, `legalityOf` and `scrutineerCar`; `loadEntries` applies fitted parts to the simulation, and `playPrelims` disqualifies cars that fail scrutineering (migration 0007 adds `part_supplier`, `part` and `car_part`).
 
+Auctions: `src/sim/auction.ts` has the increments, fees and `resolveLot` (proxy bidding), and `src/db/auction.ts` has `openAuction`, `openLots`, `consignCar`, `placeBid` and `closeAuction`; `createUsedCar` in `src/db/market.ts` makes the private sellers' cars for both the market and the auctions (migration 0008 adds `auction`, `auction_lot` and `auction_bid`).
+
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.

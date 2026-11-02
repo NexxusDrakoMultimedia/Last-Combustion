@@ -318,22 +318,14 @@ export function buyUsedCar(db: Database, garageId: number, listingId: number): P
   }
 }
 
-/**
- * Tops the used market up to its usual number of listings with ordinary used cars from private
- * sellers. The cars come from the career's seed and the date, so the same day gives the same cars.
- */
-export function refreshUsedMarket(db: Database): number {
-  const career = readCareer(db);
-  if (!career) throw new Error('There is no career in this database.');
-  const year = yearOf(db);
-  const date = career.gameDate;
-  const want = economyBalance.market.listings;
-  const have = Number(
-    all(db, "SELECT COUNT(*) AS n FROM market_listing WHERE status = 'open'")[0]!.n,
-  );
-  if (have >= want) return 0;
-
-  const rng = createRng(career.masterSeed).stream(`market:${date}`);
+/** Makes one ordinary used car (from the stream) owned by a garage, and returns its id and value. */
+export function createUsedCar(
+  db: Database,
+  rng: ReturnType<ReturnType<typeof createRng>['stream']>,
+  ownerGarageId: number,
+  date: string,
+): { carId: number; value: number } {
+  const year = Number(date.slice(0, 4));
   const models = all(
     db,
     `SELECT m.id, m.name, m.tier, m.base_kerb_kg, m.max_tyre_mm, m.price_new, f.home_country
@@ -342,53 +334,69 @@ export function refreshUsedMarket(db: Database): number {
   );
   const weights = economyBalance.market.tierWeights as Record<string, number>;
   const cars = worldCars();
+  const model = rng.weighted(
+    models,
+    models.map((m) => weights[m.tier as string] ?? 0),
+  );
+  const tier = model.tier as keyof typeof cars.maxAgeYears;
+  const age = rng.int(1, cars.maxAgeYears[tier]);
+  const roadKm =
+    Math.round(
+      (age * rng.float(cars.roadKmPerYear[0]!, cars.roadKmPerYear[1]!) * cars.usageFactor[tier] +
+        rng.int(50, 500)) /
+        10,
+    ) * 10;
+  const wear = wearFromKm(roadKm, 0, model.tier as Tier);
+  const id = Number(all(db, 'SELECT COALESCE(MAX(id), 0) + 1 AS n FROM car')[0]!.n);
+  const prefix = String(model.name).split(' ')[0]!.slice(0, 3).toUpperCase();
+  const chassisNo = `LC-${prefix}-${String(id).padStart(5, '0')}`;
+  db.run(
+    `INSERT INTO car (id, car_model_id, chassis_no, flag, fans, garage_id, model_year, road_km, race_km, wear, kerb_kg_current, tyre_width_mm)
+     VALUES (?, ?, ?, ?, 0, ?, ?, ?, 0, ?, ?, ?)`,
+    [
+      id,
+      model.id as number,
+      chassisNo,
+      model.home_country as string,
+      ownerGarageId,
+      year - age,
+      roadKm,
+      wear,
+      model.base_kerb_kg as number,
+      model.max_tyre_mm as number,
+    ],
+  );
+  db.run(
+    "INSERT INTO car_ownership (car_id, garage_id, from_date, price, route) VALUES (?, ?, ?, 0, 'used')",
+    [id, ownerGarageId, date],
+  );
+  return { carId: id, value: valueOfCar(db, id) };
+}
+
+/**
+ * Tops the used market up to its usual number of listings with ordinary used cars from private
+ * sellers. The cars come from the career's seed and the date, so the same day gives the same cars.
+ */
+export function refreshUsedMarket(db: Database): number {
+  const career = readCareer(db);
+  if (!career) throw new Error('There is no career in this database.');
+  const date = career.gameDate;
+  const want = economyBalance.market.listings;
+  const have = Number(
+    all(db, "SELECT COUNT(*) AS n FROM market_listing WHERE status = 'open'")[0]!.n,
+  );
+  if (have >= want) return 0;
+
+  const rng = createRng(career.masterSeed).stream(`market:${date}`);
   const market = ensureMarketGarage(db);
   let added = 0;
   db.exec('BEGIN');
   try {
     for (let i = have; i < want; i++) {
-      const model = rng.weighted(
-        models,
-        models.map((m) => weights[m.tier as string] ?? 0),
-      );
-      const tier = model.tier as keyof typeof cars.maxAgeYears;
-      const age = rng.int(1, cars.maxAgeYears[tier]);
-      const roadKm =
-        Math.round(
-          (age *
-            rng.float(cars.roadKmPerYear[0]!, cars.roadKmPerYear[1]!) *
-            cars.usageFactor[tier] +
-            rng.int(50, 500)) /
-            10,
-        ) * 10;
-      const wear = wearFromKm(roadKm, 0, model.tier as Tier);
-      const id = Number(all(db, 'SELECT COALESCE(MAX(id), 0) + 1 AS n FROM car')[0]!.n);
-      const prefix = String(model.name).split(' ')[0]!.slice(0, 3).toUpperCase();
-      const chassisNo = `LC-${prefix}-${String(id).padStart(5, '0')}`;
-      db.run(
-        `INSERT INTO car (id, car_model_id, chassis_no, flag, fans, garage_id, model_year, road_km, race_km, wear, kerb_kg_current, tyre_width_mm)
-         VALUES (?, ?, ?, ?, 0, ?, ?, ?, 0, ?, ?, ?)`,
-        [
-          id,
-          model.id as number,
-          chassisNo,
-          model.home_country as string,
-          market,
-          year - age,
-          roadKm,
-          wear,
-          model.base_kerb_kg as number,
-          model.max_tyre_mm as number,
-        ],
-      );
-      const value = valueOfCar(db, id);
-      db.run(
-        "INSERT INTO car_ownership (car_id, garage_id, from_date, price, route) VALUES (?, ?, ?, 0, 'used')",
-        [id, market, date],
-      );
+      const { carId, value } = createUsedCar(db, rng, market, date);
       db.run(
         "INSERT INTO market_listing (car_id, price, listed_date, status) VALUES (?, ?, ?, 'open')",
-        [id, listingPrice(value), date],
+        [carId, listingPrice(value), date],
       );
       added += 1;
     }

@@ -304,6 +304,19 @@
         "elite": 1,
         "hyper": 0.25
       }
+    },
+    "auction": {
+      "minIncrementPct": 0.02,
+      "minIncrementFloor": 500,
+      "buyerPremium": 0.1,
+      "sellerFee": 0.05,
+      "openingShareOfReserve": 0.5,
+      "openingFloor": 500,
+      "aiInterest": 0.15,
+      "aiFactor": [0.8, 1.2],
+      "weeklyLots": 8,
+      "reserveShare": [0.75, 1.0],
+      "weekDays": 7
     }
   },
   "upgrades": {
