@@ -7,6 +7,7 @@ import { wearFromKm } from '../sim/wear';
 import { balance, economyBalance } from '../sim/worldgen/data';
 import type { Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
+import { activeDiscount } from './deals';
 import { all } from './entries';
 
 export interface Purchase {
@@ -55,14 +56,19 @@ export function modelsOnSale(
  * Buys a new car from a dealer: a new chassis with no kilometres, owned by the garage,
  * paid for from its cash. `discount` (0 to 1) is what negotiation won off the list price.
  */
-export function buyNewCar(db: Database, garageId: number, modelId: number, discount = 0): Purchase {
+export function buyNewCar(
+  db: Database,
+  garageId: number,
+  modelId: number,
+  discount?: number,
+): Purchase {
   const year = yearOf(db);
   const date = readCareer(db)!.gameDate;
   const garage = all(db, 'SELECT id, cash FROM garage WHERE id = ?', [garageId])[0];
   if (!garage) throw new Error(`There is no garage ${garageId}.`);
   const model = all(
     db,
-    `SELECT m.id, m.name, m.tier, m.base_kerb_kg, m.max_tyre_mm, m.price_new, m.introduced_year, m.retired_year,
+    `SELECT m.id, m.name, m.tier, m.manufacturer_id, m.base_kerb_kg, m.max_tyre_mm, m.price_new, m.introduced_year, m.retired_year,
             f.home_country
        FROM car_model m JOIN manufacturer f ON f.id = m.manufacturer_id WHERE m.id = ?`,
     [modelId],
@@ -70,7 +76,11 @@ export function buyNewCar(db: Database, garageId: number, modelId: number, disco
   if (!model) throw new Error(`There is no car model ${modelId}.`);
   if (!isOnSale(model as never, year))
     throw new Error(`${model.name as string} is not on sale new.`);
-  const price = newCarPrice(model.price_new as number, discount);
+  // An explicit discount (even 0) wins; otherwise the garage's deal with the manufacturer applies.
+  const price = newCarPrice(
+    model.price_new as number,
+    discount ?? activeDiscount(db, 'manufacturer', garageId, model.manufacturer_id as number, year),
+  );
   if ((garage.cash as number) < price) throw new Error('The garage cannot afford this car.');
 
   db.exec('BEGIN');
