@@ -298,6 +298,7 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
   - **Brian Drake** runs the technical side: the regulations and the Equalizer, scrutineering, telemetry, the drone fleet and the attention-flag AI. In the game he issues technical bulletins, scrutineering rulings and rule-change announcements.
   - **Joshua Drake** runs the interpersonal side: relations with garages, drivers, sponsors, suppliers and the media. In the game he handles number clashes, penalty appeals, entry disputes, ceremonies and the headlines about the series.
   - They appear as senders of messages and in the headlines, and they never race.
+  - **Fictional characters.** "Brian Drake" and "Joshua Drake" are not real people. They are based on and named after Pyra's real half-brothers; the surname Drake and everything about their in-game lives are invented. No real surnames or personal details about the real people are recorded in the project.
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
 - **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. 
   - **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
@@ -1190,5 +1191,6 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and Pyra Drake artwork are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
-- [ ] Whether Brian and Joshua Drake (and the wider Drake family) are covered by the same IP reservation as Pyra Drake in `TRADEMARKS.md`.
+- [ ] Confirm that the real half-brothers agree to a character being based on and named after them, and keep it recorded outside the repository.
+- [ ] Whether the fictional characters Brian and Joshua Drake are covered by the same IP reservation as Pyra Drake in `TRADEMARKS.md`.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).
