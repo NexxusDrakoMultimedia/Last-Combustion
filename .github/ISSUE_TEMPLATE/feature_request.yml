@@ -1,0 +1,14 @@
+name: Feature or design suggestion
+description: Suggest a change to the game or its design
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why does it fit the game's design pillars?

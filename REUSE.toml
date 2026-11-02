@@ -1,0 +1,34 @@
+version = 1
+SPDX-PackageName = "Last Combustion"
+SPDX-PackageSupplier = "Nexxus Drako Multimedia"
+SPDX-PackageDownloadLocation = "https://github.com/NexxusDrakoMultimedia/Last-Combustion"
+
+# Files that cannot carry a comment header (data, configuration, documents, lockfiles).
+[[annotations]]
+path = [
+  "**/*.md",
+  "**/*.json",
+  "**/*.jsonc",
+  "**/*.yml",
+  "**/*.yaml",
+  "**/*.toml",
+  "**/*.html",
+  ".gitignore",
+  ".editorconfig",
+  ".nvmrc",
+  ".prettierignore",
+  ".prettierrc.json",
+  ".husky/**",
+  ".github/CODEOWNERS",
+  "pnpm-lock.yaml",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Route outlines derived from OpenStreetMap data.
+[[annotations]]
+path = "data/courses/outlines.json"
+precedence = "override"
+SPDX-FileCopyrightText = "OpenStreetMap contributors; Nexxus Drako Multimedia"
+SPDX-License-Identifier = "ODbL-1.0"

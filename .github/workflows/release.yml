@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run test
+      - run: pnpm run build
+      - name: Package the web build and write release notes
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          (cd dist && zip -r "../last-combustion-web-${GITHUB_REF_NAME}.zip" .)
+          sha256sum "last-combustion-web-${GITHUB_REF_NAME}.zip" > SHA256SUMS.txt
+          node scripts/release-notes.mjs "$version" > RELEASE_NOTES.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          body_path: RELEASE_NOTES.md
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          files: |
+            last-combustion-web-*.zip
+            SHA256SUMS.txt

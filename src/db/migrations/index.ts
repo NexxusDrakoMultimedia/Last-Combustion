@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import type { Migration } from '../migrate';
+import { migration0001 } from './0001_initial';
+
+/** Every migration, in order. Never edit a released migration: add a new one. */
+export const migrations: readonly Migration[] = [migration0001];
