@@ -58,37 +58,35 @@ The same drones that film the series also act as its marshals, warning drivers a
 
 ## Season calendar & Timeline
 
-The season runs annually from **March to October**. It consists of seven rounds on Australian roads, travelling clockwise around the country: it starts in South Australia, crosses to Western Australia, then goes up and around through Queensland and New South Wales and finishes in Victoria at the series' home town, Healesville. Every course must be a mountain or road course with a lap of 10 to 80 km on sealed (paved) public roads only, with no dirt or gravel, and every course is a closed loop (no out-and-back or point-to-point courses). Urban street circuits are not allowed.
+The season runs annually from **March to October**. It consists of six rounds on Australian roads, travelling clockwise around the country: it starts in South Australia, crosses to Western Australia, then goes up and around through Queensland and New South Wales and finishes in Victoria at the series' home town, Healesville. Every course must be a mountain or road course with a lap of 10 to 80 km on sealed (paved) public roads only, with no dirt or gravel, and every course is a closed loop (no out-and-back or point-to-point courses). Urban street circuits are not allowed.
 
 - **Pyra Drake's Birthday & Season Start:** Pyra was born in 1996, celebrating her 35th birthday in Season 1 (2031) and her 40th birthday in Season 6 (2036). The first day of Round 1 practice and the opening ceremony always takes place on her birthday, **March 31st**.
-- **Season Wrap:** The racing season concludes in **mid-October** after Round 7.
+- **Season Wrap:** The racing season concludes in **mid-October** after Round 6.
 - **Closing Ceremony & Festival:** The Closing Ceremony, Awards Gala, and opening day of the week-long **Drake Motorsports International Motoring Festival** in **Healesville, Victoria** (HQ town of Last Combustion and Pyra's hometown) always take place on **November 11th**.
 
 | Rd | Course | State | Character |
 | --- | --- | --- | --- |
 | 1 | Adelaide Hills, Gorge Road and Lobethal | SA | Season opener: fast, flowing hill and gorge roads on the edge of Adelaide |
-| 2 | Barossa and Eden Valley | SA | Rolling vineyard roads and long sweepers; rewards power and smooth lines |
-| 3 | Yallingup and Metricup, Margaret River region | WA | Forest and coast roads on Caves Road; the far-west round, run at night |
-| 4 | Mount Nebo / Mount Glorious | Qld | Narrow, bumpy climbs and descents; suits light cars |
-| 5 | Jamberoo Mountain Road / Macquarie Pass | NSW | Steep escarpment climb and descent; tight and often wet |
-| 6 | Marysville, Buxton and the Black Spur | Vic | Tight, damp forest sweepers; a rhythm test |
-| 7 | Healesville, Chum Creek, Toolangi and Dixons Creek | Vic | The finale at the series' home town: hill roads above Healesville |
+| 2 | Yallingup and Metricup, Margaret River region | WA | Forest and coast roads on Caves Road; the far-west round, run at night |
+| 3 | Mount Nebo / Mount Glorious | Qld | Narrow, bumpy climbs and descents; suits light cars |
+| 4 | Jamberoo Mountain Road / Macquarie Pass | NSW | Steep escarpment climb and descent; tight and often wet |
+| 5 | Marysville, Buxton and the Black Spur | Vic | Tight, damp forest sweepers; a rhythm test |
+| 6 | Healesville, Chum Creek, Toolangi and Dixons Creek | Vic | The finale at the series' home town: hill roads above Healesville |
 
 **Proposed routes**
 
-Every round runs on a closed loop. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. A lap is at most **80 km** and at least 10 km. The final's lap count is the smallest whole number of laps that reaches 300 km, using the measured lap length.
+Every round runs on a closed loop. The six rounds are far apart, so the gaps between them include long-distance travel. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. A lap is at most **80 km** and at least 10 km. The final's lap count is the smallest whole number of laps that reaches 300 km, using the measured lap length.
 
 | Rd | Route | Lap (measured) | Final laps |
 | --- | --- | --- | --- |
 | 1 | Adelaide Hills Gorge Loop: Magill, St Bernards Road and Gorge Road along the Torrens Gorge to Cudlee Creek, Lobethal Road to Lobethal, then Basket Range and Old Norton Summit Road back to Magill | 66.4 km | 5 (332 km) |
-| 2 | Barossa and Eden Valley Loop: Tanunda, Mengler Hill Road and Eden Valley Road to Eden Valley and Springton, then Angaston and back to Tanunda | 78.7 km | 4 (315 km) |
-| 3 | Yallingup and Metricup Loop: Cowaramup, Harman's Mill Road and Caves Road to Yallingup, Wildwood Road and Metricup-Yelverton Road, then the Bussell Highway back | 62.3 km | 5 (311 km) |
-| 4 | Mount Nebo–Mount Glorious Loop: The Gap, Waterworks Road and Mount Nebo Road up to Mount Nebo, Mount Glorious Road down to Samford, Samford Road and Settlement Road back to The Gap | 57.4 km | 6 (344 km) |
-| 5 | Jamberoo Mountain Loop: Jamberoo, Jamberoo Mountain Road up to Robertson, the Illawarra Highway down Macquarie Pass to Albion Park, and Jamberoo Road back | 63.8 km | 5 (319 km) |
-| 6 | Marysville and Buxton Loop: Marysville, Buxton–Marysville Road to Buxton, then the Maroondah Highway over the upper Black Spur to Narbethong and Marysville Road back | 42.1 km | 8 (337 km) |
-| 7 | Healesville Hills Loop: Healesville, the Healesville–Kinglake Road through Chum Creek to Toolangi, the Melba Highway to Dixons Creek, then Old Healesville Road and the Healesville–Yarra Glen Road back to Healesville | 52.6 km | 6 (316 km) |
+| 2 | Yallingup and Metricup Loop: Cowaramup, Harman's Mill Road and Caves Road to Yallingup, Wildwood Road and Metricup-Yelverton Road, then the Bussell Highway back | 62.3 km | 5 (311 km) |
+| 3 | Mount Nebo–Mount Glorious Loop: The Gap, Waterworks Road and Mount Nebo Road up to Mount Nebo, Mount Glorious Road down to Samford, Samford Road and Settlement Road back to The Gap | 57.4 km | 6 (344 km) |
+| 4 | Jamberoo Mountain Loop: Jamberoo, Jamberoo Mountain Road up to Robertson, the Illawarra Highway down Macquarie Pass to Albion Park, and Jamberoo Road back | 63.8 km | 5 (319 km) |
+| 5 | Marysville and Buxton Loop: Marysville, Buxton–Marysville Road to Buxton, then the Maroondah Highway over the upper Black Spur to Narbethong and Marysville Road back | 42.1 km | 8 (337 km) |
+| 6 | Healesville Hills Loop: Healesville, the Healesville–Kinglake Road through Chum Creek to Toolangi, the Melba Highway to Dixons Creek, then Old Healesville Road and the Healesville–Yarra Glen Road back to Healesville | 52.6 km | 6 (316 km) |
 
-**How these were measured.** `tools/routes/measure_routes.py` routes each course through its waypoints on OpenStreetMap road data (public OSRM server) and records the lap length, the share of the lap driven twice and any motorway. The lengths above are road distances along the chosen roads and will be re-checked in the final sector survey. Several loops share a short stretch of road (for example the start of Round 4 and the suburban start of Round 1); none is an out-and-back. Several candidate regions were tried and dropped because they could not close into a loop within 80 km without a motorway, a dirt road or a long retrace, including the Oxley Highway, Mount Hotham, the Great Ocean Road, the Royal National Park and the Cethana roads in Tasmania (a loop there is 83.8 km).
+**How these were measured.** `tools/routes/measure_routes.py` routes each course through its waypoints on OpenStreetMap road data (public OSRM server) and records the lap length, the share of the lap driven twice and any motorway. The lengths above are road distances along the chosen roads and will be re-checked in the final sector survey. Several loops share a short stretch of road (for example the start of Round 3 and the suburban start of Round 1); none is an out-and-back. Several candidate regions were tried and dropped (including a Barossa loop, which retraced 14% of its length) because they could not close into a loop within 80 km without a motorway, a dirt road or a long retrace, including the Oxley Highway, Mount Hotham, the Great Ocean Road, the Royal National Park and the Cethana roads in Tasmania (a loop there is 83.8 km).
 
 **Course outlines.** The same script saves each route's outline to `data/courses/outlines.json` for the track map and the timing view. Each outline is a simplified, flattened path (about 80–300 points) with the cumulative distance in kilometres at every point, so sector boundaries, car positions and drone markers can be placed by distance along the lap. See "Course outlines" in the development specification.
 
@@ -107,9 +105,9 @@ Each round is a 7-day practice week, then 7 days of preliminaries for a field of
 
 **Race UI & Simulation View:** Races are presented as a **pure management interface** complete with real-time timing screens (sector splits, delta speeds, tyre life) and an interactive **live map** tracking car locations and drone markers.
 
-**Round timeline (proposed).** A round takes at least 15 days: 7 practice days, 7 prelim days (longer if wet days push them back) and the final race the day after the prelims. With about a week between rounds for repairs and travel, a 7-round season runs roughly 5 months, followed by an off-season for contracts, numbers and car building.
+**Round timeline (proposed).** A round takes at least 15 days: 7 practice days, 7 prelim days (longer if wet days push them back) and the final race the day after the prelims. The rounds are spread over the whole country, so there are about three weeks between rounds for repairs and long-distance travel (SA to WA to Queensland). Six 15-day rounds with five three-week gaps run from 31 March to mid-October, followed by an off-season for contracts, numbers and car building.
 
-**Round timeline from 2036.** The Junior round follows the Super Series final at the same venue: Junior practice day 1 is the day after the Super final, then 3 practice days, 5 prelim days and the Junior final the day after, a 9-day block. A round slot becomes 15 + 9 = 24 days. Seven slots (168 days) plus about 5 days between rounds finish in mid-October, so the season still ends on schedule. Garages with entries in both series keep their crews, trucks and tyre stores at the venue between the two events.
+**Round timeline from 2036.** The Junior round follows the Super Series final at the same venue: Junior practice day 1 is the day after the Super final, then 3 practice days, 5 prelim days and the Junior final the day after, a 9-day block. A round slot becomes 15 + 9 = 24 days. Six slots (144 days) plus about 11 days between rounds finish in mid-October, so the season still ends on schedule. Garages with entries in both series keep their crews, trucks and tyre stores at the venue between the two events.
 
 ## Points system (Original Era)
 
@@ -514,12 +512,12 @@ The full design is large, so development is staged. Each milestone must be playa
 | M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, classification, points | Final race, economy |
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, incidents, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase, upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
-| M5 Full season (**vertical slice**) | Seven rounds, off-season, rollover to 2032 | All 7 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
+| M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
 | M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
 | M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
 
-**MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race seven rounds, finish the season, and begin 2032 with all records saved.
+**MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season, and begin 2032 with all records saved.
 
 ## Technical architecture
 
@@ -766,7 +764,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 - **Balance mods.** A mod that changes balance data is labelled in the save, its records are kept apart from default-world records, and achievements are disabled for that career.
 - **Safety.** Data only: no code, and SVGs are sanitised to remove scripts and external references.
 - **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
-- **Calendar with mods.** A track mod can replace any of the seven rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km. Lap length must be between 10 and 80 km.
+- **Calendar with mods.** A track mod can replace any of the six rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km. Lap length must be between 10 and 80 km.
 - **Saves.** A career records the mods used, with their versions, and mods are fixed when the career is created. A missing or changed mod warns before loading. Modded careers are labelled, and their records are not mixed into default-world records.
 - **Distribution.** Mods go in a local `mods/` folder (or are imported in the web build). A mod index, a public repository of mod listings with download links, feeds an in-game mod browser. If a Steam release goes ahead, Steam Workshop is added as a second source through the optional Steam module.
 - **Mod licence (mandatory).** `mod.json` must declare a `license` as an SPDX identifier, and the mod folder must include the licence text. Only GPL-compatible licences are accepted: GPL-3.0-or-later, GPL-3.0-only, AGPL-3.0, LGPL-3.0, MIT, BSD-2-Clause, BSD-3-Clause, ISC, Apache-2.0, MPL-2.0, Unlicense, CC0-1.0, CC-BY-4.0 and CC-BY-SA-4.0 (and OFL-1.1 for fonts). A mod with a missing, unknown or incompatible licence (including non-commercial, no-derivatives or "all rights reserved") is rejected by the loader and the mod index. All art, audio and fonts inside a mod must also be GPL-compatible, and the licence is shown in the mod manager.
@@ -803,7 +801,7 @@ The game is English-only at launch, but all text is externalised so translation 
 | Hypercar | $2,000,000+ (see price tiers) |
 | Part price range | $400 (filter, pads) to $60,000 (turbo kit / engine build) |
 | Mechanic wage | $500 per week each |
-| Travel and accommodation | $2,000 per round per garage, plus $500 per extra entry |
+| Travel and accommodation | $3,500 per round per garage (the rounds are far apart), plus $750 per extra entry |
 | Servicing | $1,200 per round per entry at Starter tier (see supercar upkeep) |
 | Driver salary, unknown | $0–$20,000 per season (often paid in sponsor product) |
 | Driver salary, gold border | $60,000–$400,000 per season; champions higher |
@@ -811,7 +809,7 @@ The game is English-only at launch, but all text is externalised so translation 
 | Delivery driving | About $250 per day on non-event days |
 | Top-31 discount on parts | 30% |
 
-**Balance check (v1).** A solo Owner-driver with one Starter car spends about $69,000 a season: entry fees $21,000, racing tyres $10,500, practice tyres $14,700, servicing $8,400 and travel $14,000. Income at zero points is about $67,000: roughly 109 non-event days of delivery driving at $250 ($27,000) plus a small sponsor ($40,000). So a one-car garage survives on delivery income and a small sponsor at zero points, earns a small surplus (about $15,000) from top-31 finishes through free tyres and discounts, and only profits meaningfully from finals. A Garage owner with two mechanics ($52,000 a year) and a hired driver runs about $60,000 in deficit until finals arrive, which gives roughly four seasons of runway on $250,000. Upgrades, supercars and crashes are paid for out of final prize money. **Bankruptcy:** cash below -$50,000 for 3 consecutive weeks ends the garage; in Garage owner mode the career ends with a retrospective screen, in Driver manager mode the driver is released and may sign elsewhere.
+**Balance check (v1).** A solo Owner-driver with one Starter car spends about $68,000 a season over six rounds: entry fees $18,000, racing tyres $9,000, practice tyres $12,600, servicing $7,200 and travel $21,000. Income at zero points is about $67,000: roughly 108 non-event days of delivery driving at $250 ($27,000) plus a small sponsor ($40,000). So a one-car garage survives on delivery income and a small sponsor at zero points, earns a small surplus (about $12,000) from top-31 finishes through free tyres and discounts, and only profits meaningfully from finals. A Garage owner with two mechanics ($52,000 a year) and a hired driver runs about $63,000 in deficit until finals arrive, which gives roughly four seasons of runway on $250,000. Upgrades, supercars and crashes are paid for out of final prize money. **Bankruptcy:** cash below -$50,000 for 3 consecutive weeks ends the garage; in Garage owner mode the career ends with a retrospective screen, in Driver manager mode the driver is released and may sign elsewhere.
 
 ## Formulas (proposed, tunable)
 
@@ -1045,7 +1043,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 - **Single-player only.** No multiplayer (see Technical Stack).
 - **Season 1 field.** 96 garages and 313 drivers; later growth follows "World generation and AI".
-- **Fixed round count.** Seven rounds each season, including after 2036.
+- **Fixed round count.** Six rounds each season, including after 2036.
 - **Standings.** Drivers, garages, manufacturers, driver nations and garage nations all ship (see "Standings").
 - **Flags.** Any flag with a flag emoji is allowed, provided its artwork has an open licence (OFL, CC BY-SA or similar).
 - **Road and place names.** Real roads, routes and place names are used as geography and need no licensing.
@@ -1066,8 +1064,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
 - **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
 - **Mod licences.** GPL-compatible licences are mandatory for mods.
-- **Calendar.** Seven closed loops, run clockwise around the country from South Australia (Rounds 1–2) to Western Australia (3), Queensland (4), New South Wales (5) and Victoria (6–7), ending at Healesville, the series' home. No out-and-back courses. Tasmania, the Northern Territory and the ACT are not in the base calendar and are open to mods.
-- **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. All seven lap lengths are measured.
+- **Calendar.** Six closed loops, run clockwise around the country from South Australia (Round 1) to Western Australia (2), Queensland (3), New South Wales (4) and Victoria (5–6), ending at Healesville, the series' home. No out-and-back courses. Tasmania, the Northern Territory and the ACT are not in the base calendar and are open to mods.
+- **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. All six lap lengths are measured.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
 - **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
 - **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
@@ -1075,8 +1073,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Open**
 
-- [ ] Check that every route is fully sealed. The automatic surface check (Overpass) was unavailable, so run `tools/routes/measure_routes.py` once the Overpass server responds. Roads to watch: Old Norton Summit Road, Knotts Hill Road and Burdetts Road (Round 1), Seven Steps Road and Moss Smith Road (Round 2), Puzey Road, Johnson Road and Yelverton North Road (Round 3), and Camerons Road area and Old Healesville Road (Round 7).
-- [ ] Find better loops for Round 2 (it retraces 14%, and the Barossa is gentle) and a second Western Australian course; no suitable Perth Hills or Margaret River loop under 80 km was found without a long retrace or unnamed roads. A Northern Territory or Tasmanian round could also fit the clockwise theme as a mod.
+- [ ] Check that every route is fully sealed. The automatic surface check (Overpass) was unavailable, so run `tools/routes/measure_routes.py` once the Overpass server responds. Roads to watch: Old Norton Summit Road, Knotts Hill Road and Burdetts Road (Round 1), Puzey Road, Johnson Road and Yelverton North Road (Round 2), and the Camerons Road area and Old Healesville Road (Round 6).
+- [ ] Consider a seventh round (a second Western Australian course, or the Northern Territory or Tasmania) if a good sealed loop under 80 km is found.
 - [ ] Legal review of the ODbL attribution for the saved course outlines.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
