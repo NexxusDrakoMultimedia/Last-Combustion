@@ -35,7 +35,7 @@ describe('persisting a world', () => {
 
   it('writes every table and the migrated schema is at version 17', () => {
     const db = freshWorld();
-    expect(getSchemaVersion(db)).toBe(21);
+    expect(getSchemaVersion(db)).toBe(22);
     expect(readWorldSummary(db)).toEqual({
       garages: 96,
       drivers: 313,

@@ -85,5 +85,12 @@
   "hub.driverCell": "#{number} {driver}",
   "hub.save": "Save to slot 1",
   "hub.load": "Load slot 1",
-  "hub.export": "Export .lcsave file"
+  "hub.export": "Export .lcsave file",
+  "starter.heading": "Choose your starter car and driver",
+  "starter.intro": "Pick one car and one driver to start with. The cars and drivers you pass on go on the market and to free agency.",
+  "starter.cars": "Starter car",
+  "starter.drivers": "Driver",
+  "starter.car": "{model}, {year}, {km, number} km, {wear}% worn, worth {value}",
+  "starter.driver": "{name} {sign}, age {age}. Pace {pace}, consistency {consistency}, racecraft {racecraft}, tyres {tyres}, composure {composure}, wet {wet}.",
+  "starter.confirm": "Confirm choice"
 }

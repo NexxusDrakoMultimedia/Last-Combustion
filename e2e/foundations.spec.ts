@@ -14,6 +14,11 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await expect(page.getByRole('heading', { name: 'Test Garage Racing' })).toBeVisible();
   await expect(page.getByRole('heading', { name: '2031 season' })).toBeVisible();
 
+  await page.locator('input[name="starter-car"]').nth(1).check();
+  await page.locator('input[name="starter-driver"]').nth(2).check();
+  await page.getByRole('button', { name: messages['starter.confirm'] }).click();
+  await expect(page.getByRole('heading', { name: messages['starter.heading'] })).toBeHidden();
+
   await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
   await expect(page.getByText(/Round 1 prelims: \d+ set a time/)).toBeVisible();
   await page.getByRole('button', { name: messages['hub.runFinal'] }).click();

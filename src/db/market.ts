@@ -206,7 +206,7 @@ export function openListings(db: Database): Listing[] {
   }));
 }
 
-function transferCar(
+export function transferCar(
   db: Database,
   carId: number,
   toGarageId: number,
@@ -336,6 +336,7 @@ export function createUsedCar(
   rng: ReturnType<ReturnType<typeof createRng>['stream']>,
   ownerGarageId: number,
   date: string,
+  only?: { tier: Tier; excludeModelIds: readonly number[] },
 ): { carId: number; value: number } {
   const year = Number(date.slice(0, 4));
   const models = all(
@@ -346,9 +347,12 @@ export function createUsedCar(
   );
   const weights = economyBalance.market.tierWeights as Record<string, number>;
   const cars = worldCars();
+  const pool = only
+    ? models.filter((m) => m.tier === only.tier && !only.excludeModelIds.includes(m.id as number))
+    : models;
   const model = rng.weighted(
-    models,
-    models.map((m) => weights[m.tier as string] ?? 0),
+    pool,
+    pool.map((m) => (only ? 1 : (weights[m.tier as string] ?? 0))),
   );
   const tier = model.tier as keyof typeof cars.maxAgeYears;
   const age = rng.int(1, cars.maxAgeYears[tier]);
