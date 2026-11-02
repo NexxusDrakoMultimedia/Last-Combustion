@@ -70,7 +70,7 @@ The season runs annually from **March to October**. It consists of seven rounds 
 | 2 | Oxley Highway, Wauchope–Walcha | NSW | Long, relentless corners; endurance test for drivers and tyres |
 | 3 | Royal National Park, Sydney | NSW | Forest and coastal roads just south of the city; run at night |
 | 4 | Great Alpine Road, Mount Hotham | Vic | High altitude cuts engine power, so light cars close the gap |
-| 5 | Chum Creek / Toolangi, Healesville | Vic | Tight, damp forest roads in the hills above the series' home town; a rhythm test |
+| 5 | Black Spur / Toolangi / Chum Creek, Healesville | Vic | Tight, damp forest sweepers and hill roads around the series' home town; a rhythm test |
 | 6 | Great Ocean Road, Lorne–Kennett River | Vic | Coastal cliffs, sea spray, changeable weather; tyre management |
 | 7 | North-west Tasmania mountain roads, Cethana / Hellyer Gorge | Tas | The finale: technical mountain roads, cold tarmac, big elevation changes |
 
@@ -84,7 +84,7 @@ Each round runs on a loop or an out-and-back course. A preliminary run is **stri
 | 2 | Mount Seaview Climb: up the Oxley Highway toward Walcha and back, turning at a closed hairpin | Out-and-back | ~50 km | 6 |
 | 3 | Royal National Park Loop: Waterfall, McKell Avenue, Sir Bertram Stevens and Lady Wakehurst Drives to Otford, Princes Highway back to Waterfall | Loop | ~35 km | 9 |
 | 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham village and back | Out-and-back | ~60 km | 5 |
-| 5 | Chum Creek–Toolangi Loop: Healesville north on Chum Creek Road through Chum Creek to Toolangi, then back down the Healesville–Kinglake Road to Healesville; connecting roads to be confirmed | Loop | ~35 km | 9 |
+| 5 | Healesville Hills Loop: Healesville over the Black Spur to Narbethong, a link road across the ranges to Toolangi (to be chosen), then Chum Creek Road down through Chum Creek back to Healesville | Loop | ~60 km | 5 (provisional) |
 | 6 | Kennett River Run: Lorne along the Great Ocean Road through Wye River to Kennett River and back, turning at a closed junction | Out-and-back | ~45 km | 7 |
 | 7 | Cethana Loop: the mountain roads near Sheffield and the Cethana dam; connecting roads to be chosen | Loop | ~40 km | 8 |
 
@@ -1052,7 +1052,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
 - **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
 - **Mod licences.** GPL-compatible licences are mandatory for mods.
-- **Lap length.** Maximum 80 km (minimum 10 km). Round 5 uses Chum Creek and Toolangi and Round 6 is a shorter Lorne–Kennett River run.
+- **Lap length.** Maximum 80 km (minimum 10 km). Round 5 runs Healesville–Narbethong–Toolangi–Chum Creek and Round 6 is a shorter Lorne–Kennett River run.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
 - **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
 - **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
@@ -1060,7 +1060,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Open**
 
-- [ ] Measured lap lengths for each proposed route (needed before M2 course data). Estimates only so far, because the mapping services (OpenStreetMap routing) are blocked in the design session. Confirm that the Round 5 and Round 6 roads connect as described.
+- [ ] Measured lap lengths for each proposed route (needed before M2 course data). Estimates only so far, because the mapping services (OpenStreetMap routing) are blocked in the design session. Choose and confirm the Narbethong–Toolangi link road for Round 5 and that the Round 6 roads connect as described. Round 5 is about 60 km, so it sits right at 5 laps (300 km) and becomes 6 laps if measured shorter.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and Pyra Drake artwork are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
