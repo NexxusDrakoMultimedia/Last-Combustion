@@ -63,3 +63,7 @@ Repairs: `src/db/repairs.ts` has `wearParts` (called when a round adds kilometre
 Seasons: `src/sim/standings.ts` has the five championship tables (pure, from round results), `src/db/season.ts` has `computeStandings` and `endSeason` (champion prize, bonuses, gold borders, final snapshots; migration 0014), and `src/db/almanac.ts` has the almanac of everyone who ever scored (migration 0015 adds `garage.closed_year`).
 
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.
+
+## Names, titles and the Equalizer
+
+`src/sim/names/generate.ts` expands themed patterns from `data/names/` into garage, car and nickname strings. `src/sim/titles.ts` and `src/db/titles.ts` define and award driver titles (tables from migrations 0016 and 0017). `src/sim/equalizer.ts` holds the tyre-width rule and the 4WD and mid-engine handicap.

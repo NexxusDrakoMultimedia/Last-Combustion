@@ -287,6 +287,12 @@ A supplier's logo can only go on the doors if one of its parts is fitted to the 
 
 The Equalizer is the series' only real technical rule: a car's maximum tyre width is set by its kerb weight. There are no power limits, no ballast, no budget cap and no success ballast.
 
+**Layout handicap (built).** As in the real series, four-wheel-drive and mid-engine cars are handicapped: their maximum tyre width is 10 mm less than the kerb-weight figure (`data/balance.json`, `upgrades.handicapMm`, so mods can tune it). A car model's listed limit is the base figure; each car's own limit and tyre width apply the handicap, and scrutineering checks against it.
+
+**Awards at the flag (built).** Everything a race earns is given out when it ends: prize money, the gold border for a driver's first final, a win decal on the winning driver and car, and any new titles. Pole and overtaking bonuses add up through the year and are paid at the end of the season with the champion's prize (more bonus kinds can be added to `season_bonus`), and the shield decals for the champions are added then.
+
+**Name generators and nicknames (built).** People, garages, cars and nicknames come from themed, categorised generators (`data/names/`): garages from eleven themes (heritage, engineering, animal, place, myth, speed, vintage, touge, bush, business, colour), car models by category (hypercar, supercar, JDM, sports, domestic, other) with real model names denied, and nicknames such as "The Midnight Ghost" chosen from the road a driver calls home and how they race. About 40% of drivers have one. One nation in twenty is picked with no weighting at all. Drivers also earn titles (`data/titles.json`) for career feats, as in Wangan Midnight and Tokyo Xtreme Racer, and equip one.
+
 ```latex
 \text{Max tyre width (mm)} = \frac{\text{Kerb weight (kg)}}{5} + 40
 ```

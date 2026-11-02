@@ -9,6 +9,7 @@ import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
 import { all, loadEntries } from './entries';
 import { wearParts } from './repairs';
+import { awardTitles } from './titles';
 
 export interface FinalSummary {
   roundNumber: number;
@@ -17,6 +18,10 @@ export interface FinalSummary {
   overtakes: number;
   /** Whether rain arrived part-way through the race. */
   weatherChange: boolean;
+  /** Drivers who earned their gold border at the flag (their first final). */
+  goldBorders: number;
+  /** Titles given out at the end of the race. */
+  titlesAwarded: number;
   podium: {
     position: number;
     raceNumber: number;
@@ -131,6 +136,7 @@ export function playFinal(
   const date = round.final_date as string;
 
   const podium: FinalSummary['podium'] = [];
+  let goldBorders = 0;
   db.exec('BEGIN');
   try {
     const classified = (c: (typeof classification)[number]) =>
@@ -208,6 +214,34 @@ export function playFinal(
     ledger.free();
     bonus.free();
 
+    // Everything the race earns is given out at the flag: gold borders for reaching a final, and a
+    // trophy decal for the winning driver and the winning car.
+    const year = season.year as number;
+    for (const c of classification) {
+      const entry = loaded.get(c.entryId)!;
+      const driverId = entry.driver.id;
+      const had = all(db, 'SELECT gold_border_year FROM driver WHERE id = ?', [driverId])[0]!;
+      if (had.gold_border_year === null) {
+        db.run('UPDATE driver SET gold_border_year = ? WHERE id = ?', [year, driverId]);
+        db.run(
+          "INSERT INTO event_log (round_id, scope, occurred_on, type, entry_id, payload) VALUES (?, 'final', ?, 'gold_border', ?, ?)",
+          [roundId, date, c.entryId, JSON.stringify({ driverId })],
+        );
+        goldBorders += 1;
+      }
+      if (c.position === 1 && c.finished) {
+        for (const [ownerType, ownerId] of [
+          ['driver', driverId],
+          ['car', entry.carId],
+        ] as const) {
+          db.run(
+            "INSERT INTO trophy (owner_type, owner_id, kind, series, season_id, round_id, earned_on) VALUES (?, ?, 'win', 'main', ?, ?, ?)",
+            [ownerType, ownerId, season.id as number, roundId, date],
+          );
+        }
+      }
+    }
+
     const insertEvent = db.prepare(
       'INSERT INTO event_log (round_id, scope, occurred_on, km, type, entry_id, payload) VALUES (?, ?, ?, ?, ?, ?, ?)',
     );
@@ -254,6 +288,12 @@ export function playFinal(
     throw error;
   }
 
+  // Titles are worked out once the race is in the books, for everyone who started the final.
+  let titlesAwarded = 0;
+  for (const c of classification) {
+    titlesAwarded += awardTitles(db, loaded.get(c.entryId)!.driver.id).length;
+  }
+
   const finishers = classification.filter((c) => c.finished);
   return {
     roundNumber,
@@ -261,6 +301,8 @@ export function playFinal(
     retirements: classification.length - finishers.length,
     overtakes: classification.reduce((s, c) => s + c.overtakes, 0),
     weatherChange: race.events.some((e) => e.type === 'weather_change'),
+    goldBorders,
+    titlesAwarded,
     podium,
   };
 }

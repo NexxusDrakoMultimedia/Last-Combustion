@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { equalizerMm } from '../equalizer';
 import { createRng, type RandomStream } from '../rng';
 import { wearFromKm } from '../wear';
 import { buildCalendar } from './calendar';
@@ -334,7 +335,7 @@ export function generateWorld(seed: string | number): World {
       raceKm: 0,
       wear: wearFromKm(roadKm, 0, model.tier),
       kerbKg: model.kerbKg,
-      tyreWidthMm: model.maxTyreMm,
+      tyreWidthMm: equalizerMm(model.kerbKg, model.layout),
     };
     cars.push(car);
     driverCar.set(d.id, car);
@@ -353,7 +354,7 @@ export function generateWorld(seed: string | number): World {
     raceKm: 0,
     wear: wearFromKm(24000, 0, 'unique'),
     kerbKg: spirit.kerbKg,
-    tyreWidthMm: spirit.maxTyreMm,
+    tyreWidthMm: equalizerMm(spirit.kerbKg, spirit.layout),
   });
 
   // --- entries ---

@@ -243,20 +243,28 @@ describe('across many races', () => {
 
 describe('calls', () => {
   const s = setup('calls');
-  const target = s.finalists[7]!.entryId;
-  const result = (call: 'push' | 'balanced' | 'conserve') => {
+  const run = (entryId: number, call: 'push' | 'balanced' | 'conserve') => {
     const race = new FinalRace(input(s));
-    race.setCall(target, call);
+    race.setCall(entryId, call);
     race.runToEnd();
-    return race.classification().find((c) => c.entryId === target)!;
+    return race.classification().find((c) => c.entryId === entryId)!;
   };
+  const target = s.finalists[7]!.entryId;
 
   it('push wears the tyres faster and conserve wears them slower', () => {
-    const push = result('push');
-    const balanced = result('balanced');
-    const conserve = result('conserve');
-    expect(push.tyrePct).toBeLessThan(balanced.tyrePct);
-    expect(balanced.tyrePct).toBeLessThan(conserve.tyrePct);
+    // Compare the finalists that finish under every call: a car that retires, or that wears its tyres
+    // to nothing, says little on its own, so the comparison is made across the field.
+    const rows = s.finalists
+      .map((f) => (['push', 'balanced', 'conserve'] as const).map((c) => run(f.entryId, c)))
+      .filter((r) => r.every((x) => x.finished));
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    const mean = (i: number) => rows.reduce((sum, r) => sum + r[i]!.tyrePct, 0) / rows.length;
+    expect(mean(0)).toBeLessThan(mean(1));
+    expect(mean(1)).toBeLessThan(mean(2));
+    for (const r of rows) {
+      expect(r[0]!.tyrePct).toBeLessThanOrEqual(r[1]!.tyrePct);
+      expect(r[1]!.tyrePct).toBeLessThanOrEqual(r[2]!.tyrePct);
+    }
   });
 
   it('lets a pushed car run quicker on the road than a conserving one', () => {

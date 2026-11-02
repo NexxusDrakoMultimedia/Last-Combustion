@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { equalizerMm } from '../sim/equalizer';
+import type { Layout } from '../sim/worldgen/types';
 import type { Database } from 'sql.js';
 import { carValue, dealerBuybackPrice, listingPrice, newCarPrice } from '../sim/economy';
 import { createRng } from '../sim/rng';
@@ -68,7 +70,7 @@ export function buyNewCar(
   if (!garage) throw new Error(`There is no garage ${garageId}.`);
   const model = all(
     db,
-    `SELECT m.id, m.name, m.tier, m.manufacturer_id, m.base_kerb_kg, m.max_tyre_mm, m.price_new, m.introduced_year, m.retired_year,
+    `SELECT m.id, m.name, m.tier, m.manufacturer_id, m.base_kerb_kg, m.max_tyre_mm, m.layout, m.price_new, m.introduced_year, m.retired_year,
             f.home_country
        FROM car_model m JOIN manufacturer f ON f.id = m.manufacturer_id WHERE m.id = ?`,
     [modelId],
@@ -99,7 +101,7 @@ export function buyNewCar(
         garageId,
         year,
         model.base_kerb_kg as number,
-        model.max_tyre_mm as number,
+        equalizerMm(model.base_kerb_kg as number, model.layout as Layout),
       ],
     );
     db.run(
@@ -338,7 +340,7 @@ export function createUsedCar(
   const year = Number(date.slice(0, 4));
   const models = all(
     db,
-    `SELECT m.id, m.name, m.tier, m.base_kerb_kg, m.max_tyre_mm, m.price_new, f.home_country
+    `SELECT m.id, m.name, m.tier, m.base_kerb_kg, m.max_tyre_mm, m.layout, m.price_new, f.home_country
        FROM car_model m JOIN manufacturer f ON f.id = m.manufacturer_id
       WHERE m.tier <> 'unique' ORDER BY m.id`,
   );
@@ -373,7 +375,7 @@ export function createUsedCar(
       roadKm,
       wear,
       model.base_kerb_kg as number,
-      model.max_tyre_mm as number,
+      equalizerMm(model.base_kerb_kg as number, model.layout as Layout),
     ],
   );
   db.run(
