@@ -132,6 +132,20 @@ The win is worth a full point more than 2nd. From 2nd to 17th, each place drops 
 - free tyres, and large discounts on other parts
 - a reserved place in the assistants' booth (the second booth), a space in the broadcast, team comms and telemetry area. Garages working from it get richer live telemetry (sector splits, tyre life, rivals' pace) and clearer radio to their driver, so their race calls are better informed
 
+## Racing flags
+
+Every driver, car and garage races under a flag. Each of the three has its own flag, so a car can carry a different flag from its driver or its garage.
+
+- **Any nation with a flag emoji.** A flag is any country or territory that has a Unicode flag emoji, stored as its two-letter ISO 3166-1 code (for example `AU`, `JP`, `SE`).
+- **Defaults.** A new driver's flag matches their nationality, a new garage's matches its home country, and a car's matches its manufacturer's home country. The player may change any of these when creating or registering an entry.
+- **Changes.** A flag can be changed in the off-season at entry registration. Each change is logged in the record, and a driver or garage that switches flags loses some fame (similar to a number change).
+- **Livery.** Flags sit with the panel they belong to: the garage flag beside the garage name on the front quarter panels, the driver's flag beside their trophies on the right rear (driver's side), and the car's flag beside its trophies on the left rear (passenger's side).
+- **Timing screens and broadcast.** The flag appears beside the number and name in timing towers, results and broadcast graphics.
+- **Records.** The flag a driver, car or garage raced under is recorded for every entry, so history shows which flag took each win.
+- **Flag standings (optional, proposed).** A season table of points by driver flag and by garage flag, with a flag-fame bonus for sponsors. It does not affect the championships.
+- **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed. Real-world sensitivity is covered in the legal review (see open questions).
+- **Implementation.** Flag emoji do not render on Windows, so the game uses an SVG flag set keyed by ISO code (for example the open-source `flag-icons` package, license to be checked) instead of emoji text. The emoji is only used in text exports.
+
 ## Garages and Field Size
 
 - **Season 1 Baseline:** Starts with exactly **96 garages** and **313 drivers**.
@@ -460,12 +474,13 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
 | `course` | name, state, shape (`loop` / `out_and_back`), lap_km, final_laps, road_type, altitude_m, night (bool) |
 | `sector` | course_id, order, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
-| `garage` | name, home_state, prestige, cash, founded_year, is_player, ai_profile |
-| `driver` | name, birth_year, nationality, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
+| `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
+| `garage` | name, home_state, flag, prestige, cash, founded_year, is_player, ai_profile |
+| `driver` | name, birth_year, nationality, flag, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
 | `driver_road_affinity` | driver_id, road_type, rating |
 | `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
 | `car_model` | manufacturer_id, name, base_kerb_kg, base_ps, drivetrain, price_new, legality_base |
-| `car` | car_model_id, chassis_no, garage_id, odometer_km, condition, kerb_kg_current |
+| `car` | car_model_id, chassis_no, flag, garage_id, odometer_km, condition, kerb_kg_current |
 | `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
 | `car_part` | car_id, part_id, installed_date, wear |
 | `entry` | season_id, garage_id, driver_id, car_id, race_number, series (`main` / `junior`), fee_paid |
@@ -659,7 +674,8 @@ The starting field's 313 cars are drawn from about 40 models (5 per manufacturer
 
 - [ ] Measured lap lengths for each proposed route (needed before M2 course data).
 - [ ] Final tuning of the cost baseline and formula coefficients (via the 10-season headless sim).
-- [ ] Licensing/legal review of real road names and place names used for courses.
+- [ ] Licensing/legal review of real road names and place names used for courses, and of the full flag list (disputed territories) and the flag-icon licence.
+- [ ] Whether the flag standings table ships at launch or later.
 - [ ] Whether Junior Series entries share garages with the main series, or form separate Junior garages.
 - [ ] Whether the Owner-driver may run two cars (one driven by the player) from the start.
 - [ ] Localisation: English only at launch, or text externalised for later translation (recommended: externalise from M0).
