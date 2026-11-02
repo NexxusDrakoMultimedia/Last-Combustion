@@ -16,7 +16,7 @@ Usage: python3 -u tools/routes/measure_routes.py [--no-unpaved] [round ...]
 Needs network access to router.project-osrm.org and overpass-api.de.
 Be polite to the public servers: this script waits between requests.
 """
-import json, math, sys, time, urllib.parse, urllib.request
+import json, math, re, sys, time, urllib.parse, urllib.request
 
 UA = "last-combustion-design/1.0 (Nexxus Drako Multimedia)"
 OSRM = "https://router.project-osrm.org/route/v1/driving/"
@@ -45,6 +45,18 @@ def route(points):
             else:
                 roads.append([n, st["distance"]])
     return r["distance"] / 1000, r["geometry"]["coordinates"], roads
+
+def quality(geom, roads):
+    """Return (overlap_pct, motorway_km): share of the route driven twice, and motorway length."""
+    seen, twice, total = set(), 0, 0
+    for lo, la in geom[::3]:
+        cell = (round(la / 0.0004), round(lo / 0.0004))
+        total += 1
+        if cell in seen:
+            twice += 1
+        seen.add(cell)
+    mw = sum(d for n, d in roads if any(w in n for w in ("Freeway", "Motorway", "Expressway")) or re.match(r"^M\d", n)) / 1000
+    return 100 * twice / max(total, 1), mw
 
 def unpaved_near(geom, dist_m=20):
     lons = [c[0] for c in geom]; lats = [c[1] for c in geom]
@@ -127,6 +139,8 @@ if __name__ == "__main__":
         for n, m in roads:
             if m >= 1500:
                 print(f"    {n}: {m/1000:.1f} km")
+        ov, mw = quality(geom, roads)
+        print(f"    overlap {ov:.0f}% of the route is driven twice; motorway {mw:.1f} km")
         o = outline(geom)
         o.update({"round": r["round"], "name": r["name"], "shape": r["shape"],
                   "pass_km": round(km, 2), "lap_km": round(lap, 2), "final_laps": laps,

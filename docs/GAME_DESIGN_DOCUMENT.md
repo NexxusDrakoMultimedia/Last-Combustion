@@ -58,7 +58,7 @@ The same drones that film the series also act as its marshals, warning drivers a
 
 ## Season calendar & Timeline
 
-The season runs annually from **March to October**. It consists of seven rounds on Australian roads, starting in Queensland and moving south to a finale in Tasmania. Every course must be a mountain or road course with a lap of 10 to 80 km on sealed (paved) public roads only, with no dirt or gravel; urban street circuits are not allowed.
+The season runs annually from **March to October**. It consists of seven rounds on Australian roads, travelling clockwise around the country: it starts in South Australia, crosses to Western Australia, then goes up and around through Queensland and New South Wales and finishes in Victoria at the series' home town, Healesville. Every course must be a mountain or road course with a lap of 10 to 80 km on sealed (paved) public roads only, with no dirt or gravel, and every course is a closed loop (no out-and-back or point-to-point courses). Urban street circuits are not allowed.
 
 - **Pyra Drake's Birthday & Season Start:** Pyra was born in 1996, celebrating her 35th birthday in Season 1 (2031) and her 40th birthday in Season 6 (2036). The first day of Round 1 practice and the opening ceremony always takes place on her birthday, **March 31st**.
 - **Season Wrap:** The racing season concludes in **mid-October** after Round 7.
@@ -66,29 +66,29 @@ The season runs annually from **March to October**. It consists of seven rounds 
 
 | Rd | Course | State | Character |
 | --- | --- | --- | --- |
-| 1 | Mount Glorious / Mount Nebo | Qld | Season opener: narrow, bumpy climbs and descents; suits light cars |
-| 2 | Oxley Highway, Mount Seaview | NSW | Long, relentless corners; endurance test for drivers and tyres |
-| 3 | Royal National Park, Sydney | NSW | Forest and coastal roads just south of the city (McKell Avenue and Lady Wakehurst Drive); run at night |
-| 4 | Great Alpine Road, Mount Hotham | Vic | High altitude cuts engine power, so light cars close the gap |
-| 5 | Black Spur / Toolangi / Chum Creek, Healesville | Vic | Tight, damp forest sweepers and hill roads around the series' home town; a rhythm test |
-| 6 | Great Ocean Road, Lorne–Kennett River | Vic | Coastal cliffs, sea spray, changeable weather; tyre management |
-| 7 | North-west Tasmania mountain roads, Cethana / Hellyer Gorge | Tas | The finale: technical mountain roads, cold tarmac, big elevation changes |
+| 1 | Adelaide Hills, Gorge Road and Lobethal | SA | Season opener: fast, flowing hill and gorge roads on the edge of Adelaide |
+| 2 | Barossa and Eden Valley | SA | Rolling vineyard roads and long sweepers; rewards power and smooth lines |
+| 3 | Yallingup and Metricup, Margaret River region | WA | Forest and coast roads on Caves Road; the far-west round, run at night |
+| 4 | Mount Nebo / Mount Glorious | Qld | Narrow, bumpy climbs and descents; suits light cars |
+| 5 | Jamberoo Mountain Road / Macquarie Pass | NSW | Steep escarpment climb and descent; tight and often wet |
+| 6 | Marysville, Buxton and the Black Spur | Vic | Tight, damp forest sweepers; a rhythm test |
+| 7 | Healesville, Chum Creek, Toolangi and Dixons Creek | Vic | The finale at the series' home town: hill roads above Healesville |
 
 **Proposed routes**
 
-Each round runs on a loop or an out-and-back course. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. A lap is at most **80 km** and at least 10 km. The final's lap count is the smallest whole number of laps that reaches 300 km, using the measured lap length.
+Every round runs on a closed loop. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. A lap is at most **80 km** and at least 10 km. The final's lap count is the smallest whole number of laps that reaches 300 km, using the measured lap length.
 
-| Rd | Route | Shape | Lap (measured) | Final laps |
-| --- | --- | --- | --- | --- |
-| 1 | Mount Nebo–Mount Glorious Loop: The Gap, Waterworks Road and Mount Nebo Road up to Mount Nebo, Mount Glorious Road down to Samford, Samford Road and Settlement Road back to The Gap | Loop | 57.4 km | 6 (344 km) |
-| 2 | Mount Seaview Climb: the Oxley Highway from Mount Seaview east for 39 km and back, turning at a closed junction | Out-and-back | 78.3 km | 4 (313 km) |
-| 3 | Royal National Park Run: Waterfall, McKell Avenue and Lady Wakehurst Drive to Otford and back | Out-and-back | 35.8 km | 9 (323 km) |
-| 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham Heights and back | Out-and-back | 64.8 km | 5 (324 km) |
-| 5 | Healesville Hills Loop: Healesville over the Black Spur on the Maroondah Highway to Narbethong, back down the Black Spur to Camerons Road and Myers Creek Road up to Toolangi, then the Healesville–Kinglake Road down through Chum Creek to Healesville | Loop | 75.8 km | 4 (303 km) |
-| 6 | Kennett River Run: Lorne along the Great Ocean Road through Wye River to Kennett River and back, turning at a closed junction | Out-and-back | 44.6 km | 7 (312 km) |
-| 7 | Cethana Run: Sheffield to Cethana via Claude Road and Cethana Road and back | Out-and-back | 40.2 km | 8 (322 km) |
+| Rd | Route | Lap (measured) | Final laps |
+| --- | --- | --- | --- |
+| 1 | Adelaide Hills Gorge Loop: Magill, St Bernards Road and Gorge Road along the Torrens Gorge to Cudlee Creek, Lobethal Road to Lobethal, then Basket Range and Old Norton Summit Road back to Magill | 66.4 km | 5 (332 km) |
+| 2 | Barossa and Eden Valley Loop: Tanunda, Mengler Hill Road and Eden Valley Road to Eden Valley and Springton, then Angaston and back to Tanunda | 78.7 km | 4 (315 km) |
+| 3 | Yallingup and Metricup Loop: Cowaramup, Harman's Mill Road and Caves Road to Yallingup, Wildwood Road and Metricup-Yelverton Road, then the Bussell Highway back | 62.3 km | 5 (311 km) |
+| 4 | Mount Nebo–Mount Glorious Loop: The Gap, Waterworks Road and Mount Nebo Road up to Mount Nebo, Mount Glorious Road down to Samford, Samford Road and Settlement Road back to The Gap | 57.4 km | 6 (344 km) |
+| 5 | Jamberoo Mountain Loop: Jamberoo, Jamberoo Mountain Road up to Robertson, the Illawarra Highway down Macquarie Pass to Albion Park, and Jamberoo Road back | 63.8 km | 5 (319 km) |
+| 6 | Marysville and Buxton Loop: Marysville, Buxton–Marysville Road to Buxton, then the Maroondah Highway over the upper Black Spur to Narbethong and Marysville Road back | 42.1 km | 8 (337 km) |
+| 7 | Healesville Hills Loop: Healesville, the Healesville–Kinglake Road through Chum Creek to Toolangi, the Melba Highway to Dixons Creek, then Old Healesville Road and the Healesville–Yarra Glen Road back to Healesville | 52.6 km | 6 (316 km) |
 
-**How these were measured.** `tools/routes/measure_routes.py` routes each course through its waypoints on OpenStreetMap road data (public OSRM server) and records the lap length. The lengths above are road distances along the chosen roads. Lap lengths will be re-measured from the final sector survey. Out-and-back courses are the route out plus the same route back, and Round 5 drives the Maroondah Highway between Healesville and Camerons Road twice (up the Black Spur and back down).
+**How these were measured.** `tools/routes/measure_routes.py` routes each course through its waypoints on OpenStreetMap road data (public OSRM server) and records the lap length, the share of the lap driven twice and any motorway. The lengths above are road distances along the chosen roads and will be re-checked in the final sector survey. Several loops share a short stretch of road (for example the start of Round 4 and the suburban start of Round 1); none is an out-and-back. Several candidate regions were tried and dropped because they could not close into a loop within 80 km without a motorway, a dirt road or a long retrace, including the Oxley Highway, Mount Hotham, the Great Ocean Road, the Royal National Park and the Cethana roads in Tasmania (a loop there is 83.8 km).
 
 **Course outlines.** The same script saves each route's outline to `data/courses/outlines.json` for the track map and the timing view. Each outline is a simplified, flattened path (about 80–300 points) with the cumulative distance in kilometres at every point, so sector boundaries, car positions and drone markers can be placed by distance along the lap. See "Course outlines" in the development specification.
 
@@ -290,7 +290,7 @@ Every car's driving data is streamed by telemetry to the central computer at Las
 
 Races are simulated sector by sector from course, car and driver data; the player directs strategy rather than steering.
 
-- **Course data.** Each course is split into sectors, each tagged with a road type (forest, coast, alpine, night), corner density, elevation change, straight length, road width and overtaking spots.
+- **Course data.** Each course is split into sectors, each tagged with a road type (forest, coast, mountain, night), corner density, elevation change, straight length, road width and overtaking spots.
 - **Prelim runs.** Each sector time comes from the car's fit to that sector (power, weight, tyre width, setup), the driver's pace and road affinity, track temperature, and random variance that shrinks with consistency.
 - **Final race.** Simulated lap by lap and sector by sector. A faster car overtakes when its margin beats the defender's racecraft and the road width allows it.
 - **Tyre life.** Each sector uses tyre life based on driving style and tyre management. Near the end of the set, grip drops.
@@ -325,7 +325,7 @@ Every driver has hidden potential and visible stats that grow with experience, a
 | Tyre management | How much grip is left at the end of 300 km |
 | Composure | Performance under pressure and on the main feed |
 | Wet skill | Pace in rain during the final |
-| Road affinity | Separate ratings for forest, coast, alpine and night roads |
+| Road affinity | Separate ratings for forest, coast, mountain and night roads |
 | Potential | Hidden ceiling for growth |
 
 - **Profile.** Age, nationality, number, fame, reputation, contract and salary.
@@ -403,7 +403,7 @@ Prize money and sponsors fund the garage, while fame, reputation, rivalries and 
 
 - **Prize money.** Each round pays prize money to the 15 finalists, weighted heavily to the win (table below). Placings outside the final earn no prize money. The season champion, decided on points, wins a $10,000,000 championship prize, and performance bonuses build up through the year. Prize money and sponsors are a garage's main income.
 - **Fame and reputation.** Two separate ratings. Fame is popularity with fans, built from broadcast moments, attention flags and overtakes. Reputation is respect in the paddock, built from consistent results and clean racing. Sponsors chase fame; top garages hire on reputation.
-- **Driver development.** Drivers have stats that grow with experience on each kind of road: forest, coast, alpine and night. A driver can be brilliant on mountain roads and weak on coastal ones.
+- **Driver development.** Drivers have stats that grow with experience on each kind of road: forest, coast, mountain and night. A driver can be brilliant on mountain roads and weak on coastal ones.
 - **Rivalries.** Repeated close finishes or contact between two drivers create a rivalry. Rivals racing each other draw extra broadcast attention and fame.
 - **Awards.** Rookie of the Year, most attention flags in a season, and a Hall of Fame for retired champions.
 - **Damage and repairs.** Crashes cost money and time. Entries are road cars, so a car that can't be repaired can't be driven on the road either.
@@ -638,7 +638,7 @@ Each course has a saved outline that drives the track map, the live map and the 
 
 - **Format.** `data/courses/outlines.json` holds one entry per course: `viewBox`, an SVG `path`, and `points` as `[x, y, km]` where `km` is the cumulative distance along the lap. Coordinates are a flattened, simplified plan (not latitude and longitude), scaled to fit a 1000-unit box.
 - **Use.** Sector boundaries are stored as `start_km` on each sector and found on the outline by distance. Car positions, gaps, drone markers and overtaking spots use the same distance, so the live map and the timing screens always agree.
-- **Out-and-back courses.** The outline stores the outward pass once. A lap is the pass out and the same pass back, and the map draws the return alongside.
+- **Closed loops.** Every outline is a closed loop, and the first point is the start/finish line.
 - **Source and attribution.** Outlines are generated from OpenStreetMap road data and carry the attribution "Route geometry © OpenStreetMap contributors, ODbL 1.0", shown in the credits. Only the simplified outline is stored in the repository, not the raw map data, so the file is a derived map-style work rather than a copy of the database. This is on the legal review list.
 - **Regeneration.** `tools/routes/measure_routes.py` rebuilds the outlines and lap lengths from `tools/routes/routes.json`, and a mod track supplies its own outline in the same format.
 
@@ -653,7 +653,7 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `standing_snapshot` | season_id, series, table (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
 | `season` | year, era (`original` / `super`), final_size, status |
 | `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
-| `course` | name, state, shape (`loop` / `out_and_back`), lap_km, final_laps, road_type, altitude_m, night (bool), outline (JSON: viewBox, path, points with cumulative km) |
+| `course` | name, state, shape (always `loop`), lap_km, final_laps, road_type, altitude_m, night (bool), outline (JSON: viewBox, path, points with cumulative km) |
 | `sector` | course_id, order, surface (always `sealed`), start_km, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
 | `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
 | `garage` | name, home_state, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
@@ -762,7 +762,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 
 - **Stable IDs.** Everything a mod adds has a stable ID with the mod's prefix. Replacing a base item uses the base item's ID.
 - **Load order.** Mods load in order and the last to change an item wins. A conflict report names every override.
-- **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, lap length between 10 and 80 km, every sector sealed (a course with any unsealed surface is rejected), sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
+- **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, closed-loop course with a lap length between 10 and 80 km, every sector sealed (a course with any unsealed surface is rejected), sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
 - **Balance mods.** A mod that changes balance data is labelled in the save, its records are kept apart from default-world records, and achievements are disabled for that career.
 - **Safety.** Data only: no code, and SVGs are sanitised to remove scripts and external references.
 - **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
@@ -817,7 +817,7 @@ The game is English-only at launch, but all text is externalised so translation 
 
 **Car ratings** (each normalised to 0–1 against the series' range of cars):
 
-- **P (power)** from power-to-weight, `PS / kerb_kg`, with a reduction at altitude: `P × (1 − 0.011 × altitude_m / 100)` (Hotham at about 1,750 m loses roughly 19% before the cars' own turbo compensation).
+- **P (power)** from power-to-weight, `PS / kerb_kg`, with a reduction at altitude: `P × (1 − 0.011 × altitude_m / 100)` (no base-game course is high: Mount Nebo at about 650 m loses roughly 7%, and the effect matters mainly for mod courses in the mountains).
 - **G (grip)** from fitted tyre width as a share of the Equalizer limit, plus suspension and aero parts.
 - **B (braking/handling)** from brakes, suspension tune and weight.
 - **T (traction)** from drivetrain and tyre width.
@@ -1057,7 +1057,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
 - **Flag artwork.** `lipis/flag-icons` (MIT).
-- **Round 7 name.** The protected event name is not used. The round is the North-west Tasmania mountain roads.
+- **Event name.** The protected "Targa" event name is not used.
 - **Junior schedule.** Junior practice day 1 is the day after the Super final, at the same venue. Junior practice lasts 3 days.
 - **Balance mods and achievements.** Careers using balance-changing mods have achievements disabled.
 - **Mod hosting policy.** Standard DMCA takedown. No responsibility is claimed for modifications by private players.
@@ -1066,7 +1066,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
 - **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
 - **Mod licences.** GPL-compatible licences are mandatory for mods.
-- **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. Round 5 runs Healesville–Narbethong–Toolangi–Chum Creek and Round 6 is a shorter Lorne–Kennett River run. All seven lap lengths are measured.
+- **Calendar.** Seven closed loops, run clockwise around the country from South Australia (Rounds 1–2) to Western Australia (3), Queensland (4), New South Wales (5) and Victoria (6–7), ending at Healesville, the series' home. No out-and-back courses. Tasmania, the Northern Territory and the ACT are not in the base calendar and are open to mods.
+- **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. All seven lap lengths are measured.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
 - **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
 - **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
@@ -1074,7 +1075,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Open**
 
-- [ ] Check that every route is fully sealed. The roads used are all named public roads that are believed to be sealed, but the automatic surface check (Overpass) was unavailable, so run `tools/routes/measure_routes.py` once the Overpass server responds. Note that Myers Creek Road (Round 5) and Camerons Road need particular attention.
+- [ ] Check that every route is fully sealed. The automatic surface check (Overpass) was unavailable, so run `tools/routes/measure_routes.py` once the Overpass server responds. Roads to watch: Old Norton Summit Road, Knotts Hill Road and Burdetts Road (Round 1), Seven Steps Road and Moss Smith Road (Round 2), Puzey Road, Johnson Road and Yelverton North Road (Round 3), and Camerons Road area and Old Healesville Road (Round 7).
+- [ ] Find better loops for Round 2 (it retraces 14%, and the Barossa is gentle) and a second Western Australian course; no suitable Perth Hills or Margaret River loop under 80 km was found without a long retrace or unnamed roads. A Northern Territory or Tasmanian round could also fit the clockwise theme as a mod.
 - [ ] Legal review of the ODbL attribution for the saved course outlines.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
