@@ -940,7 +940,7 @@ The project follows common industry practice from the first commit (milestone M0
 **Versioning and changelog**
 
 - **Semantic Versioning 2.0.0** for releases: `MAJOR.MINOR.PATCH`. Before 1.0 the minor number follows the milestones (M2 is `0.2.0`), and `1.0.0` is the first full release (M8). Pre-releases use `-alpha.N`, `-beta.N` and `-rc.N`. Release tags are `vX.Y.Z`.
-- **Changelog.** `CHANGELOG.md` follows *Keep a Changelog 1.1.0* (Added, Changed, Deprecated, Removed, Fixed, Security) with an `[Unreleased]` section. Entries are generated from Conventional Commits by release automation and edited by hand when needed.
+- **Changelog.** `CHANGELOG.md` follows *Keep a Changelog 1.1.0* (Added, Changed, Deprecated, Removed, Fixed, Security), but it is empty until there is a release: pull requests do not edit it. The first release (`0.1.0`) is a simple display of the game's features, written when it is released, and later releases list their changes under the usual headings, written at release time (from Conventional Commits and by hand where needed).
 - **Separate versions.** The save schema has an integer version with migrations, the data/mod schema has its own version, and `mod.json` states a SemVer range of supported game versions. Breaking changes to the mod format need a major release and a migration note.
 - **Releases.** Publishing a tag creates a GitHub Release with notes from the changelog and attaches the web build and the desktop builds with checksums.
 
@@ -979,7 +979,7 @@ Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with 
 - `docs/GAME_DESIGN_DOCUMENT.md` (this document), `docs/ARCHITECTURE.md`, architecture decision records in `docs/adr/` (MADR format), a modding guide in `docs/modding/`, and published JSON Schemas for all mod files in `schemas/`.
 - TypeDoc API documentation for the simulation layer. User-facing text lives in `/locales`.
 
-**Definition of done:** the change has tests, passes every required check, updates the changelog and docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
+**Definition of done:** the change has tests, passes every required check, updates the docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
 
 ## Course outlines
 
