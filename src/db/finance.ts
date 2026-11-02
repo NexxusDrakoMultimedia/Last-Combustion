@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { distanceKm, roundCosts, upkeepFactor } from '../sim/economy';
+import { feePerRound } from '../sim/sponsors';
 import { economyBalance } from '../sim/worldgen/data';
 import type { Tier } from '../sim/worldgen/types';
 import { all } from './entries';
@@ -10,6 +11,8 @@ export interface RoundSettlement {
   roundNumber: number;
   garages: number;
   total: number;
+  /** What title sponsors paid the garages this round. */
+  sponsorIncome: number;
 }
 
 /**
@@ -62,6 +65,8 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
 
   const date = round.final_date as string;
   let total = 0;
+  let sponsorTotal = 0;
+  const seasonYear = Number(date.slice(0, 4));
   db.exec('BEGIN');
   try {
     for (const [garageId, entries] of byGarage) {
@@ -86,6 +91,22 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         );
       }
       db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [costs.total, garageId]);
+      // The title sponsor pays a share of its season fee each round.
+      const deal = all(
+        db,
+        `SELECT season_fee FROM sponsor_deal WHERE garage_id = ? AND is_title = 1 AND start_year <= ? AND end_year >= ?
+          ORDER BY id DESC LIMIT 1`,
+        [garageId, seasonYear, seasonYear],
+      )[0];
+      if (deal) {
+        const pay = feePerRound(deal.season_fee as number);
+        db.run(
+          'INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, ?, ?, ?, ?, ?)',
+          [garageId, roundId, date, 'sponsor', pay, `Round ${roundNumber}`],
+        );
+        db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [pay, garageId]);
+        sponsorTotal += pay;
+      }
       db.run(
         'UPDATE entry SET fee_paid = 1 WHERE garage_id = ? AND season_id = (SELECT MAX(id) FROM season) AND series = ?',
         [garageId, 'main'],
@@ -97,7 +118,7 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
     db.exec('ROLLBACK');
     throw error;
   }
-  return { roundNumber, garages: byGarage.size, total };
+  return { roundNumber, garages: byGarage.size, total, sponsorIncome: sponsorTotal };
 }
 
 export interface GarageFinance {

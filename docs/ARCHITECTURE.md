@@ -54,4 +54,6 @@ Auctions: `src/sim/auction.ts` has the increments, fees and `resolveLot` (proxy 
 
 Negotiation: `src/sim/negotiation.ts` has the pure rules (walk-away value, patience, counters, `respond`, contract value and release fee, all from the `negotiation` block of `data/balance.json`), and `src/db/negotiation.ts` has relationships, `openDriverNegotiation` and `offerDriverContract` (migration 0009 adds `negotiation`, `offer` and `relationship`).
 
+Sponsors: `src/sim/sponsors.ts` has the sponsor list (`data/sponsors.json`), eligibility by prestige and the fair title fee, and `src/db/sponsors.ts` has `approachableSponsors`, `openSponsorNegotiation`, `offerSponsorDeal` and `activeSponsorDeal`; `settleRound` pays each garage its sponsor's share of the season fee (migration 0011 adds `sponsor` and `sponsor_deal` and rebuilds `negotiation` and `offer` so negotiations can be about sponsors too).
+
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.

@@ -356,5 +356,12 @@
       "walkedOut": -20,
       "decayPerSeason": 1
     }
+  },
+  "sponsors": {
+    "feeBase": 25000,
+    "feePerPrestige": 700,
+    "feePerFame": 400,
+    "maxYears": 3,
+    "roundsPerSeason": 6
   }
 }
