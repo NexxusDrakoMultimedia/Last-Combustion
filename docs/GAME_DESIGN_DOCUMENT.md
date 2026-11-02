@@ -430,7 +430,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | M5 Full season (**vertical slice**) | Seven rounds, off-season, rollover to 2032 | All 7 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
 | M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
-| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, achievements | |
+| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, achievements, mod loader and mod mapping format | |
 
 **MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race seven rounds, finish the season, and begin 2032 with all records saved.
 
@@ -479,7 +479,8 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `driver` | name, birth_year, nationality, flag, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
 | `driver_road_affinity` | driver_id, road_type, rating |
 | `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
-| `car_model` | manufacturer_id, name, base_kerb_kg, base_ps, drivetrain, price_new, legality_base |
+| `manufacturer` | name, home_country, character, prestige_multiplier |
+| `car_model` | manufacturer_id, stable_id, name, base_kerb_kg, base_ps, drivetrain, price_new, legality_base |
 | `car` | car_model_id, chassis_no, flag, garage_id, odometer_km, condition, kerb_kg_current |
 | `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
 | `car_part` | car_id, part_id, installed_date, wear |
@@ -517,8 +518,10 @@ Records described in "Records and history" are all derivable from these tables; 
 | Entry fee per entry per round | $5,000 (top-31 finishers get free tyres, but still pay the fee) |
 | Racing tyre set (non-top-31) | $1,800 per set; practice sets $900 |
 | Starter road car, used | $12,000–$35,000 |
-| Mid-range road car, new | $45,000–$110,000 |
-| High-end road car, new | $140,000–$320,000 |
+| Mid-tier car (JDM, sports), used | $40,000–$120,000 |
+| Premium supercar, used | $120,000–$400,000 |
+| Elite supercar, used | $400,000–$2,000,000 |
+| Hypercar | $2,000,000+ (see price tiers) |
 | Part price range | $400 (filter, pads) to $60,000 (turbo kit / engine build) |
 | Mechanic wage | $1,200 per week each |
 | Driver salary, unknown | $0–$20,000 per season (often paid in sponsor product) |
@@ -565,37 +568,127 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 **Wear and reliability.** Every part has `wear` from 0 to 100 and a reliability curve. Wear rises with race km and road km. A part above 85 wear has a rising failure chance each sector; failure during a run causes a retirement.
 
-## Fictional manufacturers and starter cars
+## Fictional manufacturers and cars
 
-Manufacturers are fictional with nationalities as flavour. Max tyre width uses the Equalizer (`kg / 5 + 40`).
+The game ships only fictional manufacturers and models, so no licences are needed. Each one is also designed as a stand-in for a real counterpart, so modders can swap in real cars. The real names below are a reference for modders only: they never appear in the shipped game, its data files, store page or marketing.
 
-| Manufacturer | Home | Character |
-| --- | --- | --- |
-| Homura | Japan | Light sports cars, rotary specialist |
-| Tsurugi | Japan | Turbo AWD coupes, tuner favourites |
-| Kestrel | UK | Light, agile, low power |
-| Brandt | Germany | Precise, heavier, strong brakes |
-| Aurelian | Italy | Small turbo hatches, high revs, fragile |
-| Dunmore | USA | Big V8 muscle |
-| Redback | Australia | Utes and V8 sedans, cheap and tough |
-| Vesper | Sweden | Long-distance GTs, balanced |
+**Roster focus.** The series is a supercar showcase with JDM and sports cars mixed in.
 
-**Starter and benchmark cars (proposed)**
+- **20 manufacturers, 3 models each (60 models):** 12 supercar makers (36 models), 5 JDM makers (15) and 3 sports-car makers (9). Each model is mapped to a specific real model.
+- **Field mix (Season 1, 313 cars):** about 50% supercars, 30% JDM and 20% sports cars. New garages and underdogs start in JDM and sports cars, and supercars are the aspiration.
+- **Stats are indicative.** Kerb weight and power are rounded starting values chosen to fit the game's balance, not exact real specifications. A mod that imports the real car replaces them. Max tyre width uses the Equalizer (`kg / 5 + 40`).
 
-| Model | Kerb kg | Max tyre | PS | Price (used/new) | Notes |
+**Price tiers.** `price_new ≈ ($15,000 + $280 × PS) × tier multiplier`. Used cars sell at 40–70% of new depending on age and odometer.
+
+| Tier | Multiplier | Typical used price | Notes |
+| --- | --- | --- | --- |
+| Starter | 0.8 | Under $40,000 | What a new underdog garage can afford |
+| Mid | 1.0 | $40,000–$120,000 | Strong JDM and sports cars |
+| Premium | 1.8 | $120,000–$400,000 | Entry supercars; a stretch for a young garage |
+| Elite | 3.5 | $400,000–$2,000,000 | Classic and modern supercars |
+| Hyper | 8 | Over $2,000,000 | Hypercars; only the richest garages and sponsors |
+
+**Supercar upkeep.** Servicing and parts cost 1.5× at Premium, 2.5× at Elite and 4× at Hyper. A supercar's extra power is paid for in wear, fragility and running costs, and the Equalizer caps how much of it can reach the road, which keeps lighter JDM and sports cars competitive.
+
+**Manufacturers**
+
+| Fictional | Home | Type | Character | Real counterpart (modding reference) |
+| --- | --- | --- | --- | --- |
+| Cavallo | Italy | Supercar | Passion and heritage, V8 and V12 | Ferrari |
+| Tauro | Italy | Supercar | Wide, loud, dramatic | Lamborghini |
+| Vento | Italy | Supercar | Handbuilt carbon hypercars | Pagani |
+| Halberd | UK | Supercar | Lightweight carbon, technical | McLaren |
+| Ashford | UK | Supercar | Grand tourers to hypercars | Aston Martin |
+| Kessler | Germany | Supercar | Rear-engined precision | Porsche |
+| Stern | Germany | Supercar | Hand-built V8 power | Mercedes-AMG |
+| Rhein | Germany | Supercar | All-wheel-drive traction | Audi |
+| Montclair | France | Supercar | Extreme power and top speed | Bugatti |
+| Vesper | Sweden | Supercar | Record-chasing hypercars | Koenigsegg |
+| Dunmore | USA | Supercar | Big V8 muscle and supercars | Ford |
+| Marlowe | USA | Supercar | Front-engined V8 sports and supercars | Chevrolet |
+| Homura | Japan | JDM | Light sports cars, rotary specialist | Mazda |
+| Tsurugi | Japan | JDM | Turbo AWD coupes, tuner favourites | Subaru |
+| Raijin | Japan | JDM | Rear-drive coupes and grand tourers | Nissan |
+| Mitaka | Japan | JDM | Reliable, rally heritage | Toyota |
+| Hanabi | Japan | JDM | High-revving naturally aspirated | Honda |
+| Kestrel | UK | Sports | Light, agile, low power | Lotus |
+| Corvina | Italy | Sports | Stylish, sharp-handling, temperamental | Alfa Romeo |
+| Brandt | Germany | Sports | Precise, heavier, strong brakes | BMW |
+
+**Models** (max tyre from the Equalizer)
+
+| Fictional model | Tier | Kerb kg | Max tyre | PS | Real counterpart (modding reference) |
 | --- | --- | --- | --- | --- | --- |
-| Kestrel Swift 1.6 | 940 | 228 mm | 140 | $12k used | Light, slow in a straight line; a Starter |
-| Homura Corsa 1.8 | 1,020 | 244 mm | 170 | $18k used | Starter; forgiving |
-| Aurelian Lupa 1.4T | 1,050 | 250 mm | 190 | $22k used | Starter; fast, needs servicing |
-| Redback Ranger | 1,100 | 260 mm | 200 | $28k used | Cheap and tough |
-| Homura Spirit R-7 | 1,150 | 270 mm | 280 | not for sale | Pyra Drake's #313 benchmark; rotary |
-| Tsurugi S2 | 1,180 | 276 mm | 220 | $48k new | Turbo AWD coupe |
-| Vesper GT | 1,350 | 310 mm | 400 | $190k new | Balanced all-rounder |
-| Brandt 330 | 1,540 | 348 mm | 340 | $95k new | Strong brakes |
-| Dunmore Stallion V8 | 1,650 | 370 mm | 450 | $140k new | Straight-line king |
-| Redback Ute SS | 1,780 | 396 mm | 430 | $70k new | Heavy, cheap, wide-tyred |
+| Cavallo Quaranta | Elite | 1,100 | 260 mm | 478 | Ferrari F40 |
+| Cavallo Tre-Cinque | Premium | 1,350 | 310 mm | 380 | Ferrari F355 |
+| Cavallo Otto | Elite | 1,380 | 316 mm | 570 | Ferrari 458 Italia |
+| Tauro Cuneo | Elite | 1,500 | 340 mm | 455 | Lamborghini Countach |
+| Tauro Piccolo | Premium | 1,400 | 320 mm | 520 | Lamborghini Gallardo |
+| Tauro Bravo | Elite | 1,800 | 400 mm | 700 | Lamborghini Aventador |
+| Vento Z | Elite | 1,230 | 286 mm | 650 | Pagani Zonda F |
+| Vento H | Hyper | 1,350 | 310 mm | 730 | Pagani Huayra |
+| Vento Utopia | Hyper | 1,280 | 296 mm | 864 | Pagani Utopia |
+| Halberd F1 | Hyper | 1,140 | 268 mm | 627 | McLaren F1 |
+| Halberd 570 | Premium | 1,440 | 328 mm | 570 | McLaren 570S |
+| Halberd 765 | Elite | 1,330 | 306 mm | 765 | McLaren 765LT |
+| Ashford Vantage | Premium | 1,530 | 346 mm | 510 | Aston Martin Vantage |
+| Ashford DB | Premium | 1,770 | 394 mm | 608 | Aston Martin DB11 |
+| Ashford Lance | Hyper | 1,030 | 246 mm | 1,160 | Aston Martin Valkyrie |
+| Kessler Heck | Premium | 1,360 | 312 mm | 450 | Porsche 911 GT3 RS (997) |
+| Kessler Rennen | Elite | 1,380 | 316 mm | 612 | Porsche Carrera GT |
+| Kessler Boxer | Mid | 1,340 | 308 mm | 385 | Porsche Cayman GT4 |
+| Stern GT Black | Elite | 1,540 | 348 mm | 730 | Mercedes-AMG GT Black Series |
+| Stern SLR | Elite | 1,768 | 394 mm | 626 | Mercedes-Benz SLR McLaren |
+| Stern 63 | Premium | 1,700 | 380 mm | 510 | Mercedes-AMG C63 S Coupé |
+| Rhein R8 | Premium | 1,620 | 364 mm | 525 | Audi R8 V10 |
+| Rhein Sport Quattro | Elite | 1,200 | 280 mm | 306 | Audi Sport Quattro |
+| Rhein TT RS | Mid | 1,450 | 330 mm | 400 | Audi TT RS |
+| Montclair EB | Elite | 1,620 | 364 mm | 612 | Bugatti EB110 SS |
+| Montclair Veyron | Hyper | 1,950 | 430 mm | 1,001 | Bugatti Veyron 16.4 |
+| Montclair Chiron | Hyper | 1,995 | 439 mm | 1,500 | Bugatti Chiron |
+| Vesper CCR | Elite | 1,180 | 276 mm | 806 | Koenigsegg CCR |
+| Vesper Agera | Hyper | 1,330 | 306 mm | 1,140 | Koenigsegg Agera R |
+| Vesper Jesko | Hyper | 1,420 | 324 mm | 1,280 | Koenigsegg Jesko |
+| Dunmore GT | Elite | 1,520 | 344 mm | 550 | Ford GT (2005) |
+| Dunmore GT-X | Elite | 1,385 | 317 mm | 656 | Ford GT (2017) |
+| Dunmore Stallion V8 | Premium | 1,650 | 370 mm | 450 | Ford Mustang GT |
+| Marlowe Vettura | Premium | 1,530 | 346 mm | 638 | Chevrolet Corvette ZR1 (C6) |
+| Marlowe Z | Premium | 1,600 | 360 mm | 650 | Chevrolet Corvette Z06 (C7) |
+| Marlowe Sprint | Mid | 1,700 | 380 mm | 455 | Chevrolet Camaro SS |
+| Homura Corsa 1.8 | Starter | 1,020 | 244 mm | 170 | Mazda MX-5 (NB) |
+| Homura Spirit R-7 | (not for sale) | 1,150 | 270 mm | 280 | Mazda RX-7 (FD) |
+| Homura Eclipse R-8 | Mid | 1,310 | 302 mm | 230 | Mazda RX-8 |
+| Tsurugi S2 | Mid | 1,180 | 276 mm | 220 | Subaru Impreza WRX (GC8) |
+| Tsurugi 22 | Premium | 1,270 | 294 mm | 280 | Subaru Impreza 22B STI |
+| Tsurugi Rex | Mid | 1,250 | 290 mm | 200 | Subaru BRZ |
+| Raijin 200S | Mid | 1,240 | 288 mm | 250 | Nissan Silvia (S15) |
+| Raijin GT-Line | Premium | 1,560 | 352 mm | 330 | Nissan Skyline GT-R (R34) |
+| Raijin R | Premium | 1,740 | 388 mm | 570 | Nissan GT-R (R35) |
+| Mitaka Sprinter | Starter | 940 | 228 mm | 130 | Toyota AE86 |
+| Mitaka Arrow | Mid | 1,500 | 340 mm | 330 | Toyota Supra (A80) |
+| Mitaka Halo | Elite | 1,480 | 336 mm | 560 | Lexus LFA |
+| Hanabi Type-R EK | Starter | 1,050 | 250 mm | 185 | Honda Civic Type R (EK9) |
+| Hanabi Roadster S | Mid | 1,260 | 292 mm | 240 | Honda S2000 |
+| Hanabi Mid-Tech | Premium | 1,350 | 310 mm | 280 | Honda NSX (NA1) |
+| Kestrel Swift 1.6 | Starter | 940 | 228 mm | 140 | Lotus Elise |
+| Kestrel Merlin | Mid | 980 | 236 mm | 240 | Lotus Exige |
+| Kestrel Harrier | Mid | 1,400 | 320 mm | 280 | Lotus Evora |
+| Corvina 4C | Mid | 895 | 219 mm | 240 | Alfa Romeo 4C |
+| Corvina 8C | Premium | 1,585 | 357 mm | 450 | Alfa Romeo 8C Competizione |
+| Corvina Giulia QV | Mid | 1,700 | 380 mm | 510 | Alfa Romeo Giulia Quadrifoglio |
+| Brandt M1 | Premium | 1,300 | 300 mm | 277 | BMW M1 |
+| Brandt M3 GTS | Premium | 1,530 | 346 mm | 450 | BMW M3 GTS (E92) |
+| Brandt 330 | Mid | 1,540 | 348 mm | 340 | BMW 335i (E92) |
 
-The starting field's 313 cars are drawn from about 40 models (5 per manufacturer) weighted toward cheap cars.
+The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The starter cars a new garage can pick from are the Kestrel Swift 1.6, Homura Corsa 1.8 and Mitaka Sprinter. The starting field's 313 cars are drawn from these 60 models using the field mix above; supercars appear mostly in the hands of established, high-prestige garages.
+
+**Modding support**
+
+- **Mapping file.** `mod_mapping.json` is optional and ships separately from the game data. It links each fictional model ID to its real counterpart (make, model, generation, years) so a mod can replace names, stats and visuals together. It is not included in the base game.
+- **Replacement, not addition.** A mod replaces a fictional manufacturer or model entirely, including its name, logo, body shape and stats. Save files keep working because the game stores the stable internal ID, not the display name.
+- **Livery and art.** Real-car mods supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
+- **Mod loader.** Mods are folders of the same JSON and SVG files the base game uses, loaded at start-up (see M8). A mod that changes a stat is flagged in the save so records stay comparable.
+- **Legal.** The base game never ships real marks. Responsibility for real-brand mods sits with the modder, and the community-hosting policy is a legal question below.
 
 ## World generation and AI
 
@@ -676,6 +769,7 @@ The starting field's 313 cars are drawn from about 40 models (5 per manufacturer
 - [ ] Final tuning of the cost baseline and formula coefficients (via the 10-season headless sim).
 - [ ] Licensing/legal review of real road names and place names used for courses, and of the full flag list (disputed territories) and the flag-icon licence.
 - [ ] Whether the flag standings table ships at launch or later.
+- [ ] Legal review of the real-counterpart mapping and the policy for hosting real-brand mods (for example Steam Workshop).
 - [ ] Whether Junior Series entries share garages with the main series, or form separate Junior garages.
 - [ ] Whether the Owner-driver may run two cars (one driven by the player) from the start.
 - [ ] Localisation: English only at launch, or text externalised for later translation (recommended: externalise from M0).
