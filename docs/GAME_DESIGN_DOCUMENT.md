@@ -300,6 +300,7 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
   - **Brian Drake** runs the technical side: the regulations and the Equalizer, scrutineering, telemetry, the drone fleet and the attention-flag AI. In the game he issues technical bulletins, scrutineering rulings and rule-change announcements.
   - **Joshua Drake** runs the interpersonal side: relations with garages, drivers, sponsors, suppliers and the media. In the game he handles number clashes, penalty appeals, entry disputes, ceremonies and the headlines about the series.
   - They appear as senders of messages and in the headlines, and they never race.
+  - **Ageing.** They age like everyone else, and a successor takes over when they retire or die: one of their children or an unrelated person in a similar role (see "Commentary team", "Ageing and succession").
   - **Fictional characters.** "Brian Drake" and "Joshua Drake" are not real people. They are based on and named after Pyra's real half-brothers; the surname Drake and everything about their in-game lives are invented. No real surnames or personal details about the real people are recorded in the project.
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
 - **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. In Season 1 there is no last year, so the ghost is Pyra Drake's #313 demo run only.
@@ -594,6 +595,15 @@ Every run and race has a commentary team. The four commentators are fictional ch
 - **Who speaks.** Each moment (an incident, a rivalry, a storyline beat, a fan milestone, an auction) is tagged with a topic, and the commentator whose areas match speaks first, with another adding a comment. Luke carries the live action.
 - **Text.** Lines are templates with keys, so they are translatable and can be changed by mods (see "Localisation" and "Incidents, rivalries and storylines").
 - **Data.** The team lives in `data/commentators.json`, with each commentator's flag and home town as places in the places list.
+
+**Ageing and succession.** Brian Drake, Joshua Drake and the four commentators are fictional people who age in real game time, like every other character. They have invented birth dates (stored with the rest of their data and never taken from real people).
+
+- **Retirement and death.** Each has a retirement age (around 65 to 72, drawn once from the named stream `worldgen:staff`) and the same death model as other characters. When they retire or die, a headline and a farewell event card mark the moment, and the role passes on.
+- **Successors.** The role passes to either one of their fictional children or an unrelated person of a similar role, chosen when the vacancy opens from the named stream `worldgen:staff` (about 60% a child, if there is an adult one; otherwise an outsider). A child keeps the family surname, the parent's expertise and home town. An outsider is generated to fit the role: a similar background, expertise and voice type, a different name, and their own flag and home town. Either way the successor gets their own personality and traits (see "Personalities and traits"), and a new commentator keeps the "speaks about" areas of the role with a small shift in emphasis. A new Brian or Joshua inherits the technical or interpersonal duties and message style.
+- **Parents may linger.** A retired parent can still appear in tribute segments, anniversaries and Healesville festival events until death.
+- **Underage heir.** If the chosen child is not yet an adult when the parent leaves, an acting successor (an outsider) covers the role until the child turns 25 and can take it over, and the other commentators cover the topics in the meantime.
+- **Pyra Drake** is not covered by this rule, because she is the chairwoman and her story follows the career-mode rules in "Careers over time".
+- **Data.** Birth dates, retirement ages, the children (name, birth date, home town, voice) and the outsider pool live in `data/commentators.json` and the series-staff data, so mods can change them.
 
 ## Fans
 
