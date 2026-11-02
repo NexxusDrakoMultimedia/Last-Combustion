@@ -338,6 +338,21 @@ z = \frac{(t_{predicted} - t_{actual}) - \mu}{\sigma} \qquad \text{flag if } z \
 
 Here μ and σ are the mean and standard deviation of that gap across all drivers on the same course.
 
+## Final race engine
+
+The M3 engine plays the final sector by sector for the whole field at once. All numbers are in the `final` block of `data/balance.json`.
+
+- **Grid and traffic.** The 15 qualifiers start in prelim order, 1.5 s apart. Cars keep a minimum gap of 0.25 s, and a car within 3 s of the car ahead is "close" and loses time stuck behind it.
+- **Overtakes.** A pass can happen only at an overtake spot, when the attacker is within 0.5 s. The score is 50 x speed advantage + racecraft difference / 100 + a stance bonus, and it must beat 0.25 (0.40 on narrow roads). A close failed pass can end in contact (5 s penalty, damage, a slower defender). Each completed pass pays the garage $10,000 as an overtake bonus.
+- **Calls.** Each player entry has a call: push (faster, more tyre wear, more incident risk), balanced, or conserve (slower, less wear and risk). Team orders are free, hold or swap. The computer sets calls for every other entry.
+- **Tyres.** Tyre wear depends on the call, the driver's aggression and tyre management, and the car's wheelspin and slide. The base loss is set so a reference driver on a balanced call ends the race with about 8% life. Below 20% life the car loses time (a time multiplier, 0.003 per point), instead of the Fit multiplier used in the prelims.
+- **Mechanical trouble.** Each sector has a small chance of a mechanical warning that grows with wear. A warning becomes a limp mode if the driver is conserving, and a retirement otherwise.
+- **Crashes and drones.** A crash brings out a drone stop: the field holds for 60 s with 0.5 s between queued cars.
+- **Weather.** One race in about eight has rain for 1 or 2 laps part-way through. It pauses the race so the player can change calls, and wet skill matters.
+- **Pauses.** Events that need a decision pause the race. Results do not depend on where the player pauses.
+- **Classification.** A car is classified if it finishes or completes at least half the distance. Positions 1 to 15 take points and prize money from `data/points.json` and `data/prizes.json`, and the pole-sitter's bonus is paid with the overtake bonuses (table `season_bonus`).
+- **Records.** Sector exit times, tyre life and positions are stored in `timing` for the timing screens, prize money in `ledger` and the garage's cash, and racing kilometres and wear on each car.
+
 ## Incidents, rivalries and storylines
 
 Things go wrong, people clash and stories build. This system turns the simulation's raw events into incidents the player can react to, rivalries between drivers, garages, manufacturers and nations, and storylines that run across practice, prelims, races, events and whole seasons. All of it is recorded in the event log, feeds the headlines and commentary, and moves fans, reputation and sponsor interest.
