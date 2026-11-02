@@ -114,7 +114,7 @@ Every round runs on a closed loop. The six rounds are far apart, so the gaps bet
 | 5 | Marysville and Buxton Loop: Marysville, Buxton–Marysville Road to Buxton, then the Maroondah Highway over the upper Black Spur to Narbethong and Marysville Road back | 42.1 km | 8 (337 km) |
 | 6 | Healesville Hills Loop: Healesville, the Healesville–Kinglake Road through Chum Creek to Toolangi, the Melba Highway to Dixons Creek, then Old Healesville Road and the Healesville–Yarra Glen Road back to Healesville | 52.6 km | 6 (316 km) |
 
-**How these were measured.** `tools/routes/measure_routes.py` routes each course through its waypoints on OpenStreetMap road data (public OSRM server) and records the lap length, the share of the lap driven twice and any motorway. The lengths above are road distances along the chosen roads and will be re-checked in the final sector survey. Several loops share a short stretch of road (for example the start of Round 3 and the suburban start of Round 1); none is an out-and-back. Several candidate regions were tried and dropped (including a Barossa loop, which retraced 14% of its length) because they could not close into a loop within 80 km without a motorway, a dirt road or a long retrace, including the Oxley Highway, Mount Hotham, the Great Ocean Road, the Royal National Park and the Cethana roads in Tasmania (a loop there is 83.8 km).
+**How these were measured.** `tools/routes/measure_routes.py` routes each course through its waypoints on OpenStreetMap road data (public OSRM server) and records the lap length, the share of the lap driven twice and any motorway. The lengths above are road distances along the chosen roads and will be re-checked in the final sector survey. Several loops share a short stretch of road (for example the start of Round 3 and the suburban start of Round 1); none is an out-and-back. Several other regions were tried and dropped because they could not close into a loop within 80 km without a motorway, a dirt road or a long retrace: the Oxley Highway, Mount Hotham, the Great Ocean Road, the Royal National Park, the Cethana roads in Tasmania (a loop there is 83.8 km) and a Barossa loop (which retraced 14% of its length).
 
 **Course outlines.** The same script saves each route's outline to `data/courses/outlines.json` for the track map and the timing view. Each outline is a simplified, flattened path (about 80–300 points) with the cumulative distance in kilometres at every point, so sector boundaries, car positions and drone markers can be placed by distance along the lap. See "Course outlines" in the development specification.
 
@@ -133,7 +133,7 @@ Each round is a 7-day practice week, then 7 days of preliminaries for a field of
 
 **Race UI & Simulation View:** Races are presented as a **pure management interface** complete with real-time timing screens (sector splits, delta speeds, tyre life) and an interactive **live map** tracking car locations and drone markers.
 
-**Round timeline (proposed).** A round takes at least 15 days: 7 practice days, 7 prelim days (longer if wet days push them back) and the final race the day after the prelims. The rounds are spread over the whole country, so there are about three weeks between rounds for repairs and long-distance travel (SA to WA to Queensland). Six 15-day rounds with five three-week gaps run from 31 March to mid-October, followed by an off-season for contracts, numbers and car building.
+**Round timeline.** A round takes at least 15 days: 7 practice days, 7 prelim days (longer if wet days push them back) and the final race the day after the prelims. The rounds are spread over the whole country, so there are about three weeks between rounds for repairs and long-distance travel (SA to WA to Queensland). Six 15-day rounds with five three-week gaps run from 31 March to mid-October, followed by an off-season for contracts, numbers and car building.
 
 **Round timeline from 2036.** The Junior round follows the Super Series final at the same venue: Junior practice day 1 is the day after the Super final, then 3 practice days, 5 prelim days and the Junior final the day after, a 9-day block. A round slot becomes 15 + 9 = 24 days. Six slots (144 days) plus about 11 days between rounds finish in mid-October, so the season still ends on schedule. Garages with entries in both series keep their crews, trucks and tyre stores at the venue between the two events.
 
@@ -459,7 +459,7 @@ Prize money and sponsors fund the garage, while fame, reputation, rivalries and 
 | Pole position (fastest prelim run) | $10,000 each time |
 | Overtake in the final race | $10,000 each |
 
-Bonuses add up through the year and are paid at the end of the season. All AUD amounts are the reference yen figures divided by 100.
+Bonuses add up through the year and are paid at the end of the season.
 
 ## Fans
 
@@ -549,6 +549,21 @@ In 2036 the main championship grows and is rebranded, alongside the launch of a 
 | 4 | $300,000 | 9 | $120,000 | 14 | $45,000 | 19 | $12,500 |
 | 5 | $225,000 | 10 | $105,000 | 15 | $30,000 | 20 | $10,000 |
 
+## Super Series points from 2036
+
+The 2036 final has 20 cars, so the points table needs extending. Positions 1–15 keep their original values, so records stay comparable across eras.
+
+| Pos | Pts | Pos | Pts | Pos | Pts |
+| --- | --- | --- | --- | --- | --- |
+| 16 | 2.0 | 22 | 1.0 | 27 | 0.5 |
+| 17 | 1.8 | 23 | 0.9 | 28 | 0.4 |
+| 18 | 1.6 | 24 | 0.8 | 29 | 0.3 |
+| 19 | 1.4 | 25 | 0.7 | 30 | 0.2 |
+| 20 | 1.2 | 26 | 0.6 | 31 | 0.1 |
+| 21 | 1.1 |  |  |  |  |
+
+Positions 1–20 score from the final and 21–31 from the prelims. Total available per round: 105.1 points. The gold border rule is unchanged: reaching the final (now top 20) earns it.
+
 ## Last Combustion Junior
 
 In 2036 the series adds a junior championship: **The Last Combustion of the Petrol Engine World Motorsports Junior Series Championship**, known as *Last Combustion Junior*.
@@ -582,21 +597,6 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 
 - **Leaderboards** are built from these records: season standings (drivers, garages, manufacturers and nations), course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
 - **Car histories follow the car.** A car sold to another garage keeps its left-rear decals and its full record, so a famous chassis carries its story with it. The driver's right-rear decals go with the driver.
-
-## Super Series points from 2036 (proposed)
-
-The 2036 final has 20 cars, so the points table needs extending. Positions 1–15 keep their original values, so records stay comparable across eras.
-
-| Pos | Pts | Pos | Pts | Pos | Pts |
-| --- | --- | --- | --- | --- | --- |
-| 16 | 2.0 | 22 | 1.0 | 27 | 0.5 |
-| 17 | 1.8 | 23 | 0.9 | 28 | 0.4 |
-| 18 | 1.6 | 24 | 0.8 | 29 | 0.3 |
-| 19 | 1.4 | 25 | 0.7 | 30 | 0.2 |
-| 20 | 1.2 | 26 | 0.6 | 31 | 0.1 |
-| 21 | 1.1 |  |  |  |  |
-
-Positions 1–20 score from the final and 21–31 from the prelims. Total available per round: 105.1 points. The gold border rule is unchanged: reaching the final (now top 20) earns it.
 
 ---
 
@@ -661,7 +661,7 @@ The game is licensed under the **GNU General Public License, version 3 or (at th
 - **Scope.** All code and all first-party data, art, audio and text are GPL-3.0-or-later unless a file says otherwise. `LICENSE` holds the licence text, every source file carries an `SPDX-License-Identifier` header, and the repository follows the REUSE specification.
 - **Dependencies and assets.** Only GPL-compatible licences are allowed: MIT, BSD, ISC, Apache-2.0, MPL-2.0, LGPL, CC0, CC BY and CC BY-SA 4.0 (one-way compatible), and SIL OFL fonts. Licences that are not compatible (non-commercial, no-derivatives, proprietary) are blocked by a licence check in CI. Third-party licences are listed in `CREDITS.md` and shown in-game. `flag-icons` is MIT, so it complies.
 - **Source.** The source is public. The About screen links to the exact source tag of the running build.
-- **Names and IP.** The game name "Last Combustion", its logo and the characters Pyra Drake, Brian Drake and Joshua Drake are trademarks and intellectual property of **Nexxus Drako Multimedia**. The GPL covers the software and content licensed under it, but it does not give anyone the right to use these names, the logo or the character. Forks must use a different name and logo and may not present the character as their own. `TRADEMARKS.md` states the policy (GPLv3 section 7 allows declining trademark rights). The copyright holder named in every SPDX header is Nexxus Drako Multimedia.
+- **Names and IP.** The game name "Last Combustion", its logo and the characters Pyra Drake, Brian Drake and Joshua Drake are trademarks and intellectual property of **Nexxus Drako Multimedia**. The GPL covers the software and content licensed under it, but it does not give anyone the right to use these names, the logo or the characters. Forks must use a different name and logo and may not present the characters as their own. `TRADEMARKS.md` states the policy (GPLv3 section 7 allows declining trademark rights). The copyright holder named in every SPDX header is Nexxus Drako Multimedia.
 - **Mods must be GPL-compatible.** Mods are data files read at runtime, and their authors keep their copyright, but every mod must carry a GPL-compatible licence to be loaded or listed. See "Modding".
 - **Easter egg.** The Founder's career check stores a hash of the normalised details, not the plain text, so browsing the source does not spoil it. This document is the only plain-text record.
 
@@ -753,7 +753,7 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `character` | career_id, kind (`owner` / `driver` / `owner_driver`), name, gender, birth_date, hometown_place_id, residence_place_id, personal_cash, start_date, end_date, end_reason (`death` / `retired` / `became_owner` / `founded_garage`), predecessor_id |
 | `series_official` | name, role (`technical` / `interpersonal` / `chair`), residence_place_id |
 | `career_mod` | career_id, mod_id, version, load_order |
-| `standing_snapshot` | season_id, series, table (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
+| `standing_snapshot` | season_id, series, table_kind (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
 | `season` | year, era (`original` / `super`), final_size, series_fans, status |
 | `place` | name, region, country (ISO code), latitude, longitude |
 | `flag_fans` | flag (ISO code), season_id, fans |
@@ -777,8 +777,8 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `sponsor`, `sponsor_deal` | tier, min_prestige, base_fee, bonuses; garage_id, years, targets |
 | `supplier`, `supplier_deal` | brand, categories, discount, contingency; garage_id, car_id |
 | `trophy` | owner_type (`driver` / `car`), owner_id, kind (`win` / `title`), series, round_id / season_id |
-| `negotiation` | window, party_a_type, party_a_id, party_b_type, party_b_id, kind, status, patience_left |
-| `offer` | negotiation_id, round, from_side, terms (JSON), value, outcome |
+| `negotiation` | window_kind, party_a_type, party_a_id, party_b_type, party_b_id, kind, status, patience_left |
+| `offer` | negotiation_id, round_no, from_side, terms (JSON), value, outcome |
 | `relationship` | party_a_type, party_a_id, party_b_type, party_b_id, score |
 | `ledger` | garage_id, date, category, amount, note |
 | `headline` | date, text, driver_id / garage_id (nullable) |
@@ -881,7 +881,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 
 ## Achievements and cloud saves
 
-- **Achievements.** Achievements are enabled (Steam achievements in a Steam build, otherwise a local list), awarded for milestones such as first points, first final, gold border, first win, a season title, a Garage, Manufacturer or nations title, a Hall of Fame entry, a 10-season career and a rivalry. They are tracked from the event log. They are disabled in careers that use balance-changing mods, and in the Founder's career. 
+- **Achievements.** Achievements are enabled (Steam achievements in a Steam build, otherwise a local list), awarded for milestones such as first points, first final, gold border, first win, a season title, a Garage, Manufacturer or nations title, a Hall of Fame entry, a 10-season career and a rivalry. They are tracked from the event log. They are disabled in careers that use balance-changing mods, and in the Founder's career.
 - **Founder's career.** All achievements are disabled for that save. Starting it unlocks one secret achievement, "Founder's Birthday", and nothing else.
 - **Cloud saves.** Enabled through the platform interface (Steam Cloud in a Steam build, otherwise export/import and an optional auto-sync folder). Each save is one `.lcsave` file containing the database, its schema version, the mod list and a preview. On a sync conflict the newer file wins and the older one is kept as a backup copy that the player can restore. The web build stores saves in the browser and can export and import `.lcsave` files.
 
@@ -1075,7 +1075,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Replacement, not addition.** A mod replaces a fictional manufacturer or model entirely, including its name, logo, body shape and stats. Save files keep working because the game stores the stable internal ID, not the display name.
 - **Livery and art.** Real-car mods supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
 - **Mod loader.** See "Modding" for the package format, validation and load order.
-- **Legal.** The base game never ships real marks. **Hosting policy.** Wherever we host mods, we follow standard DMCA takedown procedure: we remove infringing mods when a valid notice is received. We claim no responsibility for modifications that private players make or apply.
+- **Legal.** The base game never ships real marks. Mods are covered by the hosting policy in "Modding": standard DMCA takedown, and no responsibility is claimed for modifications that private players make or apply.
 
 ## World generation and AI
 
@@ -1145,7 +1145,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 | Nations standings | Points tables by the flag drivers or garages race under |
 | Fans | The follower count of a driver, car, garage, flag or the series |
 | Hometown / residence | Where a driver grew up / where they live now |
-| Founder's career | The hidden Owner-driver start as Pyra Drake |
+| Founder's career | The hidden Garage owner or Owner-driver start as Pyra Drake |
 
 ## Decisions and open questions
 
@@ -1161,26 +1161,23 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Owner-driver starts solo.** One car, one entry, no staff.
 - **Starting ages.** Garage owner 18–50, Owner-driver 18–30, Driver manager always 18.
 - **Language.** English only, with all text externalised for later translation.
-- **Modding.** Mods for starting garages, drivers and stats, name lists, manufacturers, cars, tracks, parts, sponsors, suppliers and balance data.
+- **Modding.** Mods for starting garages, drivers and stats, name lists, manufacturers, cars, tracks, parts, sponsors, suppliers and balance data, each with a mandatory GPL-compatible licence.
 - **Careers over time.** An owner who dies or retires is replaced by a new character in the same world; a retiring owner-driver becomes a garage owner; a driver can found a garage at any time for a fee, with funding set by fame and reputation.
 - **Series management.** Brian Drake (technical) and Joshua Drake (interpersonal) run the day-to-day of the series from Healesville; Drake Motorsports is based in Brisbane.
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
-- **Flag artwork.** `lipis/flag-icons` (MIT).
+- **Flag artwork.** `lipis/flag-icons` (MIT), checked: complete except Ceuta & Melilla, which uses the Spanish flag.
 - **Event name.** The protected "Targa" event name is not used.
 - **Junior schedule.** Junior practice day 1 is the day after the Super final, at the same venue. Junior practice lasts 3 days.
 - **Balance mods and achievements.** Careers using balance-changing mods have achievements disabled.
 - **Mod hosting policy.** Standard DMCA takedown. No responsibility is claimed for modifications by private players.
-- **Modding scope.** Mods may also change parts, sponsors, suppliers and balance data.
 - **Platform features.** Achievements and cloud saves are enabled through a platform interface that works without Steam.
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
 - **IP.** The name, logo, Pyra Drake and the fictional characters Brian and Joshua Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
-- **Mod licences.** GPL-compatible licences are mandatory for mods.
 - **Calendar.** Six closed loops, run clockwise around the country from South Australia (Round 1) to Western Australia (2), Queensland (3), New South Wales (4) and Victoria (5–6), ending at Healesville, the series' home. No out-and-back courses. Tasmania, the Northern Territory and the ACT are not in the base calendar and are open to mods.
 - **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. All six lap lengths are measured.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
 - **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
-- **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
 - **Extra crew.** Optional but beneficial.
 
 **Open**

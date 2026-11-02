@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Changed
 
+- Final consistency pass on the Game Design Document: unified decisions, clearer SQL column names, moved the 2036 points table into the 2036 sections.
 - Calendar is six closed loops run clockwise around Australia from South Australia to Healesville: Adelaide Hills, Yallingup/Metricup (WA), Mount Nebo–Mount Glorious, Jamberoo Mountain, Marysville/Black Spur and Healesville–Chum Creek–Toolangi–Dixons Creek. No out-and-back courses; all lap lengths are measured, with longer gaps for cross-country travel.
 - Course laps are capped at 80 km and use sealed roads only; no dirt or gravel.
 - Mods must carry a GPL-compatible licence.
