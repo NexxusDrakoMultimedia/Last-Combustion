@@ -1,0 +1,20 @@
+name: Bug report
+description: Something is not working as designed
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: If a career seed is involved, include it.
+  - type: input
+    id: version
+    attributes:
+      label: Game version

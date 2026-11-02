@@ -1,0 +1,17 @@
+name: Dependency review
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          deny-licenses: AGPL-1.0-only, GPL-2.0-only, GPL-2.0-or-later, BUSL-1.1, SSPL-1.0, CC-BY-NC-4.0, CC-BY-NC-SA-4.0, CC-BY-ND-4.0

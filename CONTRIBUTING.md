@@ -8,4 +8,5 @@ Thank you for helping. The full rules are in the "Engineering standards and tool
 - **Versioning and changelog.** The project uses [Semantic Versioning](https://semver.org/) and [Keep a Changelog](https://keepachangelog.com/). Add a line under `[Unreleased]` in `CHANGELOG.md` for user-visible changes.
 - **Quality.** Code must pass linting, type checks and tests. New behaviour needs tests. User-facing text goes in `/locales`, never in code.
 - **Assets and dependencies.** Only add GPL-compatible licences and record them in `CREDITS.md`.
+- **Before you push.** Run `pnpm lint && pnpm typecheck && pnpm test && pnpm build`. A pre-commit hook formats staged files and checks the commit message.
 - **Design changes.** Change the Game Design Document in the same pull request as the code that depends on it.
