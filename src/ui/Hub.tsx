@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { formatDate, formatLapTime, formatMoney, t } from '../i18n';
 import { useCareerStore } from '../state/career.store';
+import { Market } from './Market';
 import { StarterChoice } from './StarterChoice';
 import { button, panel } from './styles';
 
@@ -53,6 +54,8 @@ export function Hub() {
       </section>
 
       <StarterChoice />
+
+      <Market />
 
       <section aria-labelledby="season-heading" className={panel}>
         <h2 id="season-heading" className="text-xl font-semibold">
