@@ -8,12 +8,14 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- GitHub Pages deploys the web build automatically on every merge to `main`.
 - Milestone M3 final race: the sector-by-sector final engine with traffic and overtaking, contact, drone stops, player calls and team orders, tyre life, mechanical trouble and mid-race rain, plus a database layer that plays the final, pays prize and overtake money and records timing (schema version 4). A temporary "run the final" button in the foundations check screen.
 - Prelim weather: after 14 blocked days the weather is capped at overcast, and sun is guaranteed after 28.
 - Design: themable interface with Light, Dark and NDM (Nexxus Drako Multimedia brand) themes.
 - Design: the United Kingdom can shrink over a career (Northern Ireland joining Ireland, Scotland leaving, never Wales before them), with the long name changing to match.
 - Design: the Basque Country, Catalonia, Galicia and the Canary Islands can each become independent from Spain at a random future point.
 - Design and data: a very rare easter egg (1 in 31,031,996 per career) renames Australia the Commonwealth of Vyktory in 2032, with its own flag, a fourth-wall-breaking commentary line blaming divine intervention, a bit flip or similar, and a secret achievement.
+- Design: hidden heritage (dual nationality) for people from regions that can change flag, so their stats count for both their current and future nations.
 - Every flag has a short name and a long name (for example Australia and Commonwealth of Australia).
 - Flags are limited to nations and territories recognised by the FIA, IOC or FIFA. Excluded flags (Antarctica, Arab League, ASEAN, CEFTA, East African Community, United Nations) in `data/flags.json`, with a test that no world uses them.
 - Design: Brian and Joshua Drake and the four commentators age normally, and a child or an unrelated person in a similar role takes over on retirement or death.
