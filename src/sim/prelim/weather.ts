@@ -81,13 +81,13 @@ export function planRoundDays(
   let waiting = 0;
   let index = 7;
   while (held < cfg.days) {
-    const weather = rollWeather(course, rng);
-    // After 14 blocked days an overcast day is declared dry enough; after 28 any day is, so a
-    // round always finishes.
-    const dryEnough =
-      weather === 'dry_clear' ||
-      (waiting >= cfg.maxExtraDays && weather === 'overcast') ||
-      waiting >= 2 * cfg.maxExtraDays;
+    // Prelims are only held in dry, clear weather. If they are held up the weather settles:
+    // after 14 blocked days it can be no worse than overcast (the rain stops), and after 28 it
+    // is always dry and clear, so a round always finishes.
+    let weather = rollWeather(course, rng);
+    if (waiting >= 2 * cfg.maxExtraDays) weather = 'dry_clear';
+    else if (waiting >= cfg.maxExtraDays && weather === 'wet') weather = 'overcast';
+    const dryEnough = weather === 'dry_clear';
     if (dryEnough) {
       held += 1;
       days.push(make(index, weather, 'prelim', held));

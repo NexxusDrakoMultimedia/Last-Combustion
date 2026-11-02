@@ -17,6 +17,10 @@ test('creates, saves and reloads a career in the browser', async ({ page }) => {
   await expect(page.getByText(/Round 1 prelims: 7 prelim days/)).toBeVisible();
   await expect(page.getByText(/Pole: #\d+/)).toBeVisible();
 
+  await page.getByRole('button', { name: messages['debug.runFinal'] }).click();
+  await expect(page.getByText(/Round 1 final: \d+ finished/)).toBeVisible();
+  await expect(page.getByText(/Winner: #\d+/)).toBeVisible();
+
   await page.getByRole('button', { name: messages['debug.saveSlot1'] }).click();
   await expect(page.getByText('1 save slot in use')).toBeVisible();
 

@@ -22,7 +22,7 @@ describe('migrate', () => {
     const result = migrate(db);
     expect(result.from).toBe(0);
     expect(result.to).toBe(latestSchemaVersion());
-    expect(result.applied).toEqual(['initial', 'world', 'prelims']);
+    expect(result.applied).toEqual(['initial', 'world', 'prelims', 'final']);
   });
 
   it('does nothing when run again', () => {

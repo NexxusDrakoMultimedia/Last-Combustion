@@ -167,5 +167,73 @@
   "junior": {
     "powerCapKw": 313,
     "kwPerPs": 0.7355
+  },
+  "final": {
+    "startGapSeconds": 1.5,
+    "minGapSeconds": 0.25,
+    "closeGapSeconds": 3,
+    "overtakeWindowSeconds": 0.5,
+    "overtake": {
+      "threshold": 0.25,
+      "narrowRoadExtra": 0.15,
+      "speedAdvantageWeight": 50,
+      "racecraftDivisor": 100,
+      "stanceBonus": 10,
+      "contactMargin": 0.08,
+      "contactChance": 0.2,
+      "penaltySeconds": 5,
+      "defenderLossSeconds": [1, 3],
+      "damagePace": 0.01
+    },
+    "calls": {
+      "push": {
+        "pace": -0.006,
+        "tyre": 1.25,
+        "incident": 1.5,
+        "aggression": 1.0
+      },
+      "balanced": {
+        "pace": 0,
+        "tyre": 1.0,
+        "incident": 1.0,
+        "aggression": 0.5
+      },
+      "conserve": {
+        "pace": 0.008,
+        "tyre": 0.75,
+        "incident": 0.6,
+        "aggression": 0.0
+      }
+    },
+    "tyre": {
+      "endTargetPct": 8,
+      "reference": {
+        "aggression": 0.5,
+        "wheelspin": 0.45,
+        "slide": 0.35,
+        "tyreManagement": 50
+      },
+      "gripLossFromPct": 20,
+      "gripLossPerPoint": 0.003
+    },
+    "mechanical": {
+      "pPerSector": 0.0002,
+      "wearScale": 30,
+      "limpSeconds": 30,
+      "limpPace": 0.04
+    },
+    "weather": {
+      "chancePerRace": 0.12,
+      "durationLaps": [1, 2],
+      "baseSlowdown": 0.02,
+      "wetSkillSlowdown": 0.03,
+      "incidentFactor": 1.6
+    },
+    "droneStop": {
+      "holdSeconds": 60,
+      "queueSeconds": 0.5
+    },
+    "overtakeBonus": 10000,
+    "classifiedShare": 0.5
   }
 }

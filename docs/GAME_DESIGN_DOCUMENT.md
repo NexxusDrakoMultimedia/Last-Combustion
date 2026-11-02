@@ -169,15 +169,17 @@ The win is worth a full point more than 2nd. From 2nd to 17th, each place drops 
 
 Every driver, car and garage races under a flag. Each of the three has its own flag, so a car can carry a different flag from its driver or its garage.
 
-- **Any nation with a flag emoji.** A flag is any country or territory that has a Unicode flag emoji, stored as its two-letter ISO 3166-1 code (for example `AU`, `JP`, `SE`). The whole set is available from day one.
+- **Recognised nations only.** A flag is any country or territory recognised by at least one of the FIA (through its member national sporting authorities), the International Olympic Committee (National Olympic Committees) or FIFA (member associations), stored as its code (the two-letter ISO 3166-1 code where there is one, for example `AU`, `JP`, `SE`). This includes territories and home nations that these bodies recognise, such as Hong Kong, Puerto Rico, the Faroe Islands, Gibraltar, Palestine, Chinese Taipei (`TW`) and England, Scotland, Wales and Northern Ireland. The set is available from day one.
 - **Defaults.** A new driver's flag matches their nationality, a new garage's matches its home country, and a car's matches its manufacturer's home country. The player may change any of these when creating or registering an entry.
 - **Changes.** A flag can be changed in the off-season at entry registration. Each change is logged in the record, and a driver or garage that switches flags loses some fame (similar to a number change).
 - **Livery.** Flags sit with the panel they belong to: the garage flag beside the garage name on the front quarter panels, the driver's flag beside their trophies on the right rear (driver's side), and the car's flag beside its trophies on the left rear (passenger's side).
 - **Timing screens and broadcast.** The flag appears beside the number and name in timing towers, results and broadcast graphics.
 - **Records.** The flag a driver, car or garage raced under is recorded for every entry, so history shows which flag took each win.
 - **Standings.** Drivers and garages also compete in national standings by flag (see "Standings"). Car flags have no standings.
-- **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed.
-- **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code (`flag-icons`), not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The chosen set is `lipis/flag-icons` (MIT licence). Checked against version 7.6.0 (4x3 set): it has art for all 249 ISO country codes, the extra flag emoji (Ascension, Tristan da Cunha, Clipperton, Diego Garcia, Canary Islands, European Union, United Nations) and England, Scotland and Wales. The only gap is Ceuta & Melilla (`EA`), which commonly shows the Spanish flag in emoji fonts, so it uses the `ES` art. The set also contains extra flags with no emoji (for example Kosovo, Catalonia and Northern Ireland), which stay out of the default flag picker and are available to mods. The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
+- **Short and long names.** Every flag has a short name for the interface and general use (for example "Australia") and a long, formal name for standings, celebrations, the podium ceremony and similar occasions (for example "Commonwealth of Australia"). Where the two are the same (such as Japan) the long name repeats the short one. Both live in `data/flags.json` under `names`, so mods can change them, and the interface chooses which to show by context (short in lists, tooltips and the timing tower; long in the standings headings, trophy and anthem moments, and commentary at celebrations).
+- **Excluded flags.** Everything outside the recognised set is excluded, including Antarctica (`AQ`) and the international organisations: the Arab League (`ARAB`), the Association of Southeast Asian Nations (`ASEAN`), the Central European Free Trade Agreement (`CEFTA`), the East African Community (`EAC`) and the United Nations (`UN`). The European Union (`EU`) and flags such as Catalonia, the Basque Country, Galicia, the Canary Islands and Saint Helena are also outside the set, because none of the three bodies has a member for them. (Kosovo is in, because the IOC and FIFA both recognise it.) The explicit exclusions are listed in `data/flags.json` under `excluded`, and the recognised set will be listed there under `recognised`, built from the three bodies' official member lists by a tool in `tools/data`. Excluded flags are left out of the flag picker, flag standings and name generation, and a test checks that no world uses them. Mods can add recognised flags only if they cite the body that recognises them, and they cannot remove the exclusions.
+- **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories are allowed when the FIA, IOC or FIFA recognises them.
+- **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code (`flag-icons`), not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The chosen set is `lipis/flag-icons` (MIT licence). Checked against version 7.6.0 (4x3 set): it has art for all 249 ISO country codes, the extra flag emoji (Ascension, Tristan da Cunha, Clipperton, Diego Garcia, Canary Islands, European Union and United Nations, the last of which is excluded) and England, Scotland and Wales. The only gap is Ceuta & Melilla (`EA`), which commonly shows the Spanish flag in emoji fonts, so it uses the `ES` art. The set also contains extra flags with no emoji (for example Kosovo, Catalonia and Northern Ireland), which stay out of the default flag picker and are available to mods. The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
 
 ## Standings
 
@@ -300,6 +302,7 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
   - **Brian Drake** runs the technical side: the regulations and the Equalizer, scrutineering, telemetry, the drone fleet and the attention-flag AI. In the game he issues technical bulletins, scrutineering rulings and rule-change announcements.
   - **Joshua Drake** runs the interpersonal side: relations with garages, drivers, sponsors, suppliers and the media. In the game he handles number clashes, penalty appeals, entry disputes, ceremonies and the headlines about the series.
   - They appear as senders of messages and in the headlines, and they never race.
+  - **Ageing.** They age like everyone else, and a successor takes over when they retire or die: one of their children or an unrelated person in a similar role (see "Commentary team", "Ageing and succession").
   - **Fictional characters.** "Brian Drake" and "Joshua Drake" are not real people. They are based on and named after Pyra's real half-brothers; the surname Drake and everything about their in-game lives are invented. No real surnames or personal details about the real people are recorded in the project.
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
 - **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. In Season 1 there is no last year, so the ghost is Pyra Drake's #313 demo run only.
@@ -336,6 +339,21 @@ z = \frac{(t_{predicted} - t_{actual}) - \mu}{\sigma} \qquad \text{flag if } z \
 ```
 
 Here μ and σ are the mean and standard deviation of that gap across all drivers on the same course.
+
+## Final race engine
+
+The M3 engine plays the final sector by sector for the whole field at once. All numbers are in the `final` block of `data/balance.json`.
+
+- **Grid and traffic.** The 15 qualifiers start in prelim order, 1.5 s apart. Cars keep a minimum gap of 0.25 s, and a car within 3 s of the car ahead is "close" and loses time stuck behind it.
+- **Overtakes.** A pass can happen only at an overtake spot, when the attacker is within 0.5 s. The score is 50 x speed advantage + racecraft difference / 100 + a stance bonus, and it must beat 0.25 (0.40 on narrow roads). A close failed pass can end in contact (5 s penalty, damage, a slower defender). Each completed pass pays the garage $10,000 as an overtake bonus.
+- **Calls.** Each player entry has a call: push (faster, more tyre wear, more incident risk), balanced, or conserve (slower, less wear and risk). Team orders are free, hold or swap. The computer sets calls for every other entry.
+- **Tyres.** Tyre wear depends on the call, the driver's aggression and tyre management, and the car's wheelspin and slide. The base loss is set so a reference driver on a balanced call ends the race with about 8% life. Below 20% life the car loses time (a time multiplier, 0.003 per point), instead of the Fit multiplier used in the prelims.
+- **Mechanical trouble.** Each sector has a small chance of a mechanical warning that grows with wear. A warning becomes a limp mode if the driver is conserving, and a retirement otherwise.
+- **Crashes and drones.** A crash brings out a drone stop: the field holds for 60 s with 0.5 s between queued cars.
+- **Weather.** One race in about eight has rain for 1 or 2 laps part-way through. It pauses the race so the player can change calls, and wet skill matters.
+- **Pauses.** Events that need a decision pause the race. Results do not depend on where the player pauses.
+- **Classification.** A car is classified if it finishes or completes at least half the distance. Positions 1 to 15 take points and prize money from `data/points.json` and `data/prizes.json`, and the pole-sitter's bonus is paid with the overtake bonuses (table `season_bonus`).
+- **Records.** Sector exit times, tyre life and positions are stored in `timing` for the timing screens, prize money in `ledger` and the garage's cash, and racing kilometres and wear on each car.
 
 ## Incidents, rivalries and storylines
 
@@ -427,6 +445,30 @@ Every driver has hidden potential and visible stats that grow with experience, a
 - **Growth and decline.** Stats rise with experience on each kind of road and fall slowly with age.
 - **Contracts.** Length, salary, lead or development role, and a release fee. Rival garages can make offers, especially after attention flags.
 - **Junior pathway.** Junior drivers who reach a Super Series final earn gold and leave Junior eligibility.
+
+## Personalities and traits
+
+Drivers, cars and garages have traits, in the manner of an RPG. Traits give each one a recognisable character, make choices more than a stat comparison, and feed the incident, rivalry and storyline systems. Traits are data (`data/traits.json`), so mods can add or change them.
+
+**Drivers (full depth).** Each driver has a personality and 2 to 4 traits.
+
+- **Personality.** Five axes from 0 to 100: Temperament (calm to fiery), Ambition, Loyalty, Sociability and Discipline. They are generated with the world, drift slowly with events, and are visible only as descriptive words until the player has worked with the driver.
+- **Traits.** Named, with a clear effect and sometimes a drawback. Examples: *Wet-weather Wizard* (wet skill bonus), *Tyre Whisperer* (less tyre loss), *Hot-headed* (higher contact chance, bigger rivalry gain), *Clutch* (composure bonus in the final), *Media Darling* (faster fan growth), *Homebody* (better on home road type, unhappy far from residence), *Loyal* (accepts renewals, rarely listens to rival offers), *Mercenary* (follows the money), *Mentor* (raises a teammate's potential growth), *Glass Jaw* (composure drops after a crash).
+- **Earned traits.** Traits can be gained or lost through career events (a first win, a serious crash, a long rivalry), up to a cap of four.
+- **Where they act.** Race calls and team orders (a hot-headed driver may ignore "hold"), negotiations (ambition and loyalty shift asking price and willingness to move), incidents and rivalries, and storyline cards.
+
+**Cars (light).** Each chassis has up to 2 traits that come from its model and its history, such as *Balanced*, *Peaky power*, *Heavy front*, *Tyre eater*, *Cooks its brakes*, *Reliable*, *Restored* (a repaired car) or *Provenance* (auction-house history). Traits are small modifiers to the existing car ratings, wear or mechanical risk, and are shown on the car and at auction.
+
+**Garages (light).** Each garage has a culture with 1 or 2 traits, such as *Family outfit*, *Data-driven*, *Penny-pincher*, *Talent factory*, *Old guard* or *Showboat*. They shape AI behaviour (spending, risk, how they treat young drivers, which sponsors they court), what a player garage's staff and drivers expect, and the tone of storylines.
+
+**Rules.**
+
+- Traits never replace stats. A trait is worth about +-1 to 3 rating points or a clear behavioural change, and every strong upside has a cost.
+- All trait values and probabilities live in `data/traits.json` and `data/balance.json`, and generation uses the named stream `worldgen:traits`, so the same seed gives the same personalities.
+- Trait names and descriptions are in `locales/en.json`.
+- Founder's-career characters and the commentary team carry fixed traits written by hand.
+
+**Build order.** M4 (negotiation) adds personality to driver generation and contracts, M5 adds earned traits and driver-development effects, M6 adds trait-driven incidents, rivalries and storylines. Car and garage traits arrive with the auction house and AI garage behaviour in M4.
 
 ## Driver gear
 
@@ -570,6 +612,15 @@ Every run and race has a commentary team. The four commentators are fictional ch
 - **Who speaks.** Each moment (an incident, a rivalry, a storyline beat, a fan milestone, an auction) is tagged with a topic, and the commentator whose areas match speaks first, with another adding a comment. Luke carries the live action.
 - **Text.** Lines are templates with keys, so they are translatable and can be changed by mods (see "Localisation" and "Incidents, rivalries and storylines").
 - **Data.** The team lives in `data/commentators.json`, with each commentator's flag and home town as places in the places list.
+
+**Ageing and succession.** Brian Drake, Joshua Drake and the four commentators are fictional people who age in real game time, like every other character. They have invented birth dates (stored with the rest of their data and never taken from real people).
+
+- **Retirement and death.** Each has a retirement age (around 65 to 72, drawn once from the named stream `worldgen:staff`) and the same death model as other characters. When they retire or die, a headline and a farewell event card mark the moment, and the role passes on.
+- **Successors.** The role passes to either one of their fictional children or an unrelated person of a similar role, chosen when the vacancy opens from the named stream `worldgen:staff` (about 60% a child, if there is an adult one; otherwise an outsider). A child keeps the family surname, the parent's expertise and home town. An outsider is generated to fit the role: a similar background, expertise and voice type, a different name, and their own flag and home town. Either way the successor gets their own personality and traits (see "Personalities and traits"), and a new commentator keeps the "speaks about" areas of the role with a small shift in emphasis. A new Brian or Joshua inherits the technical or interpersonal duties and message style.
+- **Parents may linger.** A retired parent can still appear in tribute segments, anniversaries and Healesville festival events until death.
+- **Underage heir.** If the chosen child is not yet an adult when the parent leaves, an acting successor (an outsider) covers the role until the child turns 25 and can take it over, and the other commentators cover the topics in the meantime.
+- **Pyra Drake** is not covered by this rule, because she is the chairwoman and her story follows the career-mode rules in "Careers over time".
+- **Data.** Birth dates, retirement ages, the children (name, birth date, home town, voice) and the outsider pool live in `data/commentators.json` and the series-staff data, so mods can change them.
 
 ## Fans
 
@@ -1136,7 +1187,7 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 **Scrutineering.** After every run: kerb weight and tyre width checked against the Equalizer; road-legality score must be ≥ 0. Failure = disqualification from that run's result; the entry keeps its previous prelim time only if it has one.
 
-**Weather.** Each day for a round is rolled from a course climate profile: `dry_clear`, `overcast`, `wet`. Only `dry_clear` allows prelim runs. Rounds are guaranteed to finish: if more than 14 days pass since the planned prelim start, the series declares remaining runs "dry-enough" on the next overcast day.
+**Weather.** Each day for a round is rolled from a course climate profile: `dry_clear`, `overcast`, `wet`. Only `dry_clear` allows prelim runs. Rounds are guaranteed to finish: the weather settles if the prelims are held up. After 14 blocked days it can be no worse than overcast (the rain stops), and after 28 blocked days it is always dry and clear, so the prelims run.
 
 **Wear and reliability.** Every chassis and every part has `wear` from 0 (new) to 100 (worn out). Wear is added per kilometre, and the kind of kilometre matters:
 
@@ -1381,6 +1432,16 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 - **Course map.** Each course has a vector path with sector markers and overtaking spots, used for the live map and the round hub.
 - **Audio.** Engine notes grouped by engine type (rotary, turbo four, V8, flat/6), crowd-free ambience, drone whine, radio chatter and commentary stingers. Sound can be reduced or muted independently.
 - **Accessibility.** Colour-blind-safe palette for borders and flags, text scaling, no reliance on colour alone, keyboard navigation for all management screens.
+- **Themes.** The release game is themable, and the player picks a theme in Settings (the choice is saved with the player's settings, not the career). Three themes ship:
+  - **Light.** A standard light theme: white surfaces, black text.
+  - **Dark.** A standard dark theme: dark neutral surfaces, light text.
+  - **NDM.** The Nexxus Drako Multimedia brand theme, built from the NDM design system (`github.com/NexxusDrakoMultimedia/design-system`): black surface, white text, gold (`#ffd900`) headings and accents, maroon (`#7f0000`) header and hero bands with gold display text, gold fill with maroon text for the primary button, and gold focus rings. It follows the design system's `tokens.css` dark values and its rule that gold text never sits on a light surface.
+  - **How it works.** All colours come from CSS custom properties (design tokens such as `surface`, `ink`, `ink-muted`, `accent`, `surface-brand`, `on-brand`, `line`, `focus`, and the status colours `success`, `warning`, `danger`), set by a `data-theme` attribute on the page. No component hard-codes a colour. The first launch follows the operating system's light or dark setting, and the player can override it.
+  - **Fixed colours.** Race content keeps its own colours in every theme, because it is data: garage liveries and number boxes, flags, the gold border, and course maps. Themes recolour the interface around them only.
+  - **Accessibility holds in every theme.** Text meets WCAG AA contrast (4.5:1 for body text, 3:1 for large text and icons), the focus ring is always visible, and status colours are colour-blind safe (success is blue, not green) and always paired with a word or icon.
+  - **Mods.** A theme is a data file (`data/themes.json`: a name and a token map), so mods can add themes. Themes that fail the contrast check are not listed. The NDM theme is shipped with the game, but the NDM logos, artwork and the characters stay reserved (see `TRADEMARKS.md`), and the fonts are loaded by the interface and not used for text in a way that needs a licence we lack.
+  - **Fonts.** Display text uses Orbitron and body text uses Exo 2 (both SIL Open Font Licence, which is compatible with the GPL); HK Modular is not used in the game because it is licensed through Canva. Both fonts are bundled with the game and recorded in `CREDITS.md`, so the game does not load fonts from the internet at run time.
+  - **Build order.** The token layer and the three themes arrive with the first real screens in M4, and the Settings control with the screen flow.
 
 ## Glossary
 
@@ -1409,7 +1470,7 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 - **Season 1 field.** 96 garages and 313 drivers; later growth follows "World generation and AI".
 - **Fixed round count.** Six rounds each season, including after 2036.
 - **Standings.** Drivers, garages, manufacturers, driver nations and garage nations all ship (see "Standings").
-- **Flags.** Any flag with a flag emoji is allowed, provided its artwork has an open licence (OFL, CC BY-SA or similar).
+- **Flags.** Any flag with a flag emoji is allowed, provided its artwork has an open licence (OFL, CC BY-SA or similar), and the flag is recognised by the FIA, IOC or FIFA (so `AQ`, `ARAB`, `ASEAN`, `CEFTA`, `EAC` and `UN` are out).
 - **Road and place names.** Real roads, routes and place names are used as geography and need no licensing.
 - **Junior and Super share garages.** One garage runs entries in both series.
 - **Owner-driver starts solo.** One car, one entry, no staff.

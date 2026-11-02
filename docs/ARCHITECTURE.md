@@ -44,4 +44,6 @@ This is the working summary of how the code is organised. The design reasons liv
 
 ## Not built yet
 
-The simulation worker (`src/workers`), the final race, the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.
+`FinalRace` in `src/sim/final/engine.ts` plays a final sector by sector (`tyres.ts` holds the wear and grip rules), and `playFinal` in `src/db/final.ts` reads the qualifiers from the database, runs the race and writes results, prize money, timing rows and wear (migration 0004).
+
+The simulation worker (`src/workers`), the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.
