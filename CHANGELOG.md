@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Milestone M4, second part (used market): selling a car to a dealer (80% of its value, listed at 110%), buying used cars from a market of 12 ordinary used cars, and a hidden market garage that owns cars while they are for sale (schema version 6).
 - The Google tag on the web build hosted on GitHub Pages, loaded only after the visitor accepts a cookie prompt (other builds carry none).
 - Milestone M4, first part (economy core): buying new cars from dealers (one-off cars are never for sale), car value from age, wear and provenance, round running costs (entry fees, tyres, servicing, travel) charged to every garage after each round, a garage finance summary, and a `car_ownership` history (schema version 5).
 - GitHub Pages deploys the web build automatically on every merge to `main`, to `lc.nexxusdrako.au` (built for the root path).
