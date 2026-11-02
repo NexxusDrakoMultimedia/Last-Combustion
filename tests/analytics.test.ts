@@ -5,9 +5,9 @@ import { googleTagSnippet } from '../scripts/analytics';
 
 describe('the Google tag', () => {
   it('is added for a valid measurement ID', () => {
-    const snippet = googleTagSnippet('G-H0N9B01KRM');
-    expect(snippet).toContain('https://www.googletagmanager.com/gtag/js?id=G-H0N9B01KRM');
-    expect(snippet).toContain("gtag('config', 'G-H0N9B01KRM')");
+    const snippet = googleTagSnippet('G-TEST1234AB');
+    expect(snippet).toContain('https://www.googletagmanager.com/gtag/js?id=G-TEST1234AB');
+    expect(snippet).toContain("gtag('config', 'G-TEST1234AB')");
   });
 
   it('is left out when there is no ID or the ID is not a measurement ID', () => {
