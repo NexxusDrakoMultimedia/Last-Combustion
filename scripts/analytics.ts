@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Plugin } from 'vite';
 
-/** A Google tag measurement ID, such as G-H0N9B01KRM. */
+/** A Google tag measurement ID, such as G-XXXXXXXXXX. */
 const MEASUREMENT_ID = /^G-[A-Z0-9]{4,}$/;
 
 /** The Google tag snippet for a measurement ID, or an empty string if the ID is missing or invalid. */
