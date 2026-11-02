@@ -60,4 +60,6 @@ Deals: `src/sim/deals.ts` has the fair supplier and manufacturer discounts, and 
 
 Repairs: `src/db/repairs.ts` has `wearParts` (called when a round adds kilometres), `serviceParts`, `restoreChassis` and `crashRepairCost`; `loadEntries` passes the most worn part's wear to the simulation, `settleRound` charges crash repairs, and the chassis wear offset keeps a restoration from being undone (migration 0013 adds `car_part.wear` and `car.wear_offset`).
 
+Seasons: `src/sim/standings.ts` has the five championship tables (pure, from round results), `src/db/season.ts` has `computeStandings` and `endSeason` (champion prize, bonuses, gold borders, final snapshots; migration 0014), and `src/db/almanac.ts` has the almanac of everyone who ever scored (migration 0015 adds `garage.closed_year`).
+
 The simulation worker (`src/workers`), the rest of the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.
