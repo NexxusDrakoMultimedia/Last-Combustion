@@ -395,6 +395,16 @@
     "rookieAgeMax": 21,
     "rookiePaceMean": 50,
     "rookieSalaryShare": 0.5,
-    "contractRenewalYears": 1
+    "contractRenewalYears": 1,
+    "progression": {
+      "growthEndAge": 27,
+      "declineStartAge": 33,
+      "paceGainShare": 0.2,
+      "statGain": 1.5,
+      "declinePerYear": 0.5,
+      "noise": 1.2,
+      "min": 10,
+      "max": 95
+    }
   }
 }

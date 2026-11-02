@@ -3,6 +3,7 @@
 import type { Database } from 'sql.js';
 import { rankingNumbers, RANKED_NUMBERS } from '../sim/numbers';
 import { createRng } from '../sim/rng';
+import { develop } from '../sim/progression';
 import { retires } from '../sim/rollover';
 import { ageOn } from '../sim/junior';
 import { buildCalendar, makeRookie, RESERVED_NUMBER } from '../sim/worldgen';
@@ -40,6 +41,7 @@ export function startNextSeason(db: Database): Rollover {
   const rng = createRng(career.masterSeed);
   const retireRng = rng.stream(`rollover:${year}:retire`);
   const rookieRng = rng.stream(`rollover:${year}:rookies`);
+  const growthRng = rng.stream(`rollover:${year}:growth`);
 
   const entries = all(
     db,
@@ -126,6 +128,41 @@ export function startNextSeason(db: Database): Rollover {
       );
       replaced.set(driverId, rookie.id);
       nextDriverId += 1;
+    }
+
+    // Everyone still racing grows or declines with age (rookies start next year).
+    const develops = all(
+      db,
+      `SELECT d.id, d.birth_date, d.pace, d.consistency, d.racecraft, d.tyre_management, d.composure, d.wet_skill, d.potential
+         FROM driver d WHERE d.retired_year IS NULL AND d.id IN (SELECT driver_id FROM entry WHERE season_id = ?) ORDER BY d.id`,
+      [lastId],
+    );
+    for (const d of develops) {
+      const after = develop(
+        growthRng,
+        {
+          pace: d.pace as number,
+          consistency: d.consistency as number,
+          racecraft: d.racecraft as number,
+          tyreManagement: d.tyre_management as number,
+          composure: d.composure as number,
+          wetSkill: d.wet_skill as number,
+        },
+        d.potential as number,
+        ageOn(d.birth_date as string, `${year}-01-01`),
+      );
+      db.run(
+        'UPDATE driver SET pace = ?, consistency = ?, racecraft = ?, tyre_management = ?, composure = ?, wet_skill = ? WHERE id = ?',
+        [
+          after.pace,
+          after.consistency,
+          after.racecraft,
+          after.tyreManagement,
+          after.composure,
+          after.wetSkill,
+          d.id as number,
+        ],
+      );
     }
 
     // Contracts that run out are renewed for another year on the same terms.
