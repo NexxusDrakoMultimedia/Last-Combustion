@@ -287,6 +287,8 @@ A supplier's logo can only go on the doors if one of its parts is fitted to the 
 
 The Equalizer is the series' only real technical rule: a car's maximum tyre width is set by its kerb weight. There are no power limits, no ballast, no budget cap and no success ballast.
 
+**Season rollover (built, first version).** `startNextSeason` opens the next year once the last has ended. Drivers from 36 up may retire (8% a year per year over 35, always at 50; a player's own garage is never touched), and a rookie aged 18 to 21 with a lower pace takes the seat on a contract at half the salary. Expiring contracts are renewed for a year on the same terms until negotiation has screens. Numbers 1 to 40 follow last season's final table, drivers keep a free number of 41 or more, and the rest take the lowest free ones. The numbers are in `data/balance.json` (`season`).
+
 **Layout handicap (built).** As in the real series, four-wheel-drive and mid-engine cars are handicapped: their maximum tyre width is 10 mm less than the kerb-weight figure (`data/balance.json`, `upgrades.handicapMm`, so mods can tune it). A car model's listed limit is the base figure; each car's own limit and tyre width apply the handicap, and scrutineering checks against it.
 
 **Awards at the flag (built).** Everything a race earns is given out when it ends: prize money, the gold border for a driver's first final, a win decal on the winning driver and car, and any new titles. Pole and overtaking bonuses add up through the year and are paid at the end of the season with the champion's prize (more bonus kinds can be added to `season_bonus`), and the shield decals for the champions are added then.

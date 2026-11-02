@@ -387,6 +387,14 @@
   "season": {
     "championPrize": 10000000,
     "bestResultsPerRound": 2,
-    "rounds": 6
+    "rounds": 6,
+    "retirementStartAge": 36,
+    "retirementChancePerYear": 0.08,
+    "forcedRetirementAge": 50,
+    "rookieAgeMin": 18,
+    "rookieAgeMax": 21,
+    "rookiePaceMean": 50,
+    "rookieSalaryShare": 0.5,
+    "contractRenewalYears": 1
   }
 }
