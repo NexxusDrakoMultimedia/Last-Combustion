@@ -15,5 +15,7 @@
   "debug.error": "Something went wrong: {message}",
   "mode.garage_owner": "Garage owner",
   "mode.owner_driver": "Owner-driver",
-  "mode.driver_manager": "Driver manager"
+  "mode.driver_manager": "Driver manager",
+  "debug.world": "World: {garages} garages, {drivers} drivers, {entries} entries, {cars} cars, {rounds} rounds",
+  "debug.seriesFans": "Series audience: {fans, number} fans"
 }

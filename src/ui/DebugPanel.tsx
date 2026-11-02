@@ -6,7 +6,7 @@ import { useCareerStore } from '../state/career.store';
 
 /** A temporary panel that proves the foundations work end to end. Removed once real screens exist. */
 export function DebugPanel() {
-  const { status, schemaVersion, career, slotsInUse, notice } = useCareerStore();
+  const { status, schemaVersion, career, world, slotsInUse, notice } = useCareerStore();
   const { createTestCareer, saveSlot1, loadSlot1, exportFile, refreshSlots } = useCareerStore();
   const busy = status === 'busy';
   const hasCareer = career !== undefined;
@@ -70,6 +70,12 @@ export function DebugPanel() {
               date: formatDate(career.gameDate),
             })}
           </li>
+        )}
+        {world && (
+          <>
+            <li>{t('debug.world', { ...world })}</li>
+            <li>{t('debug.seriesFans', { fans: world.seriesFans })}</li>
+          </>
         )}
         <li>{t('debug.slots', { count: slotsInUse })}</li>
         {notice && <li>{t(notice.key, notice.values)}</li>}

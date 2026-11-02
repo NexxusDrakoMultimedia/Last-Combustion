@@ -34,6 +34,10 @@ This is the working summary of how the code is organised. The design reasons liv
 - **End-to-end tests** (`e2e/`, Playwright) run the built app in a real browser.
 - `pnpm test`, `pnpm test:e2e` (build first), `pnpm lint`, `pnpm typecheck`, `pnpm licenses` and `pnpm docs:lint` mirror the CI jobs.
 
+## World generation
+
+`generateWorld(seed)` in `src/sim/worldgen` builds the whole 2031 field as plain data from named random streams, and `persistWorld` in `src/db/world.ts` writes it to the database. Reference data lives in `/data` (rebuild the car lists from the GDD tables with `tools/data/build_cars.py`). Manufacturer lineups change over time through `refreshLineups` in `src/sim/lineups.ts`.
+
 ## Not built yet
 
-The simulation worker (`src/workers`), world generation, courses and every gameplay screen arrive in milestones M1 onwards. The current UI is a temporary foundations check.
+The simulation worker (`src/workers`), the prelim and race simulation, and every gameplay screen arrive in milestones M2 onwards. The current UI is a temporary foundations check.

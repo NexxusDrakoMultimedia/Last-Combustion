@@ -1,0 +1,167 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+
+export type RoadType = 'forest' | 'coast' | 'mountain' | 'night';
+export const ROAD_TYPES: readonly RoadType[] = ['forest', 'coast', 'mountain', 'night'];
+export type CarType = 'hypercar' | 'supercar' | 'jdm' | 'sports' | 'domestic' | 'other';
+export type Tier = 'starter' | 'mid' | 'premium' | 'elite' | 'hyper' | 'unique';
+export type Layout = 'FR' | 'MR' | 'RR' | 'AWD' | 'FF';
+export type AiProfile = 'cautious' | 'growth' | 'star_chaser' | 'local';
+
+/** Reference data loaded from /data. */
+export interface PlaceData {
+  id: string;
+  name: string;
+  region: string;
+  country: string;
+  lat: number;
+  lon: number;
+}
+export interface ManufacturerData {
+  id: string;
+  name: string;
+  homeCountry: string;
+  type: CarType;
+  character: string;
+}
+export interface CarModelData {
+  id: string;
+  manufacturerId: string;
+  name: string;
+  tier: Tier;
+  kerbKg: number;
+  maxTyreMm: number;
+  ps: number;
+  layout: Layout;
+  priceNew: number;
+  /** 1 for a launch model; each successor adds one. */
+  generation: number;
+  introducedYear: number;
+  /** Set when the model leaves the showroom. Retired models stay in the records. */
+  retiredYear: number | null;
+  predecessorId: string | null;
+}
+
+/** When a manufacturer next refreshes its lineup (about every five years). */
+export interface ManufacturerRefresh {
+  manufacturerId: string;
+  nextRefreshYear: number;
+}
+export interface CourseData {
+  id: string;
+  number: number;
+  name: string;
+  state: string;
+  shape: 'loop';
+  lapKm: number;
+  finalLaps: number;
+  roadType: RoadType;
+  altitudeM: number;
+  night: boolean;
+}
+
+/** Generated world. Ids are 1-based and follow the order of the arrays. */
+export interface Garage {
+  id: number;
+  name: string;
+  flag: string;
+  basePlaceId: string;
+  homeState: string;
+  primaryColour: string;
+  secondaryColour: string;
+  prestige: number;
+  cash: number;
+  foundedYear: number;
+  isPlayer: boolean;
+  aiProfile: AiProfile;
+  fans: number;
+}
+
+export interface Driver {
+  id: number;
+  name: string;
+  gender: 'male' | 'female';
+  birthDate: string;
+  nationality: string;
+  flag: string;
+  hometownPlaceId: string;
+  residencePlaceId: string;
+  pace: number;
+  consistency: number;
+  racecraft: number;
+  tyreManagement: number;
+  composure: number;
+  wetSkill: number;
+  potential: number;
+  affinities: Record<RoadType, number>;
+  homeRoadType: RoadType;
+  fans: number;
+  fame: number;
+  reputation: number;
+  goldBorderYear: number | null;
+}
+
+export interface Car {
+  id: number;
+  modelId: string;
+  chassisNo: string;
+  flag: string;
+  fans: number;
+  garageId: number;
+  odometerKm: number;
+  condition: number;
+  kerbKg: number;
+  tyreWidthMm: number;
+}
+
+export interface Contract {
+  driverId: number;
+  garageId: number;
+  startYear: number;
+  endYear: number;
+  salary: number;
+  role: 'lead' | 'development';
+  releaseFee: number;
+}
+
+export interface Entry {
+  id: number;
+  garageId: number;
+  driverId: number;
+  carId: number;
+  raceNumber: number;
+}
+
+export interface RoundDates {
+  number: number;
+  courseId: string;
+  practiceStart: string;
+  prelimStart: string;
+  finalDate: string;
+}
+
+export interface SeriesOfficial {
+  name: string;
+  role: 'chair' | 'technical' | 'interpersonal';
+  residencePlaceId: string;
+}
+
+export interface FlagFans {
+  flag: string;
+  fans: number;
+}
+
+export interface World {
+  seed: string;
+  year: number;
+  seriesFans: number;
+  rounds: RoundDates[];
+  officials: SeriesOfficial[];
+  garages: Garage[];
+  drivers: Driver[];
+  cars: Car[];
+  entries: Entry[];
+  contracts: Contract[];
+  flagFans: FlagFans[];
+  lineups: ManufacturerRefresh[];
+}

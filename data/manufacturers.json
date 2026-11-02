@@ -1,0 +1,219 @@
+[
+  {
+    "id": "cavallo",
+    "name": "Cavallo",
+    "homeCountry": "IT",
+    "type": "supercar",
+    "character": "Passion and heritage, V8 and V12"
+  },
+  {
+    "id": "tauro",
+    "name": "Tauro",
+    "homeCountry": "IT",
+    "type": "supercar",
+    "character": "Wide, loud, dramatic"
+  },
+  {
+    "id": "vento",
+    "name": "Vento",
+    "homeCountry": "IT",
+    "type": "hypercar",
+    "character": "Handbuilt carbon hypercars"
+  },
+  {
+    "id": "halberd",
+    "name": "Halberd",
+    "homeCountry": "GB",
+    "type": "supercar",
+    "character": "Lightweight carbon, technical"
+  },
+  {
+    "id": "ashford",
+    "name": "Ashford",
+    "homeCountry": "GB",
+    "type": "supercar",
+    "character": "Grand tourers to hypercars"
+  },
+  {
+    "id": "kessler",
+    "name": "Kessler",
+    "homeCountry": "DE",
+    "type": "supercar",
+    "character": "Rear-engined precision"
+  },
+  {
+    "id": "stern",
+    "name": "Stern",
+    "homeCountry": "DE",
+    "type": "supercar",
+    "character": "Hand-built V8 power"
+  },
+  {
+    "id": "rhein",
+    "name": "Rhein",
+    "homeCountry": "DE",
+    "type": "supercar",
+    "character": "All-wheel-drive traction"
+  },
+  {
+    "id": "montclair",
+    "name": "Montclair",
+    "homeCountry": "FR",
+    "type": "hypercar",
+    "character": "Extreme power and top speed"
+  },
+  {
+    "id": "vesper",
+    "name": "Vesper",
+    "homeCountry": "SE",
+    "type": "hypercar",
+    "character": "Record-chasing hypercars"
+  },
+  {
+    "id": "dunmore",
+    "name": "Dunmore",
+    "homeCountry": "US",
+    "type": "supercar",
+    "character": "Big V8 muscle and supercars"
+  },
+  {
+    "id": "marlowe",
+    "name": "Marlowe",
+    "homeCountry": "US",
+    "type": "supercar",
+    "character": "Front-engined V8 sports and supercars"
+  },
+  {
+    "id": "homura",
+    "name": "Homura",
+    "homeCountry": "JP",
+    "type": "jdm",
+    "character": "Light sports cars, rotary specialist"
+  },
+  {
+    "id": "tsurugi",
+    "name": "Tsurugi",
+    "homeCountry": "JP",
+    "type": "jdm",
+    "character": "Turbo AWD coupes, tuner favourites"
+  },
+  {
+    "id": "raijin",
+    "name": "Raijin",
+    "homeCountry": "JP",
+    "type": "jdm",
+    "character": "Rear-drive coupes and grand tourers"
+  },
+  {
+    "id": "mitaka",
+    "name": "Mitaka",
+    "homeCountry": "JP",
+    "type": "jdm",
+    "character": "Reliable, rally heritage"
+  },
+  {
+    "id": "hanabi",
+    "name": "Hanabi",
+    "homeCountry": "JP",
+    "type": "jdm",
+    "character": "High-revving naturally aspirated"
+  },
+  {
+    "id": "kestrel",
+    "name": "Kestrel",
+    "homeCountry": "GB",
+    "type": "sports",
+    "character": "Light, agile, low power"
+  },
+  {
+    "id": "corvina",
+    "name": "Corvina",
+    "homeCountry": "IT",
+    "type": "sports",
+    "character": "Stylish, sharp-handling, temperamental"
+  },
+  {
+    "id": "brandt",
+    "name": "Brandt",
+    "homeCountry": "DE",
+    "type": "sports",
+    "character": "Precise, heavier, strong brakes"
+  },
+  {
+    "id": "pennine",
+    "name": "Pennine",
+    "homeCountry": "GB",
+    "type": "sports",
+    "character": "Small, cheeky, great on tight roads"
+  },
+  {
+    "id": "aurelian",
+    "name": "Aurelian",
+    "homeCountry": "IT",
+    "type": "sports",
+    "character": "Small turbo hatches, high revs, fragile"
+  },
+  {
+    "id": "ardent",
+    "name": "Ardent",
+    "homeCountry": "FR",
+    "type": "sports",
+    "character": "Soft, agile hot hatches"
+  },
+  {
+    "id": "mizuho",
+    "name": "Mizuho",
+    "homeCountry": "JP",
+    "type": "jdm",
+    "character": "Rally-bred turbo sedans and coupes"
+  },
+  {
+    "id": "suzuri",
+    "name": "Suzuri",
+    "homeCountry": "JP",
+    "type": "jdm",
+    "character": "Tiny, light and cheap"
+  },
+  {
+    "id": "redback",
+    "name": "Redback",
+    "homeCountry": "AU",
+    "type": "domestic",
+    "character": "Utes and V8 sedans, cheap and tough"
+  },
+  {
+    "id": "wattle",
+    "name": "Wattle",
+    "homeCountry": "AU",
+    "type": "domestic",
+    "character": "Local muscle and turbo sixes"
+  },
+  {
+    "id": "bunyip",
+    "name": "Bunyip",
+    "homeCountry": "AU",
+    "type": "domestic",
+    "character": "Hemi-powered local classics"
+  },
+  {
+    "id": "banksia",
+    "name": "Banksia",
+    "homeCountry": "AU",
+    "type": "domestic",
+    "character": "Lightweight local sports cars"
+  },
+  {
+    "id": "haeju",
+    "name": "Haeju",
+    "homeCountry": "KR",
+    "type": "other",
+    "character": "Value performance"
+  },
+  {
+    "id": "skald",
+    "name": "Skald",
+    "homeCountry": "SE",
+    "type": "other",
+    "character": "Turbo pioneers, quirky and safe"
+  }
+]

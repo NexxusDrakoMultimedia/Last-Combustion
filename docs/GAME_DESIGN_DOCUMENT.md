@@ -335,6 +335,68 @@ z = \frac{(t_{predicted} - t_{actual}) - \mu}{\sigma} \qquad \text{flag if } z \
 
 Here μ and σ are the mean and standard deviation of that gap across all drivers on the same course.
 
+## Incidents, rivalries and storylines
+
+Things go wrong, people clash and stories build. This system turns the simulation's raw events into incidents the player can react to, rivalries between drivers, garages, manufacturers and nations, and storylines that run across practice, prelims, races, events and whole seasons. All of it is recorded in the event log, feeds the headlines and commentary, and moves fans, reputation and sponsor interest.
+
+### Incidents
+
+Incidents are rolled per sector from the incident formula (see "Formulas"), then given a type. Each has a cost, a way the player can respond, and a record.
+
+| Scope | Incident | What happens | Player response |
+| --- | --- | --- | --- |
+| Practice | Breakdown | A worn part fails (see "Wear and reliability"); the session ends and the part needs repair or replacing | Order the repair before prelims, or swap the part |
+| Practice | Crash | Damage and repair days; may rule the car out of the next session | Repair, or run the spare setup |
+| Practice | Setup breakthrough | A run finds time; the garage learns a better setup for that course | Keep it, or keep it secret from rivals who watch the timing |
+| Practice | Sandbagging | An entry hides its pace with a slow run; rivals misjudge it | Scout, or bluff |
+| Prelims | Run ended | A crash or failure on the single lap means no time and no placing | None in the moment; repairs and apology to sponsors afterwards |
+| Prelims | Wildlife on the road | Kangaroos and other animals can cross the road; drones warn, and a late warning costs a mistake | Drone alert; driver composure decides the reaction |
+| Prelims | Blocked course | A stopped car brings the drone stop signal; the next runner is held and restarted | Accept the restart or protest |
+| Final | Mistake and spin | Time lost (1–4 s and 10–25 s) | Push, balance or conserve calls |
+| Final | Contact | Two cars touch; time penalty, damage, and rivalry heat | Appeal to Joshua Drake's office |
+| Final | Mechanical failure | Engine, brakes, gearbox or tyre trouble from worn parts | Conserve to reach the flag, or retire |
+| Final | Weather change | Rain, or a damp patch, arrives part-way | Wet skill and tyre calls matter |
+| Final | Lost grip | An over-driven tyre set loses grip in the last kilometres | Conserve earlier |
+| Final | Drone stop | A crash ahead blocks the road; the following cars are held | Hold position, attack or defend on the restart |
+| Event | Scrutineering finding | A car found over the Equalizer limit or not road legal loses its result | Appeal; Brian Drake's team rules on it |
+
+- **Pauses.** The simulation pauses for the player on contact, a mechanical warning, a drone stop, a weather change and an attention flag.
+- **Consequences.** Every incident writes an event-log row with its scope, the entries involved and the point on the lap (distance along the outline). Damage and retirement follow the existing rules.
+- **No deaths.** Incidents cause damage and injury time only (see "Careers over time").
+
+### Rivalries
+
+A rivalry grows from repeated meetings between two parties. Drivers are the main case, and garages, manufacturers and flags can also have one.
+
+- **Heat.** Each pair has a heat score that rises with shared moments and decays 10% each round. Typical gains: finishing within 0.5 s of each other (+8), contact (+15), an overtake in the final (+6), a head-to-head in the title fight (+10 per round), a driver moving to the other's rival garage (+20), a public jab in the press (+10), taking a rival's race number (+10).
+- **Levels.** Spark (heat 30), Rivalry (60), Feud (90) and, for a pair with at least five seasons of history, Legendary. A rivalry ends when heat falls below 10, a party retires, or a reconciliation event is accepted.
+- **Effects.** Rivals who race each other draw extra broadcast attention and fans (fan gains ×1.1 at Spark, ×1.25 at Rivalry, ×1.5 at Feud). Head-to-head, both lose a little composure and gain racecraft aggression; sponsors and the media pay attention, and the next meeting appears in the headlines.
+- **Limits.** A driver has at most three live rivalries. The player's drivers get a rivalry board with the history of meetings.
+- **Other kinds.** Garage rivalries (Garage Championship battles), manufacturer rivalries (Manufacturer Championship battles) and nation rivalries (flag standings) use the same heat rules at a slower pace.
+
+### Storylines
+
+A storyline is a short arc of connected beats, built from the records and shown to the player as a thread. Storylines give the world memory without scripting every season.
+
+- **Templates.** Storylines are data-driven templates: a trigger, up to five beats, and an outcome. Examples:
+  - *Rookie on the rise*: an unknown driver scores in a prelim, then a first final, then the gold border.
+  - *Comeback*: a driver returns from a bad crash.
+  - *The last season*: a veteran announces their final year.
+  - *Underdog garage*: a one-car garage reaches its first final.
+  - *Hometown hero*: a local driver at the Healesville finale.
+  - *Defending champion's slump*: a champion who loses form.
+  - *Manufacturer war*: two makes fight for the title.
+  - *Flag pride*: a nation's drivers rally.
+  - *New model*: a manufacturer launches a successor and a driver is picked to race it.
+  - *Rivalry feud*: a rivalry reaches Feud level and goes through a build-up, a showdown and an aftermath.
+- **Beats across scopes.** A beat can happen in practice, in the prelims, in the final, at an event or at season level, and a storyline normally spans several. For example, *Rookie on the rise* might begin with a strong practice run, pay off in a prelim, and finish with a gold border at season end.
+- **Choices.** Some beats give the player a choice: how to answer the press, whether to accept a sponsor's request, whether to protest. The choice changes the outcome and moves fans, reputation or relationships.
+- **Outcomes.** Each storyline pays out in fans, reputation, relationship changes, sponsor interest and headlines, and writes to the history.
+- **Pacing.** At most three storylines are highlighted for the player at a time, and the rest play out in the headlines. AI garages and drivers have storylines too.
+- **Events.** Between rounds and at the festival, event cards bring stories to the player: press days, charity drives, a visit from Pyra Drake, technical bulletins from Brian Drake and disputes handled by Joshua Drake.
+- **Seasons.** Season-level arcs track the title fight, the Garage and Manufacturer Championships, driver retirements and new entrants, and the yearly lineup refreshes.
+- **Moddable.** Templates, incident tables and rivalry weights are data files, so mods can add or change them.
+
 ## Core gameplay loop and progression
 
 Each round, the player prepares in the garage, fights through the prelims, races the final if they make the top 15, and banks the rewards before the next round.
@@ -612,11 +674,11 @@ The full design is large, so development is staged. Each milestone must be playa
 | --- | --- | --- | --- |
 | M0 Foundations | Project runs, saves and loads | Vite + React + TS + Tailwind + Zustand scaffold, SQL.js database, migrations, seeded RNG, save/load, externalised text (`/locales/en.json`), the platform-services interface, engineering standards and CI (see "Engineering standards and tooling") | Any gameplay |
 | M1 World generation | A believable 2031 field | Names, 96 garages, 313 drivers, 313 cars, numbers, contracts, calendar | UI beyond a debug viewer |
-| M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, classification, points | Final race, economy |
-| M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, incidents, overtakes, player calls, prize money, timing screens | Live map polish, drones |
+| M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, prelim and practice incidents, classification, points | Final race, economy |
+| M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, mid-race incidents with pauses, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase, upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
-| M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
+| M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
 | M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
 
@@ -766,14 +828,17 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `driver` | name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id, fans, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
 | `driver_road_affinity` | driver_id, road_type, rating |
 | `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
-| `manufacturer` | stable_id, name, home_country, type, character, prestige_multiplier |
-| `car_model` | manufacturer_id, stable_id, name, base_kerb_kg, base_ps, drivetrain, price_new, legality_base |
+| `manufacturer` | stable_id, name, home_country, type (`hypercar` / `supercar` / `sports` / `jdm` / `domestic` / `other`), character, next_refresh_year |
+| `car_model` | manufacturer_id, stable_id, name, tier, base_kerb_kg, max_tyre_mm, base_ps, layout, price_new, generation, introduced_year, retired_year (nullable), predecessor_id (nullable) |
 | `car` | car_model_id, chassis_no, flag, fans, garage_id, odometer_km, condition, kerb_kg_current |
 | `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
 | `car_part` | car_id, part_id, installed_date, wear |
 | `entry` | season_id, garage_id, driver_id, car_id, race_number, series (`main` / `junior`), fee_paid |
 | `result` | round_id, entry_id, prelim_time_ms, prelim_pos, final_pos, final_time_ms, points, prize, dnf_reason, tyre_pct_at_flag |
-| `event_log` | round_id, timestamp, type (flag, crash, penalty, overtake, rivalry), payload JSON |
+| `event_log` | round_id, scope (`practice` / `prelim` / `final` / `event` / `season`), timestamp, km (distance along the lap, nullable), type (incident, flag, crash, penalty, overtake, rivalry, story), entries involved, payload JSON |
+| `rivalry` | kind (`driver` / `garage` / `manufacturer` / `flag`), party_a_id, party_b_id, heat, level, started, last_event, ended (nullable) |
+| `storyline` | template_id, subject_type, subject_id, status (`active` / `resolved` / `abandoned`), started, resolved |
+| `storyline_beat` | storyline_id, step, scope, happened_on, event_log_id, choice (nullable), outcome |
 | `sponsor`, `sponsor_deal` | tier, min_prestige, base_fee, bonuses; garage_id, years, targets |
 | `supplier`, `supplier_deal` | brand, categories, discount, contingency; garage_id, car_id |
 | `trophy` | owner_type (`driver` / `car`), owner_id, kind (`win` / `title`), series, round_id / season_id |
@@ -959,10 +1024,11 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 The game ships only fictional manufacturers and models, so no licences are needed. Each one is also designed as a stand-in for a real counterpart, so modders can swap in real cars. The real names below are a reference for modders only: they never appear in the shipped game, its data files, store page or marketing.
 
-**Roster focus.** The series is a supercar showcase with JDM and sports cars mixed in.
+**Roster focus.** The series is a supercar showcase, with hypercars at the top and JDM, sports, Australian domestic and other cars mixed in.
 
-- **20 manufacturers, 3 models each (60 models):** 12 supercar makers (36 models), 5 JDM makers (15) and 3 sports-car makers (9). Each model is mapped to a specific real model.
-- **Field mix (Season 1, 313 cars):** about 50% supercars, 30% JDM and 20% sports cars. New garages and underdogs start in JDM and sports cars, and supercars are the aspiration.
+- **31 manufacturers and 96 models, with 2 to 5 models per manufacturer.** By category: 3 hypercar makers, 9 supercar makers, 6 sports-car makers, 7 JDM makers, 4 Australian domestic makers and 2 others. Each model is mapped to a specific real model.
+- **No era cut-off.** The list below is the launch lineup for 2031. Manufacturers keep their lineups moving after that (see "Manufacturer lineups").
+- **Field mix (Season 1, 313 cars):** 3% hypercars, 47% supercars (half the field), 22% JDM, 15% sports, 10% Australian domestic and 3% other. New garages and underdogs start in JDM, sports and domestic cars, and supercars are the aspiration.
 - **Stats are indicative.** Kerb weight and power are rounded starting values chosen to fit the game's balance, not exact real specifications. A mod that imports the real car replaces them. Max tyre width uses the Equalizer (`kg / 5 + 40`).
 
 **Price tiers.** `price_new ≈ ($15,000 + $280 × PS) × tier multiplier`. Used cars sell at 40–70% of new depending on age and odometer.
@@ -983,14 +1049,14 @@ The game ships only fictional manufacturers and models, so no licences are neede
 | --- | --- | --- | --- | --- |
 | Cavallo | Italy | Supercar | Passion and heritage, V8 and V12 | Ferrari |
 | Tauro | Italy | Supercar | Wide, loud, dramatic | Lamborghini |
-| Vento | Italy | Supercar | Handbuilt carbon hypercars | Pagani |
+| Vento | Italy | Hypercar | Handbuilt carbon hypercars | Pagani |
 | Halberd | UK | Supercar | Lightweight carbon, technical | McLaren |
 | Ashford | UK | Supercar | Grand tourers to hypercars | Aston Martin |
 | Kessler | Germany | Supercar | Rear-engined precision | Porsche |
 | Stern | Germany | Supercar | Hand-built V8 power | Mercedes-AMG |
 | Rhein | Germany | Supercar | All-wheel-drive traction | Audi |
-| Montclair | France | Supercar | Extreme power and top speed | Bugatti |
-| Vesper | Sweden | Supercar | Record-chasing hypercars | Koenigsegg |
+| Montclair | France | Hypercar | Extreme power and top speed | Bugatti |
+| Vesper | Sweden | Hypercar | Record-chasing hypercars | Koenigsegg |
 | Dunmore | USA | Supercar | Big V8 muscle and supercars | Ford |
 | Marlowe | USA | Supercar | Front-engined V8 sports and supercars | Chevrolet |
 | Homura | Japan | JDM | Light sports cars, rotary specialist | Mazda |
@@ -1001,6 +1067,17 @@ The game ships only fictional manufacturers and models, so no licences are neede
 | Kestrel | UK | Sports | Light, agile, low power | Lotus |
 | Corvina | Italy | Sports | Stylish, sharp-handling, temperamental | Alfa Romeo |
 | Brandt | Germany | Sports | Precise, heavier, strong brakes | BMW |
+| Pennine | UK | Sports | Small, cheeky, great on tight roads | Mini |
+| Aurelian | Italy | Sports | Small turbo hatches, high revs, fragile | Abarth / Fiat |
+| Ardent | France | Sports | Soft, agile hot hatches | Renault |
+| Mizuho | Japan | JDM | Rally-bred turbo sedans and coupes | Mitsubishi |
+| Suzuri | Japan | JDM | Tiny, light and cheap | Suzuki |
+| Redback | Australia | Domestic | Utes and V8 sedans, cheap and tough | Holden |
+| Wattle | Australia | Domestic | Local muscle and turbo sixes | Ford Australia |
+| Bunyip | Australia | Domestic | Hemi-powered local classics | Chrysler Australia |
+| Banksia | Australia | Domestic | Lightweight local sports cars | Elfin / Bolwell |
+| Haeju | South Korea | Other | Value performance | Hyundai |
+| Skald | Sweden | Other | Turbo pioneers, quirky and safe | Saab |
 
 **Models** (max tyre from the Equalizer)
 
@@ -1066,8 +1143,54 @@ The game ships only fictional manufacturers and models, so no licences are neede
 | Brandt M1 | Premium | 1,300 | 300 mm | 277 | BMW M1 |
 | Brandt M3 GTS | Premium | 1,530 | 346 mm | 450 | BMW M3 GTS (E92) |
 | Brandt 330 | Mid | 1,540 | 348 mm | 340 | BMW 335i (E92) |
+| Cavallo Fondatore | Hyper | 1,365 | 313 mm | 660 | Ferrari Enzo |
+| Pennine Mk I | Starter | 680 | 176 mm | 76 | Classic Mini Cooper |
+| Pennine Cooper S | Starter | 1,150 | 270 mm | 163 | Mini Cooper S (R53) |
+| Pennine GP | Mid | 1,200 | 280 mm | 218 | Mini John Cooper Works GP (R56) |
+| Aurelian Uno T | Starter | 850 | 210 mm | 105 | Fiat Uno Turbo |
+| Aurelian Lupa 1.4T | Starter | 1,050 | 250 mm | 190 | Abarth 595 Competizione |
+| Aurelian Spider 124 | Mid | 1,060 | 252 mm | 170 | Abarth 124 Spider |
+| Ardent 5 Turbo | Mid | 980 | 236 mm | 160 | Renault 5 Turbo |
+| Ardent Petite RS | Mid | 1,200 | 280 mm | 200 | Renault Clio RS 200 |
+| Ardent Trophy | Mid | 1,400 | 320 mm | 275 | Renault Mégane R.S. Trophy |
+| Mizuho Evo IX | Mid | 1,400 | 320 mm | 280 | Mitsubishi Lancer Evolution IX |
+| Mizuho Orion | Mid | 1,300 | 300 mm | 200 | Mitsubishi Starion |
+| Mizuho GTO | Mid | 1,700 | 380 mm | 280 | Mitsubishi 3000GT VR-4 |
+| Suzuri Cappu | Starter | 700 | 180 mm | 64 | Suzuki Cappuccino |
+| Suzuri Swift Sport | Starter | 1,000 | 240 mm | 136 | Suzuki Swift Sport |
+| Suzuri Works | Starter | 680 | 176 mm | 64 | Suzuki Alto Works |
+| Redback Torana | Mid | 1,100 | 260 mm | 200 | Holden Torana A9X |
+| Redback Sedan SS | Mid | 1,700 | 380 mm | 367 | Holden Commodore SS (VE) |
+| Redback Ute SS | Mid | 1,780 | 396 mm | 367 | Holden Commodore SS Ute (VE) |
+| Redback GTS-R | Premium | 1,900 | 420 mm | 636 | HSV GTSR W1 |
+| Wattle GT-HO | Elite | 1,430 | 326 mm | 300 | Ford Falcon GT-HO Phase III |
+| Wattle XR6 Turbo | Mid | 1,700 | 380 mm | 325 | Ford Falcon XR6 Turbo (BF) |
+| Wattle XR8 Ute | Mid | 1,800 | 400 mm | 395 | Ford Falcon XR8 Ute (FG) |
+| Wattle GT-F | Premium | 1,800 | 400 mm | 455 | Ford Falcon GT F |
+| Bunyip Charger E49 | Premium | 1,300 | 300 mm | 300 | Chrysler Valiant Charger E49 |
+| Bunyip Charger E55 | Mid | 1,350 | 310 mm | 250 | Chrysler Valiant Charger R/T E55 |
+| Bunyip Pacer | Mid | 1,350 | 310 mm | 245 | Chrysler Valiant Pacer |
+| Banksia Clubman | Starter | 640 | 168 mm | 150 | Elfin Clubman |
+| Banksia Nagari | Mid | 900 | 220 mm | 160 | Bolwell Nagari |
+| Banksia MS8 | Premium | 780 | 196 mm | 430 | Elfin MS8 Streamliner |
+| Haeju Veloce | Mid | 1,400 | 320 mm | 275 | Hyundai Veloster N |
+| Haeju i-Sprint | Mid | 1,450 | 330 mm | 280 | Hyundai i30 N |
+| Haeju Coupe 3.8 | Mid | 1,500 | 340 mm | 300 | Hyundai Genesis Coupe 3.8 |
+| Skald Sonett | Starter | 840 | 208 mm | 65 | Saab Sonett III |
+| Skald 900 Turbo | Mid | 1,200 | 280 mm | 175 | Saab 900 Turbo 16S |
+| Skald Viggen | Mid | 1,400 | 320 mm | 225 | Saab 9-3 Viggen |
 
-The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The starter cars a new garage can pick from are the Kestrel Swift 1.6, Homura Corsa 1.8 and Mitaka Sprinter. The starting field's 313 cars are drawn from these 60 models using the field mix above; supercars appear mostly in the hands of established, high-prestige garages.
+The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The starter cars a new garage can pick from are the Kestrel Swift 1.6, Homura Corsa 1.8 and Mitaka Sprinter. The starting field's 313 cars are drawn from these 96 models using the field mix above; supercars appear mostly in the hands of established, high-prestige garages.
+
+**Manufacturer lineups**
+
+Manufacturers do not stand still. Each one refreshes its lineup about every five years (a random interval of 4 to 6 years, first due between 2034 and 2037), and the 96 launch models are only the 2031 starting point.
+
+- **What changes.** At a refresh a manufacturer replaces one or two of its models with next-generation successors (about 5–12% more power, 0–4% lighter, a higher price and a generation number in the name), and it may add a new sport derivative of an existing model.
+- **Limits.** A manufacturer always has between 2 and 5 models on sale. If a refresh would take it above 5, its oldest model is retired. Retired models stay in the database, so existing cars and the records keep their history; they simply stop appearing in new-car sales.
+- **Unique cars.** One-off cars such as the Homura Spirit R-7 are never refreshed.
+- **Timing.** The refresh runs in the yearly rollover (see "World generation and AI"), and the headlines report new models.
+- **Mods.** A mod may supply its own successors, which then replace the generated ones.
 
 **Modding support**
 
@@ -1081,7 +1204,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Season 1 world (96 garages, 313 drivers).**
 
-- **Garage sizes.** About 55 single-entry garages, 25 with 2 entries, 10 with 3, 4 with 4, and 2 with 5. Entries total 313 including the player's.
+- **Garage sizes.** 1 to 8 entries per garage, averaging about 3.3, and adding up to 313 entries across 96 garages (the player's garage and entry are part of that total).
 - **Prestige.** Set from entry count and any gold-bordered drivers (in Season 1, about 20 seeded drivers start gold-bordered as past finalists).
 - **Names.** Drivers and garages are generated from name pools weighted toward Australian and a broad international mix. Pools are in `names.json` and must avoid real people and trademarks.
 - **Car sector fit.** Generated cars get a base fit drawn from a normal distribution: supercars mean 0.52, SD 0.12; JDM and sports cars mean 0.46, SD 0.10 (tuned in `tools/balance/prelim_check.py`).
@@ -1090,6 +1213,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Yearly rollover.**
 
+0. Lineups: manufacturers due for a refresh retire and introduce models (see "Manufacturer lineups").
 1. Retirement: drivers over 40 retire with rising probability each year; any driver may also retire after repeated poor results or serious injury.
 2. Newcomers: 20–45 new drivers enter each year (more if recent seasons were popular); fame and prestige of the series raise the count. New garages form at 3–10 per year; garages with negative cash for 2 seasons fold.
 3. Contracts: expiring drivers become free agents and sign with garages in descending order of reputation fit and budget.
@@ -1112,6 +1236,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 | Practice and prelim view | Timing screen, live map, ghost choice, per-entry results |
 | Final race view | Timing tower, sector splits, tyre life, player calls, drone events |
 | Standings and records | Tabs for the five standings tables, history browser |
+| Story and rivalries | Active storylines and their beats, the rivalry board, event cards and headlines |
 | Season review | Awards, finances, headlines, off-season tasks |
 | Settings | Sim speed, text size, accessibility, audio |
 
@@ -1163,6 +1288,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Language.** English only, with all text externalised for later translation.
 - **Modding.** Mods for starting garages, drivers and stats, name lists, manufacturers, cars, tracks, parts, sponsors, suppliers and balance data, each with a mandatory GPL-compatible licence.
 - **Careers over time.** An owner who dies or retires is replaced by a new character in the same world; a retiring owner-driver becomes a garage owner; a driver can found a garage at any time for a fee, with funding set by fame and reputation.
+- **Incidents, rivalries and storylines.** Mid-race incidents, rivalries (heat and levels) and data-driven storylines run across practice, prelims, races, events and seasons.
+- **Manufacturer lineups.** 31 manufacturers and 96 launch models (2 to 5 per manufacturer, no era cut-off); lineups refresh about every five years.
 - **Series management.** Brian Drake (technical) and Joshua Drake (interpersonal) run the day-to-day of the series from Healesville; Drake Motorsports is based in Brisbane.
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
