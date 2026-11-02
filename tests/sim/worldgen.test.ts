@@ -208,10 +208,10 @@ describe('drivers', () => {
 });
 
 describe('fans and fame', () => {
-  it('start every driver as an unknown with 100 to 2,000 fans', () => {
+  it('start every driver as an unknown with 10 to 400 fans', () => {
     for (const d of world.drivers) {
-      expect(d.fans).toBeGreaterThanOrEqual(100);
-      expect(d.fans).toBeLessThanOrEqual(2000);
+      expect(d.fans).toBeGreaterThanOrEqual(10);
+      expect(d.fans).toBeLessThanOrEqual(400);
       expect(d.reputation).toBeGreaterThanOrEqual(5);
       expect(d.reputation).toBeLessThanOrEqual(35);
     }
@@ -227,7 +227,7 @@ describe('fans and fame', () => {
     const drivers = world.entries
       .filter((e) => e.garageId === garage.id)
       .map((e) => world.drivers[e.driverId - 1]!);
-    expect(garage.fans).toBe(Math.round(50 + 0.4 * drivers.reduce((s, d) => s + d.fans, 0)));
+    expect(garage.fans).toBe(Math.round(5 + 0.4 * drivers.reduce((s, d) => s + d.fans, 0)));
   });
 
   it('keep every fan count below 40% of the series audience', () => {
@@ -239,7 +239,7 @@ describe('fans and fame', () => {
         ...world.flagFans.map((f) => f.fans),
       ),
     ).toBeLessThan(cap);
-    expect(world.seriesFans).toBe(30_000_000);
+    expect(world.seriesFans).toBe(200_000);
   });
 
   it('give the host nation the biggest national base', () => {

@@ -31,7 +31,7 @@ describe('persisting a world', () => {
       cars: 314,
       entries: 313,
       rounds: 6,
-      seriesFans: 30_000_000,
+      seriesFans: 200_000,
     });
     expect(scalar(db, 'SELECT COUNT(*) FROM manufacturer')).toBe(31);
     expect(scalar(db, 'SELECT COUNT(*) FROM car_model')).toBe(96);

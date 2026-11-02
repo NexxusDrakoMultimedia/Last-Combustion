@@ -567,21 +567,21 @@ Gains are a share of the current series audience `S`, so a big moment is bigger 
 
 - **Garage.** Gains 40% of what its current drivers gain, plus its own gains from Garage Championship results, and keeps half of a departing driver's contribution.
 - **Car.** Gains 30% of what the driver gains while driving it, so a famous chassis builds a following.
-- **Flag.** Gains 15% of what its drivers and garages gain, on top of the national base. National base = `population × 0.1%`, ×20 for Australia as the host nation.
-- **Series.** Starts at 30 million in 2031 and grows 8% a year, plus 0.5% for each attention flag, 1% for the closing festival, and 10% for the Junior launch in 2036. Individual fan counts are capped at 40% of the series audience.
+- **Flag.** Gains 15% of what its drivers and garages gain, on top of the national base. National base = `population × 0.002%`, ×20 for Australia as the host nation (about 10,000 fans for Australia and a few thousand for the other big nations at the start).
+- **Series.** Starts small, at 200,000 in 2031 (a brand-new series), and grows 25% a year for its first five seasons and 8% a year after that, plus 0.5% for each attention flag, 1% for the closing festival, and 10% for the Junior launch in 2036. Individual fan counts are capped at 40% of the series audience.
 
 **Starting values**
 
-- Every driver starts as an unknown with 100–2,000 fans (median about 800).
+- Every driver starts as an unknown with 10–400 fans (median about 60), a new garage starts with 5 and a new chassis with none. The whole series starts with only 200,000 fans.
 - A new garage starts with 50.
 - In Season 1 nobody has a gold border or any reputation beyond 5–35, because the series is new and there is no history. Gold borders are earned from Round 1's final onwards.
 - Garage, car and flag counts in Season 1 are built from their drivers using the shares above.
 
 **Uses**
 
-- **Money.** Sponsor deals use fame (and so fans). Garages earn merchandise income of about $0.05 per garage fan per season, paid at season end.
+- **Money.** Sponsor deals use fame (and so fans). Garages earn merchandise income of about $2 per garage fan per season, paid at season end.
 - **Negotiation and prestige.** Fame is a leverage factor, and fan milestones raise a garage's prestige.
-- **Story.** Headlines and commentary report fan milestones (for example "#247 reaches 100,000 fans"), a car's fans appear in the broadcast graphics, and the About screen shows the series audience.
+- **Story.** Headlines and commentary report fan milestones (for example "#247 reaches 1,000 fans"), a car's fans appear in the broadcast graphics, and the About screen shows the series audience.
 - **Awards.** A Fan Favourite award goes to the driver with the largest fan gain in the season.
 
 ## Driver origins: hometown and residence
@@ -939,7 +939,7 @@ Driver mode is not available for the unlock: the Driver manager's driver always 
 
 - **No hints.** The setup screen treats every field normally. Number 313 and an age of 35 are rejected as usual when the rest does not match, with the standard messages. The Founder's career starts only when the player confirms and every field for the chosen mode matches. Name and garage match ignoring case and surrounding spaces.
 - **Overrides.** The #313 reservation is lifted for this career only. In Owner-driver mode the 18–30 age rule is lifted too, since she is 35 in 2031. In Garage owner mode her age already fits the 18–50 range, and the rule needs no override. In this world #313 belongs to the player and the NPC founder is replaced, so there is never a second Pyra Drake.
-- **Starting package (proposed, tunable).** Her Homura Spirit R-7 is the garage's one car. She has about 3 million fans (fame about 68), Drake Motorsports about 1.2 million and the R-7 about 800,000. Her hometown is Healesville and her residence is Brisbane, set automatically (they are not part of the unlock). Drake Motorsports is based in Brisbane. Cash, staff and sponsors are the normal start for the mode, so the rise from nothing is still earned.
+- **Starting package (proposed, tunable).** Her Homura Spirit R-7 is the garage's one car. She has about 60,000 fans (fame about 47, the biggest name in a small series), Drake Motorsports about 24,000 and the R-7 about 16,000. Her hometown is Healesville and her residence is Brisbane, set automatically (they are not part of the unlock). Drake Motorsports is based in Brisbane. Cash, staff and sponsors are the normal start for the mode, so the rise from nothing is still earned.
   - **Owner-driver.** She is the driver, with elite preset stats (Pace 90, Consistency 85, Racecraft 85, Tyre management 85, Composure 85, Wet skill 80, all road affinities 80), and races as #313.
   - **Garage owner.** She is the owner and does not race, matching her role as chairwoman. The garage's first entry carries #313 and a driver chosen from the 5 offered.
 - **Timeline.** She is 35 in 2031, 40 in 2036 and ages and retires like any driver.

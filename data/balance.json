@@ -46,15 +46,15 @@
       "cashPerPrestige": 4000
     },
     "fans": {
-      "seriesStart": 30000000,
-      "unknownMedian": 800,
-      "unknownMin": 100,
-      "unknownMax": 2000,
-      "garageStart": 50,
+      "seriesStart": 200000,
+      "unknownMedian": 60,
+      "unknownMin": 10,
+      "unknownMax": 400,
+      "garageStart": 5,
       "garageShareOfDrivers": 0.4,
       "carShareOfDriver": 0.3,
       "flagShare": 0.15,
-      "nationalBaseRate": 0.001,
+      "nationalBaseRate": 2e-5,
       "hostMultiplier": 20
     },
     "contracts": {
