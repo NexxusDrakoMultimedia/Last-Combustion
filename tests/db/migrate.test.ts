@@ -72,6 +72,7 @@ describe('migrate', () => {
       'titles',
       'trophies',
       'world_events',
+      'identity',
     ]);
   });
 

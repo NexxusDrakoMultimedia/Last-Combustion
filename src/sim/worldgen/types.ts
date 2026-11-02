@@ -77,10 +77,15 @@ export interface Garage {
   fans: number;
 }
 
+export type Identity = 'masculine' | 'feminine' | 'non_binary';
+
 export interface Driver {
   id: number;
   name: string;
+  /** The name pool the driver's name came from. How a driver is described is `identity`. */
   gender: 'male' | 'female';
+  /** How the driver presents: masculine, feminine or non-binary (pronouns and the male, female or combined sign). */
+  identity: Identity;
   birthDate: string;
   nationality: string;
   flag: string;

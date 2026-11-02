@@ -150,6 +150,7 @@ function makeDriver(rng: RandomStream, id: number, options: DriverOptions = {}):
     id,
     name: personName(rng, nationality, gender),
     gender,
+    identity: gender === 'female' ? 'feminine' : 'masculine',
     birthDate: birthDate.toISOString().slice(0, 10),
     nationality,
     flag,
@@ -388,6 +389,12 @@ export function generateWorld(seed: string | number): World {
       carId: (driverCar.get(d.id) as Car).id,
       raceNumber: numberOf.get(d.id) as number,
     });
+  }
+
+  // --- identity: a few drivers are non-binary (a separate stream keeps the rest of the world the same) ---
+  const identityRng = rng.stream('worldgen:identity');
+  for (const d of drivers) {
+    if (identityRng.chance(balance.driver.nonBinaryShare)) d.identity = 'non_binary';
   }
 
   // --- nicknames: some drivers have a handle that suits how they race ---

@@ -120,7 +120,7 @@ export function persistWorld(db: Database, world: World): void {
       ]),
     );
     run(
-      'INSERT INTO driver (id, name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id, pace, consistency, racecraft, tyre_management, composure, wet_skill, potential, home_road_type, fans, fame, reputation, gold_border_year, nickname) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO driver (id, name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id, pace, consistency, racecraft, tyre_management, composure, wet_skill, potential, home_road_type, fans, fame, reputation, gold_border_year, nickname, identity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       world.drivers.map((d) => [
         d.id,
         d.name,
@@ -143,6 +143,7 @@ export function persistWorld(db: Database, world: World): void {
         d.reputation,
         d.goldBorderYear,
         d.nickname,
+        d.identity,
       ]),
     );
     run(
