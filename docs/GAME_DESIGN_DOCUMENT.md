@@ -67,8 +67,8 @@ The season runs annually from **March to October**. It consists of seven rounds 
 | Rd | Course | State | Character |
 | --- | --- | --- | --- |
 | 1 | Mount Glorious / Mount Nebo | Qld | Season opener: narrow, bumpy climbs and descents; suits light cars |
-| 2 | Oxley Highway, Wauchope–Walcha | NSW | Long, relentless corners; endurance test for drivers and tyres |
-| 3 | Royal National Park, Sydney | NSW | Forest and coastal roads just south of the city; run at night |
+| 2 | Oxley Highway, Mount Seaview | NSW | Long, relentless corners; endurance test for drivers and tyres |
+| 3 | Royal National Park, Sydney | NSW | Forest and coastal roads just south of the city (McKell Avenue and Lady Wakehurst Drive); run at night |
 | 4 | Great Alpine Road, Mount Hotham | Vic | High altitude cuts engine power, so light cars close the gap |
 | 5 | Black Spur / Toolangi / Chum Creek, Healesville | Vic | Tight, damp forest sweepers and hill roads around the series' home town; a rhythm test |
 | 6 | Great Ocean Road, Lorne–Kennett River | Vic | Coastal cliffs, sea spray, changeable weather; tyre management |
@@ -76,17 +76,21 @@ The season runs annually from **March to October**. It consists of seven rounds 
 
 **Proposed routes**
 
-Each round runs on a loop or an out-and-back course. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. A lap is at most **80 km** and at least 10 km. Lap lengths are rough, unmeasured estimates that still need measuring on a map. When measured, the final's lap count is the smallest whole number of laps that reaches 300 km.
+Each round runs on a loop or an out-and-back course. A preliminary run is **strictly one lap** of the course, and the lap count takes the final past 300 km. A lap is at most **80 km** and at least 10 km. The final's lap count is the smallest whole number of laps that reaches 300 km, using the measured lap length.
 
-| Rd | Route | Shape | Lap (approx.) | Final laps |
+| Rd | Route | Shape | Lap (measured) | Final laps |
 | --- | --- | --- | --- | --- |
-| 1 | Mount Nebo–Goat Track Loop: The Gap, Mt Nebo Road to Mt Nebo, the Goat Track down to Samford Valley, Samford Road back to The Gap | Loop | ~45 km | 7 |
-| 2 | Mount Seaview Climb: up the Oxley Highway toward Walcha and back, turning at a closed hairpin | Out-and-back | ~50 km | 6 |
-| 3 | Royal National Park Loop: Waterfall, McKell Avenue, Sir Bertram Stevens and Lady Wakehurst Drives to Otford, Princes Highway back to Waterfall | Loop | ~35 km | 9 |
-| 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham village and back | Out-and-back | ~60 km | 5 |
-| 5 | Healesville Hills Loop: Healesville over the Black Spur to Narbethong, a link road across the ranges to Toolangi (to be chosen), then Chum Creek Road down through Chum Creek back to Healesville | Loop | ~60 km | 5 (provisional) |
-| 6 | Kennett River Run: Lorne along the Great Ocean Road through Wye River to Kennett River and back, turning at a closed junction | Out-and-back | ~45 km | 7 |
-| 7 | Cethana Loop: the mountain roads near Sheffield and the Cethana dam; connecting roads to be chosen | Loop | ~40 km | 8 |
+| 1 | Mount Nebo–Mount Glorious Loop: The Gap, Waterworks Road and Mount Nebo Road up to Mount Nebo, Mount Glorious Road down to Samford, Samford Road and Settlement Road back to The Gap | Loop | 57.4 km | 6 (344 km) |
+| 2 | Mount Seaview Climb: the Oxley Highway from Mount Seaview east for 39 km and back, turning at a closed junction | Out-and-back | 78.3 km | 4 (313 km) |
+| 3 | Royal National Park Run: Waterfall, McKell Avenue and Lady Wakehurst Drive to Otford and back | Out-and-back | 35.8 km | 9 (323 km) |
+| 4 | Hotham Ascent: Harrietville up the Great Alpine Road to Hotham Heights and back | Out-and-back | 64.8 km | 5 (324 km) |
+| 5 | Healesville Hills Loop: Healesville over the Black Spur on the Maroondah Highway to Narbethong, back down the Black Spur to Camerons Road and Myers Creek Road up to Toolangi, then the Healesville–Kinglake Road down through Chum Creek to Healesville | Loop | 75.8 km | 4 (303 km) |
+| 6 | Kennett River Run: Lorne along the Great Ocean Road through Wye River to Kennett River and back, turning at a closed junction | Out-and-back | 44.6 km | 7 (312 km) |
+| 7 | Cethana Run: Sheffield to Cethana via Claude Road and Cethana Road and back | Out-and-back | 40.2 km | 8 (322 km) |
+
+**How these were measured.** `tools/routes/measure_routes.py` routes each course through its waypoints on OpenStreetMap road data (public OSRM server) and records the lap length. The lengths above are road distances along the chosen roads. Lap lengths will be re-measured from the final sector survey. Out-and-back courses are the route out plus the same route back, and Round 5 drives the Maroondah Highway between Healesville and Camerons Road twice (up the Black Spur and back down).
+
+**Course outlines.** The same script saves each route's outline to `data/courses/outlines.json` for the track map and the timing view. Each outline is a simplified, flattened path (about 80–300 points) with the cumulative distance in kilometres at every point, so sector boundaries, car positions and drone markers can be placed by distance along the lap. See "Course outlines" in the development specification.
 
 ## Weekend format & Management Interface
 
@@ -628,6 +632,16 @@ Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with 
 
 **Definition of done:** the change has tests, passes every required check, updates the changelog and docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
 
+## Course outlines
+
+Each course has a saved outline that drives the track map, the live map and the timing view.
+
+- **Format.** `data/courses/outlines.json` holds one entry per course: `viewBox`, an SVG `path`, and `points` as `[x, y, km]` where `km` is the cumulative distance along the lap. Coordinates are a flattened, simplified plan (not latitude and longitude), scaled to fit a 1000-unit box.
+- **Use.** Sector boundaries are stored as `start_km` on each sector and found on the outline by distance. Car positions, gaps, drone markers and overtaking spots use the same distance, so the live map and the timing screens always agree.
+- **Out-and-back courses.** The outline stores the outward pass once. A lap is the pass out and the same pass back, and the map draws the return alongside.
+- **Source and attribution.** Outlines are generated from OpenStreetMap road data and carry the attribution "Route geometry © OpenStreetMap contributors, ODbL 1.0", shown in the credits. Only the simplified outline is stored in the repository, not the raw map data, so the file is a derived map-style work rather than a copy of the database. This is on the legal review list.
+- **Regeneration.** `tools/routes/measure_routes.py` rebuilds the outlines and lap lengths from `tools/routes/routes.json`, and a mod track supplies its own outline in the same format.
+
 ## Data model
 
 Core tables (SQLite). Every table has an integer primary key `id`; foreign keys are named `<table>_id`. Dates are ISO strings in game time.
@@ -639,8 +653,8 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 | `standing_snapshot` | season_id, series, table (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
 | `season` | year, era (`original` / `super`), final_size, status |
 | `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
-| `course` | name, state, shape (`loop` / `out_and_back`), lap_km, final_laps, road_type, altitude_m, night (bool) |
-| `sector` | course_id, order, surface (always `sealed`), length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
+| `course` | name, state, shape (`loop` / `out_and_back`), lap_km, final_laps, road_type, altitude_m, night (bool), outline (JSON: viewBox, path, points with cumulative km) |
+| `sector` | course_id, order, surface (always `sealed`), start_km, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
 | `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
 | `garage` | name, home_state, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
 | `driver` | name, gender, birth_date, nationality, flag, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
@@ -736,7 +750,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 | Name lists | Driver first and last names (by nationality) and garage name pools |
 | Manufacturers | New or replacement manufacturers, with home country, type and character |
 | Cars | New or replacement car models: kerb weight, power, drivetrain, price tier, body-shape SVG and livery slots |
-| Tracks | New or replacement courses: route, sectors, road type, climate profile, vector map path |
+| Tracks | New or replacement courses: route, outline for the map, sectors, road type, climate profile |
 | Parts | New or replacement parts and their stats, prices and legality ratings |
 | Sponsors | New or replacement sponsors, their tiers, fees, targets and personalities |
 | Suppliers | New or replacement suppliers, categories, discounts and contingency terms |
@@ -1052,7 +1066,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
 - **IP.** The name, logo and Pyra Drake belong to Nexxus Drako Multimedia and are reserved (see `TRADEMARKS.md`).
 - **Mod licences.** GPL-compatible licences are mandatory for mods.
-- **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. Round 5 runs Healesville–Narbethong–Toolangi–Chum Creek and Round 6 is a shorter Lorne–Kennett River run.
+- **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. Round 5 runs Healesville–Narbethong–Toolangi–Chum Creek and Round 6 is a shorter Lorne–Kennett River run. All seven lap lengths are measured.
 - **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
 - **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
 - **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
@@ -1060,8 +1074,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 
 **Open**
 
-- [ ] Check that every proposed route is fully sealed, in particular the Goat Track (Round 1), the Narbethong–Toolangi link (Round 5) and the connecting roads near Cethana (Round 7). Replace any unsealed section with a sealed alternative.
-- [ ] Measured lap lengths for each proposed route (needed before M2 course data). Estimates only so far, because the mapping services (OpenStreetMap routing) are blocked in the design session. Choose and confirm the Narbethong–Toolangi link road for Round 5 and that the Round 6 roads connect as described. Round 5 is about 60 km, so it sits right at 5 laps (300 km) and becomes 6 laps if measured shorter.
+- [ ] Check that every route is fully sealed. The roads used are all named public roads that are believed to be sealed, but the automatic surface check (Overpass) was unavailable, so run `tools/routes/measure_routes.py` once the Overpass server responds. Note that Myers Creek Road (Round 5) and Camerons Road need particular attention.
+- [ ] Legal review of the ODbL attribution for the saved course outlines.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and Pyra Drake artwork are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).

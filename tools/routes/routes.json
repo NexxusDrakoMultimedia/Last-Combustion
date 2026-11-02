@@ -1,0 +1,9 @@
+[
+ {"round":1,"name":"Mount Nebo-Mount Glorious Loop","shape":"loop","waypoints":[[-27.4436,152.9454],[-27.3752,152.7790],[-27.3736,152.8847],[-27.4436,152.9454]]},
+ {"round":2,"name":"Mount Seaview Climb","shape":"out_and_back","waypoints":[[-31.3972,152.1108],[-31.42422,152.37864]]},
+ {"round":3,"name":"Royal National Park Run","shape":"out_and_back","waypoints":[[-34.1348,150.9931],[-34.152232,151.028969],[-34.2107,151.0058]]},
+ {"round":4,"name":"Hotham Ascent","shape":"out_and_back","waypoints":[[-36.8923,147.0639],[-37.0238,147.1462]]},
+ {"round":5,"name":"Healesville Hills Loop","shape":"loop","waypoints":[[-37.6537,145.5162],[-37.55645,145.65851],[-37.6382,145.5237],[-37.5456,145.4835],[-37.5671,145.4804],[-37.6399,145.4982],[-37.6537,145.5162]]},
+ {"round":6,"name":"Kennett River Run","shape":"out_and_back","waypoints":[[-38.5412,143.9748],[-38.6677,143.8589]]},
+ {"round":7,"name":"Cethana Run","shape":"out_and_back","waypoints":[[-41.3818,146.3272],[-41.4766,146.1617]]}
+]
