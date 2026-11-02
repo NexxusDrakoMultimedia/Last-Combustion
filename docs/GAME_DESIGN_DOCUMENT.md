@@ -1430,6 +1430,16 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 - **Course map.** Each course has a vector path with sector markers and overtaking spots, used for the live map and the round hub.
 - **Audio.** Engine notes grouped by engine type (rotary, turbo four, V8, flat/6), crowd-free ambience, drone whine, radio chatter and commentary stingers. Sound can be reduced or muted independently.
 - **Accessibility.** Colour-blind-safe palette for borders and flags, text scaling, no reliance on colour alone, keyboard navigation for all management screens.
+- **Themes.** The release game is themable, and the player picks a theme in Settings (the choice is saved with the player's settings, not the career). Three themes ship:
+  - **Light.** A standard light theme: white surfaces, black text.
+  - **Dark.** A standard dark theme: dark neutral surfaces, light text.
+  - **NDM.** The Nexxus Drako Multimedia brand theme, built from the NDM design system (`github.com/NexxusDrakoMultimedia/design-system`): black surface, white text, gold (`#ffd900`) headings and accents, maroon (`#7f0000`) header and hero bands with gold display text, gold fill with maroon text for the primary button, and gold focus rings. It follows the design system's `tokens.css` dark values and its rule that gold text never sits on a light surface.
+  - **How it works.** All colours come from CSS custom properties (design tokens such as `surface`, `ink`, `ink-muted`, `accent`, `surface-brand`, `on-brand`, `line`, `focus`, and the status colours `success`, `warning`, `danger`), set by a `data-theme` attribute on the page. No component hard-codes a colour. The first launch follows the operating system's light or dark setting, and the player can override it.
+  - **Fixed colours.** Race content keeps its own colours in every theme, because it is data: garage liveries and number boxes, flags, the gold border, and course maps. Themes recolour the interface around them only.
+  - **Accessibility holds in every theme.** Text meets WCAG AA contrast (4.5:1 for body text, 3:1 for large text and icons), the focus ring is always visible, and status colours are colour-blind safe (success is blue, not green) and always paired with a word or icon.
+  - **Mods.** A theme is a data file (`data/themes.json`: a name and a token map), so mods can add themes. Themes that fail the contrast check are not listed. The NDM theme is shipped with the game, but the NDM logos, artwork and the characters stay reserved (see `TRADEMARKS.md`), and the fonts are loaded by the interface and not used for text in a way that needs a licence we lack.
+  - **Fonts.** Display text uses Orbitron and body text uses Exo 2 (both SIL Open Font Licence, which is compatible with the GPL); HK Modular is not used in the game because it is licensed through Canva. Both fonts are bundled with the game and recorded in `CREDITS.md`, so the game does not load fonts from the internet at run time.
+  - **Build order.** The token layer and the three themes arrive with the first real screens in M4, and the Settings control with the screen flow.
 
 ## Glossary
 
