@@ -37,34 +37,6 @@
  },
  {
   "round": 2,
-  "state": "SA",
-  "name": "Barossa and Eden Valley Loop",
-  "shape": "loop",
-  "waypoints": [
-   [
-    -34.5217,
-    138.9603
-   ],
-   [
-    -34.6667,
-    139.13
-   ],
-   [
-    -34.707,
-    139.0894
-   ],
-   [
-    -34.5028,
-    139.049
-   ],
-   [
-    -34.5217,
-    138.9603
-   ]
-  ]
- },
- {
-  "round": 3,
   "state": "WA",
   "name": "Yallingup and Metricup Loop",
   "shape": "loop",
@@ -88,7 +60,7 @@
   ]
  },
  {
-  "round": 4,
+  "round": 3,
   "state": "Qld",
   "name": "Mount Nebo-Mount Glorious Loop",
   "shape": "loop",
@@ -112,7 +84,7 @@
   ]
  },
  {
-  "round": 5,
+  "round": 4,
   "state": "NSW",
   "name": "Jamberoo Mountain Loop",
   "shape": "loop",
@@ -136,7 +108,7 @@
   ]
  },
  {
-  "round": 6,
+  "round": 5,
   "state": "Vic",
   "name": "Marysville and Buxton Loop",
   "shape": "loop",
@@ -160,7 +132,7 @@
   ]
  },
  {
-  "round": 7,
+  "round": 6,
   "state": "Vic",
   "name": "Healesville Hills Loop",
   "shape": "loop",
