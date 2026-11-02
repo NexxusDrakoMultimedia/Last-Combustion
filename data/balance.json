@@ -1,0 +1,107 @@
+{
+  "worldgen": {
+    "garages": 96,
+    "entries": 313,
+    "garageSizeWeights": {
+      "1": 16,
+      "2": 22,
+      "3": 22,
+      "4": 16,
+      "5": 10,
+      "6": 6,
+      "7": 3,
+      "8": 1
+    },
+    "carTypeMix": {
+      "hypercar": 0.03,
+      "supercar": 0.47,
+      "jdm": 0.22,
+      "sports": 0.15,
+      "domestic": 0.1,
+      "other": 0.03
+    },
+    "driver": {
+      "paceMean": 45,
+      "paceSd": 12,
+      "paceMin": 20,
+      "paceMax": 85,
+      "ageMean": 29,
+      "ageSd": 7,
+      "ageMin": 18,
+      "ageMax": 48,
+      "femaleShare": 0.25,
+      "differentFlagShare": 0.05
+    },
+    "origins": {
+      "hometownInFlagCountry": 0.92,
+      "residenceInFlagCountry": 0.7,
+      "residenceInHostCountry": 0.2,
+      "australianResidentInAustralia": 0.95
+    },
+    "garage": {
+      "australianFlagShare": 0.7,
+      "prestigeBase": 2,
+      "prestigePerEntry": 4,
+      "cashBase": 50000,
+      "cashPerPrestige": 4000
+    },
+    "fans": {
+      "seriesStart": 200000,
+      "unknownMedian": 60,
+      "unknownMin": 10,
+      "unknownMax": 400,
+      "garageStart": 5,
+      "garageShareOfDrivers": 0.4,
+      "carShareOfDriver": 0.3,
+      "flagShare": 0.15,
+      "nationalBaseRate": 2e-5,
+      "hostMultiplier": 20
+    },
+    "contracts": {
+      "salaryScale": 40,
+      "goldMultiplier": 1.8,
+      "releaseFeeShare": 0.5
+    },
+    "lineups": {
+      "firstRefreshMinYears": 3,
+      "firstRefreshMaxYears": 6,
+      "intervalMinYears": 4,
+      "intervalMaxYears": 6,
+      "maxModels": 5,
+      "minModels": 2
+    },
+    "numberPool": 400,
+    "cars": {
+      "maxAgeYears": {
+        "starter": 25,
+        "mid": 20,
+        "premium": 12,
+        "elite": 15,
+        "hyper": 8,
+        "unique": 15
+      },
+      "roadKmPerYear": [6000, 14000],
+      "usageFactor": {
+        "starter": 1.2,
+        "mid": 1.0,
+        "premium": 0.5,
+        "elite": 0.3,
+        "hyper": 0.15,
+        "unique": 0.3
+      }
+    }
+  },
+  "wear": {
+    "roadPerKm": 0.0004,
+    "racePerKm": 0.004,
+    "tierFactor": {
+      "starter": 0.8,
+      "mid": 1.0,
+      "premium": 1.2,
+      "elite": 1.5,
+      "hyper": 2.0,
+      "unique": 1.0
+    },
+    "partFailureFrom": 85
+  }
+}

@@ -5,6 +5,8 @@ import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
+import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
+import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
 import { getServices } from './services';
 
@@ -24,6 +26,7 @@ interface CareerState {
   status: 'idle' | 'busy' | 'ready';
   schemaVersion: number | undefined;
   career: CareerRow | undefined;
+  world: WorldSummary | undefined;
   slotsInUse: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
@@ -43,7 +46,12 @@ function describeError(error: unknown): Notice {
 export const useCareerStore = create<CareerState>()((set, get) => {
   /** Refreshes the read-model from the open database. */
   const refresh = (db: Database) =>
-    set({ status: 'ready', schemaVersion: getSchemaVersion(db), career: readCareer(db) });
+    set({
+      status: 'ready',
+      schemaVersion: getSchemaVersion(db),
+      career: readCareer(db),
+      world: readWorldSummary(db),
+    });
 
   const run = async (action: () => Promise<Notice | undefined>) => {
     const before = get().status;
@@ -61,6 +69,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     status: 'idle',
     schemaVersion: undefined,
     career: undefined,
+    world: undefined,
     slotsInUse: 0,
     notice: undefined,
 
@@ -69,12 +78,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const SQL = await getServices().loadSql();
         openDb?.close();
         openDb = createNewDatabase(SQL);
+        const masterSeed = String(Date.now());
         createCareer(openDb, {
           mode: 'garage_owner',
-          masterSeed: String(Date.now()),
+          masterSeed,
           startYear: 2031,
           difficulty: 'standard',
         });
+        persistWorld(openDb, generateWorld(masterSeed));
         refresh(openDb);
         return undefined;
       }),
