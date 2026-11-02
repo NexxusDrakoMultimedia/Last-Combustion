@@ -22,6 +22,8 @@ export const simBalance = balanceJson.sim;
 export const juniorBalance = balanceJson.junior;
 export const finalBalance = balanceJson.final;
 export const populations = flagsJson.populations as Record<string, number>;
+/** Flags that no driver, car or garage may race under (see the GDD, "Flags"). */
+export const excludedFlags = new Set(flagsJson.excluded);
 
 export interface NameLists {
   nationalityWeights: Record<string, number>;

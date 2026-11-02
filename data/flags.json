@@ -15,5 +15,6 @@
     "CA": 40000000,
     "IE": 5300000,
     "NL": 17800000
-  }
+  },
+  "excluded": ["AQ", "ARAB", "ASEAN", "CEFTA", "EAC", "UN"]
 }
