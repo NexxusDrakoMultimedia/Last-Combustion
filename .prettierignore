@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+dist
+coverage
+data/courses/outlines.json
+LICENSE
+docs/GAME_DESIGN_DOCUMENT.md
+CHANGELOG.md

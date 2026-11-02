@@ -176,7 +176,7 @@ Every driver, car and garage races under a flag. Each of the three has its own f
 - **Timing screens and broadcast.** The flag appears beside the number and name in timing towers, results and broadcast graphics.
 - **Records.** The flag a driver, car or garage raced under is recorded for every entry, so history shows which flag took each win.
 - **Standings.** Drivers and garages also compete in national standings by flag (see "Standings"). Car flags have no standings.
-- **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed. 
+- **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed.
 - **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code (`flag-icons`), not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The chosen set is `lipis/flag-icons` (MIT licence). Checked against version 7.6.0 (4x3 set): it has art for all 249 ISO country codes, the extra flag emoji (Ascension, Tristan da Cunha, Clipperton, Diego Garcia, Canary Islands, European Union, United Nations) and England, Scotland and Wales. The only gap is Ceuta & Melilla (`EA`), which commonly shows the Spanish flag in emoji fonts, so it uses the `ES` art. The set also contains extra flags with no emoji (for example Kosovo, Catalonia and Northern Ireland), which stay out of the default flag picker and are available to mods. The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
 
 ## Standings
@@ -300,7 +300,7 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
   - They appear as senders of messages and in the headlines, and they never race.
   - **Fictional characters.** "Brian Drake" and "Joshua Drake" are not real people. They are based on and named after Pyra's real half-brothers; the surname Drake and everything about their in-game lives are invented. No real surnames or personal details about the real people are recorded in the project.
 - **Healesville HQ & Motoring Festival:** Healesville, Victoria is Pyra Drake's hometown and the global headquarters of Last Combustion. Every year on **November 11th**, Healesville hosts the Last Combustion Closing Ceremony and Awards Gala, kicking off the week-long **Drake Motorsports International Motoring Festival**.
-- **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. 
+- **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs.
   - **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
   - **Hard.** The ghost faithfully recreates the original driver's qualifying run.
 
@@ -600,7 +600,7 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 
 ---
 
-# Development Specification
+## Development Specification
 
 Everything below turns the design above into buildable detail. Numbers marked **(tunable)** are starting values to be balanced in playtesting; they live in data files, not code.
 
@@ -642,7 +642,7 @@ The full design is large, so development is staged. Each milestone must be playa
 
 **Suggested folder layout**
 
-```
+```text
 /data          courses.json, manufacturers.json, car_models.json, parts.json, garages.json, drivers.json, balance.json, names.json
 /locales       en.json (all player-facing text)
 /mods          installed mods (one folder each)
@@ -745,11 +745,11 @@ Each course has a saved outline that drives the track map, the live map and the 
 
 ## Data model
 
-Core tables (SQLite). Every table has an integer primary key `id`; foreign keys are named `<table>_id`. Dates are ISO strings in game time.
+Core tables (SQLite). The schema version is stored in SQLite's `user_version`, not in a table. Every table has an integer primary key `id`; foreign keys are named `<table>_id`. Dates are ISO strings in game time.
 
 | Table | Key fields |
 | --- | --- |
-| `career` | mode, character_id, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool), schema_version |
+| `career` | mode, character_id, master_seed, start_year, game_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool) |
 | `character` | career_id, kind (`owner` / `driver` / `owner_driver`), name, gender, birth_date, hometown_place_id, residence_place_id, personal_cash, start_date, end_date, end_reason (`death` / `retired` / `became_owner` / `founded_garage`), predecessor_id |
 | `series_official` | name, role (`technical` / `interpersonal` / `chair`), residence_place_id |
 | `career_mod` | career_id, mod_id, version, load_order |

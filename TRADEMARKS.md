@@ -6,7 +6,7 @@
 
 The following are trademarks and intellectual property of **Nexxus Drako Multimedia**:
 
-- the game name **Last Combustion** (and the full series names, such as *The Last Combustion of the Petrol Engine World Motorsports Championship*)
+- the game name **Last Combustion** (and the full series names, such as _The Last Combustion of the Petrol Engine World Motorsports Championship_)
 - the Last Combustion **logo**
 - the characters **Pyra Drake**, **Brian Drake** and **Joshua Drake** (Brian and Joshua are fictional characters)
 

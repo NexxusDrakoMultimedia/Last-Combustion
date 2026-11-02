@@ -1,0 +1,19 @@
+{
+  "app.title": "Last Combustion",
+  "app.tagline": "The last petrol-powered racing series, on closed Australian roads.",
+  "app.status": "Foundations build: no gameplay yet.",
+  "debug.heading": "Foundations check",
+  "debug.createCareer": "Create test career",
+  "debug.saveSlot1": "Save to slot 1",
+  "debug.loadSlot1": "Load from slot 1",
+  "debug.exportFile": "Export .lcsave file",
+  "debug.schema": "Database schema version: {version}",
+  "debug.career": "{mode} career, seed {seed}, date {date}",
+  "debug.slots": "{count, plural, =0 {No save slots in use} one {# save slot in use} other {# save slots in use}}",
+  "debug.saved": "Saved to slot 1.",
+  "debug.loaded": "Loaded from slot 1.",
+  "debug.error": "Something went wrong: {message}",
+  "mode.garage_owner": "Garage owner",
+  "mode.owner_driver": "Owner-driver",
+  "mode.driver_manager": "Driver manager"
+}

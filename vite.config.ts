@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  base: process.env.BASE_URL ?? '/',
+  plugins: [react(), tailwindcss()],
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.{ts,tsx}'],
+    coverage: { provider: 'v8', include: ['src/sim/**', 'src/db/**', 'src/i18n/**'] },
+  },
+});
