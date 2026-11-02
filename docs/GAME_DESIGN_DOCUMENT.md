@@ -381,8 +381,286 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 - **Leaderboards** are built from these records: season standings, the Garage Championship, course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
 - **Car histories follow the car.** A car sold to another garage keeps its left-rear decals and its full record, so a famous chassis carries its story with it. The driver's right-rear decals go with the driver.
 
-## Open questions
+## Super Series points from 2036 (proposed)
 
-- [ ] Measured lap lengths for each proposed route.
-- [ ] Number of AI garages, and how new garages and drivers enter each year.
-- [ ] Multiplayer or single-player only.
+The 2036 final has 20 cars, so the points table needs extending. Positions 1–15 keep their original values, so records stay comparable across eras.
+
+| Pos | Pts | Pos | Pts | Pos | Pts |
+| --- | --- | --- | --- | --- | --- |
+| 16 | 2.0 | 22 | 1.0 | 27 | 0.5 |
+| 17 | 1.8 | 23 | 0.9 | 28 | 0.4 |
+| 18 | 1.6 | 24 | 0.8 | 29 | 0.3 |
+| 19 | 1.4 | 25 | 0.7 | 30 | 0.2 |
+| 20 | 1.2 | 26 | 0.6 | 31 | 0.1 |
+| 21 | 1.1 |  |  |  |  |
+
+Positions 1–20 score from the final and 21–31 from the prelims. Total available per round: 105.1 points. The gold border rule is unchanged: reaching the final (now top 20) earns it.
+
+---
+
+# Development Specification
+
+Everything below turns the design above into buildable detail. Numbers marked **(tunable)** are starting values to be balanced in playtesting; they live in data files, not code.
+
+## Scope and build order
+
+The full design is large, so development is staged. Each milestone must be playable end to end before the next begins.
+
+| Milestone | Goal | Includes | Excludes |
+| --- | --- | --- | --- |
+| M0 Foundations | Project runs, saves and loads | Vite + React + TS + Tailwind + Zustand scaffold, SQL.js database, migrations, seeded RNG, save/load, CI (lint, typecheck, unit tests) | Any gameplay |
+| M1 World generation | A believable 2031 field | Names, 96 garages, 313 drivers, 313 cars, numbers, contracts, calendar | UI beyond a debug viewer |
+| M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, classification, points | Final race, economy |
+| M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, incidents, overtakes, player calls, prize money, timing screens | Live map polish, drones |
+| M4 Garage and economy | The management loop | Car purchase, upgrades, legality, sponsors, drivers' contracts, finances, repairs | Rivalries, media |
+| M5 Full season (**vertical slice**) | Seven rounds, off-season, rollover to 2032 | All 7 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
+| M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
+| M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
+| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, achievements | |
+
+**MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race seven rounds, finish the season, and begin 2032 with all records saved.
+
+## Technical architecture
+
+**Layers**
+
+- **Data layer.** SQLite (SQL.js) is the single source of truth. The database file is persisted to IndexedDB. Content (courses, parts, car models, name pools) ships as versioned JSON in `/data` and is loaded into the database when a new career starts.
+- **Simulation layer.** Pure TypeScript with no React or browser imports, so it can be unit-tested in Node and run inside a Web Worker. Entry points: `generateWorld(seed)`, `advanceDay(state)`, `runPrelimDay(state)`, `runFinal(state, calls)`.
+- **State layer.** Zustand stores hold UI state and a cached read-model of the current career. Stores never own game truth; they query the database through a repository module and refresh after each simulated step.
+- **UI layer.** React + Tailwind. Screens are routed (see "Screens and flow").
+
+**Rules**
+
+- **Deterministic simulation.** Every career has a master seed. Each random draw uses a named stream (`prelim:2031:R3:day4`, `final:2031:R3`, `worldgen`) derived from the master seed, so a save replays identically and bugs can be reproduced.
+- **Worker execution.** Prelim days and finals run in a Web Worker and post progress messages, so the UI never freezes while simulating 300+ entries.
+- **Save slots.** Three manual slots plus an autosave taken at the start of each round week, before the final, and at season end. Saves carry a schema version; migrations run on load.
+- **Data-driven balance.** All coefficients in the formulas below live in `/data/balance.json`.
+- **Testing.** Unit tests for the Equalizer, points, tiebreaks, number clashes, border rules and formulas. Property tests that a generated world is always valid (unique numbers, no driver in two garages, every entry has a legal car). A headless "sim 10 seasons" script reports balance statistics.
+
+**Suggested folder layout**
+
+```
+/data          courses.json, car_models.json, parts.json, balance.json, names.json
+/src/sim       rng.ts, worldgen.ts, prelim.ts, final.ts, tyres.ts, incidents.ts, flags.ts
+/src/db        schema.sql, migrations/, repo/ (one module per table group)
+/src/state     career.store.ts, ui.store.ts
+/src/ui        screens/, components/
+/src/workers   sim.worker.ts
+/tests         sim/, db/
+```
+
+## Data model
+
+Core tables (SQLite). Every table has an integer primary key `id`; foreign keys are named `<table>_id`. Dates are ISO strings in game time.
+
+| Table | Key fields |
+| --- | --- |
+| `career` | mode, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, schema_version |
+| `season` | year, era (`original` / `super`), final_size, status |
+| `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
+| `course` | name, state, shape (`loop` / `out_and_back`), lap_km, final_laps, road_type, altitude_m, night (bool) |
+| `sector` | course_id, order, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
+| `garage` | name, home_state, prestige, cash, founded_year, is_player, ai_profile |
+| `driver` | name, birth_year, nationality, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
+| `driver_road_affinity` | driver_id, road_type, rating |
+| `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
+| `car_model` | manufacturer_id, name, base_kerb_kg, base_ps, drivetrain, price_new, legality_base |
+| `car` | car_model_id, chassis_no, garage_id, odometer_km, condition, kerb_kg_current |
+| `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
+| `car_part` | car_id, part_id, installed_date, wear |
+| `entry` | season_id, garage_id, driver_id, car_id, race_number, series (`main` / `junior`), fee_paid |
+| `result` | round_id, entry_id, prelim_time_ms, prelim_pos, final_pos, final_time_ms, points, prize, dnf_reason, tyre_pct_at_flag |
+| `event_log` | round_id, timestamp, type (flag, crash, penalty, overtake, rivalry), payload JSON |
+| `sponsor`, `sponsor_deal` | tier, min_prestige, base_fee, bonuses; garage_id, years, targets |
+| `supplier`, `supplier_deal` | brand, categories, discount, contingency; garage_id, car_id |
+| `trophy` | owner_type (`driver` / `car`), owner_id, kind (`win` / `title`), series, round_id / season_id |
+| `ledger` | garage_id, date, category, amount, note |
+| `headline` | date, text, driver_id / garage_id (nullable) |
+
+Records described in "Records and history" are all derivable from these tables; nothing is deleted when a driver retires or a garage folds.
+
+## Starting conditions (proposed, tunable)
+
+| Item | Garage owner | Owner-driver | Driver manager |
+| --- | --- | --- | --- |
+| Cash | $250,000 | $200,000 | $60,000 |
+| Garage | 1 entry-capable garage, 2 mechanics | As garage owner | None; contracted to a garage |
+| Car | One cheap road car (player picks from 3 starters) | Same | Same, owned personally |
+| Driver | One unknown driver (player picks from 5 offered) | The player's own driver, built at creation | The player's driver |
+| Prestige | 1 (of 100) | 1 | n/a |
+| Race number | Open number ≥ 41, random if not chosen | Same | Same |
+| Sponsor | None; first small offer in week 1 | Same | None |
+
+**Driver creation (Owner-driver and Driver manager).** Spend 100 points across Pace, Consistency, Racecraft, Tyre management, Composure and Wet skill (min 20, max 60 each at start). Pick a home road type (+10 affinity) and an age between 18 and 30. Potential is hidden.
+
+**Difficulty presets** change only starting cash, sponsor generosity, repair costs and AI aggression: Relaxed (+50% cash), Standard, Hard (-30% cash, +25% costs).
+
+## Cost baseline (proposed, tunable, AUD)
+
+| Item | Cost |
+| --- | --- |
+| Entry fee per entry per round | $5,000 (top-31 finishers get free tyres, but still pay the fee) |
+| Racing tyre set (non-top-31) | $1,800 per set; practice sets $900 |
+| Starter road car, used | $12,000–$35,000 |
+| Mid-range road car, new | $45,000–$110,000 |
+| High-end road car, new | $140,000–$320,000 |
+| Part price range | $400 (filter, pads) to $60,000 (turbo kit / engine build) |
+| Mechanic wage | $1,200 per week each |
+| Driver salary, unknown | $0–$20,000 per season (often paid in sponsor product) |
+| Driver salary, gold border | $60,000–$400,000 per season; champions higher |
+| Small title sponsor | $30,000–$80,000 per season |
+| Delivery driving | About $250 per day on non-event days |
+| Top-31 discount on parts | 30% |
+
+A one-car, low-budget garage should be able to survive on delivery income and a small sponsor, break even at about 15th–31st finishes, and only profit meaningfully from finals. **Bankruptcy:** cash below -$50,000 for 3 consecutive weeks ends the garage; in Garage owner mode the career ends with a retrospective screen, in Driver manager mode the driver is released and may sign elsewhere.
+
+## Formulas (proposed, tunable)
+
+**Car ratings** (each normalised to 0–1 against the series' range of cars):
+
+- **P (power)** from power-to-weight, `PS / kerb_kg`, with a reduction at altitude: `P × (1 − 0.011 × altitude_m / 100)` (Hotham at about 1,750 m loses roughly 19% before the cars' own turbo compensation).
+- **G (grip)** from fitted tyre width as a share of the Equalizer limit, plus suspension and aero parts.
+- **B (braking/handling)** from brakes, suspension tune and weight.
+- **T (traction)** from drivetrain and tyre width.
+
+**Sector fit.** Each sector has weights that sum to 1, derived from its data: long straights raise the weight of P, high corner density raises G and B, big elevation change raises P and T, narrow width raises B. `Fit_s = wP·P + wG·G + wB·B + wT·T`.
+
+**Sector time.**
+
+```latex
+t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,(D_s - 0.5)\bigr) + \Delta_{temp} + \varepsilon
+```
+
+- `t_ref,s` is the sector's reference time from course data.
+- `D_s` is the driver's sector rating: a blend of Pace, the matching road-affinity, and Composure on the main feed. Initial `k_c = 0.10`, `k_d = 0.10`, so the best driver in a mediocre car can beat a mediocre driver in the best car. This is the "driver over horsepower" pillar and the sim-10-seasons script must check it holds.
+- `Δ_temp` is a track temperature roll penalty/bonus, within ±0.4% of sector time.
+- `ε` is random variance with standard deviation `σ = 0.6% × (1 − Consistency/150)` of sector time.
+
+**Tyre life.** Starts at 100%. Per sector: `loss = base_loss × (1 + 0.4·aggression + 0.3·wheelspin_factor + 0.2·slide_factor − 0.5·(TyreMgmt/100))`. Base loss is set so a neutral driver reaches about 8% at the final's end. Grip multiplier on `Fit` is `1 − 0.004 × max(0, 20 − tyre_pct)` below 20%.
+
+**Incident chance per sector.** `p = p_base × (1 + aggression) × wet_factor × wear_factor × (1 − Composure/200)`. Outcomes: mistake (lose 1–4 s), spin (lose 10–25 s), crash (retire, damage, drone stop signal for followers). Initial `p_base` is 0.0004 per sector per entry in prelims.
+
+**Overtaking (final).** An attacker within 0.5 s overtakes at an overtake spot if `(attacker_sector_speed_advantage + racecraft_diff/100) > threshold`, where the threshold is raised by narrow width and lowered by drone-clear sight lines. Defend calls raise the defender's racecraft by 10 for that sector but cost extra tyre life.
+
+**AI prelim times.** For the ~300 AI entries the same sector formula is evaluated once per sector with no per-entry sim state, then summed. This keeps a prelim day cheap while staying consistent with the final.
+
+**Scrutineering.** After every run: kerb weight and tyre width checked against the Equalizer; road-legality score must be ≥ 0. Failure = disqualification from that run's result; the entry keeps its previous prelim time only if it has one.
+
+**Weather.** Each day for a round is rolled from a course climate profile: `dry_clear`, `overcast`, `wet`. Only `dry_clear` allows prelim runs. Rounds are guaranteed to finish: if more than 14 days pass since the planned prelim start, the series declares remaining runs "dry-enough" on the next overcast day.
+
+**Wear and reliability.** Every part has `wear` from 0 to 100 and a reliability curve. Wear rises with race km and road km. A part above 85 wear has a rising failure chance each sector; failure during a run causes a retirement.
+
+## Fictional manufacturers and starter cars
+
+Manufacturers are fictional with nationalities as flavour. Max tyre width uses the Equalizer (`kg / 5 + 40`).
+
+| Manufacturer | Home | Character |
+| --- | --- | --- |
+| Homura | Japan | Light sports cars, rotary specialist |
+| Tsurugi | Japan | Turbo AWD coupes, tuner favourites |
+| Kestrel | UK | Light, agile, low power |
+| Brandt | Germany | Precise, heavier, strong brakes |
+| Aurelian | Italy | Small turbo hatches, high revs, fragile |
+| Dunmore | USA | Big V8 muscle |
+| Redback | Australia | Utes and V8 sedans, cheap and tough |
+| Vesper | Sweden | Long-distance GTs, balanced |
+
+**Starter and benchmark cars (proposed)**
+
+| Model | Kerb kg | Max tyre | PS | Price (used/new) | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Kestrel Swift 1.6 | 940 | 228 mm | 140 | $12k used | Light, slow in a straight line; a Starter |
+| Homura Corsa 1.8 | 1,020 | 244 mm | 170 | $18k used | Starter; forgiving |
+| Aurelian Lupa 1.4T | 1,050 | 250 mm | 190 | $22k used | Starter; fast, needs servicing |
+| Redback Ranger | 1,100 | 260 mm | 200 | $28k used | Cheap and tough |
+| Homura Spirit R-7 | 1,150 | 270 mm | 280 | not for sale | Pyra Drake's #313 benchmark; rotary |
+| Tsurugi S2 | 1,180 | 276 mm | 220 | $48k new | Turbo AWD coupe |
+| Vesper GT | 1,350 | 310 mm | 400 | $190k new | Balanced all-rounder |
+| Brandt 330 | 1,540 | 348 mm | 340 | $95k new | Strong brakes |
+| Dunmore Stallion V8 | 1,650 | 370 mm | 450 | $140k new | Straight-line king |
+| Redback Ute SS | 1,780 | 396 mm | 430 | $70k new | Heavy, cheap, wide-tyred |
+
+The starting field's 313 cars are drawn from about 40 models (5 per manufacturer) weighted toward cheap cars.
+
+## World generation and AI
+
+**Season 1 world (96 garages, 313 drivers).**
+
+- **Garage sizes.** About 55 single-entry garages, 25 with 2 entries, 10 with 3, 4 with 4, and 2 with 5. Entries total 313 including the player's.
+- **Prestige.** Set from entry count and any gold-bordered drivers (in Season 1, about 20 seeded drivers start gold-bordered as past finalists).
+- **Names.** Drivers and garages are generated from name pools weighted toward Australian and a broad international mix. Pools are in `names.json` and must avoid real people and trademarks.
+- **Skill distribution.** Driver Pace is drawn from a normal distribution (mean 45, SD 12, clamped 20–85); the ~20 seeded gold-bordered drivers are 60–85. Potential is Pace plus 0–25.
+- **Number assignment.** Season 1 numbers 1–40 are assigned to the 40 seeded top drivers by a pre-season ranking; the rest take numbers from 41 up. #313 is reserved.
+
+**Yearly rollover.**
+
+1. Retirement: drivers over 40 retire with rising probability each year; any driver may also retire after repeated poor results or serious injury.
+2. Newcomers: 20–45 new drivers enter each year (more if recent seasons were popular); fame and prestige of the series raise the count. New garages form at 3–10 per year; garages with negative cash for 2 seasons fold.
+3. Contracts: expiring drivers become free agents and sign with garages in descending order of reputation fit and budget.
+4. Numbers are re-chosen (see race numbers).
+
+**AI garage profiles.** `Cautious` (few entries, low spend), `Growth` (adds entries when cash allows), `Star-chaser` (bids for flagged and gold-bordered drivers), `Local` (one entry, loyal to a home-state driver). Each profile defines how it buys parts, signs drivers and calls team orders.
+
+**Player impact.** AI garages respond to the player's success: a rising prestige draws offers and raises rival interest in the player's drivers.
+
+## Screens and flow
+
+| Screen | Purpose |
+| --- | --- |
+| Main menu / career setup | New career (mode, difficulty, seed), load, settings |
+| Garage hub | Cars, drivers, finances and upcoming round at a glance |
+| Cars and workshop | Buy/sell cars, fit parts, set course setups, see legality and Equalizer limit live |
+| Drivers and contracts | Roster, free agents, scouting with attention-flag leads, negotiation |
+| Sponsors and suppliers | Offers, active deals, door-logo layout |
+| Round hub | Calendar for the 15+ days, weather, running order, practice controls |
+| Practice and prelim view | Timing screen, live map, ghost choice, per-entry results |
+| Final race view | Timing tower, sector splits, tyre life, player calls, drone events |
+| Results and records | Standings, Garage Championship, history browser |
+| Season review | Awards, finances, headlines, off-season tasks |
+| Settings | Sim speed, text size, accessibility, audio |
+
+**Daily loop.** The game advances one day at a time. Each day shows events needing attention (practice, repairs, offers, a prelim run). Skipping to the next event is always one click.
+
+**Race calls UI.** Calls are presented as a short list per driver per stint (Push / Balanced / Conserve, Attack / Defend, team orders). The sim pauses at set triggers (flag, crash, drone stop) and on the player's request.
+
+**Off-season (mid-October to late February).** Fixed order: awards and closing ceremony (Nov 11), contract window, number applications, driver development and retirements, sponsor and supplier negotiations, car building and testing, entry registration (garage submits entries by 28 February), then the calendar rolls to Round 1 on March 31.
+
+## Audio, art and presentation
+
+- **Style.** Clean, data-rich "broadcast control room" interface. Flat colour with high contrast, so livery, number boxes and borders stay readable at small sizes.
+- **Livery rendering.** A single layered SVG car template per body shape with slots for garage name, door logos, rear-quarter decals, number and border; no per-car art is needed.
+- **Course map.** Each course has a vector path with sector markers and overtaking spots, used for the live map and the round hub.
+- **Audio.** Engine notes grouped by engine type (rotary, turbo four, V8, flat/6), crowd-free ambience, drone whine, radio chatter and commentary stingers. Sound can be reduced or muted independently.
+- **Accessibility.** Colour-blind-safe palette for borders and flags, text scaling, no reliance on colour alone, keyboard navigation for all management screens.
+
+## Glossary
+
+| Term | Meaning |
+| --- | --- |
+| Equalizer | The tyre-width rule linked to kerb weight |
+| Entry | One car plus one driver, in one series |
+| Prelim | The one-lap time attack held over 7 days |
+| Vanguard | The 15 (later 20) finalists |
+| Gold / silver border | Marks for reaching a main final / earning Junior points |
+| Attention flag | AI-flagged exceptional pace |
+| Top 31 | Everyone who scores championship points |
+| Door suppliers | Suppliers whose logos appear on a car's doors |
+| Ghost record | The projected ghost car in prelim sessions |
+
+## Decisions and open questions
+
+**Decided**
+
+- **Single-player only.** No multiplayer (see Technical Stack).
+- **Season 1 field.** 96 garages and 313 drivers; later growth follows "World generation and AI".
+- **Fixed round count.** Seven rounds each season, including after 2036.
+
+**Open**
+
+- [ ] Measured lap lengths for each proposed route (needed before M2 course data).
+- [ ] Final tuning of the cost baseline and formula coefficients (via the 10-season headless sim).
+- [ ] Licensing/legal review of real road names and place names used for courses.
+- [ ] Whether Junior Series entries share garages with the main series, or form separate Junior garages.
+- [ ] Whether the Owner-driver may run two cars (one driven by the player) from the start.
+- [ ] Localisation: English only at launch, or text externalised for later translation (recommended: externalise from M0).
+- [ ] Steam features: achievements, cloud saves, and workshop-style data mods.
