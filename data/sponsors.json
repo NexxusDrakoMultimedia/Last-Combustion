@@ -1,0 +1,100 @@
+{
+  "sponsors": [
+    {
+      "id": "wattle-hardware",
+      "name": "Wattle Hardware Co.",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 1,
+      "strength": 30
+    },
+    {
+      "id": "kookaburra-cafes",
+      "name": "Kookaburra Cafés",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 1,
+      "strength": 30
+    },
+    {
+      "id": "outback-diesel",
+      "name": "Outback Diesel Services",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 5,
+      "strength": 35
+    },
+    {
+      "id": "murray-river-insurance",
+      "name": "Murray River Insurance",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 20,
+      "strength": 50
+    },
+    {
+      "id": "southern-cross-telecom",
+      "name": "Southern Cross Telecom",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 25,
+      "strength": 55
+    },
+    {
+      "id": "jarrah-timber",
+      "name": "Jarrah Timber & Building",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 30,
+      "strength": 50
+    },
+    {
+      "id": "federation-bank",
+      "name": "Federation Bank",
+      "homeCountry": "AU",
+      "tier": "national",
+      "minPrestige": 40,
+      "strength": 70
+    },
+    {
+      "id": "boomerang-airways",
+      "name": "Boomerang Airways",
+      "homeCountry": "AU",
+      "tier": "national",
+      "minPrestige": 50,
+      "strength": 75
+    },
+    {
+      "id": "eucalypt-energy",
+      "name": "Eucalypt Energy",
+      "homeCountry": "AU",
+      "tier": "national",
+      "minPrestige": 55,
+      "strength": 70
+    },
+    {
+      "id": "meridian-logistics",
+      "name": "Meridian Global Logistics",
+      "homeCountry": "SG",
+      "tier": "global",
+      "minPrestige": 65,
+      "strength": 90
+    },
+    {
+      "id": "aurora-beverages",
+      "name": "Aurora Beverages",
+      "homeCountry": "NZ",
+      "tier": "global",
+      "minPrestige": 70,
+      "strength": 90
+    },
+    {
+      "id": "helix-mobile",
+      "name": "Helix Mobile Networks",
+      "homeCountry": "KR",
+      "tier": "global",
+      "minPrestige": 75,
+      "strength": 95
+    }
+  ]
+}

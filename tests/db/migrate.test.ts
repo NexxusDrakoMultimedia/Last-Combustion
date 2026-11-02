@@ -8,11 +8,42 @@ import {
   migrate,
   type Migration,
 } from '../../src/db/migrate';
+import { migrations } from '../../src/db/migrations';
 import { loadSql, openDatabase, type SqlJsStatic } from '../../src/db/sql';
 
 let SQL: SqlJsStatic;
 beforeAll(async () => {
   SQL = await loadSql();
+});
+
+describe('rebuilding the negotiation tables (schema version 11)', () => {
+  it('keeps existing negotiations and offers, and allows the new kind', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 10));
+    expect(getSchemaVersion(db)).toBe(10);
+    db.exec(`INSERT INTO negotiation (kind, window, party_a_type, party_a_id, party_b_type, party_b_id, patience_left, fair_value, walk_away)
+             VALUES ('driver_contract', '2031', 'garage', 1, 'driver', 2, 3, 50000, 52000)`);
+    db.exec(`INSERT INTO offer (negotiation_id, round_no, from_side, terms, value, outcome)
+             VALUES (1, 1, 'a', '{}', 40000, 'countered')`);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(latestSchemaVersion());
+    expect(db.exec('SELECT kind, walk_away FROM negotiation')[0]!.values).toEqual([
+      ['driver_contract', 52000],
+    ]);
+    expect(db.exec('SELECT negotiation_id, value FROM offer')[0]!.values).toEqual([[1, 40000]]);
+    db.exec(`INSERT INTO negotiation (kind, window, party_a_type, party_a_id, party_b_type, party_b_id, patience_left, fair_value, walk_away)
+             VALUES ('sponsor_deal', '2031', 'garage', 1, 'sponsor', 1, 3, 30000, 30000)`);
+    expect(db.exec('SELECT COUNT(*) FROM negotiation')[0]!.values[0]![0]).toBe(2);
+    expect(() =>
+      db.exec(`INSERT INTO negotiation (kind, window, party_a_type, party_a_id, party_b_type, party_b_id, patience_left, fair_value, walk_away)
+               VALUES ('nonsense', '2031', 'garage', 1, 'x', 1, 3, 1, 1)`),
+    ).toThrow();
+    const offerSql = String(
+      db.exec("SELECT sql FROM sqlite_master WHERE name = 'offer'")[0]!.values[0]![0],
+    );
+    expect(offerSql).toMatch(/REFERENCES "?negotiation"?\s*\(/);
+    expect(offerSql).not.toContain('negotiation_v2');
+  });
 });
 
 describe('migrate', () => {
@@ -33,6 +64,7 @@ describe('migrate', () => {
       'auctions',
       'negotiation',
       'preferred_number',
+      'sponsors',
     ]);
   });
 
