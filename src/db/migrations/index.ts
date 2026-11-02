@@ -5,6 +5,7 @@ import { migration0001 } from './0001_initial';
 import { migration0002 } from './0002_world';
 import { migration0003 } from './0003_prelims';
 import { migration0004 } from './0004_final';
+import { migration0005 } from './0005_economy';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -12,4 +13,5 @@ export const migrations: readonly Migration[] = [
   migration0002,
   migration0003,
   migration0004,
+  migration0005,
 ];
