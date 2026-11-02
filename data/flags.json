@@ -78,5 +78,17 @@
       "short": "Netherlands",
       "long": "Kingdom of the Netherlands"
     }
-  }
+  },
+  "renames": [
+    {
+      "flag": "AU",
+      "year": 2032,
+      "oneIn": 31031996,
+      "stream": "world:easter:vyktory",
+      "short": "Vyktory",
+      "long": "Commonwealth of Vyktory",
+      "art": "assets/flags/vyktory.svg",
+      "achievement": "vyktory"
+    }
+  ]
 }
