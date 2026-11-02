@@ -136,15 +136,33 @@ The win is worth a full point more than 2nd. From 2nd to 17th, each place drops 
 
 Every driver, car and garage races under a flag. Each of the three has its own flag, so a car can carry a different flag from its driver or its garage.
 
-- **Any nation with a flag emoji.** A flag is any country or territory that has a Unicode flag emoji, stored as its two-letter ISO 3166-1 code (for example `AU`, `JP`, `SE`).
+- **Any nation with a flag emoji.** A flag is any country or territory that has a Unicode flag emoji, stored as its two-letter ISO 3166-1 code (for example `AU`, `JP`, `SE`). The whole set is available from day one.
 - **Defaults.** A new driver's flag matches their nationality, a new garage's matches its home country, and a car's matches its manufacturer's home country. The player may change any of these when creating or registering an entry.
 - **Changes.** A flag can be changed in the off-season at entry registration. Each change is logged in the record, and a driver or garage that switches flags loses some fame (similar to a number change).
 - **Livery.** Flags sit with the panel they belong to: the garage flag beside the garage name on the front quarter panels, the driver's flag beside their trophies on the right rear (driver's side), and the car's flag beside its trophies on the left rear (passenger's side).
 - **Timing screens and broadcast.** The flag appears beside the number and name in timing towers, results and broadcast graphics.
 - **Records.** The flag a driver, car or garage raced under is recorded for every entry, so history shows which flag took each win.
-- **Flag standings (optional, proposed).** A season table of points by driver flag and by garage flag, with a flag-fame bonus for sponsors. It does not affect the championships.
-- **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed. Real-world sensitivity is covered in the legal review (see open questions).
-- **Implementation.** Flag emoji do not render on Windows, so the game uses an SVG flag set keyed by ISO code (for example the open-source `flag-icons` package, license to be checked) instead of emoji text. The emoji is only used in text exports.
+- **Standings.** Drivers and garages also compete in national standings by flag (see "Standings"). Car flags have no standings.
+- **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed. 
+- **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code, not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
+
+## Standings
+
+Every series keeps five championship tables, all calculated from the same round results. Each series (Super Series, and from 2036 Junior) has its own set.
+
+| Table | Who competes | How points count |
+| --- | --- | --- |
+| Driver Championship | Drivers | Each driver's own points. Decides the champion |
+| Garage Championship | Garages | Each garage's best two results per round |
+| Manufacturer Championship | Car manufacturers | The best two results per round among cars of that make, across all garages |
+| Driver nations | Flags (drivers) | The best two driver results per round among drivers racing under that flag |
+| Garage nations | Flags (garages) | The best two garage results per round among garages racing under that flag |
+
+- **Flag used.** A driver or garage scores for the flag it raced under in that round, as recorded in its history.
+- **Ties.** Same tiebreak as the driver championship: most wins, then most 2nds, and so on, then best prelim time at the final round.
+- **Rewards.** The Driver and Garage Championships carry the prize money in this document. Manufacturer and nations titles carry prestige and fame only: the winning manufacturer's cars sell and sponsor better the next season, and a winning flag gives its drivers and garages a small fame boost. No extra prize money.
+- **Records.** Titles in every table go into the history and the Hall of Fame.
+- **Display.** One Standings screen with a tab for each table, a current-season view and an all-time view.
 
 ## Garages and Field Size
 
@@ -380,6 +398,11 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
 - **Prizes.** Junior uses the original 2031 prize money: finalists earn $1,000,000 down to $20,000 by position. The Junior champion, decided on points, wins $10,000,000. Pole and overtake bonuses of $10,000 each build up through the year and are paid at season end.
 - **Numbers.** Junior cars carry a "J" beside their door number, to set them apart from main-series cars.
 - **Mandatory Promotion:** Junior drivers who earn a silver border MUST complete their junior season, then MUST enter the Super Series the following season.
+- **Shared garages.** Junior and Super entries belong to the same garages. One garage record runs entries in both series, and Junior entries use the garage's own name, flag and livery with the Junior "J" marking.
+  - **Costs and mechanics.** Each Junior entry pays its own entry fee, tyres and mechanic time, drawn from the same budget and workforce.
+  - **Prestige.** Junior entries count toward a garage's prestige at half the weight of a Super Series entry.
+  - **Standings.** Each series keeps separate standings (see "Standings"); team orders apply only within a series.
+  - **Promotion.** A Junior driver who must move up can be kept by the same garage or released to another.
 
 ## Records and history
 
@@ -392,7 +415,7 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 | Garage | Founding date, entries each season, drivers signed and released, cars owned, Garage Championship results, prestige over time, sponsors and suppliers, prize money earned |
 | Car | Its own identity (chassis number), make and model, owners and garages, drivers, kerb weight and tyre width at each round, parts and suppliers fitted at each round, door logos, trophy decals, results, odometer including everyday road use |
 
-- **Leaderboards** are built from these records: season standings, the Garage Championship, course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
+- **Leaderboards** are built from these records: season standings (drivers, garages, manufacturers and nations), course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
 - **Car histories follow the car.** A car sold to another garage keeps its left-rear decals and its full record, so a famous chassis carries its story with it. The driver's right-rear decals go with the driver.
 
 ## Super Series points from 2036 (proposed)
@@ -422,7 +445,7 @@ The full design is large, so development is staged. Each milestone must be playa
 
 | Milestone | Goal | Includes | Excludes |
 | --- | --- | --- | --- |
-| M0 Foundations | Project runs, saves and loads | Vite + React + TS + Tailwind + Zustand scaffold, SQL.js database, migrations, seeded RNG, save/load, CI (lint, typecheck, unit tests) | Any gameplay |
+| M0 Foundations | Project runs, saves and loads | Vite + React + TS + Tailwind + Zustand scaffold, SQL.js database, migrations, seeded RNG, save/load, externalised text (`/locales/en.json`), CI (lint, typecheck, unit tests) | Any gameplay |
 | M1 World generation | A believable 2031 field | Names, 96 garages, 313 drivers, 313 cars, numbers, contracts, calendar | UI beyond a debug viewer |
 | M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, classification, points | Final race, economy |
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, incidents, overtakes, player calls, prize money, timing screens | Live map polish, drones |
@@ -430,7 +453,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | M5 Full season (**vertical slice**) | Seven rounds, off-season, rollover to 2032 | All 7 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
 | M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
-| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, achievements, mod loader and mod mapping format | |
+| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, achievements, mod loader and Steam Workshop integration, the hidden Founder's career | |
 
 **MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race seven rounds, finish the season, and begin 2032 with all records saved.
 
@@ -438,7 +461,7 @@ The full design is large, so development is staged. Each milestone must be playa
 
 **Layers**
 
-- **Data layer.** SQLite (SQL.js) is the single source of truth. The database file is persisted to IndexedDB. Content (courses, parts, car models, name pools) ships as versioned JSON in `/data` and is loaded into the database when a new career starts.
+- **Data layer.** SQLite (SQL.js) is the single source of truth. The database file is persisted to IndexedDB. Content (courses, parts, car models, manufacturers, starting garages and drivers, name pools) ships as versioned JSON in `/data` and is loaded into the database when a new career starts. Mods use the same files and schemas (see "Modding").
 - **Simulation layer.** Pure TypeScript with no React or browser imports, so it can be unit-tested in Node and run inside a Web Worker. Entry points: `generateWorld(seed)`, `advanceDay(state)`, `runPrelimDay(state)`, `runFinal(state, calls)`.
 - **State layer.** Zustand stores hold UI state and a cached read-model of the current career. Stores never own game truth; they query the database through a repository module and refresh after each simulated step.
 - **UI layer.** React + Tailwind. Screens are routed (see "Screens and flow").
@@ -448,13 +471,16 @@ The full design is large, so development is staged. Each milestone must be playa
 - **Deterministic simulation.** Every career has a master seed. Each random draw uses a named stream (`prelim:2031:R3:day4`, `final:2031:R3`, `worldgen`) derived from the master seed, so a save replays identically and bugs can be reproduced.
 - **Worker execution.** Prelim days and finals run in a Web Worker and post progress messages, so the UI never freezes while simulating 300+ entries.
 - **Save slots.** Three manual slots plus an autosave taken at the start of each round week, before the final, and at season end. Saves carry a schema version; migrations run on load.
+- **Externalised text.** The game is English-only, but no player-facing string is written in code. See "Localisation".
 - **Data-driven balance.** All coefficients in the formulas below live in `/data/balance.json`.
 - **Testing.** Unit tests for the Equalizer, points, tiebreaks, number clashes, border rules and formulas. Property tests that a generated world is always valid (unique numbers, no driver in two garages, every entry has a legal car). A headless "sim 10 seasons" script reports balance statistics.
 
 **Suggested folder layout**
 
 ```
-/data          courses.json, car_models.json, parts.json, balance.json, names.json
+/data          courses.json, manufacturers.json, car_models.json, parts.json, garages.json, drivers.json, balance.json, names.json
+/locales       en.json (all player-facing text)
+/mods          installed mods (one folder each)
 /src/sim       rng.ts, worldgen.ts, prelim.ts, final.ts, tyres.ts, incidents.ts, flags.ts
 /src/db        schema.sql, migrations/, repo/ (one module per table group)
 /src/state     career.store.ts, ui.store.ts
@@ -469,17 +495,19 @@ Core tables (SQLite). Every table has an integer primary key `id`; foreign keys 
 
 | Table | Key fields |
 | --- | --- |
-| `career` | mode, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, schema_version |
+| `career` | mode, master_seed, start_year, current_date, player_garage_id, player_driver_id (nullable), difficulty, founder_career (bool), schema_version |
+| `career_mod` | career_id, mod_id, version, load_order |
+| `standing_snapshot` | season_id, series, table (`driver` / `garage` / `manufacturer` / `driver_nation` / `garage_nation`), subject_id, after_round, points, position |
 | `season` | year, era (`original` / `super`), final_size, status |
 | `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
 | `course` | name, state, shape (`loop` / `out_and_back`), lap_km, final_laps, road_type, altitude_m, night (bool) |
 | `sector` | course_id, order, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
 | `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
-| `garage` | name, home_state, flag, prestige, cash, founded_year, is_player, ai_profile |
-| `driver` | name, birth_year, nationality, flag, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
+| `garage` | name, home_state, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
+| `driver` | name, gender, birth_date, nationality, flag, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
 | `driver_road_affinity` | driver_id, road_type, rating |
 | `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
-| `manufacturer` | name, home_country, character, prestige_multiplier |
+| `manufacturer` | stable_id, name, home_country, type, character, prestige_multiplier |
 | `car_model` | manufacturer_id, stable_id, name, base_kerb_kg, base_ps, drivetrain, price_new, legality_base |
 | `car` | car_model_id, chassis_no, flag, garage_id, odometer_km, condition, kerb_kg_current |
 | `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
@@ -500,16 +528,84 @@ Records described in "Records and history" are all derivable from these tables; 
 | Item | Garage owner | Owner-driver | Driver manager |
 | --- | --- | --- | --- |
 | Cash | $250,000 | $200,000 | $60,000 |
-| Garage | 1 entry-capable garage, 2 mechanics | As garage owner | None; contracted to a garage |
-| Car | One cheap road car (player picks from 3 starters) | Same | Same, owned personally |
+| Garage | 1 entry-capable garage, 2 mechanics | Just the player: no hired driver or staff, and the player does basic maintenance | None; contracted to a garage |
+| Car | One cheap road car (player picks from 3 starters) | Exactly one car, the player's own starter | Same, owned personally |
 | Driver | One unknown driver (player picks from 5 offered) | The player's own driver, built at creation | The player's driver |
 | Prestige | 1 (of 100) | 1 | n/a |
 | Race number | Open number ≥ 41, random if not chosen | Same | Same |
 | Sponsor | None; first small offer in week 1 | Same | None |
 
-**Driver creation (Owner-driver and Driver manager).** Spend 100 points across Pace, Consistency, Racecraft, Tyre management, Composure and Wet skill (min 20, max 60 each at start). Pick a home road type (+10 affinity) and an age between 18 and 30. Potential is hidden.
+**Driver creation (Owner-driver and Driver manager).** Spend 100 points across Pace, Consistency, Racecraft, Tyre management, Composure and Wet skill (min 20, max 60 each at start). Pick a gender, a date of birth that makes the driver 18 to 30 at the start, a home road type (+10 affinity), a name, flag and race number, and (for owners) the garage name, flag and two livery colours. Potential is hidden.
+
+**Owner-driver growth.** The Owner-driver starts solo with one car and one entry, which is the player. The first hired mechanic, second car and second driver are unlocked by earnings and prestige, in the same way as in Garage owner mode.
 
 **Difficulty presets** change only starting cash, sponsor generosity, repair costs and AI aggression: Relaxed (+50% cash), Standard, Hard (-30% cash, +25% costs).
+
+## Hidden Founder's career (Easter egg)
+
+A player can race as Pyra Drake by entering her exact details in Owner-driver setup. Nothing in the game, tutorial, store page or marketing mentions it.
+
+**Unlock details.** All of these must match at once:
+
+| Field | Value |
+| --- | --- |
+| Mode | Owner-driver |
+| Driver name | Pyra Drake |
+| Gender | Female |
+| Date of birth | 31 March 1996 |
+| Race number | 313 |
+| Garage name | Drake Motorsports |
+| Driver flag | Australia (`AU`) |
+| Garage flag | Australia (`AU`) |
+| Livery colours | Primary `#7f0000`, secondary `#ffd900` |
+
+**How it behaves**
+
+- **No hints.** The setup screen treats every field normally. Number 313 and an age of 35 are rejected as usual when the rest does not match, with the standard messages. The Founder's career starts only when the player confirms and every field matches. Name and garage match ignoring case and surrounding spaces.
+- **Overrides.** The #313 reservation and the 18–30 age rule are lifted for this career only. In this world #313 belongs to the player and the NPC founder is replaced, so there is never a second Pyra Drake.
+- **Starting package (proposed, tunable).** Elite preset stats (Pace 90, Consistency 85, Racecraft 85, Tyre management 85, Composure 85, Wet skill 80, all road affinities 80), high fame and reputation, and her Homura Spirit R-7 as the garage's one car. Cash, staff and sponsors are the normal Owner-driver start, so the rise from nothing is still earned.
+- **Timeline.** She is 35 in 2031, 40 in 2036 and ages and retires like any driver.
+- **Ghost record.** The founder's demo runs still exist as the #313 ghost option, so the player can race against her demo laps.
+- **Canon.** The save is marked `founder_career` and is outside the main story (in the standard world, Pyra Drake does not race main events). It is stored and displayed like any other save.
+
+## Modding (Steam Workshop)
+
+The game is data-driven, so mods are packages of the same JSON and SVG files the base game uses, with no scripting.
+
+**What can be modded**
+
+| Area | What a mod can change or add |
+| --- | --- |
+| Starting garages | Garage names, flags, colours, prestige, home states and which entries they start with |
+| Drivers | Names, flags, ages, stats, potential, numbers and starting contracts |
+| Name lists | Driver first and last names (by nationality) and garage name pools |
+| Manufacturers | New or replacement manufacturers, with home country, type and character |
+| Cars | New or replacement car models: kerb weight, power, drivetrain, price tier, body-shape SVG and livery slots |
+| Tracks | New or replacement courses: route, sectors, road type, climate profile, vector map path |
+
+**Package format.** A mod is a folder with `mod.json` (id, name, version, author, supported game versions, dependencies, load-order hint, list of the areas it touches), `data/` for the JSON files, `art/` for SVGs and `text/en.json` for any new text keys. The real-counterpart reference mapping is optional (`mod_mapping.json`, see "Fictional manufacturers and cars").
+
+**Rules**
+
+- **Stable IDs.** Everything a mod adds has a stable ID with the mod's prefix. Replacing a base item uses the base item's ID.
+- **Load order.** Mods load in order and the last to change an item wins. A conflict report names every override.
+- **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, 10 km minimum course length, sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
+- **Safety.** Data only: no code, and SVGs are sanitised to remove scripts and external references.
+- **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
+- **Calendar with mods.** A track mod can replace any of the seven rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km.
+- **Saves.** A career records the mods used, with their versions, and mods are fixed when the career is created. A missing or changed mod warns before loading. Modded careers are labelled, and their records are not mixed into default-world records.
+- **Steam Workshop.** Mods are published, subscribed to and updated through Steamworks in the desktop build. The web build installs mods from local files.
+
+## Localisation
+
+The game is English-only at launch, but all text is externalised so translation can be added later.
+
+- **No hard-coded strings.** All player-facing text lives in `/locales/en.json` under stable keys (for example `garage.hub.title`). A lint rule fails the build on hard-coded text in UI code.
+- **Messages, not concatenation.** Messages use ICU MessageFormat for plurals, gender and variables. Sentences are never built by joining fragments.
+- **Formats.** Dates, numbers, currency and units come from `Intl` formatters, never hand-built strings.
+- **Generated text.** Headlines and commentary are templates (key plus parameters), not finished sentences.
+- **Names are data.** Name lists and place names are data files, not translatable text.
+- **Mods.** A mod supplies its own text keys in `text/en.json`.
 
 ## Cost baseline (proposed, tunable, AUD)
 
@@ -687,8 +783,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Mapping file.** `mod_mapping.json` is optional and ships separately from the game data. It links each fictional model ID to its real counterpart (make, model, generation, years) so a mod can replace names, stats and visuals together. It is not included in the base game.
 - **Replacement, not addition.** A mod replaces a fictional manufacturer or model entirely, including its name, logo, body shape and stats. Save files keep working because the game stores the stable internal ID, not the display name.
 - **Livery and art.** Real-car mods supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
-- **Mod loader.** Mods are folders of the same JSON and SVG files the base game uses, loaded at start-up (see M8). A mod that changes a stat is flagged in the save so records stay comparable.
-- **Legal.** The base game never ships real marks. Responsibility for real-brand mods sits with the modder, and the community-hosting policy is a legal question below.
+- **Mod loader.** See "Modding (Steam Workshop)" for the package format, validation and load order.
+- **Legal.** The base game never ships real marks. Responsibility for real-brand mods sits with the modder, and the Workshop policy for them is an open question below.
 
 ## World generation and AI
 
@@ -723,7 +819,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 | Round hub | Calendar for the 15+ days, weather, running order, practice controls |
 | Practice and prelim view | Timing screen, live map, ghost choice, per-entry results |
 | Final race view | Timing tower, sector splits, tyre life, player calls, drone events |
-| Results and records | Standings, Garage Championship, history browser |
+| Standings and records | Tabs for the five standings tables, history browser |
 | Season review | Awards, finances, headlines, off-season tasks |
 | Settings | Sim speed, text size, accessibility, audio |
 
@@ -754,6 +850,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 | Top 31 | Everyone who scores championship points |
 | Door suppliers | Suppliers whose logos appear on a car's doors |
 | Ghost record | The projected ghost car in prelim sessions |
+| Nations standings | Points tables by the flag drivers or garages race under |
+| Founder's career | The hidden Owner-driver start as Pyra Drake |
 
 ## Decisions and open questions
 
@@ -762,15 +860,22 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Single-player only.** No multiplayer (see Technical Stack).
 - **Season 1 field.** 96 garages and 313 drivers; later growth follows "World generation and AI".
 - **Fixed round count.** Seven rounds each season, including after 2036.
+- **Standings.** Drivers, garages, manufacturers, driver nations and garage nations all ship (see "Standings").
+- **Flags.** Any flag with a flag emoji is allowed, provided its artwork has an open licence (OFL, CC BY-SA or similar).
+- **Road and place names.** Real roads, routes and place names are used as geography and need no licensing.
+- **Junior and Super share garages.** One garage runs entries in both series.
+- **Owner-driver starts solo.** One car, one entry, no staff.
+- **Language.** English only, with all text externalised for later translation.
+- **Modding.** Steam Workshop support for starting garages, drivers and stats, name lists, manufacturers, cars and tracks.
+- **Founder's career.** A hidden Easter egg start as Pyra Drake.
 
 **Open**
 
 - [ ] Measured lap lengths for each proposed route (needed before M2 course data).
 - [ ] Final tuning of the cost baseline and formula coefficients (via the 10-season headless sim).
-- [ ] Licensing/legal review of real road names and place names used for courses, and of the full flag list (disputed territories) and the flag-icon licence.
-- [ ] Whether the flag standings table ships at launch or later.
-- [ ] Legal review of the real-counterpart mapping and the policy for hosting real-brand mods (for example Steam Workshop).
-- [ ] Whether Junior Series entries share garages with the main series, or form separate Junior garages.
-- [ ] Whether the Owner-driver may run two cars (one driven by the player) from the start.
-- [ ] Localisation: English only at launch, or text externalised for later translation (recommended: externalise from M0).
-- [ ] Steam features: achievements, cloud saves, and workshop-style data mods.
+- [ ] Choose the flag artwork set and confirm its licence at M0 (candidates include Noto Color Emoji flags and `flag-icons`).
+- [ ] Whether the real "Targa" event name used for Round 7 is a protected event brand, as opposed to the road names, which are fine.
+- [ ] Legal review of the real-counterpart mapping, and the Workshop policy for real-brand car mods.
+- [ ] How Junior rounds fit the calendar: the same weekend as the Super Series, or on separate dates.
+- [ ] Whether mods may also change parts, sponsors, suppliers and balance data (not in the first mod scope).
+- [ ] Steam features beyond the Workshop: achievements and cloud saves (and whether Founder's career earns achievements).
