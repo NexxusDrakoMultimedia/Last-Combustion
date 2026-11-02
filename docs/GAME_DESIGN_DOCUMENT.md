@@ -21,7 +21,8 @@ The player runs a garage: buying and tuning cars, signing drivers, chasing spons
 
 - **Core Technologies:** Coded in TypeScript, Tailwind CSS, React, and Zustand.
 - **Database Storage:** Web application using SQLite (via WASM/SQL.js in-browser with persistent local database save states).
-- **Desktop/Steam Deployment:** Designed for web execution first, structured for an eventual Steam release using an Electron / Steamworks wrapper.
+- **Desktop Deployment:** Designed for web execution first, with Electron desktop builds for Windows, macOS and Linux. A Steam release is optional and undecided, because of the game's GPL licence (see "Licensing and distribution").
+- **Licence:** GNU GPL v3 or later.
 - **Development Model:** Fully single-player management game.
 
 ## Game modes
@@ -146,7 +147,7 @@ Every driver, car and garage races under a flag. Each of the three has its own f
 - **Records.** The flag a driver, car or garage raced under is recorded for every entry, so history shows which flag took each win.
 - **Standings.** Drivers and garages also compete in national standings by flag (see "Standings"). Car flags have no standings.
 - **Neutral and disputed flags.** All flags are treated equally in the game, with no political commentary. Territories with a flag emoji are allowed. 
-- **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code (`flag-icons`), not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The chosen set is `lipis/flag-icons` (MIT licence). The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
+- **Artwork and licensing.** Flag emoji do not render on Windows, so the game draws flags from a bundled image set keyed by ISO code (`flag-icons`), not from emoji text. Every flag asset must come from an open licence (for example SIL Open Font License, CC BY-SA, MIT or Apache 2.0). The chosen set is `lipis/flag-icons` (MIT licence). Checked against version 7.6.0 (4x3 set): it has art for all 249 ISO country codes, the extra flag emoji (Ascension, Tristan da Cunha, Clipperton, Diego Garcia, Canary Islands, European Union, United Nations) and England, Scotland and Wales. The only gap is Ceuta & Melilla (`EA`), which commonly shows the Spanish flag in emoji fonts, so it uses the `ES` art. The set also contains extra flags with no emoji (for example Kosovo, Catalonia and Northern Ireland), which stay out of the default flag picker and are available to mods. The licence of each asset set is recorded in `CREDITS.md` and shown in-game, and flag art is kept in its own folder so share-alike terms stay contained. The emoji is used only in text exports.
 
 ## Standings
 
@@ -370,6 +371,20 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 8. **Information.** Reservations are hidden. The player sees a range that narrows with relationship, scouting and past deals.
 9. **Fixed limits.** Negotiation cannot override the rules: the reserved #313, the Equalizer, door-space limits, the same-manufacturer car-switching rule and legality ratings.
 
+**Starting values (v1, tunable)**
+
+- **Fair value.** Each term has a fair value `F` in AUD per season.
+  - Driver salary: `F = 40 × (rating − 20)²`, where `rating` is the driver's overall stat (20–85), multiplied by 1.8 for a gold border and a further 1.3 for the reigning champion. This gives an unknown rating-30 driver $4,000, a rating-70 gold-border driver about $180,000 and a rating-85 champion about $395,000.
+  - Title sponsor fee: `F = 25,000 + 700 × garage prestige + 400 × best driver's fame` (fame 0–100). A new garage gets about $30,000 and an established one about $55,000 or more.
+  - Supplier: door discount `5% + 0.1% × garage prestige` (max 15%), and a contingency of $800 per championship point.
+  - Manufacturer: new-car discount `3% + 0.12% × garage prestige` (max 15%), plus factory support at higher prestige.
+  - Release fee: `0.5 × salary × years left on the contract`.
+- **Walk-away value.** A party that wants more (a driver, supplier, manufacturer) walks away below `F × m`. A party that pays (a sponsor) walks away above `F ÷ m`, where `m = 1 + L − 0.10 × (relationship ÷ 100) + 0.20 × rival interest`, and leverage `L` runs from -0.2 to +0.2 depending on whose results, fame and standing are stronger.
+- **Counters.** A party starts at 15% above its walk-away value and concedes to +7%, then +2%, across its three counters. An offer below 80% of walk-away value costs one extra patience, and one below 60% costs two.
+- **Patience.** 3 counters. +1 with a relationship of 50 or more, -1 at -50 or less (minimum 1).
+- **Relationship changes.** +5 for a kept deal, +3 for a paid bonus, +10 for renewing, -10 for a broken contract, -20 for walking out mid-deal, and decay toward 0 by 1 per season.
+- **Rival interest.** 0 to 1: an attention flag raises it by 0.5, a final by 0.3, a win by 0.4, and it decays by 0.25 per round.
+
 **When deals happen**
 
 - **Off-season (Nov 11 – Feb 28).** The main window. Contracts and deals expire at season end and every party negotiates.
@@ -447,6 +462,7 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
   - **Prestige.** Junior entries count toward a garage's prestige at half the weight of a Super Series entry.
   - **Standings.** Each series keeps separate standings (see "Standings"); team orders apply only within a series.
   - **Promotion.** A Junior driver who must move up can be kept by the same garage or released to another.
+  - **Extra crew.** Optional but beneficial. A garage can hire extra mechanics for the Junior block. Each one speeds repairs and car changeovers between the two events and lowers the chance of setup errors. Without them the garage still runs both series by splitting its crew.
 
 ## Records and history
 
@@ -489,7 +505,7 @@ The full design is large, so development is staged. Each milestone must be playa
 
 | Milestone | Goal | Includes | Excludes |
 | --- | --- | --- | --- |
-| M0 Foundations | Project runs, saves and loads | Vite + React + TS + Tailwind + Zustand scaffold, SQL.js database, migrations, seeded RNG, save/load, externalised text (`/locales/en.json`), CI (lint, typecheck, unit tests) | Any gameplay |
+| M0 Foundations | Project runs, saves and loads | Vite + React + TS + Tailwind + Zustand scaffold, SQL.js database, migrations, seeded RNG, save/load, externalised text (`/locales/en.json`), the platform-services interface, engineering standards and CI (see "Engineering standards and tooling") | Any gameplay |
 | M1 World generation | A believable 2031 field | Names, 96 garages, 313 drivers, 313 cars, numbers, contracts, calendar | UI beyond a debug viewer |
 | M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, classification, points | Final race, economy |
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, incidents, overtakes, player calls, prize money, timing screens | Live map polish, drones |
@@ -497,7 +513,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | M5 Full season (**vertical slice**) | Seven rounds, off-season, rollover to 2032 | All 7 courses, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
 | M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, media headlines, drone events, live map | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
-| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron/Steam wrapper, Steam achievements and cloud saves, mod loader and Steam Workshop integration, the hidden Founder's career | |
+| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
 
 **MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race seven rounds, finish the season, and begin 2032 with all records saved.
 
@@ -532,6 +548,85 @@ The full design is large, so development is staged. Each milestone must be playa
 /src/workers   sim.worker.ts
 /tests         sim/, db/
 ```
+
+## Licensing and distribution
+
+The game is licensed under the **GNU General Public License, version 3 or (at the user's option) any later version** (SPDX `GPL-3.0-or-later`).
+
+- **Scope.** All code and all first-party data, art, audio and text are GPL-3.0-or-later unless a file says otherwise. `LICENSE` holds the licence text, every source file carries an `SPDX-License-Identifier` header, and the repository follows the REUSE specification.
+- **Dependencies and assets.** Only GPL-compatible licences are allowed: MIT, BSD, ISC, Apache-2.0, MPL-2.0, LGPL, CC0, CC BY and CC BY-SA 4.0 (one-way compatible), and SIL OFL fonts. Licences that are not compatible (non-commercial, no-derivatives, proprietary) are blocked by a licence check in CI. Third-party licences are listed in `CREDITS.md` and shown in-game. `flag-icons` is MIT, so it complies.
+- **Source.** The source is public. The About screen links to the exact source tag of the running build.
+- **Names.** The GPL does not grant rights to the Last Combustion name, logo or the Pyra Drake character. A short trademark policy covers forks and mods (see open questions).
+- **Mods.** Mods are data files read at runtime. Their authors keep their own copyright and choose their own licence. Legal review is listed in the open questions.
+- **Easter egg.** The Founder's career check stores a hash of the normalised details, not the plain text, so browsing the source does not spoil it. This document is the only plain-text record.
+
+**Steam.** The Steamworks SDK is proprietary, and its terms do not mix cleanly with GPL distribution of a combined work, so a Steam release may not be possible. It is treated as optional and undecided.
+
+- The GPL builds never include Steamworks. Steam-specific code lives in a separate optional module behind the platform interface below.
+- If a Steam release is pursued, it needs legal advice, and probably an additional permission under GPLv3 section 7 granted by every copyright holder. To keep that option open, contributors sign off their commits under the Developer Certificate of Origin and the project decides on a contributor agreement before accepting large outside contributions.
+
+**Distribution channels (initial):** the web build, GitHub Releases (Windows, macOS, Linux), itch.io and Flathub.
+
+## Platform services
+
+Anything that depends on a store or platform sits behind one interface, so the game works fully without Steam.
+
+| Service | Local / web / GPL build (default) | Steam build (optional) |
+| --- | --- | --- |
+| Achievements | Local list stored in the profile | Steam achievements |
+| Cloud saves | Export and import `.lcsave` files, plus an optional auto-sync folder the player chooses (works with any sync tool) | Steam Cloud |
+| Mod distribution | Local `mods/` folder plus a mod index (see "Modding") | Steam Workshop |
+| Identity | Local profile name | Steam profile |
+
+Implementations: `LocalPlatform` (default), `WebPlatform`, and `SteamPlatform` (optional, separate package, not part of the GPL release).
+
+## Engineering standards and tooling
+
+The project follows common industry practice from the first commit (milestone M0).
+
+**Versioning and changelog**
+
+- **Semantic Versioning 2.0.0** for releases: `MAJOR.MINOR.PATCH`. Before 1.0 the minor number follows the milestones (M2 is `0.2.0`), and `1.0.0` is the first full release (M8). Pre-releases use `-alpha.N`, `-beta.N` and `-rc.N`. Release tags are `vX.Y.Z`.
+- **Changelog.** `CHANGELOG.md` follows *Keep a Changelog 1.1.0* (Added, Changed, Deprecated, Removed, Fixed, Security) with an `[Unreleased]` section. Entries are generated from Conventional Commits by release automation and edited by hand when needed.
+- **Separate versions.** The save schema has an integer version with migrations, the data/mod schema has its own version, and `mod.json` states a SemVer range of supported game versions. Breaking changes to the mod format need a major release and a migration note.
+- **Releases.** Publishing a tag creates a GitHub Release with notes from the changelog and attaches the web build and the desktop builds with checksums.
+
+**Source control**
+
+- Trunk-based development: short-lived branches and pull requests into a protected `main`; squash merges; required checks and review; `CODEOWNERS`.
+- **Conventional Commits** (`feat:`, `fix:`, `docs:`, `chore:`, with `!` for breaking changes), enforced by commitlint. Commits are signed off (DCO).
+
+**Code quality**
+
+- TypeScript in strict mode, ESLint (typescript-eslint, react-hooks, jsx-a11y), Prettier and EditorConfig.
+- Husky and lint-staged for fast pre-commit checks.
+- Node version pinned in `.nvmrc`, pnpm with a committed lockfile.
+- Vitest for unit tests (simulation coverage target 90%), fast-check for property tests, React Testing Library for components, Playwright for end-to-end tests, and axe for accessibility checks.
+- Accessibility target: WCAG 2.1 AA. Performance budgets: a prelim day of 300+ entries simulates in under 2 seconds in the worker, and the web bundle stays under an agreed size.
+- No telemetry and no network calls other than optional mod downloads.
+
+**GitHub Actions workflows**
+
+| Workflow | Trigger | Purpose |
+| --- | --- | --- |
+| `ci.yml` | Pull request, push to `main` | Install, lint, typecheck, unit and property tests, build, licence check, REUSE lint |
+| `e2e.yml` | Pull request | Playwright end-to-end and accessibility tests |
+| `codeql.yml` | Pull request, weekly | Code scanning |
+| `dependency-review.yml` | Pull request | Blocks vulnerable or GPL-incompatible new dependencies |
+| `balance.yml` | Nightly, manual | Runs the headless multi-season sim and fails if balance statistics drift beyond set limits |
+| `docs.yml` | Pull request | Markdown lint, link check, API docs build |
+| `release.yml` | Tag push `v*` | Release automation: changelog, web build, Electron builds for Windows, macOS and Linux, checksums, GitHub Release |
+| `pages.yml` | Release | Deploy the web build to GitHub Pages |
+
+Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with actions pinned to versions or commit hashes.
+
+**Documentation**
+
+- `README.md` (what it is, how to build and run, licence), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant), `SECURITY.md`, issue and pull request templates.
+- `docs/GAME_DESIGN_DOCUMENT.md` (this document), `docs/ARCHITECTURE.md`, architecture decision records in `docs/adr/` (MADR format), a modding guide in `docs/modding/`, and published JSON Schemas for all mod files in `schemas/`.
+- TypeDoc API documentation for the simulation layer. User-facing text lives in `/locales`.
+
+**Definition of done:** the change has tests, passes every required check, updates the changelog and docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
 
 ## Data model
 
@@ -628,7 +723,7 @@ Driver mode is not available for the unlock: the Driver manager's driver always 
 - **Achievements.** All achievements are disabled in the Founder's career. Starting it unlocks one hidden achievement of its own, "Founder's Birthday", once per account.
 - **Canon.** The save is marked `founder_career` and is outside the main story (in the standard world, Pyra Drake does not race main events). It is stored and displayed like any other save.
 
-## Modding (Steam Workshop)
+## Modding
 
 The game is data-driven, so mods are packages of the same JSON and SVG files the base game uses, with no scripting.
 
@@ -659,13 +754,14 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 - **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
 - **Calendar with mods.** A track mod can replace any of the seven rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km.
 - **Saves.** A career records the mods used, with their versions, and mods are fixed when the career is created. A missing or changed mod warns before loading. Modded careers are labelled, and their records are not mixed into default-world records.
-- **Steam Workshop.** Mods are published, subscribed to and updated through Steamworks in the desktop build. The web build installs mods from local files.
+- **Distribution.** Mods go in a local `mods/` folder (or are imported in the web build). A mod index, a public repository of mod listings with download links, feeds an in-game mod browser. If a Steam release goes ahead, Steam Workshop is added as a second source through the optional Steam module.
+- **Hosting policy.** Wherever we host mods or the index, we follow the standard DMCA takedown procedure, and we claim no responsibility for modifications that private players make or apply.
 
 ## Achievements and cloud saves
 
-- **Achievements.** Steam achievements are enabled in the desktop build, awarded for milestones such as first points, first final, gold border, first win, a season title, a Garage, Manufacturer or nations title, a Hall of Fame entry, a 10-season career and a rivalry. They are tracked from the event log. They are disabled in careers that use balance-changing mods, and in the Founder's career. The web build keeps a local list.
+- **Achievements.** Achievements are enabled (Steam achievements in a Steam build, otherwise a local list), awarded for milestones such as first points, first final, gold border, first win, a season title, a Garage, Manufacturer or nations title, a Hall of Fame entry, a 10-season career and a rivalry. They are tracked from the event log. They are disabled in careers that use balance-changing mods, and in the Founder's career. 
 - **Founder's career.** All achievements are disabled for that save. Starting it unlocks one secret achievement, "Founder's Birthday", and nothing else.
-- **Cloud saves.** Steam Cloud syncs saves. Each save is one `.lcsave` file containing the database, its schema version, the mod list and a preview. On a sync conflict the newer file wins and the older one is kept as a backup copy that the player can restore. The web build stores saves in the browser and can export and import `.lcsave` files.
+- **Cloud saves.** Enabled through the platform interface (Steam Cloud in a Steam build, otherwise export/import and an optional auto-sync folder). Each save is one `.lcsave` file containing the database, its schema version, the mod list and a preview. On a sync conflict the newer file wins and the older one is kept as a backup copy that the player can restore. The web build stores saves in the browser and can export and import `.lcsave` files.
 
 ## Localisation
 
@@ -682,22 +778,24 @@ The game is English-only at launch, but all text is externalised so translation 
 
 | Item | Cost |
 | --- | --- |
-| Entry fee per entry per round | $5,000 (top-31 finishers get free tyres, but still pay the fee) |
-| Racing tyre set (non-top-31) | $1,800 per set; practice sets $900 |
+| Entry fee per entry per round | $3,000 (top-31 finishers get free tyres, but still pay the fee) |
+| Racing tyre set (non-top-31) | $1,500 per set; practice sets $300 |
 | Starter road car, used | $12,000–$35,000 |
 | Mid-tier car (JDM, sports), used | $40,000–$120,000 |
 | Premium supercar, used | $120,000–$400,000 |
 | Elite supercar, used | $400,000–$2,000,000 |
 | Hypercar | $2,000,000+ (see price tiers) |
 | Part price range | $400 (filter, pads) to $60,000 (turbo kit / engine build) |
-| Mechanic wage | $1,200 per week each |
+| Mechanic wage | $500 per week each |
+| Travel and accommodation | $2,000 per round per garage, plus $500 per extra entry |
+| Servicing | $1,200 per round per entry at Starter tier (see supercar upkeep) |
 | Driver salary, unknown | $0–$20,000 per season (often paid in sponsor product) |
 | Driver salary, gold border | $60,000–$400,000 per season; champions higher |
 | Small title sponsor | $30,000–$80,000 per season |
 | Delivery driving | About $250 per day on non-event days |
 | Top-31 discount on parts | 30% |
 
-A one-car, low-budget garage should be able to survive on delivery income and a small sponsor, break even at about 15th–31st finishes, and only profit meaningfully from finals. **Bankruptcy:** cash below -$50,000 for 3 consecutive weeks ends the garage; in Garage owner mode the career ends with a retrospective screen, in Driver manager mode the driver is released and may sign elsewhere.
+**Balance check (v1).** A solo Owner-driver with one Starter car spends about $69,000 a season: entry fees $21,000, racing tyres $10,500, practice tyres $14,700, servicing $8,400 and travel $14,000. Income at zero points is about $67,000: roughly 109 non-event days of delivery driving at $250 ($27,000) plus a small sponsor ($40,000). So a one-car garage survives on delivery income and a small sponsor at zero points, earns a small surplus (about $15,000) from top-31 finishes through free tyres and discounts, and only profits meaningfully from finals. A Garage owner with two mechanics ($52,000 a year) and a hired driver runs about $60,000 in deficit until finals arrive, which gives roughly four seasons of runway on $250,000. Upgrades, supercars and crashes are paid for out of final prize money. **Bankruptcy:** cash below -$50,000 for 3 consecutive weeks ends the garage; in Garage owner mode the career ends with a retrospective screen, in Driver manager mode the driver is released and may sign elsewhere.
 
 ## Formulas (proposed, tunable)
 
@@ -717,7 +815,7 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 ```
 
 - `t_ref,s` is the sector's reference time from course data.
-- `D_s` is the driver's sector rating: a blend of Pace, the matching road-affinity, and Composure on the main feed. Initial `k_c = 0.10`, `k_d = 0.10`, so the best driver in a mediocre car can beat a mediocre driver in the best car. This is the "driver over horsepower" pillar and the sim-10-seasons script must check it holds.
+- `D_s` is the driver's sector rating: a blend of Pace, the matching road-affinity, and Composure on the main feed. Initial values are `k_c = 0.12` and `k_d = 0.09`, set with `tools/balance/prelim_check.py`. In a 313-entry field (half supercars), driver pace correlates 0.76 with prelim result against 0.64 for car quality, so the driver matters more but the car still matters, and about 11 of the 15 finalists are supercars. This is the "driver over horsepower" pillar, and the 10-season headless sim must keep these figures within ±0.05 when the formulas change.
 - `Δ_temp` is a track temperature roll penalty/bonus, within ±0.4% of sector time.
 - `ε` is random variance with standard deviation `σ = 0.6% × (1 − Consistency/150)` of sector time.
 
@@ -854,8 +952,8 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Mapping file.** `mod_mapping.json` is optional and ships separately from the game data. It links each fictional model ID to its real counterpart (make, model, generation, years) so a mod can replace names, stats and visuals together. It is not included in the base game.
 - **Replacement, not addition.** A mod replaces a fictional manufacturer or model entirely, including its name, logo, body shape and stats. Save files keep working because the game stores the stable internal ID, not the display name.
 - **Livery and art.** Real-car mods supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
-- **Mod loader.** See "Modding (Steam Workshop)" for the package format, validation and load order.
-- **Legal.** The base game never ships real marks. **Workshop policy.** Mods are hosted on Steam Workshop under standard DMCA takedown procedure: we remove infringing mods when a valid notice is received. We claim no responsibility for modifications that private players make or apply.
+- **Mod loader.** See "Modding" for the package format, validation and load order.
+- **Legal.** The base game never ships real marks. **Hosting policy.** Wherever we host mods, we follow standard DMCA takedown procedure: we remove infringing mods when a valid notice is received. We claim no responsibility for modifications that private players make or apply.
 
 ## World generation and AI
 
@@ -864,6 +962,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Garage sizes.** About 55 single-entry garages, 25 with 2 entries, 10 with 3, 4 with 4, and 2 with 5. Entries total 313 including the player's.
 - **Prestige.** Set from entry count and any gold-bordered drivers (in Season 1, about 20 seeded drivers start gold-bordered as past finalists).
 - **Names.** Drivers and garages are generated from name pools weighted toward Australian and a broad international mix. Pools are in `names.json` and must avoid real people and trademarks.
+- **Car sector fit.** Generated cars get a base fit drawn from a normal distribution: supercars mean 0.52, SD 0.12; JDM and sports cars mean 0.46, SD 0.10 (tuned in `tools/balance/prelim_check.py`).
 - **Skill distribution.** Driver Pace is drawn from a normal distribution (mean 45, SD 12, clamped 20–85); the ~20 seeded gold-bordered drivers are 60–85. Potential is Pace plus 0–25.
 - **Number assignment.** Season 1 numbers 1–40 are assigned to the 40 seeded top drivers by a pre-season ranking; the rest take numbers from 41 up. #313 is reserved.
 
@@ -938,22 +1037,27 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Owner-driver starts solo.** One car, one entry, no staff.
 - **Starting ages.** Garage owner 18–50, Owner-driver 18–30, Driver manager always 18.
 - **Language.** English only, with all text externalised for later translation.
-- **Modding.** Steam Workshop support for starting garages, drivers and stats, name lists, manufacturers, cars and tracks.
+- **Modding.** Mods for starting garages, drivers and stats, name lists, manufacturers, cars, tracks, parts, sponsors, suppliers and balance data.
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
 - **Flag artwork.** `lipis/flag-icons` (MIT).
 - **Round 7 name.** The protected event name is not used. The round is the North-west Tasmania mountain roads.
 - **Junior schedule.** Junior practice day 1 is the day after the Super final, at the same venue. Junior practice lasts 3 days.
 - **Balance mods and achievements.** Careers using balance-changing mods have achievements disabled.
-- **Workshop policy.** Standard DMCA takedown. No responsibility is claimed for modifications by private players.
+- **Mod hosting policy.** Standard DMCA takedown. No responsibility is claimed for modifications by private players.
 - **Modding scope.** Mods may also change parts, sponsors, suppliers and balance data.
-- **Steam.** Achievements and cloud saves are enabled.
+- **Platform features.** Achievements and cloud saves are enabled through a platform interface that works without Steam.
+- **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
+- **Engineering standards.** Semantic Versioning, Keep a Changelog, Conventional Commits, GitHub Actions and the tooling listed in "Engineering standards and tooling".
+- **Balance.** Cost baseline, formula coefficients and negotiation values are set at v1 (see `tools/balance/prelim_check.py`) and are the design team's to adjust.
+- **Flag artwork.** `flag-icons` checked: complete except Ceuta & Melilla, which uses the Spanish flag.
+- **Extra crew.** Optional but beneficial.
 
 **Open**
 
 - [ ] Measured lap lengths for each proposed route (needed before M2 course data).
-- [ ] Final tuning of the cost baseline and formula coefficients (via the 10-season headless sim).
-- [ ] Confirm that `flag-icons` covers every flag emoji (add art from another open-licence set for any gap).
+- [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
-- [ ] Whether garages need extra crew for back-to-back Super and Junior events.
-- [ ] Tuning of negotiation values: patience, relationship effects and reservation formulas.
+- [ ] Trademark policy for the Last Combustion name, logo and the Pyra Drake character (forks and mods).
+- [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).
+- [ ] Whether mod authors are asked to use a GPL-compatible licence.
