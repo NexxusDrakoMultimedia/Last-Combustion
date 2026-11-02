@@ -12,7 +12,7 @@ import {
   places,
   populations,
 } from './data';
-import { garageName, personName, pickNationality } from './names';
+import { garageName, nickname, nicknameThemesFor, personName, pickNationality } from './names';
 import { generateLoadouts } from './loadouts';
 import { clamp, fairSalary, fameFromFans, overallRating } from './rating';
 import {
@@ -155,6 +155,7 @@ function makeDriver(rng: RandomStream, id: number): Driver {
     fame: 0,
     reputation: 0,
     goldBorderYear: null,
+    nickname: null,
   };
 }
 
@@ -364,6 +365,24 @@ export function generateWorld(seed: string | number): World {
       carId: (driverCar.get(d.id) as Car).id,
       raceNumber: numberOf.get(d.id) as number,
     });
+  }
+
+  // --- nicknames: some drivers have a handle that suits how they race ---
+  const nickRng = rng.stream('worldgen:nicknames');
+  const usedNicknames = new Set<string>();
+  for (const d of drivers) {
+    if (!nickRng.chance(nameLists.nicknameShare)) continue;
+    d.nickname = nickname(
+      nickRng,
+      nicknameThemesFor({
+        homeRoadType: d.homeRoadType,
+        wetSkill: d.wetSkill,
+        racecraft: d.racecraft,
+        consistency: d.consistency,
+        age: SEASON_YEAR - Number(d.birthDate.slice(0, 4)),
+      }),
+      usedNicknames,
+    );
   }
 
   // --- reputation and fans ---

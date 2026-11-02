@@ -99,6 +99,8 @@ export interface Driver {
   fame: number;
   reputation: number;
   goldBorderYear: number | null;
+  /** A handle such as "The Midnight Ghost", given to some drivers (see the GDD, "Titles and nicknames"). */
+  nickname: string | null;
 }
 
 export interface Car {
