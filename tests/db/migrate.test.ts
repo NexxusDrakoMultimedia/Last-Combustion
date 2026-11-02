@@ -22,7 +22,15 @@ describe('migrate', () => {
     const result = migrate(db);
     expect(result.from).toBe(0);
     expect(result.to).toBe(latestSchemaVersion());
-    expect(result.applied).toEqual(['initial', 'world', 'prelims', 'final', 'economy', 'market']);
+    expect(result.applied).toEqual([
+      'initial',
+      'world',
+      'prelims',
+      'final',
+      'economy',
+      'market',
+      'parts',
+    ]);
   });
 
   it('does nothing when run again', () => {

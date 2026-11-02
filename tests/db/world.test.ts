@@ -22,9 +22,9 @@ function freshWorld(): Database {
 }
 
 describe('persisting a world', () => {
-  it('writes every table and the migrated schema is at version 6', () => {
+  it('writes every table and the migrated schema is at version 7', () => {
     const db = freshWorld();
-    expect(getSchemaVersion(db)).toBe(6);
+    expect(getSchemaVersion(db)).toBe(7);
     expect(readWorldSummary(db)).toEqual({
       garages: 96,
       drivers: 313,

@@ -20,6 +20,8 @@ export interface CarSpec {
   layout: Layout;
   /** 0 is new, 100 is worn out. */
   wear: number;
+  /** Rating changes from fitted parts (see `fitParts`). */
+  bonus?: { grip: number; handling: number; traction: number };
 }
 
 const cfg = simBalance;
@@ -37,11 +39,16 @@ export function carRatings(car: CarSpec, altitudeM = 0): CarRatings {
   const width = unit(car.tyreWidthMm, cfg.tyreMm.min, cfg.tyreMm.max);
   const gripPerKg = unit(car.tyreWidthMm / car.kerbKg, cfg.gripPerKg.min, cfg.gripPerKg.max);
   const lightness = unit(1 - (car.kerbKg - 650) / 1500, 0, 1);
+  const bonus = car.bonus ?? { grip: 0, handling: 0, traction: 0 };
   return {
     power: unit(pw, cfg.powerToWeight.min, cfg.powerToWeight.max) * wearFactor,
-    grip: (0.25 + 0.75 * gripPerKg) * wearFactor,
-    handling: (0.2 + 0.5 * lightness + 0.3 * gripPerKg) * wearFactor,
-    traction: (0.5 * cfg.layoutTraction[car.layout] + 0.5 * width) * wearFactor,
+    grip: clamp((0.25 + 0.75 * gripPerKg + bonus.grip) * wearFactor, 0, 1),
+    handling: clamp((0.2 + 0.5 * lightness + 0.3 * gripPerKg + bonus.handling) * wearFactor, 0, 1),
+    traction: clamp(
+      (0.5 * cfg.layoutTraction[car.layout] + 0.5 * width + bonus.traction) * wearFactor,
+      0,
+      1,
+    ),
   };
 }
 
