@@ -17,5 +17,8 @@
   "mode.owner_driver": "Owner-driver",
   "mode.driver_manager": "Driver manager",
   "debug.world": "World: {garages} garages, {drivers} drivers, {entries} entries, {cars} cars, {rounds} rounds",
-  "debug.seriesFans": "Series audience: {fans, number} fans"
+  "debug.seriesFans": "Series audience: {fans, number} fans",
+  "debug.runPrelims": "Run next round's prelims",
+  "debug.prelims": "Round {round} prelims: {prelimDays} prelim days, final on {finalDate}. {finishers} set a time, {dnfs} did not finish, {qualifiers} reach the final.",
+  "debug.pole": "Pole: #{raceNumber} {driver} in {time}"
 }

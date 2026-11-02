@@ -103,5 +103,65 @@
       "unique": 1.0
     },
     "partFailureFrom": 85
+  },
+  "sim": {
+    "kc": 0.12,
+    "kd": 0.09,
+    "powerToWeight": {
+      "min": 0.05,
+      "max": 0.75
+    },
+    "altitudeLossPer100m": 0.011,
+    "gripPerKg": {
+      "min": 0.215,
+      "max": 0.265
+    },
+    "tyreMm": {
+      "min": 170,
+      "max": 440
+    },
+    "layoutTraction": {
+      "AWD": 0.9,
+      "MR": 0.8,
+      "RR": 0.8,
+      "FR": 0.6,
+      "FF": 0.5
+    },
+    "wearPenaltyPerPoint": 0.002,
+    "driverWeights": {
+      "pace": 0.55,
+      "affinity": 0.3,
+      "composure": 0.15
+    },
+    "noisePct": 0.006,
+    "temp": {
+      "runSd": 0.0015,
+      "max": 0.004,
+      "daySd": 0.001
+    },
+    "prelimAggression": 0.5,
+    "incident": {
+      "pBase": 0.002,
+      "mistakeShare": 0.7,
+      "spinShare": 0.22,
+      "mistakeSeconds": [1, 4],
+      "spinSeconds": [10, 25],
+      "wildlifeChancePerRun": 0.004,
+      "wildlifeSeconds": [2, 6]
+    },
+    "practice": {
+      "lapsPerDay": [2, 4],
+      "breakdownPerLap": 0.0005,
+      "crashPerLap": 0.0008,
+      "breakthroughPerDay": 0.01
+    },
+    "prelims": {
+      "days": 7,
+      "entriesPerSlotMinutes": 3,
+      "maxExtraDays": 14
+    },
+    "pole": {
+      "bonus": 10000
+    }
   }
 }

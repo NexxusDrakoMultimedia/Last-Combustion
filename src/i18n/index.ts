@@ -46,6 +46,13 @@ export function formatDate(iso: string): string {
   );
 }
 
+/** Formats a lap time in milliseconds as minutes, seconds and thousandths. */
+export function formatLapTime(ms: number): string {
+  const minutes = Math.floor(ms / 60000);
+  const seconds = (ms % 60000) / 1000;
+  return `${minutes}:${seconds.toFixed(3).padStart(6, '0')}`;
+}
+
 /** Formats an amount in Australian dollars. */
 export function formatMoney(amount: number): string {
   return new Intl.NumberFormat(formatLocale(), {

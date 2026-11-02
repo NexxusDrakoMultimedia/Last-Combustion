@@ -13,6 +13,10 @@ test('creates, saves and reloads a career in the browser', async ({ page }) => {
     page.getByText('World: 96 garages, 313 drivers, 313 entries, 314 cars, 6 rounds'),
   ).toBeVisible();
 
+  await page.getByRole('button', { name: messages['debug.runPrelims'] }).click();
+  await expect(page.getByText(/Round 1 prelims: 7 prelim days/)).toBeVisible();
+  await expect(page.getByText(/Pole: #\d+/)).toBeVisible();
+
   await page.getByRole('button', { name: messages['debug.saveSlot1'] }).click();
   await expect(page.getByText('1 save slot in use')).toBeVisible();
 

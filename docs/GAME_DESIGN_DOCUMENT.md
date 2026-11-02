@@ -428,6 +428,36 @@ Every driver has hidden potential and visible stats that grow with experience, a
 - **Contracts.** Length, salary, lead or development role, and a release fee. Rival garages can make offers, especially after attention flags.
 - **Junior pathway.** Junior drivers who reach a Super Series final earn gold and leave Junior eligibility.
 
+## Driver gear
+
+Drivers wear gear that adjusts and boosts their attributes: a helmet, a race suit, gloves, boots and up to two trinkets. Gear belongs to the driver, not the car, so it follows them to any garage.
+
+**Slots.** Helmet, suit, gloves and boots (one each) and trinket (up to two). A loadout that breaks the slot limits is not allowed.
+
+**Tiers.** Better tiers give bigger boosts, and every item stays inside the boost budget of its tier (the total points it adds across attributes).
+
+| Tier | Boost budget | Price | How it is obtained |
+| --- | --- | --- | --- |
+| Basic | 1–2 points | $300–$800 | Gear shop |
+| Club | 3–4 points | $2,000–$4,500 | Gear shop |
+| Pro | 6–8 points | $13,000–$28,000 | Gear shop |
+| Elite | 9–12 points | $70,000–$130,000 | Gear shop, or earned |
+| Legendary | 12–16 points | Not for sale | Earned through a storyline, or found at auction |
+
+**What gear changes.** Items boost Pace, Consistency, Racecraft, Tyre management, Composure, Wet skill, or one road affinity (forest, coast, mountain or night).
+
+- **Cap.** Gear raises any single attribute by at most +10 in total, and no attribute goes above 99.
+- **Set bonus.** Several pieces from the same supplier give a bonus: 2 pieces +1 Composure; 3 pieces +2 Composure and +1 Consistency; 4 pieces +3 Composure and +2 Consistency.
+- **Effective stats.** The simulation uses a driver's stats with gear applied. The driver's own record is never changed, so taking gear off puts the driver back exactly where they were.
+
+**Suppliers.** Gear comes from four fictional suppliers: Brumby Gear (Australia), Vanta Safety (Italy), Kinetic Works (Japan) and Nordlys Racewear (Sweden). Their logos can also appear on the driver's suit and helmet in a sponsorship deal (see "Sponsors and suppliers").
+
+**Trinkets.** Small personal items such as Worn Dice, a Wattle Sprig or a Brass Stopwatch. Two special ones are never sold: the **Border Coin** (an elite trinket earned the first time a driver wins a gold border) and the **Founder's Coin** (legendary, given by Pyra Drake in a storyline).
+
+**Starting gear.** In Season 1 every AI driver wears a basic kit that matches their garage's budget: well-funded garages kit their drivers out in club and pro gear, small garages in basic gear. A new player's driver starts with basic gear.
+
+**Where it appears.** The gear shop, the driver profile and the contract negotiation (a garage can include gear in a driver's contract). Famous gear, for example a champion's helmet, can come up at the auction house. Gear data lives in `data/gear.json`, so mods can add items, tiers and suppliers.
+
 ## Sponsors and suppliers
 
 Sponsors pay for exposure and suppliers pay for results, and both scale with a garage's prestige and its drivers' fame.
@@ -503,7 +533,7 @@ Prize money and sponsors fund the garage, while fame, reputation, rivalries and 
 - **Awards.** Rookie of the Year, most attention flags in a season, Fan Favourite (largest fan gain), and a Hall of Fame for retired champions.
 - **Damage and repairs.** Crashes cost money and time. Entries are road cars, so a car that can't be repaired can't be driven on the road either.
 - **Daily life.** Road distance between rounds adds wear to the car. Delivery driving gives a small income, which helps drivers early in their careers.
-- **Commentary and media.** A commentary team and news headlines between rounds, generated from the records (for example, "#247 reaches their first final").
+- **Commentary and media.** The commentary team (see "Commentary team") and news headlines between rounds, generated from the records (for example, "#247 reaches their first final").
 
 **Final race prize money (AUD)**
 
@@ -524,6 +554,22 @@ Prize money and sponsors fund the garage, while fame, reputation, rivalries and 
 | Overtake in the final race | $10,000 each |
 
 Bonuses add up through the year and are paid at the end of the season.
+
+## Commentary team
+
+Every run and race has a commentary team. The four commentators are fictional characters with their own backgrounds, home towns and areas of expertise, and the commentary system picks who speaks about which moment.
+
+| Commentator | From | Background | Role | Speaks about |
+| --- | --- | --- | --- | --- |
+| Jayden Darra | Brisbane, Australia | Former professional driver | Driving analyst | Driving, incidents, tyres and attention flags |
+| Luke Winters | Newcastle upon Tyne, United Kingdom | Multisport commentator | Lead commentator | The live action, storylines, rivalries and milestones |
+| Kazumi Aikawa | Hakone, Japan | Former touge prodigy | Road and line specialist | The road and the line, mountain and night stages, and the underdogs |
+| José Antonio Carrera | Sabadell, Spain | Business magnate | Business and garages analyst | Money, sponsors, auctions and garages |
+
+- **Voices.** Jayden is calm and technical, Luke is warm and quick, Kazumi is quiet and precise, and José Antonio is confident and blunt.
+- **Who speaks.** Each moment (an incident, a rivalry, a storyline beat, a fan milestone, an auction) is tagged with a topic, and the commentator whose areas match speaks first, with another adding a comment. Luke carries the live action.
+- **Text.** Lines are templates with keys, so they are translatable and can be changed by mods (see "Localisation" and "Incidents, rivalries and storylines").
+- **Data.** The team lives in `data/commentators.json`, with each commentator's flag and home town as places in the places list.
 
 ## Fans
 
@@ -709,7 +755,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | --- | --- | --- | --- |
 | M0 Foundations | Project runs, saves and loads | Vite + React + TS + Tailwind + Zustand scaffold, SQL.js database, migrations, seeded RNG, save/load, externalised text (`/locales/en.json`), the platform-services interface, engineering standards and CI (see "Engineering standards and tooling") | Any gameplay |
 | M1 World generation | A believable 2031 field | Names, 96 garages, 313 drivers, 313 cars, numbers, contracts, calendar | UI beyond a debug viewer |
-| M2 Prelim simulation | One round's prelims resolve | Course sector data (Rd 1), lap-time model, 7-day running order, weather days, prelim and practice incidents, classification, points | Final race, economy |
+| M2 Prelim simulation | One round's prelims resolve | Course sectors, lap-time model with driver gear, 7-day running order, weather days, prelim and practice incidents, classification, points | Final race, economy |
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, mid-race incidents with pauses, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase (dealers, used market, auction house, private negotiation), upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
@@ -857,7 +903,11 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `fan_log` | subject_type, subject_id, date, delta, reason |
 | `round` | season_id, number, course_id, practice_start, prelim_start, final_date, status, weather_log (JSON per day) |
 | `course` | name, state, shape (always `loop`), lap_km, final_laps, road_type, altitude_m, night (bool), outline (JSON: viewBox, path, points with cumulative km) |
-| `sector` | course_id, order, surface (always `sealed`), start_km, length_m, corner_density, elevation_change_m, straight_m, width_m, overtake_spot (bool) |
+| `sector` | course_id, sector_order, surface (always `sealed`), start_km, length_m, corner_density, straight_m, elevation_change_m, width_m, overtake_spot (bool), ref_seconds |
+| `commentator` | stable_id, name, flag, hometown_place_id, background, role, focus (JSON), voice |
+| `gear_supplier` | stable_id, name, home_country |
+| `gear_item` | stable_id, name, slot, tier, supplier_id (nullable), price, stats (JSON) |
+| `driver_gear` | driver_id, item_id |
 | `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
 | `garage` | name, home_state, base_place_id, fans, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
 | `driver` | name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id, fans, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
@@ -869,7 +919,7 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `part` | supplier_id, category, name, price, delta_ps, delta_kg, delta_grip, delta_handling, delta_reliability, legality_cost |
 | `car_part` | car_id, part_id, installed_date, wear |
 | `entry` | season_id, garage_id, driver_id, car_id, race_number, series (`main` / `junior`), fee_paid |
-| `result` | round_id, entry_id, prelim_time_ms, prelim_pos, final_pos, final_time_ms, points, prize, dnf_reason, tyre_pct_at_flag |
+| `result` | round_id, entry_id, run_day, run_slot, prelim_time_ms, prelim_pos, final_pos, final_time_ms, points, prize, pole, dnf_reason, tyre_pct_at_flag |
 | `event_log` | round_id, scope (`practice` / `prelim` / `final` / `event` / `season`), timestamp, km (distance along the lap, nullable), type (incident, flag, crash, penalty, overtake, rivalry, story), entries involved, payload JSON |
 | `rivalry` | kind (`driver` / `garage` / `manufacturer` / `flag`), party_a_id, party_b_id, heat, level, started, last_event, ended (nullable) |
 | `storyline` | template_id, subject_type, subject_id, status (`active` / `resolved` / `abandoned`), started, resolved |
@@ -1046,11 +1096,24 @@ The game is English-only at launch, but all text is externalised so translation 
 **Car ratings** (each normalised to 0–1 against the series' range of cars):
 
 - **P (power)** from power-to-weight, `PS / kerb_kg`, with a reduction at altitude: `P × (1 − 0.011 × altitude_m / 100)` (no base-game course is high: Mount Nebo at about 650 m loses roughly 7%, and the effect matters mainly for mod courses in the mountains).
-- **G (grip)** from fitted tyre width as a share of the Equalizer limit, plus suspension and aero parts.
+- **G (grip)** from tyre width per kilogram, which the Equalizer favours in light cars (the narrowest 0.215 mm/kg scores 0, the widest 0.265 mm/kg scores 1), plus suspension and aero parts.
 - **B (braking/handling)** from brakes, suspension tune and weight.
-- **T (traction)** from drivetrain and tyre width.
+- **T (traction)** from drivetrain (AWD 0.9, mid-engine and rear-engine 0.8, front-engine rear-drive 0.6, front-drive 0.5) and tyre width.
+- **Wear.** Each rating falls by 0.2% per point of chassis wear.
+- **Normalisation.** Power-to-weight runs from 0.05 PS/kg (0) to 0.75 PS/kg (1), and tyre width from 170 mm to 440 mm.
 
 **Sector fit.** Each sector has weights that sum to 1, derived from its data: long straights raise the weight of P, high corner density raises G and B, big elevation change raises P and T, narrow width raises B. `Fit_s = wP·P + wG·G + wB·B + wT·T`.
+
+**Sectors.** Each course is split into sectors of about 2.5 km (17 to 27 per course) from its saved outline (see "Course outlines"). A sector records its corner density (quarter-turns per km), its longest straight, its elevation change, its road width and whether it is a place to overtake, and has a reference time for a reference car and driver.
+
+- **Corner density** is measured from the outline and scaled up by 2.5, because the simplified outline hides the small bends.
+- **Reference speed** is `120 − 10 × corner density` km/h, kept between 40 and 110 km/h, which gives lap times of roughly 25 to 60 minutes.
+- **Elevation** is a smooth synthetic profile from the course's altitude until the courses are surveyed.
+- **Overtaking.** A sector with a 250 m or longer straight and a road at least 6.2 m wide is a place to overtake, and every course has at least three.
+
+**Driver rating on a sector.** `D = (0.55 × Pace + 0.30 × affinity for the road type (night on a night course) + 0.15 × Composure) ÷ 100`, using the driver's stats after gear is applied (see "Driver gear").
+
+**Calibration (v1).** In a 313-entry field, driver pace correlates about 0.8 with a prelim result and car quality about 0.6, and about 11 to 13 of the 15 fastest are supercars or hypercars, which meets the design target that the driver matters more than the car.
 
 **Sector time.**
 
@@ -1065,7 +1128,7 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 **Tyre life.** Starts at 100%. Per sector: `loss = base_loss × (1 + 0.4·aggression + 0.3·wheelspin_factor + 0.2·slide_factor − 0.5·(TyreMgmt/100))`. Base loss is set so a neutral driver reaches about 8% at the final's end. Grip multiplier on `Fit` is `1 − 0.004 × max(0, 20 − tyre_pct)` below 20%.
 
-**Incident chance per sector.** `p = p_base × (1 + aggression) × wet_factor × wear_factor × (1 − Composure/200)`. Outcomes: mistake (lose 1–4 s), spin (lose 10–25 s), crash (retire, damage, drone stop signal for followers). Initial `p_base` is 0.0004 per sector per entry in prelims.
+**Incident chance per sector.** `p = p_base × (1 + aggression) × wet_factor × wear_factor × (1 − Composure/200)`. Outcomes: mistake (lose 1–4 s), spin (lose 10–25 s), crash (retire, damage, drone stop signal for followers). Initial `p_base` is 0.002 per sector per entry in prelims, which gives roughly a 5% chance of an incident per lap: about 16 incidents (mostly mistakes, a few spins and about one crash) across a 313-car round. Rare wildlife on the road is rolled separately, at 0.4% per run.
 
 **Overtaking (final).** An attacker within 0.5 s overtakes at an overtake spot if `(attacker_sector_speed_advantage + racecraft_diff/100) > threshold`, where the threshold is raised by narrow width and lowered by drone-clear sight lines. Defend calls raise the defender's racecraft by 10 for that sector but cost extra tyre life.
 
@@ -1360,6 +1423,8 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 - **Chassis.** Every raced chassis has its own model year and wear, with racing km wearing ten times as much as road km.
 - **First year.** 2031 is the series' first year: nobody starts gold-bordered, and numbers and the Round 1 order are drawn at random.
 - **Manufacturer lineups.** 31 manufacturers and 96 launch models (2 to 5 per manufacturer, no era cut-off); lineups refresh about every five years.
+- **Driver gear.** Helmets, suits, gloves, boots and trinkets boost driver attributes (capped at +10 each), with set bonuses; data-driven and moddable.
+- **Commentary team.** Jayden Darra, Luke Winters, Kazumi Aikawa and José Antonio Carrera.
 - **Series management.** Brian Drake (technical) and Joshua Drake (interpersonal) run the day-to-day of the series from Healesville; Drake Motorsports is based in Brisbane.
 - **Founder's career.** A hidden Easter egg start as Pyra Drake, in Garage owner and Owner-driver modes. It disables achievements and unlocks its own secret achievement.
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
