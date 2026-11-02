@@ -104,7 +104,7 @@ Each round is a 7-day practice week, then 7 days of preliminaries for a field of
 
 **Round timeline (proposed).** A round takes at least 15 days: 7 practice days, 7 prelim days (longer if wet days push them back) and the final race the day after the prelims. With about a week between rounds for repairs and travel, a 7-round season runs roughly 5 months, followed by an off-season for contracts, numbers and car building.
 
-**Round timeline from 2036 (proposed).** The Junior round follows the Super Series final at the same venue: Junior practice day 1 is the day after the Super final, then 3 practice days, 5 prelim days and the Junior final the day after, a 9-day block. A round slot becomes 15 + 9 = 24 days. Seven slots (168 days) plus about 5 days between rounds finish in mid-October, so the season still ends on schedule. Garages with entries in both series keep their crews, trucks and tyre stores at the venue between the two events.
+**Round timeline from 2036.** The Junior round follows the Super Series final at the same venue: Junior practice day 1 is the day after the Super final, then 3 practice days, 5 prelim days and the Junior final the day after, a 9-day block. A round slot becomes 15 + 9 = 24 days. Seven slots (168 days) plus about 5 days between rounds finish in mid-October, so the season still ends on schedule. Garages with entries in both series keep their crews, trucks and tyre stores at the venue between the two events.
 
 ## Points system (Original Era)
 
@@ -436,7 +436,7 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
 - **Purpose.** A championship for young drivers who have never reached a main-series final.
 - **Eligibility.** Drivers must be 25 or younger and must never have qualified for a main-series final.
 - **Power cap.** Cars may produce no more than 300 PS. A car that makes more as standard can be fitted with an intake restrictor that limits it to 300 PS. A car found over 300 PS is disqualified from the prelims. The Equalizer tyre-width rule still applies.
-- **Format.** Practice is condensed to 3 days (proposed) and prelims from 7 days to 5, and the top 15 race the final the day after the prelims.
+- **Format.** Practice is condensed to 3 days and prelims from 7 days to 5, and the top 15 race the final the day after the prelims.
 - **Schedule.** Each Junior round runs at the same venue straight after the Super Series round: Junior practice day 1 is the day after the Super final race. The same dry-and-clear rule applies to Junior prelims.
 - **Points and perks.** Junior uses the original 2031 points table: the top 31 score points, with the top 15 scoring from the final. Any points scorer gets free tyres, a reserved place in the assistants' booth and a silver-outlined number.
 - **Prizes.** Junior uses the original 2031 prize money: finalists earn $1,000,000 down to $20,000 by position. The Junior champion, decided on points, wins $10,000,000. Pole and overtake bonuses of $10,000 each build up through the year and are paid at season end.
@@ -654,7 +654,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 - **Stable IDs.** Everything a mod adds has a stable ID with the mod's prefix. Replacing a base item uses the base item's ID.
 - **Load order.** Mods load in order and the last to change an item wins. A conflict report names every override.
 - **Validation.** On load, each mod's files are checked against the schemas and rules, and invalid mods are rejected with an explanation: unique IDs and numbers, legal Equalizer values, 10 km minimum course length, sector sums, flags that exist, name lists that are not empty, no use of the reserved #313.
-- **Balance mods.** A mod that changes balance data is labelled in the save and its records are kept apart from default-world records.
+- **Balance mods.** A mod that changes balance data is labelled in the save, its records are kept apart from default-world records, and achievements are disabled for that career.
 - **Safety.** Data only: no code, and SVGs are sanitised to remove scripts and external references.
 - **World generation with mods.** A starting garage or driver mod supplies part of the field and world generation fills the rest to 96 garages and 313 drivers, unless the mod declares a full replacement of the starting field.
 - **Calendar with mods.** A track mod can replace any of the seven rounds at career creation. A course's final laps are calculated automatically so the final is at least 300 km.
@@ -663,7 +663,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 
 ## Achievements and cloud saves
 
-- **Achievements.** Steam achievements are enabled in the desktop build, awarded for milestones such as first points, first final, gold border, first win, a season title, a Garage, Manufacturer or nations title, a Hall of Fame entry, a 10-season career and a rivalry. They are tracked from the event log. The web build keeps a local list.
+- **Achievements.** Steam achievements are enabled in the desktop build, awarded for milestones such as first points, first final, gold border, first win, a season title, a Garage, Manufacturer or nations title, a Hall of Fame entry, a 10-season career and a rivalry. They are tracked from the event log. They are disabled in careers that use balance-changing mods, and in the Founder's career. The web build keeps a local list.
 - **Founder's career.** All achievements are disabled for that save. Starting it unlocks one secret achievement, "Founder's Birthday", and nothing else.
 - **Cloud saves.** Steam Cloud syncs saves. Each save is one `.lcsave` file containing the database, its schema version, the mod list and a preview. On a sync conflict the newer file wins and the older one is kept as a backup copy that the player can restore. The web build stores saves in the browser and can export and import `.lcsave` files.
 
@@ -855,7 +855,7 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Replacement, not addition.** A mod replaces a fictional manufacturer or model entirely, including its name, logo, body shape and stats. Save files keep working because the game stores the stable internal ID, not the display name.
 - **Livery and art.** Real-car mods supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
 - **Mod loader.** See "Modding (Steam Workshop)" for the package format, validation and load order.
-- **Legal.** The base game never ships real marks. Responsibility for real-brand mods sits with the modder, and the Workshop policy for them is an open question below.
+- **Legal.** The base game never ships real marks. **Workshop policy.** Mods are hosted on Steam Workshop under standard DMCA takedown procedure: we remove infringing mods when a valid notice is received. We claim no responsibility for modifications that private players make or apply.
 
 ## World generation and AI
 
@@ -943,7 +943,9 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - **Negotiations.** Drivers, garages, sponsors, manufacturers and suppliers negotiate with one system.
 - **Flag artwork.** `lipis/flag-icons` (MIT).
 - **Round 7 name.** The protected event name is not used. The round is the North-west Tasmania mountain roads.
-- **Junior schedule.** Junior practice day 1 is the day after the Super final, at the same venue.
+- **Junior schedule.** Junior practice day 1 is the day after the Super final, at the same venue. Junior practice lasts 3 days.
+- **Balance mods and achievements.** Careers using balance-changing mods have achievements disabled.
+- **Workshop policy.** Standard DMCA takedown. No responsibility is claimed for modifications by private players.
 - **Modding scope.** Mods may also change parts, sponsors, suppliers and balance data.
 - **Steam.** Achievements and cloud saves are enabled.
 
@@ -952,7 +954,6 @@ The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The st
 - [ ] Measured lap lengths for each proposed route (needed before M2 course data).
 - [ ] Final tuning of the cost baseline and formula coefficients (via the 10-season headless sim).
 - [ ] Confirm that `flag-icons` covers every flag emoji (add art from another open-licence set for any gap).
-- [ ] Legal review of the real-counterpart mapping, and the Workshop policy for real-brand car mods.
-- [ ] Junior practice length (3 days proposed) and whether garages need extra crew for back-to-back events.
-- [ ] Whether careers with balance-changing mods still earn achievements.
+- [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
+- [ ] Whether garages need extra crew for back-to-back Super and Junior events.
 - [ ] Tuning of negotiation values: patience, relationship effects and reservation formulas.
