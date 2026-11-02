@@ -34,6 +34,8 @@ jobs:
         env:
           # Served from the root of a custom domain (lc.nexxusdrako.au), not a sub-path.
           BASE_URL: /
+          # The web build includes the Google tag; other builds do not.
+          GTAG_ID: G-H0N9B01KRM
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
