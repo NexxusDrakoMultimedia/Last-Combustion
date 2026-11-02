@@ -13,6 +13,7 @@ import {
   populations,
 } from './data';
 import { garageName, personName, pickNationality } from './names';
+import { generateLoadouts } from './loadouts';
 import { clamp, fairSalary, fameFromFans, overallRating } from './rating';
 import {
   ROAD_TYPES,
@@ -447,5 +448,10 @@ export function generateWorld(seed: string | number): World {
     contracts,
     flagFans,
     lineups,
+    loadouts: generateLoadouts(
+      drivers,
+      (id) => (garages[garageOf[id - 1] as number] as Garage).prestige,
+      rng.stream('worldgen:gear'),
+    ),
   };
 }

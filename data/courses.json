@@ -9,7 +9,14 @@
     "finalLaps": 5,
     "roadType": "mountain",
     "altitudeM": 400,
-    "night": false
+    "night": false,
+    "climate": {
+      "dry_clear": 0.6,
+      "overcast": 0.25,
+      "wet": 0.15
+    },
+    "baseTempC": 16,
+    "elevationAmplitudeM": 260
   },
   {
     "id": "round-2",
@@ -21,7 +28,14 @@
     "finalLaps": 5,
     "roadType": "coast",
     "altitudeM": 50,
-    "night": true
+    "night": true,
+    "climate": {
+      "dry_clear": 0.55,
+      "overcast": 0.25,
+      "wet": 0.2
+    },
+    "baseTempC": 18,
+    "elevationAmplitudeM": 60
   },
   {
     "id": "round-3",
@@ -33,7 +47,14 @@
     "finalLaps": 6,
     "roadType": "mountain",
     "altitudeM": 650,
-    "night": false
+    "night": false,
+    "climate": {
+      "dry_clear": 0.5,
+      "overcast": 0.3,
+      "wet": 0.2
+    },
+    "baseTempC": 21,
+    "elevationAmplitudeM": 320
   },
   {
     "id": "round-4",
@@ -45,7 +66,14 @@
     "finalLaps": 5,
     "roadType": "mountain",
     "altitudeM": 500,
-    "night": false
+    "night": false,
+    "climate": {
+      "dry_clear": 0.4,
+      "overcast": 0.3,
+      "wet": 0.3
+    },
+    "baseTempC": 15,
+    "elevationAmplitudeM": 300
   },
   {
     "id": "round-5",
@@ -57,7 +85,14 @@
     "finalLaps": 8,
     "roadType": "forest",
     "altitudeM": 500,
-    "night": false
+    "night": false,
+    "climate": {
+      "dry_clear": 0.4,
+      "overcast": 0.3,
+      "wet": 0.3
+    },
+    "baseTempC": 13,
+    "elevationAmplitudeM": 200
   },
   {
     "id": "round-6",
@@ -69,6 +104,13 @@
     "finalLaps": 6,
     "roadType": "forest",
     "altitudeM": 350,
-    "night": false
+    "night": false,
+    "climate": {
+      "dry_clear": 0.45,
+      "overcast": 0.3,
+      "wet": 0.25
+    },
+    "baseTempC": 14,
+    "elevationAmplitudeM": 160
   }
 ]

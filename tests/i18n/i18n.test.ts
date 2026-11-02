@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatMoney, t, type MessageKey } from '../../src/i18n';
+import { formatDate, formatLapTime, formatMoney, t, type MessageKey } from '../../src/i18n';
 
 describe('i18n', () => {
   it('looks up text', () => {
@@ -23,6 +23,11 @@ describe('i18n', () => {
   it('formats dates and money for Australia', () => {
     expect(formatDate('2031-03-31')).toBe('31 March 2031');
     expect(formatMoney(1500000)).toMatch(/1,500,000/);
+  });
+
+  it('formats lap times', () => {
+    expect(formatLapTime(3_507_123)).toBe('58:27.123');
+    expect(formatLapTime(65_040)).toBe('1:05.040');
   });
 
   it('has no empty messages', () => {

@@ -38,6 +38,10 @@ This is the working summary of how the code is organised. The design reasons liv
 
 `generateWorld(seed)` in `src/sim/worldgen` builds the whole 2031 field as plain data from named random streams, and `persistWorld` in `src/db/world.ts` writes it to the database. Reference data lives in `/data` (rebuild the car lists from the GDD tables with `tools/data/build_cars.py`). Manufacturer lineups change over time through `refreshLineups` in `src/sim/lineups.ts`.
 
+## Prelims
+
+`simulateRoundPrelims` in `src/sim/prelim/round.ts` plays a round's practice week and seven prelim days from plain data: `weather.ts` plans the days, `order.ts` builds the running order, `lap.ts` simulates a lap sector by sector using `ratings.ts`, `practice.ts` handles practice incidents and `classify.ts` ranks and scores the runs. `playPrelims` in `src/db/prelims.ts` reads a round from the database, applies each driver's gear (`src/sim/gear.ts`) and writes back the results, events and extra car wear.
+
 ## Not built yet
 
-The simulation worker (`src/workers`), the prelim and race simulation, and every gameplay screen arrive in milestones M2 onwards. The current UI is a temporary foundations check.
+The simulation worker (`src/workers`), the final race, the economy and every gameplay screen arrive in milestones M3 onwards. The current UI is a temporary foundations check.

@@ -38,6 +38,17 @@ describe('career store', () => {
     expect(useCareerStore.getState().notice?.key).toBe('debug.loaded');
   });
 
+  it('runs the prelims of each round in order and then stops', async () => {
+    await useCareerStore.getState().createTestCareer();
+    expect(useCareerStore.getState().nextRound).toBe(1);
+    await useCareerStore.getState().runNextPrelims();
+    expect(useCareerStore.getState().prelims?.roundNumber).toBe(1);
+    expect(useCareerStore.getState().prelims?.qualifiers).toBe(15);
+    expect(useCareerStore.getState().nextRound).toBe(2);
+    for (let i = 0; i < 5; i++) await useCareerStore.getState().runNextPrelims();
+    expect(useCareerStore.getState().nextRound).toBeNull();
+  });
+
   it('exports a .lcsave file through the platform', async () => {
     await useCareerStore.getState().createTestCareer();
     await useCareerStore.getState().exportFile();

@@ -1310,5 +1310,29 @@
     "country": "NL",
     "lat": 53.0,
     "lon": 6.56
+  },
+  {
+    "id": "gb-newcastle-upon-tyne",
+    "name": "Newcastle upon Tyne",
+    "region": "England",
+    "country": "GB",
+    "lat": 54.98,
+    "lon": -1.62
+  },
+  {
+    "id": "jp-hakone",
+    "name": "Hakone",
+    "region": "Kanagawa",
+    "country": "JP",
+    "lat": 35.23,
+    "lon": 139.11
+  },
+  {
+    "id": "es-sabadell",
+    "name": "Sabadell",
+    "region": "Catalonia",
+    "country": "ES",
+    "lat": 41.55,
+    "lon": 2.11
   }
 ]

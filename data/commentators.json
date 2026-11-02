@@ -1,0 +1,42 @@
+[
+  {
+    "id": "jayden-darra",
+    "name": "Jayden Darra",
+    "flag": "AU",
+    "hometownPlaceId": "au-brisbane",
+    "background": "Former professional driver",
+    "role": "Driving analyst",
+    "focus": ["driving", "incidents", "tyres", "attention_flag"],
+    "voice": "Calm and technical; explains what the driver is feeling at the limit."
+  },
+  {
+    "id": "luke-winters",
+    "name": "Luke Winters",
+    "flag": "GB",
+    "hometownPlaceId": "gb-newcastle-upon-tyne",
+    "background": "Multisport commentator",
+    "role": "Lead commentator",
+    "focus": ["play_by_play", "storylines", "rivalries", "milestones"],
+    "voice": "Warm and quick; carries the live action and the stories around it."
+  },
+  {
+    "id": "kazumi-aikawa",
+    "name": "Kazumi Aikawa",
+    "flag": "JP",
+    "hometownPlaceId": "jp-hakone",
+    "background": "Former touge prodigy",
+    "role": "Road and line specialist",
+    "focus": ["roads", "mountain", "night", "underdogs"],
+    "voice": "Quiet and precise; reads the road and the line, and champions the underdog."
+  },
+  {
+    "id": "jose-antonio-carrera",
+    "name": "José Antonio Carrera",
+    "flag": "ES",
+    "hometownPlaceId": "es-sabadell",
+    "background": "Business magnate",
+    "role": "Business and garages analyst",
+    "focus": ["money", "sponsors", "auctions", "garages"],
+    "voice": "Confident and blunt; talks budgets, deals and what a result is worth."
+  }
+]

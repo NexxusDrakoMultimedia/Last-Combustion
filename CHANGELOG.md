@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Milestone M2 prelim simulation: course sectors built from the saved outlines, car ratings and the lap-time model, weather and extra practice days, the 7-day running order, practice and prelim incidents (mistakes, spins, crashes, wildlife, blocked course), classification, points and pole, racing kilometres and wear, and a database layer that plays a round (schema version 3).
+- Driver gear: helmets, suits, gloves, boots and trinkets that boost attributes, with tiers, set bonuses and a cap, starting gear for AI drivers, and database tables.
+- The commentary team: Jayden Darra, Luke Winters, Kazumi Aikawa and José Antonio Carrera.
 - Milestone M1 world generation: the 2031 field (96 garages, 313 drivers, 313 entries and cars, race numbers, contracts, fans, hometowns and residences, the six-round calendar), deterministic from a master seed and stored in the database (schema version 2).
 - Reference data in `/data`: 31 manufacturers and 96 car models, 164 places, name pools for 15 nationalities, courses, flag populations and world-generation balance values.
 - Manufacturer lineups that refresh about every five years (`src/sim/lineups.ts`).
@@ -30,6 +33,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Changed
 
+- The Junior Series power cap is 313 kW (about 426 PS) instead of 300 PS.
 - Starting fan counts are small to match a brand-new series: the series starts at 200,000 fans, drivers at 10–400 and garages at 5.
 - 2031 is the series' first year: nobody starts gold-bordered, race numbers are drawn at random and there is no history. Retired car models only stop being sold new.
 - The car roster is now 31 manufacturers and 96 models (hypercar, supercar, sports, JDM, Australian domestic and other), with 2 to 5 models per manufacturer.

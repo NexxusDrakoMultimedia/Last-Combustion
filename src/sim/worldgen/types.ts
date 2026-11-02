@@ -152,6 +152,18 @@ export interface SeriesOfficial {
   residencePlaceId: string;
 }
 
+export interface Commentator {
+  id: string;
+  name: string;
+  flag: string;
+  hometownPlaceId: string;
+  background: string;
+  role: string;
+  /** The kinds of moment this commentator tends to speak about. */
+  focus: string[];
+  voice: string;
+}
+
 export interface FlagFans {
   flag: string;
   fans: number;
@@ -170,4 +182,6 @@ export interface World {
   contracts: Contract[];
   flagFans: FlagFans[];
   lineups: ManufacturerRefresh[];
+  /** The gear each driver wears. */
+  loadouts: { driverId: number; itemId: string }[];
 }

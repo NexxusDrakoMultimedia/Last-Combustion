@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useEffect } from 'react';
-import { formatDate, t } from '../i18n';
+import { formatDate, formatLapTime, t } from '../i18n';
 import { useCareerStore } from '../state/career.store';
 
 /** A temporary panel that proves the foundations work end to end. Removed once real screens exist. */
 export function DebugPanel() {
-  const { status, schemaVersion, career, world, slotsInUse, notice } = useCareerStore();
-  const { createTestCareer, saveSlot1, loadSlot1, exportFile, refreshSlots } = useCareerStore();
+  const { status, schemaVersion, career, world, slotsInUse, notice, nextRound, prelims } =
+    useCareerStore();
+  const { createTestCareer, runNextPrelims, saveSlot1, loadSlot1, exportFile, refreshSlots } =
+    useCareerStore();
   const busy = status === 'busy';
   const hasCareer = career !== undefined;
 
@@ -59,6 +61,14 @@ export function DebugPanel() {
         >
           {t('debug.exportFile')}
         </button>
+        <button
+          type="button"
+          className={button}
+          disabled={busy || nextRound === null}
+          onClick={() => void runNextPrelims()}
+        >
+          {t('debug.runPrelims')}
+        </button>
       </div>
       <ul className="space-y-1 text-sm text-zinc-300" aria-live="polite">
         {schemaVersion !== undefined && <li>{t('debug.schema', { version: schemaVersion })}</li>}
@@ -75,6 +85,29 @@ export function DebugPanel() {
           <>
             <li>{t('debug.world', { ...world })}</li>
             <li>{t('debug.seriesFans', { fans: world.seriesFans })}</li>
+          </>
+        )}
+        {prelims && (
+          <>
+            <li>
+              {t('debug.prelims', {
+                round: prelims.roundNumber,
+                prelimDays: prelims.prelimDays,
+                finalDate: formatDate(prelims.finalDate),
+                finishers: prelims.finishers,
+                dnfs: prelims.dnfs,
+                qualifiers: prelims.qualifiers,
+              })}
+            </li>
+            {prelims.top[0] && (
+              <li>
+                {t('debug.pole', {
+                  raceNumber: prelims.top[0].raceNumber,
+                  driver: prelims.top[0].driver,
+                  time: formatLapTime(prelims.top[0].timeMs),
+                })}
+              </li>
+            )}
           </>
         )}
         <li>{t('debug.slots', { count: slotsInUse })}</li>
