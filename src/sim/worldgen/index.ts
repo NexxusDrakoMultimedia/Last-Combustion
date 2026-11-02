@@ -95,7 +95,14 @@ function garageSizes(rng: RandomStream): number[] {
   return counts;
 }
 
-function makeDriver(rng: RandomStream, id: number): Driver {
+export interface DriverOptions {
+  /** The season the driver is made for (default: the first season). */
+  year?: number;
+  /** Makes a young newcomer with a lower pace than the established field. */
+  rookie?: { ageMin: number; ageMax: number; paceMean: number };
+}
+
+function makeDriver(rng: RandomStream, id: number, options: DriverOptions = {}): Driver {
   const cfg = balance.driver;
   const nationality = pickNationality(rng);
   const gender = rng.chance(cfg.femaleShare) ? 'female' : 'male';
@@ -118,11 +125,16 @@ function makeDriver(rng: RandomStream, id: number): Driver {
     else residenceCountry = otherCountry(rng, flag);
   }
 
-  const age = Math.round(rng.clampedNormal(cfg.ageMean, cfg.ageSd, cfg.ageMin, cfg.ageMax));
-  const birthYear = SEASON_YEAR - age;
+  const rookie = options.rookie;
+  const age = rookie
+    ? rng.int(rookie.ageMin, rookie.ageMax)
+    : Math.round(rng.clampedNormal(cfg.ageMean, cfg.ageSd, cfg.ageMin, cfg.ageMax));
+  const birthYear = (options.year ?? SEASON_YEAR) - age;
   const birthDate = new Date(Date.UTC(birthYear, rng.int(0, 11), rng.int(1, 28)));
 
-  const pace = Math.round(rng.clampedNormal(cfg.paceMean, cfg.paceSd, cfg.paceMin, cfg.paceMax));
+  const pace = Math.round(
+    rng.clampedNormal(rookie?.paceMean ?? cfg.paceMean, cfg.paceSd, cfg.paceMin, cfg.paceMax),
+  );
   const stat = (mean: number) =>
     Math.round(clamp(0.4 * pace + 0.6 * mean + rng.normal(0, 10), 10, 95));
   const homeRoadType = rng.weighted<RoadType>(
@@ -158,6 +170,16 @@ function makeDriver(rng: RandomStream, id: number): Driver {
     goldBorderYear: null,
     nickname: null,
   };
+}
+
+/** A newcomer for a new season, made from the same generator as the first field. */
+export function makeRookie(
+  rng: RandomStream,
+  id: number,
+  year: number,
+  rookie: NonNullable<DriverOptions['rookie']>,
+): Driver {
+  return makeDriver(rng, id, { year, rookie });
 }
 
 /** Drivers are dealt into garages; stronger drivers tend to land in larger garages. */
