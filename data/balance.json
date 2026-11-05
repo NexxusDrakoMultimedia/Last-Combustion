@@ -461,7 +461,26 @@
       "declinePerYear": 0.5,
       "noise": 1.2,
       "min": 10,
-      "max": 95
+      "max": 95,
+      "taperYears": 3,
+      "softBand": 15,
+      "judgementPeakDelay": 2,
+      "curve": {
+        "growthEnd": [23, 30],
+        "declineStart": [31, 37],
+        "growthRate": [0.7, 1.4],
+        "declineRate": [0.7, 1.4]
+      }
+    },
+    "training": {
+      "levels": [
+        { "cost": 0, "growth": 0, "decline": 0, "overshoot": 0 },
+        { "cost": 20000, "growth": 0.25, "decline": 0.3, "overshoot": 2 },
+        { "cost": 60000, "growth": 0.5, "decline": 0.6, "overshoot": 4 },
+        { "cost": 150000, "growth": 0.8, "decline": 0.9, "overshoot": 6 }
+      ],
+      "aiPrestigePerLevel": 20,
+      "aiCashMultiple": 3
     }
   }
 }

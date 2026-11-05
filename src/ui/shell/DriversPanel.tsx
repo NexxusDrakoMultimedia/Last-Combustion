@@ -5,6 +5,7 @@ import { formatMoney, t } from '../../i18n';
 import { IDENTITY_SIGN } from '../../sim/identity';
 import type { Identity } from '../../sim/worldgen/types';
 import { useCareerStore } from '../../state/career.store';
+import { seasonBalance } from '../../sim/worldgen/data';
 import { button, field, quiet } from '../styles';
 
 /** Free agents to negotiate with, and the drivers already signed, who can be seated in an entry. */
@@ -12,6 +13,8 @@ export function DriversPanel() {
   const {
     agents,
     gear,
+    trained,
+    setTraining,
     negotiation,
     hub,
     status,
@@ -169,6 +172,40 @@ export function DriversPanel() {
           </li>
         ))}
       </ul>
+      {trained.length > 0 && (
+        <section className="space-y-2 text-sm">
+          <h3 className="lc-display text-sm text-lc-dim">{t('drivers.trainingTitle')}</h3>
+          <p className="text-lc-dim">{t('drivers.trainingIntro')}</p>
+          <ul className="space-y-1">
+            {trained.map((d) => (
+              <li
+                key={d.driverId}
+                className="flex flex-wrap items-center justify-between gap-2 border border-lc-line p-2"
+              >
+                <span className="font-medium">
+                  {t('drivers.trainingDriver', { name: d.name, age: d.age })}
+                </span>
+                <select
+                  aria-label={t('drivers.trainingLevel')}
+                  className={field}
+                  disabled={busy}
+                  value={d.training}
+                  onChange={(e) => void setTraining(d.driverId, Number(e.target.value))}
+                >
+                  {seasonBalance.training.levels.map((l, i) => (
+                    <option key={i} value={i}>
+                      {t('drivers.trainingOption', {
+                        name: t(`training.level.${i}` as never),
+                        cost: formatMoney(l.cost),
+                      })}
+                    </option>
+                  ))}
+                </select>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {gear.length > 0 && (
         <section className="space-y-2 text-sm">
           <h3 className="lc-display text-sm text-lc-dim">{t('drivers.gearTitle')}</h3>
