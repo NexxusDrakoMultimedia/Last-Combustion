@@ -164,9 +164,11 @@
   "drivers.negotiating": "Negotiating with {name}. A fair salary is around {fair} a year. Patience: {patience}.",
   "drivers.salary": "Salary per year",
   "drivers.years": "Years",
+  "drivers.share": "Prize money the garage keeps",
+  "drivers.shareOption": "{percent}%",
   "drivers.offer": "Make offer",
   "drivers.back": "Back to the list",
-  "drivers.counter": "They counter: {salary} a year for {years, plural, one {# year} other {# years}}.",
+  "drivers.counter": "They counter: {salary} a year for {years, plural, one {# year} other {# years}}, with the garage keeping {share}% of the prize money.",
   "drivers.accepted": "{name} has signed.",
   "drivers.walked": "{name} has walked away and will not talk again this year."
 }

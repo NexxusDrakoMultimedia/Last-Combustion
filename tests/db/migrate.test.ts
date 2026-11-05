@@ -76,6 +76,7 @@ describe('migrate', () => {
       'easter_egg',
       'owner',
       'starter',
+      'prize_share',
     ]);
   });
 

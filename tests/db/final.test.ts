@@ -58,8 +58,15 @@ describe('playing the final of a round', () => {
     const ledger = Number(scalar(db, 'SELECT SUM(amount) FROM ledger'));
     const cashAfter = Number(scalar(db, 'SELECT SUM(cash) FROM garage'));
     expect(cashAfter - cashBefore).toBe(ledger);
-    expect(ledger).toBeGreaterThanOrEqual(prizes);
-    expect(ledger).toBeLessThanOrEqual(prizes + bonuses);
+    // Prize money is split by contract: the garage's part is in the ledger, the driver's in their earnings.
+    const earnings = Number(scalar(db, 'SELECT SUM(earnings) FROM driver'));
+    const garagePrizes = Number(
+      scalar(db, "SELECT SUM(amount) FROM ledger WHERE category = 'prize'"),
+    );
+    expect(garagePrizes + earnings).toBe(prizes);
+    expect(earnings).toBeGreaterThan(0);
+    expect(garagePrizes).toBeGreaterThan(earnings);
+    expect(bonuses).toBeGreaterThanOrEqual(0);
   });
 
   it('writes timing rows, final events and extra racing kilometres', () => {

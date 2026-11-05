@@ -8,6 +8,7 @@ import { courses, finalBalance, pointsTables, prizeTables } from '../sim/worldge
 import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
 import { all, loadEntries } from './entries';
+import { splitPrize } from './prizes';
 import { wearParts } from './repairs';
 import { awardTitles } from './titles';
 
@@ -167,15 +168,17 @@ export function playFinal(
         c.entryId,
       ]);
       if (prize > 0) {
+        // The garage keeps the share its contract with the driver gives it; the driver keeps the rest.
+        const split = splitPrize(db, entry.garageId, entry.driver.id, season.year as number, prize);
         ledger.run([
           entry.garageId,
           roundId,
           date,
           'prize',
-          prize,
+          split.garage,
           `Round ${roundNumber}: ${c.position}${suffix(c.position)} place`,
         ]);
-        db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [prize, entry.garageId]);
+        db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [split.garage, entry.garageId]);
       }
       if (c.overtakes > 0) {
         bonus.run([

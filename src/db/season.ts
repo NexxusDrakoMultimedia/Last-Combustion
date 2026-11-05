@@ -12,6 +12,7 @@ import {
 } from '../sim/standings';
 import { seasonBalance } from '../sim/worldgen/data';
 import { all } from './entries';
+import { splitPrize } from './prizes';
 
 /** Every main-series result of a season, with the groups each one scores for. */
 export function loadRoundResults(db: Database, seasonId: number): RoundResult[] {
@@ -114,16 +115,31 @@ export function endSeason(db: Database): SeasonEnd {
       db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [amount, garageId]);
     };
     const prize = seasonBalance.championPrize;
-    pay(championGarageId, 'championship_prize', prize, `${year} Drivers' Championship`);
+    // The champion's prize and the bonuses are the driver's earnings, split with the garage by contract.
+    const championSplit = splitPrize(db, championGarageId, championDriverId, year, prize);
+    pay(
+      championGarageId,
+      'championship_prize',
+      championSplit.garage,
+      `${year} Drivers' Championship`,
+    );
 
     let bonusesPaid = 0;
     for (const b of all(
       db,
-      `SELECT garage_id, SUM(amount) AS total FROM season_bonus
-        WHERE season_id = ? AND paid = 0 GROUP BY garage_id`,
+      `SELECT sb.garage_id, e.driver_id, SUM(sb.amount) AS total FROM season_bonus sb
+         JOIN entry e ON e.id = sb.entry_id
+        WHERE sb.season_id = ? AND sb.paid = 0 GROUP BY sb.garage_id, e.driver_id`,
       [seasonId],
     )) {
-      pay(b.garage_id as number, 'bonuses', b.total as number, `${year} pole and overtake bonuses`);
+      const split = splitPrize(
+        db,
+        b.garage_id as number,
+        b.driver_id as number,
+        year,
+        b.total as number,
+      );
+      pay(b.garage_id as number, 'bonuses', split.garage, `${year} pole and overtake bonuses`);
       bonusesPaid += b.total as number;
     }
     db.run('UPDATE season_bonus SET paid = 1 WHERE season_id = ? AND paid = 0', [seasonId]);
