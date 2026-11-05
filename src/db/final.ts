@@ -8,6 +8,7 @@ import { courses, finalBalance, pointsTables, prizeTables } from '../sim/worldge
 import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
 import { all, loadEntries } from './entries';
+import { awardRoundFans } from './fans';
 import { splitPrize } from './prizes';
 import { wearParts } from './repairs';
 import { awardTitles } from './titles';
@@ -244,6 +245,8 @@ export function playFinal(
         }
       }
     }
+
+    awardRoundFans(db, roundId);
 
     const insertEvent = db.prepare(
       'INSERT INTO event_log (round_id, scope, occurred_on, km, type, entry_id, payload) VALUES (?, ?, ?, ?, ?, ?, ?)',
