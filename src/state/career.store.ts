@@ -33,6 +33,7 @@ import {
 } from '../db/negotiation';
 import { buyUsedCar, openListings, refreshUsedMarket, type Listing } from '../db/market';
 import { startNextSeason, type Rollover } from '../db/rollover';
+import { setTraining as dbSetTraining, trainedDrivers, type TrainedDriver } from '../db/training';
 import { garageFinance, type GarageFinance } from '../db/finance';
 import {
   activeSponsorDeal,
@@ -111,6 +112,7 @@ interface CareerState {
   negotiation: ActiveNegotiation | undefined;
   upgrades: UpgradeView[];
   gear: GearCondition[];
+  trained: TrainedDriver[];
   sponsors: SponsorsView | undefined;
   money: GarageFinance | undefined;
   sponsorNegotiation: ActiveSponsorNegotiation | undefined;
@@ -134,6 +136,7 @@ interface CareerState {
   removePart(carId: number, category: PartCategory): Promise<void>;
   serviceParts(carId: number): Promise<void>;
   renewGear(driverId: number, itemId: string): Promise<void>;
+  setTraining(driverId: number, level: number): Promise<void>;
   raceCar(carId: number): Promise<void>;
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
@@ -168,6 +171,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       listings: openListings(db),
       agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
       gear: playerGarageId(db) === null ? [] : garageGear(db, playerGarageId(db)!),
+      trained: playerGarageId(db) === null ? [] : trainedDrivers(db, playerGarageId(db)!),
       sponsors:
         playerGarageId(db) === null
           ? undefined
@@ -217,6 +221,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     negotiation: undefined,
     upgrades: [],
     gear: [],
+    trained: [],
     sponsors: undefined,
     money: undefined,
     sponsorNegotiation: undefined,
@@ -400,6 +405,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const garageId = playerGarageId(openDb);
         if (garageId === null) return undefined;
         dbRenewGear(openDb, garageId, driverId, itemId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    setTraining: (driverId, level) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbSetTraining(openDb, garageId, driverId, level);
         refresh(openDb);
         return undefined;
       }),
