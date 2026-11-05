@@ -33,6 +33,14 @@ import {
 } from '../db/negotiation';
 import { buyUsedCar, openListings, refreshUsedMarket, type Listing } from '../db/market';
 import { startNextSeason, type Rollover } from '../db/rollover';
+import { garageFinance, type GarageFinance } from '../db/finance';
+import {
+  activeSponsorDeal,
+  approachableSponsors,
+  offerSponsorDeal,
+  openSponsorNegotiation,
+  type SponsorOutcome,
+} from '../db/sponsors';
 import {
   garageGear,
   renewGear as dbRenewGear,
@@ -66,6 +74,21 @@ export interface ActiveNegotiation {
   last?: ContractOutcome;
 }
 
+export interface ActiveSponsorNegotiation {
+  id: number;
+  stableId: string;
+  name: string;
+  fairValue: number;
+  patience: number;
+  last?: SponsorOutcome;
+}
+
+/** The player's title sponsor and the sponsors they could approach. */
+export interface SponsorsView {
+  deal: { sponsor: string; seasonFee: number; endYear: number } | undefined;
+  approachable: { stableId: string; name: string; tier: string }[];
+}
+
 export interface Notice {
   key: MessageKey;
   values?: MessageValues;
@@ -88,6 +111,9 @@ interface CareerState {
   negotiation: ActiveNegotiation | undefined;
   upgrades: UpgradeView[];
   gear: GearCondition[];
+  sponsors: SponsorsView | undefined;
+  money: GarageFinance | undefined;
+  sponsorNegotiation: ActiveSponsorNegotiation | undefined;
   listings: Listing[];
   seasonEnd: SeasonEnd | undefined;
   rollover: Rollover | undefined;
@@ -100,6 +126,9 @@ interface CareerState {
   negotiate(driverId: number): Promise<void>;
   offerContract(salary: number, years: number, garageShare?: number): Promise<void>;
   endNegotiation(): void;
+  negotiateSponsor(stableId: string): Promise<void>;
+  offerSponsor(fee: number, years: number): Promise<void>;
+  endSponsorNegotiation(): void;
   seatDriver(driverId: number): Promise<void>;
   fitPart(carId: number, partId: string): Promise<void>;
   removePart(carId: number, category: PartCategory): Promise<void>;
@@ -139,6 +168,18 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       listings: openListings(db),
       agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
       gear: playerGarageId(db) === null ? [] : garageGear(db, playerGarageId(db)!),
+      sponsors:
+        playerGarageId(db) === null
+          ? undefined
+          : {
+              deal: activeSponsorDeal(
+                db,
+                playerGarageId(db)!,
+                Number(readCareer(db)!.gameDate.slice(0, 4)),
+              ),
+              approachable: approachableSponsors(db, playerGarageId(db)!),
+            },
+      money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
       upgrades:
         playerGarageId(db) === null
           ? []
@@ -176,6 +217,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     negotiation: undefined,
     upgrades: [],
     gear: [],
+    sponsors: undefined,
+    money: undefined,
+    sponsorNegotiation: undefined,
     listings: [],
     seasonEnd: undefined,
     rollover: undefined,
@@ -268,6 +312,43 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       }),
 
     endNegotiation: () => set({ negotiation: undefined }),
+
+    negotiateSponsor: (stableId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        const sponsor = get().sponsors?.approachable.find((x) => x.stableId === stableId);
+        if (garageId === null || !sponsor) return undefined;
+        const n = openSponsorNegotiation(openDb, garageId, stableId);
+        set({
+          sponsorNegotiation: {
+            id: n.id,
+            stableId,
+            name: sponsor.name,
+            fairValue: n.fairValue,
+            patience: n.patience,
+          },
+        });
+        return undefined;
+      }),
+
+    offerSponsor: (fee, years) =>
+      run(async () => {
+        const current = get().sponsorNegotiation;
+        if (!openDb || !current) return undefined;
+        const outcome = offerSponsorDeal(openDb, current.id, { fee, years });
+        refresh(openDb);
+        set({
+          sponsorNegotiation: {
+            ...current,
+            patience: outcome.kind === 'countered' ? outcome.patienceLeft : current.patience,
+            last: outcome,
+          },
+        });
+        return undefined;
+      }),
+
+    endSponsorNegotiation: () => set({ sponsorNegotiation: undefined }),
 
     seatDriver: (driverId) =>
       run(async () => {

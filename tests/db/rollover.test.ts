@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { beforeAll, describe, expect, it } from 'vitest';
+import { hasText } from '../../src/i18n';
 import { createCareer, readCareer } from '../../src/db/career';
 import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
@@ -151,6 +152,14 @@ describe('starting the next season', () => {
         scalar(db, "SELECT COUNT(*) FROM ledger WHERE category = 'gear' AND round_id IS NULL"),
       ),
     ).toBeGreaterThan(0);
+  });
+
+  it('only writes ledger categories the Money panel has a name for', () => {
+    const categories = db
+      .exec('SELECT DISTINCT category FROM ledger')[0]!
+      .values.map((v) => String(v[0]));
+    expect(categories.length).toBeGreaterThan(5);
+    for (const c of categories) expect(hasText(`money.category.${c}`), c).toBe(true);
   });
 
   it('grows the series audience by 26% for the new season', () => {

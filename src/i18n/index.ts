@@ -39,6 +39,11 @@ export function t(key: MessageKey, values?: MessageValues): string {
   return String(format.format(values));
 }
 
+/** Whether a message exists for a key that is only known at run time. */
+export function hasText(key: string): key is MessageKey {
+  return (catalogues[locale] ?? catalogues['en'])?.[key] !== undefined;
+}
+
 /** Formats a date in the current locale. */
 export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat(formatLocale(), { dateStyle: 'long', timeZone: 'UTC' }).format(
