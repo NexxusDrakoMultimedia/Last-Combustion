@@ -13,6 +13,7 @@ import {
   scrutineer,
 } from '../../src/sim/upgrades';
 import { carRatings } from '../../src/sim/prelim/ratings';
+import { carModels } from '../../src/sim/worldgen/data';
 
 describe('the parts catalogue', () => {
   it('has three grades in each of the ten categories, each from a supplier that makes that category', () => {
@@ -135,5 +136,19 @@ describe('prices', () => {
     expect(partPrice(p, 'starter')).toBe(p.price);
     expect(partPrice(p, 'elite')).toBe(Math.round(p.price * 2.5));
     expect(partPrice(p, 'hyper')).toBe(p.price * 4);
+  });
+});
+
+describe('the Equalizer with every model and part', () => {
+  it('never lets a fitted car have tyres wider than its limit, even the lightest cars', () => {
+    for (const m of carModels) {
+      const base = { ps: m.ps, kerbKg: m.kerbKg, tyreMm: m.maxTyreMm, layout: m.layout };
+      for (const p of parts) {
+        const car = fitParts(base, [p]);
+        expect(car.tyreWidthMm).toBeLessThanOrEqual(maxTyreWidthMm(car.kerbKg, m.layout));
+      }
+      const all = fitParts(base, parts);
+      expect(all.tyreWidthMm).toBeLessThanOrEqual(maxTyreWidthMm(all.kerbKg, m.layout));
+    }
   });
 });

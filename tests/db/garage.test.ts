@@ -2,7 +2,10 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
-import { ownedCars, setEntryCar } from '../../src/db/garage';
+import { freeAgents } from '../../src/db/freeagents';
+import { ownedCars, setEntryCar, setEntryDriver } from '../../src/db/garage';
+import { openDriverNegotiation, offerDriverContract } from '../../src/db/negotiation';
+import { createStarterOffers } from '../../src/db/starter';
 import { buyUsedCar, openListings, refreshUsedMarket } from '../../src/db/market';
 import { foundPlayerGarage, playerView, type OwnerSetup } from '../../src/db/player';
 import { playPrelims } from '../../src/db/prelims';
@@ -69,5 +72,50 @@ describe('the player garage cars', () => {
     const bought = ownedCars(db, garageId).find((c) => c.inEntry === null)!;
     playPrelims(db, 1);
     expect(() => setEntryCar(db, garageId, number, bought.carId)).toThrow(/season has started/);
+  });
+});
+
+describe('signing and seating a driver', () => {
+  it('lists free agents, signs one through negotiation and seats them before the season', () => {
+    const { db, garageId } = fresh();
+    createStarterOffers(db);
+    const agents = freeAgents(db, garageId);
+    expect(agents.length).toBeGreaterThanOrEqual(5);
+    expect(agents.every((a) => !a.signed)).toBe(true);
+    expect(agents.map((a) => a.rating)).toEqual(
+      [...agents.map((a) => a.rating)].sort((x, y) => y - x),
+    );
+    const target = agents[0]!;
+    const number = playerView(db)!.entries[0]!.raceNumber;
+    expect(() => setEntryDriver(db, garageId, number, target.driverId)).toThrow(
+      /not under contract/,
+    );
+
+    db.run('UPDATE garage SET cash = 50000000 WHERE id = ?', [garageId]);
+    const n = openDriverNegotiation(db, garageId, target.driverId);
+    const outcome = offerDriverContract(db, n.id, { salary: target.fairValue * 3, years: 2 });
+    expect(outcome.kind).toBe('accepted');
+    expect(freeAgents(db, garageId).find((a) => a.driverId === target.driverId)!.signed).toBe(true);
+
+    setEntryDriver(db, garageId, number, target.driverId);
+    expect(playerView(db)!.entries[0]!.driver).toBe(target.name);
+    expect(freeAgents(db, garageId).some((a) => a.driverId === target.driverId)).toBe(false);
+    expect(() => setEntryDriver(db, garageId, number, 1)).toThrow();
+  });
+
+  it('refuses a driver racing elsewhere and a change after the season has started', () => {
+    const { db, garageId } = fresh();
+    const number = playerView(db)!.entries[0]!.raceNumber;
+    const racing = Number(
+      db.exec(`SELECT driver_id FROM entry WHERE garage_id <> ${garageId} LIMIT 1`)[0]!
+        .values[0]![0],
+    );
+    db.run(
+      'INSERT INTO contract (driver_id, garage_id, start_year, end_year, salary, role, release_fee) VALUES (?, ?, 2031, 2032, 1, ?, 0)',
+      [racing, garageId, 'lead'],
+    );
+    expect(() => setEntryDriver(db, garageId, number, racing)).toThrow(/already racing/);
+    playPrelims(db, 1);
+    expect(() => setEntryDriver(db, garageId, number, racing)).toThrow();
   });
 });

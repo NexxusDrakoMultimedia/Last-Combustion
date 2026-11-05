@@ -5,6 +5,7 @@ import { formatDate, formatLapTime, formatMoney, t, type MessageKey } from '../.
 import { useCareerStore } from '../../state/career.store';
 import { StarterChoice } from '../StarterChoice';
 import { button, quiet } from '../styles';
+import { DriversPanel } from './DriversPanel';
 import { Panel } from './Panel';
 import { UpgradesPanel } from './UpgradesPanel';
 import {
@@ -16,13 +17,14 @@ import {
   UsedMarket,
 } from './panels';
 
-type PanelId = 'season' | 'garage' | 'market' | 'upgrades' | 'menu';
+type PanelId = 'season' | 'garage' | 'market' | 'upgrades' | 'drivers' | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'season', label: 'rail.season' },
   { id: 'garage', label: 'rail.garage' },
   { id: 'market', label: 'rail.market' },
   { id: 'upgrades', label: 'rail.upgrades' },
+  { id: 'drivers', label: 'rail.drivers' },
   { id: null, label: 'rail.staff' },
   { id: null, label: 'rail.sponsors' },
   { id: null, label: 'rail.money' },
@@ -252,6 +254,15 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <UpgradesPanel />
+        </Panel>
+      )}
+      {!locked && open === 'drivers' && (
+        <Panel
+          title={t('rail.drivers')}
+          subtitle={t('drivers.intro')}
+          onClose={() => setOpen(null)}
+        >
+          <DriversPanel />
         </Panel>
       )}
       {open === 'menu' && (

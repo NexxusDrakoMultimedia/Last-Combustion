@@ -153,5 +153,20 @@
   "upgrades.effects": "Power {power, number}%, weight {kg} kg, grip {grip}, handling {handling}, traction {traction}, legality cost {legality}",
   "upgrades.fit": "Fit",
   "upgrades.remove": "Remove",
-  "upgrades.gradeSupplier": "{grade}, {supplier}"
+  "upgrades.gradeSupplier": "{grade}, {supplier}",
+  "rail.drivers": "Drivers",
+  "drivers.intro": "Drivers without a seat this season. Negotiate a contract, then put the driver in your entry before the season starts.",
+  "drivers.none": "There are no free agents.",
+  "drivers.age": "age {age}",
+  "drivers.stats": "Rating {rating}. Pace {pace}, consistency {consistency}, racecraft {racecraft}, tyres {tyres}, composure {composure}, wet {wet}.",
+  "drivers.negotiate": "Negotiate",
+  "drivers.seat": "Race this driver",
+  "drivers.negotiating": "Negotiating with {name}. A fair salary is around {fair} a year. Patience: {patience}.",
+  "drivers.salary": "Salary per year",
+  "drivers.years": "Years",
+  "drivers.offer": "Make offer",
+  "drivers.back": "Back to the list",
+  "drivers.counter": "They counter: {salary} a year for {years, plural, one {# year} other {# years}}.",
+  "drivers.accepted": "{name} has signed.",
+  "drivers.walked": "{name} has walked away and will not talk again this year."
 }
