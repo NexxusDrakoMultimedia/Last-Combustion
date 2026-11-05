@@ -33,6 +33,12 @@ import {
 } from '../db/negotiation';
 import { buyUsedCar, openListings, refreshUsedMarket, type Listing } from '../db/market';
 import { startNextSeason, type Rollover } from '../db/rollover';
+import {
+  garageGear,
+  renewGear as dbRenewGear,
+  serviceParts as dbServiceParts,
+  type GearCondition,
+} from '../db/repairs';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
@@ -81,6 +87,7 @@ interface CareerState {
   agents: FreeAgent[];
   negotiation: ActiveNegotiation | undefined;
   upgrades: UpgradeView[];
+  gear: GearCondition[];
   listings: Listing[];
   seasonEnd: SeasonEnd | undefined;
   rollover: Rollover | undefined;
@@ -96,6 +103,8 @@ interface CareerState {
   seatDriver(driverId: number): Promise<void>;
   fitPart(carId: number, partId: string): Promise<void>;
   removePart(carId: number, category: PartCategory): Promise<void>;
+  serviceParts(carId: number): Promise<void>;
+  renewGear(driverId: number, itemId: string): Promise<void>;
   raceCar(carId: number): Promise<void>;
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
@@ -129,6 +138,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
       listings: openListings(db),
       agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
+      gear: playerGarageId(db) === null ? [] : garageGear(db, playerGarageId(db)!),
       upgrades:
         playerGarageId(db) === null
           ? []
@@ -165,6 +175,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     agents: [],
     negotiation: undefined,
     upgrades: [],
+    gear: [],
     listings: [],
     seasonEnd: undefined,
     rollover: undefined,
@@ -288,6 +299,26 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const garageId = playerGarageId(openDb);
         if (garageId === null) return undefined;
         dbRemovePart(openDb, garageId, carId, category);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    serviceParts: (carId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbServiceParts(openDb, garageId, carId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    renewGear: (driverId, itemId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbRenewGear(openDb, garageId, driverId, itemId);
         refresh(openDb);
         return undefined;
       }),

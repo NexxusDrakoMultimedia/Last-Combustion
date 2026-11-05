@@ -7,7 +7,12 @@ import { playFinal } from '../../src/db/final';
 import { playPrelims } from '../../src/db/prelims';
 import {
   crashRepairCost,
+  garageGear,
+  gearConditions,
   partConditions,
+  partServiceCost,
+  renewGear,
+  wearGear,
   restoreChassis,
   serviceParts,
   wearParts,
@@ -175,5 +180,98 @@ describe('crash repairs', () => {
     const { db: loaded } = await unpackDatabase(SQL, await packDatabase(db, 'repairs'));
     expect(partConditions(loaded, carId)[0]!.wear).toBe(33);
     expect(scalar(loaded, `SELECT wear_offset FROM car WHERE id = ${carId}`)).toBe(20);
+  });
+});
+
+describe('gear wear', () => {
+  const driverOf = (db: Database) =>
+    db.exec('SELECT driver_id, garage_id FROM entry ORDER BY id LIMIT 1')[0]!.values[0] as [
+      number,
+      number,
+    ];
+
+  it('starts new, grows with racing kilometres and is slower for better tiers', () => {
+    const db = newCareer('gear-wear');
+    const [driverId] = driverOf(db);
+    const before = gearConditions(db, driverId);
+    expect(before.length).toBeGreaterThan(0);
+    expect(before.every((g) => g.wear === 0)).toBe(true);
+    wearGear(db, driverId, 1000);
+    const after = gearConditions(db, driverId);
+    for (const g of after) expect(g.wear).toBeGreaterThan(0);
+    const rate = (tier: string) => after.find((g) => g.tier === tier)?.wear;
+    if (rate('basic') !== undefined && rate('club') !== undefined)
+      expect(rate('basic')!).toBeGreaterThan(rate('club')!);
+    wearGear(db, driverId, 1_000_000);
+    expect(gearConditions(db, driverId).every((g) => g.wear === 100)).toBe(true);
+  });
+
+  it('wears the gear of every driver who races a round', () => {
+    const db = newCareer('gear-race');
+    playPrelims(db, 1);
+    expect(Number(scalar(db, 'SELECT COUNT(*) FROM driver_gear WHERE wear > 0'))).toBeGreaterThan(
+      100,
+    );
+    const afterPrelims = Number(scalar(db, 'SELECT SUM(wear) FROM driver_gear'));
+    playFinal(db, 1);
+    expect(Number(scalar(db, 'SELECT SUM(wear) FROM driver_gear'))).toBeGreaterThan(afterPrelims);
+  }, 120_000);
+
+  it('is refurbished by the garage that employs the driver, for half the price in proportion to wear', () => {
+    const db = newCareer('gear-renew');
+    const [driverId, garageId] = driverOf(db);
+    wearGear(db, driverId, 2000);
+    const worn = gearConditions(db, driverId).find((g) => g.renewCost !== null && g.wear > 0)!;
+    const cash = Number(scalar(db, `SELECT cash FROM garage WHERE id = ${garageId}`));
+    const cost = renewGear(db, garageId, driverId, worn.itemId);
+    expect(cost).toBe(worn.renewCost);
+    expect(cost).toBeGreaterThan(0);
+    expect(Number(scalar(db, `SELECT cash FROM garage WHERE id = ${garageId}`))).toBe(cash - cost);
+    expect(gearConditions(db, driverId).find((g) => g.itemId === worn.itemId)!.wear).toBe(0);
+    expect(
+      Number(
+        scalar(
+          db,
+          `SELECT COUNT(*) FROM ledger WHERE garage_id = ${garageId} AND category = 'gear'`,
+        ),
+      ),
+    ).toBe(1);
+  });
+
+  it('cannot be bought for a driver the garage does not employ, or for earned items', () => {
+    const db = newCareer('gear-renew-2');
+    const [driverId, garageId] = driverOf(db);
+    const other = Number(scalar(db, `SELECT id FROM garage WHERE id <> ${garageId} LIMIT 1`));
+    const item = gearConditions(db, driverId)[0]!;
+    expect(() => renewGear(db, other, driverId, item.itemId)).toThrow(/does not employ/);
+    expect(() => renewGear(db, garageId, driverId, 'trinket-border-coin')).toThrow(
+      /cannot be refurbished/,
+    );
+    expect(garageGear(db, garageId).length).toBeGreaterThan(0);
+  });
+});
+
+describe('part wear changes performance and the service bill', () => {
+  it('shows in the service cost and drops to nothing once serviced', () => {
+    const db = newCareer('part-service');
+    const [carId, garage] = entered(db);
+    fitPart(db, garage, carId, 'engine-sport');
+    expect(partServiceCost(db, garage, carId)).toBe(0);
+    wearParts(db, carId, 5000, 'race', 'mid');
+    expect(partServiceCost(db, garage, carId)).toBeGreaterThan(0);
+    serviceParts(db, garage, carId);
+    expect(partServiceCost(db, garage, carId)).toBe(0);
+  });
+
+  it('makes a worn engine part give less power in the race entry', async () => {
+    const { loadEntries } = await import('../../src/db/entries');
+    const db = newCareer('part-power');
+    const [carId, garage] = entered(db);
+    fitPart(db, garage, carId, 'engine-sport');
+    const seasonId = Number(scalar(db, 'SELECT id FROM season'));
+    const psOf = () => loadEntries(db, seasonId).find((e) => e.carId === carId)!.car.ps;
+    const fresh = psOf();
+    db.run('UPDATE car_part SET wear = 100 WHERE car_id = ?', [carId]);
+    expect(psOf()).toBeLessThan(fresh);
   });
 });

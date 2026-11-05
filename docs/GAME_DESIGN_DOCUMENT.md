@@ -585,6 +585,8 @@ Drivers wear gear that adjusts and boosts their attributes: a helmet, a race sui
 
 **Trinkets.** Small personal items such as Worn Dice, a Wattle Sprig or a Brass Stopwatch. Two special ones are never sold: the **Border Coin** (an elite trinket earned the first time a driver wins a gold border) and the **Founder's Coin** (legendary, given by Pyra Drake in a storyline).
 
+**Gear wear (built).** Gear wears with racing, like parts do: every racing kilometre adds 0.03 wear to each item a driver wears, times a tier factor (basic 1, club 0.8, pro 0.6, elite 0.45, legendary 0.3), up to 100 (`repairs` in `data/balance.json`, column `driver_gear.wear`). A worn item gives less of its boost, down to 40% at 100 wear, and a piece at 80 wear or more no longer counts towards a supplier set bonus. The driver's own record is still never changed. The Drivers panel lists the gear of the player's entered drivers with its wear, and the garage can have the maker refurbish an item for half its price in proportion to its wear. Earned and found items that are not sold (price 0) cannot be refurbished and simply wear on. Computer garages have their entered drivers' worn gear refurbished at each rollover as far as their cash goes.
+
 **Starting gear.** In Season 1 every AI driver wears a basic kit that matches their garage's budget: well-funded garages kit their drivers out in club and pro gear, small garages in basic gear. A new player's driver starts with basic gear.
 
 **Where it appears.** The gear shop, the driver profile and the contract negotiation (a garage can include gear in a driver's contract). Famous gear, for example a champion's helmet, can come up at the auction house. Gear data lives in `data/gear.json`, so mods can add items, tiers and suppliers.
@@ -1305,6 +1307,7 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 - **Tier factor.** Both are multiplied by 0.8 (Starter), 1.0 (Mid), 1.2 (Premium), 1.5 (Elite) or 2.0 (Hyper), matching the supercar upkeep rules.
 - **Examples.** A mid-tier car that covers 60,000 road km has 24 wear. One season of racing is about 1,200 km, which adds roughly 5 wear. Servicing resets part wear and has a cost; chassis wear can only be reduced by a restoration.
 - **Failure.** A part above 85 wear has a rising failure chance each sector; failure during a run causes a retirement.
+- **Worn parts give less (built).** A part's gains in power, grip, handling and traction shrink with its wear, down to half at 100 wear (`repairs.partWearEffect`); its weight and downsides do not change. The Upgrades panel shows each fitted part's wear and a Service parts button with the bill (a quarter of each part's price in proportion to its wear), which puts every part back to new.
 - **Season 1.** Every chassis starts with some road km and no race km, because the series has never raced before.
 
 ## Fictional manufacturers and cars

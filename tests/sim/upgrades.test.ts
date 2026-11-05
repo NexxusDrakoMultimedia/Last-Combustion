@@ -7,10 +7,12 @@ import {
   legalityScore,
   maxTyreWidthMm,
   part,
+  partEffects,
   partPrice,
   parts,
   partSuppliers,
   scrutineer,
+  wornShare,
 } from '../../src/sim/upgrades';
 import { carRatings } from '../../src/sim/prelim/ratings';
 import { carModels } from '../../src/sim/worldgen/data';
@@ -149,6 +151,30 @@ describe('the Equalizer with every model and part', () => {
       }
       const all = fitParts(base, parts);
       expect(all.tyreWidthMm).toBeLessThanOrEqual(maxTyreWidthMm(all.kerbKg, m.layout));
+    }
+  });
+});
+
+describe('part wear', () => {
+  it('keeps all of a new part’s gains and half of a worn-out part’s', () => {
+    expect(wornShare(0)).toBe(1);
+    expect(wornShare(100)).toBeCloseTo(0.5, 5);
+    expect(wornShare(-5)).toBe(1);
+    expect(wornShare(900)).toBeCloseTo(0.5, 5);
+  });
+
+  it('shrinks a worn part’s power and rating gains but not its downsides', () => {
+    const engine = part('engine-sport');
+    const fresh = partEffects([engine], [0]);
+    const worn = partEffects([engine], [100]);
+    expect(engine.psPct).toBeGreaterThan(0);
+    expect(worn.psPct).toBeCloseTo(fresh.psPct * 0.5, 8);
+    expect(partEffects([engine]).psPct).toBe(fresh.psPct);
+    const tuned = parts.find((p) => p.deltaGrip < 0 || p.deltaHandling < 0);
+    if (tuned) {
+      const keep = partEffects([tuned], [100]);
+      expect(keep.bonus.grip).toBeLessThanOrEqual(partEffects([tuned], [0]).bonus.grip + 1e-9);
+      if (tuned.deltaGrip < 0) expect(keep.bonus.grip).toBe(partEffects([tuned]).bonus.grip);
     }
   });
 });
