@@ -12,6 +12,7 @@ import {
   manufacturers,
   nameLists,
   places,
+  seasonBalance,
   flagNames,
   flagRegions,
   populations,
@@ -188,6 +189,42 @@ export function makeRookie(
   rookie: NonNullable<DriverOptions['rookie']>,
 ): Driver {
   return makeDriver(rng, id, { year, rookie });
+}
+
+/**
+ * A new computer garage for a season after the first: a one-car team founded that year, with a
+ * name, nation, base and colours drawn the same way as the first field's garages.
+ */
+export function makeNewGarage(
+  rng: RandomStream,
+  id: number,
+  year: number,
+  usedNames: Set<string>,
+): Garage {
+  const cfg = balance;
+  const flag = rng.chance(cfg.garage.australianFlagShare) ? HOST_COUNTRY : pickNationality(rng);
+  const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
+  const basePlaceId = placeIn(rng, flag);
+  const [primary, secondary] = rng.pick(COLOUR_PAIRS);
+  const prestige = seasonBalance.garages.newPrestige;
+  return {
+    id,
+    name: garageName(rng, nationality, usedNames),
+    flag,
+    basePlaceId,
+    homeState: (placeById.get(basePlaceId) as { region: string }).region,
+    primaryColour: primary,
+    secondaryColour: secondary,
+    prestige,
+    cash:
+      Math.round(
+        ((cfg.garage.cashBase + cfg.garage.cashPerPrestige * prestige) * rng.float(0.7, 1.3)) / 100,
+      ) * 100,
+    foundedYear: year,
+    isPlayer: false,
+    aiProfile: rng.chance(0.6) ? 'local' : 'growth',
+    fans: cfg.fans.garageStart,
+  };
 }
 
 /** Drivers are dealt into garages; stronger drivers tend to land in larger garages. */

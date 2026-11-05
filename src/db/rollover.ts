@@ -13,6 +13,7 @@ import { readCareer } from './career';
 import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
+import { openNewGarages, settleGarages } from './garages';
 
 export interface Rollover {
   year: number;
@@ -20,6 +21,8 @@ export interface Rollover {
   rookies: number;
   contractsRenewed: number;
   entries: number;
+  garagesClosed: number;
+  garagesOpened: number;
   worldChanges: AppliedChange[];
 }
 
@@ -47,7 +50,7 @@ export function startNextSeason(db: Database): Rollover {
   const identityRng = rng.stream(`rollover:${year}:identity`);
   const growthRng = rng.stream(`rollover:${year}:growth`);
 
-  const entries = all(
+  const allEntries = all(
     db,
     `SELECT e.id, e.garage_id, e.driver_id, e.car_id, e.race_number, d.birth_date, d.retired_year, g.is_player
        FROM entry e JOIN driver d ON d.id = e.driver_id JOIN garage g ON g.id = e.garage_id
@@ -57,6 +60,10 @@ export function startNextSeason(db: Database): Rollover {
 
   db.exec('BEGIN');
   try {
+    // Garages that stayed broke close; their entries are not carried over.
+    const closedGarages = new Set(settleGarages(db, lastId, year));
+    const entries = allEntries.filter((e) => !closedGarages.has(e.garage_id as number));
+
     // Retirements: a retiring driver's seat goes to a rookie, who is signed on the same terms but a smaller salary.
     const replaced = new Map<number, number>();
     let nextDriverId = Number(db.exec('SELECT MAX(id) FROM driver')[0]!.values[0]![0]) + 1;
@@ -147,11 +154,11 @@ export function startNextSeason(db: Database): Rollover {
     // Contracts that run out are renewed for another year on the same terms.
     const renewed = all(
       db,
-      'SELECT id FROM contract WHERE end_year < ? AND driver_id IN (SELECT id FROM driver WHERE retired_year IS NULL)',
+      'SELECT id FROM contract WHERE end_year < ? AND driver_id IN (SELECT id FROM driver WHERE retired_year IS NULL) AND garage_id IN (SELECT id FROM garage WHERE closed_year IS NULL)',
       [year],
     );
     db.run(
-      'UPDATE contract SET end_year = ? WHERE end_year < ? AND driver_id IN (SELECT id FROM driver WHERE retired_year IS NULL)',
+      'UPDATE contract SET end_year = ? WHERE end_year < ? AND driver_id IN (SELECT id FROM driver WHERE retired_year IS NULL) AND garage_id IN (SELECT id FROM garage WHERE closed_year IS NULL)',
       [year + seasonBalance.contractRenewalYears - 1, year],
     );
 
@@ -231,6 +238,16 @@ export function startNextSeason(db: Database): Rollover {
       insert.run([seasonId, p.e.garage_id as number, p.driverId, p.e.car_id as number, number]);
     }
     insert.free();
+    const garagesOpened = openNewGarages(db, {
+      seasonId,
+      year,
+      room: Math.max(0, seasonBalance.garages.maxEntries - entries.length),
+      takeNumber: free,
+      rng: rng.stream(`rollover:${year}:garages`),
+      rookieRng: rng.stream(`rollover:${year}:garage-drivers`),
+      identityOf: (rolled) =>
+        identityRng.chance(workBalance.driver.nonBinaryShare) ? 'non_binary' : rolled,
+    });
     const worldChanges = applyWorldChanges(db, year);
     db.run('UPDATE career SET game_date = ? WHERE id = 1', [`${year}-02-01`]);
     db.exec('COMMIT');
@@ -239,7 +256,9 @@ export function startNextSeason(db: Database): Rollover {
       retired: replaced.size,
       rookies: replaced.size,
       contractsRenewed: renewed.length,
-      entries: entries.length,
+      entries: entries.length + garagesOpened,
+      garagesClosed: closedGarages.size,
+      garagesOpened,
       worldChanges,
     };
   } catch (error) {
