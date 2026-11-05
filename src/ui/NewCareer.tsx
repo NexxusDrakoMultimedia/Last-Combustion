@@ -5,7 +5,7 @@ import { t } from '../i18n';
 import type { OwnerSetup } from '../db/player';
 import { flagNames } from '../sim/worldgen/data';
 import { useCareerStore } from '../state/career.store';
-import { button, field, panel } from './styles';
+import { button, field, panel, quiet } from './styles';
 
 const IDENTITIES = ['masculine', 'feminine', 'non_binary'] as const;
 
@@ -38,10 +38,10 @@ export function NewCareer() {
 
   return (
     <section aria-labelledby="new-heading" className={panel}>
-      <h2 id="new-heading" className="text-xl font-semibold">
+      <h2 id="new-heading" className="lc-display text-xl">
         {t('newCareer.heading')}
       </h2>
-      <p className="text-sm text-zinc-400">{t('newCareer.mode')}</p>
+      <p className="text-sm text-lc-dim">{t('newCareer.mode')}</p>
       <form className="grid gap-3 sm:grid-cols-2" onSubmit={submit}>
         <label className="space-y-1 text-sm" htmlFor="owner-name">
           {t('newCareer.ownerName')}
@@ -132,7 +132,7 @@ export function NewCareer() {
           </button>
           <button
             type="button"
-            className={button}
+            className={quiet}
             disabled={busy || slotsInUse === 0}
             onClick={() => void loadSlot1()}
           >
@@ -141,7 +141,7 @@ export function NewCareer() {
         </div>
       </form>
       {notice && (
-        <p role="alert" className="text-sm text-amber-300">
+        <p role="alert" className="text-sm text-lc-warn">
           {t(notice.key, notice.values)}
         </p>
       )}

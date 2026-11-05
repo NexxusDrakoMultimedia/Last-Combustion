@@ -2,17 +2,47 @@
 /* SPDX-FileCopyrightText: Nexxus Drako Multimedia */
 @import 'tailwindcss';
 
+/* The default theme: dark slate with a maroon accent: a fill for buttons and an ink for text and outlines on dark. Colours are tokens so themes can replace them. */
+@theme {
+  --color-lc-bg: #0d1116;
+  --color-lc-panel: #131a22;
+  --color-lc-raised: #1a232d;
+  --color-lc-line: #2a3541;
+  --color-lc-text: #e6ebf0;
+  --color-lc-dim: #8d9aa8;
+  --color-lc-accent: #a3203a;
+  --color-lc-accent-ink: #e5798e;
+  --color-lc-on-accent: #ffffff;
+  --color-lc-good: #4cc38a;
+  --color-lc-warn: #e8b52b;
+  --color-lc-bad: #e5604d;
+}
+
 :root {
   color-scheme: dark;
 }
 
 body {
-  background-color: #0b0b0d;
-  color: #f4f4f5;
+  background-color: var(--color-lc-bg);
+  color: var(--color-lc-text);
   font-family:
     system-ui,
     -apple-system,
     'Segoe UI',
     Roboto,
     sans-serif;
+}
+
+/* Headings and tabs: condensed, upper case, spaced. */
+.lc-display {
+  font-family: 'Arial Narrow', 'Roboto Condensed', 'Segoe UI', system-ui, sans-serif;
+  font-stretch: condensed;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lc-num {
+  font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+  font-variant-numeric: tabular-nums;
 }
