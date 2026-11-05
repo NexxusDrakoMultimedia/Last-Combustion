@@ -68,3 +68,36 @@ describe('excluded flags', () => {
       expect(flagNames[code]).toBeUndefined();
   });
 });
+
+describe('flag fans', () => {
+  const world = generateWorld('flag-fans');
+  const fans = (flag: string) => world.flagFans.find((f) => f.flag === flag)?.fans;
+
+  it('gives every named flag a few fans at least', () => {
+    for (const code of Object.keys(flagNames).filter((c) => /^[A-Z]{2}$/.test(c))) {
+      expect(fans(code), code).toBeGreaterThanOrEqual(5);
+    }
+    // A tiny nation with no population on record gets just the handful.
+    expect(fans('TV')).toBeLessThan(40);
+  });
+
+  it('adds the United Kingdom up from its home nations, hidden or not', () => {
+    const regions = ['gb-eng', 'gb-sct', 'gb-wls', 'gb-nir'].map((k) => fans(k)!);
+    expect(regions.every((n) => n >= 5)).toBe(true);
+    const sum = regions.reduce((a, b) => a + b, 0);
+    // The rest is the share of anyone from the UK with no home nation (rounding aside).
+    expect(fans('GB')!).toBeGreaterThanOrEqual(sum - 2);
+    expect(fans('GB')! - sum).toBeLessThan(60);
+    expect(fans('gb-eng')!).toBeGreaterThan(fans('gb-sct')!);
+    expect(fans('gb-sct')!).toBeGreaterThan(fans('gb-nir')!);
+  });
+
+  it('gives the Spanish regions a small portion of Spain by their real populations', () => {
+    const es = fans('ES')!;
+    const portions = ['es-ct', 'es-ga', 'es-pv', 'ic'].map((k) => fans(k)!);
+    for (const p of portions) expect(p).toBeLessThan(es);
+    expect(portions.reduce((a, b) => a + b, 0)).toBeLessThan(es);
+    expect(fans('es-ct')!).toBeGreaterThan(fans('es-ga')!);
+    expect(fans('es-ga')!).toBeGreaterThanOrEqual(fans('es-pv')!);
+  });
+});

@@ -56,7 +56,8 @@
       "carShareOfDriver": 0.3,
       "flagShare": 0.15,
       "nationalBaseRate": 2e-5,
-      "hostMultiplier": 20
+      "hostMultiplier": 20,
+      "flagMinimum": 5
     },
     "contracts": {
       "salaryScale": 40,

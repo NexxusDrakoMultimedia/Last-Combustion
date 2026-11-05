@@ -14,7 +14,8 @@
     "ZA": 60000000,
     "CA": 40000000,
     "IE": 5300000,
-    "NL": 17800000
+    "NL": 17800000,
+    "ES": 48600000
   },
   "excluded": ["AQ", "ARAB", "ASEAN", "CEFTA", "EAC", "UN"],
   "names": {
@@ -1012,6 +1013,50 @@
       "flag": "AU",
       "short": "Vyktory",
       "long": "Commonwealth of Vyktory"
+    }
+  },
+  "regions": {
+    "GB": {
+      "mode": "sum",
+      "places": {
+        "England": {
+          "key": "gb-eng",
+          "population": 56500000
+        },
+        "Scotland": {
+          "key": "gb-sct",
+          "population": 5480000
+        },
+        "Wales": {
+          "key": "gb-wls",
+          "population": 3100000
+        },
+        "Northern Ireland": {
+          "key": "gb-nir",
+          "population": 1920000
+        }
+      }
+    },
+    "ES": {
+      "mode": "portion",
+      "places": {
+        "Catalonia": {
+          "key": "es-ct",
+          "population": 8000000
+        },
+        "Galicia": {
+          "key": "es-ga",
+          "population": 2700000
+        },
+        "Basque Country": {
+          "key": "es-pv",
+          "population": 2200000
+        },
+        "Canary Islands": {
+          "key": "ic",
+          "population": 2200000
+        }
+      }
     }
   }
 }

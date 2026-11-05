@@ -169,6 +169,11 @@ export function startNextSeason(db: Database): Rollover {
     const seasonId = Number(
       db.exec('SELECT id FROM season WHERE year = ' + String(year))[0]!.values[0]![0],
     );
+    // Flag fans carry on into the new season as they were.
+    db.run(
+      'INSERT INTO flag_fans (flag, season_id, fans) SELECT flag, ?, fans FROM flag_fans WHERE season_id = ?',
+      [seasonId, lastId],
+    );
     const courseIds = new Map(
       all(db, 'SELECT id, stable_id FROM course').map((c) => [
         c.stable_id as string,

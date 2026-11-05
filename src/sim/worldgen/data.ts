@@ -33,6 +33,15 @@ export const repairBalance = balanceJson.repairs;
 export const seasonBalance = balanceJson.season;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
+export interface FlagRegion {
+  key: string;
+  population: number;
+}
+/** Regions that can later become flags: the UK's home nations add up to it, Spain's take a portion. */
+export const flagRegions = flagsJson.regions as Record<
+  string,
+  { mode: 'sum' | 'portion'; places: Record<string, FlagRegion> }
+>;
 export const flagNames = flagsJson.names as Record<string, { short: string; long: string }>;
 /** Flags that no driver, car or garage may race under (see the GDD, "Flags"). */
 export const excludedFlags = new Set(flagsJson.excluded);
