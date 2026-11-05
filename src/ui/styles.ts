@@ -2,7 +2,9 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 
 export const button =
-  'rounded bg-red-700 px-3 py-2 text-sm font-medium text-white hover:bg-red-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 disabled:opacity-40';
+  'rounded-sm bg-lc-accent px-3 py-2 text-sm font-semibold text-lc-accent-text hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lc-text disabled:opacity-40 disabled:hover:brightness-100';
+export const quiet =
+  'rounded-sm border border-lc-line bg-lc-raised px-3 py-2 text-sm font-medium text-lc-text hover:border-lc-dim focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lc-accent disabled:opacity-40';
 export const field =
-  'w-full rounded border border-zinc-600 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 focus-visible:outline-2 focus-visible:outline-amber-400';
-export const panel = 'space-y-3 rounded border border-zinc-700 p-4';
+  'w-full rounded-sm border border-lc-line bg-lc-bg px-2 py-1.5 text-sm text-lc-text focus-visible:outline-2 focus-visible:outline-lc-accent';
+export const panel = 'space-y-3 rounded-sm border border-lc-line bg-lc-panel p-4';
