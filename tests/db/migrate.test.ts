@@ -78,6 +78,7 @@ describe('migrate', () => {
       'starter',
       'prize_share',
       'garage_finances',
+      'gear_wear',
     ]);
   });
 

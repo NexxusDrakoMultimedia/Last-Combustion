@@ -14,7 +14,7 @@ import { readCareer } from './career';
 import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
-import { openNewGarages, settleGarages } from './garages';
+import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
 
 export interface Rollover {
   year: number;
@@ -259,6 +259,7 @@ export function startNextSeason(db: Database): Rollover {
       identityOf: (rolled) =>
         identityRng.chance(workBalance.driver.nonBinaryShare) ? 'non_binary' : rolled,
     });
+    refurbishAiGear(db, seasonId, year);
     const worldChanges = applyWorldChanges(db, year);
     db.run('UPDATE career SET game_date = ? WHERE id = 1', [`${year}-02-01`]);
     db.exec('COMMIT');

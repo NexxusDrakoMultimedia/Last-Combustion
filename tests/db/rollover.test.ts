@@ -133,6 +133,26 @@ describe('starting the next season', () => {
     expect(avg((born) => born <= 1994)).toBeLessThan(0);
   });
 
+  it('refurbishes the worn gear of computer garages that can pay', () => {
+    const wornRich = Number(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM driver_gear dg
+          WHERE dg.wear > 50 AND dg.item_id IN (SELECT id FROM gear_item WHERE price > 0)
+            AND dg.driver_id IN (
+              SELECT e.driver_id FROM entry e JOIN garage g ON g.id = e.garage_id
+               WHERE g.is_player = 0 AND g.cash > 2000000
+                 AND e.season_id = (SELECT id FROM season WHERE year = 2032))`,
+      ),
+    );
+    expect(wornRich).toBe(0);
+    expect(
+      Number(
+        scalar(db, "SELECT COUNT(*) FROM ledger WHERE category = 'gear' AND round_id IS NULL"),
+      ),
+    ).toBeGreaterThan(0);
+  });
+
   it('grows the series audience by 26% for the new season', () => {
     const s = (year: number) =>
       Number(scalar(db, `SELECT series_fans FROM season WHERE year = ${year}`));

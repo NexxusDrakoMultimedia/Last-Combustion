@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import gearJson from '../../data/gear.json';
+import { repairBalance } from './worldgen/data';
 import { ROAD_TYPES, type Driver, type RoadType } from './worldgen/types';
 
 export type GearSlot = 'helmet' | 'suit' | 'gloves' | 'boots' | 'trinket';
@@ -78,30 +79,39 @@ export function validateLoadout(ids: readonly string[]): string[] {
   return problems;
 }
 
+/** How much of its boost a piece of gear gives at some wear: all when new, 40% when worn out. */
+export function gearWornShare(wear: number): number {
+  return 1 - repairBalance.gearWearEffect * (Math.min(100, Math.max(0, wear)) / 100);
+}
+
 /**
- * The total attribute boost from a loadout: each item's stats, plus a set bonus when several
- * pieces come from the same supplier, with every attribute capped at +STAT_CAP.
+ * The total attribute boost from a loadout: each item's stats (less what its wear costs), plus a
+ * set bonus when several pieces from the same supplier are still in decent shape, with every
+ * attribute capped at +STAT_CAP. `wears` has each item's wear (0 to 100) in the same order.
  */
-export function loadoutBonuses(items: readonly GearItem[]): Partial<Record<GearStat, number>> {
+export function loadoutBonuses(
+  items: readonly GearItem[],
+  wears: readonly number[] = [],
+): Partial<Record<GearStat, number>> {
   const total: Partial<Record<GearStat, number>> = {};
-  const add = (stats: Partial<Record<GearStat, number>>) => {
+  const add = (stats: Partial<Record<GearStat, number>>, share = 1) => {
     for (const [stat, value] of Object.entries(stats) as [GearStat, number][]) {
-      total[stat] = (total[stat] ?? 0) + value;
+      total[stat] = (total[stat] ?? 0) + value * share;
     }
   };
-  for (const item of items) add(item.stats);
+  items.forEach((item, i) => add(item.stats, gearWornShare(wears[i] ?? 0)));
 
   const perSupplier = new Map<string, number>();
-  for (const item of items) {
-    if (item.supplierId)
+  items.forEach((item, i) => {
+    if (item.supplierId && (wears[i] ?? 0) < repairBalance.gearSetBonusWearLimit)
       perSupplier.set(item.supplierId, (perSupplier.get(item.supplierId) ?? 0) + 1);
-  }
+  });
   const best = Math.max(0, ...perSupplier.values());
   const set = setBonuses[String(Math.min(best, 4))];
   if (set && best >= 2) add(set);
 
   for (const stat of Object.keys(total) as GearStat[]) {
-    total[stat] = Math.min(STAT_CAP, total[stat] as number);
+    total[stat] = Math.round(Math.min(STAT_CAP, total[stat] as number));
   }
   return total;
 }
@@ -109,8 +119,12 @@ export function loadoutBonuses(items: readonly GearItem[]): Partial<Record<GearS
 const clamp99 = (value: number): number => Math.max(1, Math.min(99, value));
 
 /** A copy of a driver with the gear's boosts applied. The driver's own record is untouched. */
-export function applyGear(driver: Driver, items: readonly GearItem[]): Driver {
-  const bonus = loadoutBonuses(items);
+export function applyGear(
+  driver: Driver,
+  items: readonly GearItem[],
+  wears: readonly number[] = [],
+): Driver {
+  const bonus = loadoutBonuses(items, wears);
   const affinities = { ...driver.affinities };
   for (const type of ROAD_TYPES) {
     const key = `affinity${type[0]!.toUpperCase()}${type.slice(1)}` as GearStat;

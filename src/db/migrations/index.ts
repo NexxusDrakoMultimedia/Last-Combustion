@@ -25,6 +25,7 @@ import { migration0021 } from './0021_owner';
 import { migration0022 } from './0022_starter';
 import { migration0023 } from './0023_prize_share';
 import { migration0024 } from './0024_garage_finances';
+import { migration0025 } from './0025_gear_wear';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -52,4 +53,5 @@ export const migrations: readonly Migration[] = [
   migration0022,
   migration0023,
   migration0024,
+  migration0025,
 ];

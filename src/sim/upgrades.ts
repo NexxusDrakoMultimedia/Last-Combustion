@@ -4,7 +4,7 @@ import partsJson from '../../data/parts.json';
 import { upkeepFactor } from './economy';
 import { equalizerMm } from './equalizer';
 import type { Layout, Tier } from './worldgen/types';
-import { upgradeBalance } from './worldgen/data';
+import { repairBalance, upgradeBalance } from './worldgen/data';
 
 export type PartCategory =
   | 'engine'
@@ -79,17 +79,33 @@ export interface BaseCar {
   layout?: Layout;
 }
 
-/** The power and rating changes of a set of fitted parts. */
-export function partEffects(fitted: readonly PartData[]): {
+/** How much of a part's gains it keeps at some wear: all when new, down to half when worn out. */
+export function wornShare(wear: number): number {
+  const loss = repairBalance.partWearEffect;
+  return 1 - loss * (Math.min(100, Math.max(0, wear)) / 100);
+}
+
+/**
+ * The power and rating changes of a set of fitted parts. A worn part gives less: its gains in
+ * power, grip, handling and traction shrink with its wear (its weight and downsides do not).
+ */
+export function partEffects(
+  fitted: readonly PartData[],
+  wears: readonly number[] = [],
+): {
   psPct: number;
   bonus: { grip: number; handling: number; traction: number };
 } {
+  const gain = (value: number, i: number): number =>
+    value > 0 ? value * wornShare(wears[i] ?? 0) : value;
+  const sum = (pick: (p: PartData) => number): number =>
+    fitted.reduce((s, p, i) => s + gain(pick(p), i), 0);
   return {
-    psPct: fitted.reduce((s, p) => s + p.psPct, 0),
+    psPct: sum((p) => p.psPct),
     bonus: {
-      grip: fitted.reduce((s, p) => s + p.deltaGrip, 0),
-      handling: fitted.reduce((s, p) => s + p.deltaHandling, 0),
-      traction: fitted.reduce((s, p) => s + p.deltaTraction, 0),
+      grip: sum((p) => p.deltaGrip),
+      handling: sum((p) => p.deltaHandling),
+      traction: sum((p) => p.deltaTraction),
     },
   };
 }
