@@ -24,7 +24,13 @@ import {
   type UpgradeView,
 } from '../db/upgrades';
 import type { PartCategory } from '../sim/upgrades';
-import { ownedCars, setEntryCar, type OwnedCar } from '../db/garage';
+import { freeAgents, type FreeAgent } from '../db/freeagents';
+import { ownedCars, setEntryCar, setEntryDriver, type OwnedCar } from '../db/garage';
+import {
+  offerDriverContract,
+  openDriverNegotiation,
+  type ContractOutcome,
+} from '../db/negotiation';
 import { buyUsedCar, openListings, refreshUsedMarket, type Listing } from '../db/market';
 import { startNextSeason, type Rollover } from '../db/rollover';
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
@@ -45,6 +51,15 @@ function playerGarageId(db: Database): number | null {
   return typeof v === 'number' ? v : null;
 }
 
+export interface ActiveNegotiation {
+  id: number;
+  driverId: number;
+  name: string;
+  fairValue: number;
+  patience: number;
+  last?: ContractOutcome;
+}
+
 export interface Notice {
   key: MessageKey;
   values?: MessageValues;
@@ -63,6 +78,8 @@ interface CareerState {
   hub: HubView | undefined;
   starter: StarterOffers | undefined;
   cars: OwnedCar[];
+  agents: FreeAgent[];
+  negotiation: ActiveNegotiation | undefined;
   upgrades: UpgradeView[];
   listings: Listing[];
   seasonEnd: SeasonEnd | undefined;
@@ -73,6 +90,10 @@ interface CareerState {
   startCareer(setup: OwnerSetup): Promise<void>;
   chooseStarter(carId: number, driverId: number): Promise<void>;
   buyListing(listingId: number): Promise<void>;
+  negotiate(driverId: number): Promise<void>;
+  offerContract(salary: number, years: number): Promise<void>;
+  endNegotiation(): void;
+  seatDriver(driverId: number): Promise<void>;
   fitPart(carId: number, partId: string): Promise<void>;
   removePart(carId: number, category: PartCategory): Promise<void>;
   raceCar(carId: number): Promise<void>;
@@ -107,6 +128,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
       listings: openListings(db),
+      agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
       upgrades:
         playerGarageId(db) === null
           ? []
@@ -140,6 +162,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     hub: undefined,
     starter: undefined,
     cars: [],
+    agents: [],
+    negotiation: undefined,
     upgrades: [],
     listings: [],
     seasonEnd: undefined,
@@ -189,6 +213,57 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const garageId = playerGarageId(openDb);
         if (garageId === null) return undefined;
         buyUsedCar(openDb, garageId, listingId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    negotiate: (driverId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        const agent = get().agents.find((a) => a.driverId === driverId);
+        if (garageId === null || !agent) return undefined;
+        const n = openDriverNegotiation(openDb, garageId, driverId);
+        set({
+          negotiation: {
+            id: n.id,
+            driverId,
+            name: agent.name,
+            fairValue: n.fairValue,
+            patience: n.patience,
+          },
+        });
+        return undefined;
+      }),
+
+    offerContract: (salary, years) =>
+      run(async () => {
+        const current = get().negotiation;
+        if (!openDb || !current) return undefined;
+        const outcome = offerDriverContract(openDb, current.id, { salary, years });
+        refresh(openDb);
+        set({
+          negotiation: {
+            ...current,
+            patience: outcome.kind === 'countered' ? outcome.patienceLeft : current.patience,
+            last: outcome,
+          },
+        });
+        return undefined;
+      }),
+
+    endNegotiation: () => set({ negotiation: undefined }),
+
+    seatDriver: (driverId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        const seat = openDb.exec(
+          "SELECT race_number FROM entry WHERE garage_id = ? AND series = 'main' AND season_id = (SELECT MAX(id) FROM season) ORDER BY race_number LIMIT 1",
+          [garageId],
+        )[0]?.values[0]?.[0];
+        if (garageId === null || typeof seat !== 'number') return undefined;
+        setEntryDriver(openDb, garageId, seat, driverId);
         refresh(openDb);
         return undefined;
       }),

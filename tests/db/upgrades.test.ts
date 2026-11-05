@@ -167,3 +167,23 @@ describe('the upgrade view', () => {
     expect(() => upgradeView(db, garageId + 1, carId)).toThrow(/does not own/);
   });
 });
+
+describe('fitting parts to the lightest car', () => {
+  it('keeps the database happy for every part on a 640 kg car', () => {
+    const db = newCareer('lightest');
+    const [carId, garageId] = entryOf(db);
+    const lightest = Number(scalar(db, 'SELECT id FROM car_model ORDER BY base_kerb_kg LIMIT 1'));
+    db.run(
+      'UPDATE car SET car_model_id = ?, kerb_kg_current = 640, tyre_width_mm = 168 WHERE id = ?',
+      [lightest, carId],
+    );
+    for (const p of parts) {
+      fitPart(db, garageId, carId, p.id);
+      expect(
+        Number(scalar(db, `SELECT tyre_width_mm FROM car WHERE id = ${carId}`)),
+      ).toBeLessThanOrEqual(
+        maxTyreWidthMm(Number(scalar(db, `SELECT kerb_kg_current FROM car WHERE id = ${carId}`))),
+      );
+    }
+  });
+});
