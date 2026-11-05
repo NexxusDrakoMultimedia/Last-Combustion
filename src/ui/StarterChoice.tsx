@@ -5,7 +5,7 @@ import { formatMoney, t } from '../i18n';
 import { IDENTITY_SIGN } from '../sim/identity';
 import type { Identity } from '../sim/worldgen/types';
 import { useCareerStore } from '../state/career.store';
-import { button, panel } from './styles';
+import { button } from './styles';
 
 /** Before the first race the owner picks a starter car (of three) and a driver (of five). */
 export function StarterChoice() {
@@ -16,11 +16,7 @@ export function StarterChoice() {
   const busy = status === 'busy';
 
   return (
-    <section aria-labelledby="starter-heading" className={panel}>
-      <h2 id="starter-heading" className="text-xl font-semibold">
-        {t('starter.heading')}
-      </h2>
-      <p className="text-sm text-zinc-400">{t('starter.intro')}</p>
+    <div className="space-y-4">
       <fieldset className="space-y-1">
         <legend className="text-sm font-medium">{t('starter.cars')}</legend>
         {starter.cars.map((c) => (
@@ -73,6 +69,6 @@ export function StarterChoice() {
       >
         {t('starter.confirm')}
       </button>
-    </section>
+    </div>
   );
 }

@@ -75,3 +75,5 @@ The simulation worker (`src/workers`), the rest of the economy and every gamepla
 `src/db/player.ts` founds the player's garage and `src/db/hub.ts` builds the read-model for the hub. The screens are `src/ui/NewCareer.tsx` and `src/ui/Hub.tsx`, driven by `src/state/career.store.ts`.
 
 `src/db/starter.ts` makes and applies the starter car and driver choice (migration 0022), shown by `src/ui/StarterChoice.tsx`; `src/db/drivers.ts` holds the shared driver insert.
+
+The shell is in `src/ui/shell` (`Shell.tsx` with the top bar, rail and floor, `Panel.tsx` for dialogs, `panels.tsx` for panel contents). Colours are tokens in `src/index.css`.
