@@ -87,3 +87,5 @@ Prize money: `src/db/prizes.ts` splits a driver's prize (race prize, champion's 
 Garages: `src/db/garages.ts` pays the computer garages their sponsorship, folds the ones broke two seasons running and opens the year's new garages; `startNextSeason` calls it (migration 0024 adds `garage.broke_years`).
 
 Fans: `src/sim/fans.ts` has the gain table and series growth (pure), `src/db/fans.ts` gives out a round's fans from `playFinal`, and the rollover and season end handle growth, losses and merchandise.
+
+Wear: parts lose effect as they wear (`partEffects` in `src/sim/upgrades.ts`) and gear wears with racing (`wearGear`, `gearConditions` and `renewGear` in `src/db/repairs.ts`, migration 0025; `gearWornShare` in `src/sim/gear.ts`).

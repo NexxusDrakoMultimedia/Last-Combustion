@@ -22,7 +22,7 @@ const CATEGORIES: PartCategory[] = [
 
 /** Fit and remove parts on the garage's cars, with the legality budget and scrutineering shown. */
 export function UpgradesPanel() {
-  const { upgrades, hub, status, fitPart, removePart } = useCareerStore();
+  const { upgrades, hub, status, fitPart, removePart, serviceParts } = useCareerStore();
   const [carId, setCarId] = useState<number | null>(null);
   const view = upgrades.find((u) => u.carId === carId) ?? upgrades[0];
   const cash = hub?.player?.cash ?? 0;
@@ -75,6 +75,20 @@ export function UpgradesPanel() {
           </dd>
         </div>
       </dl>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        {view.serviceCost > 0 ? (
+          <button
+            type="button"
+            className={button}
+            disabled={busy || view.serviceCost > cash}
+            onClick={() => void serviceParts(view.carId)}
+          >
+            {t('upgrades.service', { cost: formatMoney(view.serviceCost) })}
+          </button>
+        ) : (
+          <span className="text-lc-dim">{t('upgrades.serviceNone')}</span>
+        )}
+      </div>
       {CATEGORIES.map((category) => (
         <section key={category} className="space-y-1">
           <h3 className="lc-display text-sm text-lc-dim">{t(`part.category.${category}`)}</h3>
@@ -107,6 +121,16 @@ export function UpgradesPanel() {
                         legality: o.part.legalityCost,
                       })}
                     </span>
+                    {o.wear !== null && (
+                      <>
+                        <br />
+                        <span
+                          className={`lc-num text-xs ${o.wear >= 70 ? 'text-lc-bad' : 'text-lc-dim'}`}
+                        >
+                          {t('upgrades.partWear', { wear: Math.round(o.wear) })}
+                        </span>
+                      </>
+                    )}
                   </span>
                   <span className="flex items-center gap-2">
                     <span className="lc-num">{formatMoney(o.price)}</span>

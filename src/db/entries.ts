@@ -45,15 +45,21 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
     affinities.set(a.driver_id as number, entry);
   }
   const gear = new Map<number, GearItem[]>();
+  const gearWear = new Map<number, number[]>();
   for (const g of all(
     db,
-    'SELECT dg.driver_id, i.stable_id FROM driver_gear dg JOIN gear_item i ON i.id = dg.item_id',
+    'SELECT dg.driver_id, dg.wear, i.stable_id FROM driver_gear dg JOIN gear_item i ON i.id = dg.item_id',
   )) {
     const list = gear.get(g.driver_id as number) ?? [];
     list.push(gearItem(g.stable_id as string));
     gear.set(g.driver_id as number, list);
+    gearWear.set(g.driver_id as number, [
+      ...(gearWear.get(g.driver_id as number) ?? []),
+      g.wear as number,
+    ]);
   }
   const fitted = new Map<number, PartData[]>();
+  const wearsOf = new Map<number, number[]>();
   const partWear = new Map<number, number>();
   for (const f of all(
     db,
@@ -62,6 +68,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
     const list = fitted.get(f.car_id as number) ?? [];
     list.push(part(f.stable_id as string));
     fitted.set(f.car_id as number, list);
+    wearsOf.set(f.car_id as number, [...(wearsOf.get(f.car_id as number) ?? []), f.wear as number]);
     partWear.set(
       f.car_id as number,
       Math.max(partWear.get(f.car_id as number) ?? 0, f.wear as number),
@@ -114,10 +121,17 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
       carId: r.car_id as number,
       garageId: r.garage_id as number,
       raceNumber: r.race_number as number,
-      driver: applyGear(raw, gear.get(r.driver_id as number) ?? []),
+      driver: applyGear(
+        raw,
+        gear.get(r.driver_id as number) ?? [],
+        gearWear.get(r.driver_id as number) ?? [],
+      ),
       car: {
         ...(() => {
-          const effects = partEffects(fitted.get(r.car_id as number) ?? []);
+          const effects = partEffects(
+            fitted.get(r.car_id as number) ?? [],
+            wearsOf.get(r.car_id as number) ?? [],
+          );
           return {
             ps: Math.round((r.base_ps as number) * (1 + effects.psPct)),
             bonus: effects.bonus,

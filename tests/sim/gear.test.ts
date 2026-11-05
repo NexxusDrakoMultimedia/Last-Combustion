@@ -9,6 +9,7 @@ import {
   gearItem,
   gearItems,
   gearSuppliers,
+  gearWornShare,
   loadoutBonuses,
   validateLoadout,
 } from '../../src/sim/gear';
@@ -167,5 +168,45 @@ describe('starting gear', () => {
     const top = sorted.slice(0, 60).reduce((s, d) => s + score(d.id), 0);
     const bottom = sorted.slice(-60).reduce((s, d) => s + score(d.id), 0);
     expect(top).toBeGreaterThan(bottom);
+  });
+});
+
+describe('gear wear', () => {
+  it('keeps all of a new item’s boost and 40% of a worn-out one’s', () => {
+    expect(gearWornShare(0)).toBe(1);
+    expect(gearWornShare(100)).toBeCloseTo(0.4, 5);
+    expect(gearWornShare(50)).toBeCloseTo(0.7, 5);
+    expect(gearWornShare(500)).toBeCloseTo(0.4, 5);
+  });
+
+  it('shrinks a loadout’s boost as it wears, without ever going below zero or above the cap', () => {
+    const kit = items('helmet-nordlys-carbon', 'suit-nordlys-thermal');
+    const fresh = loadoutBonuses(kit);
+    const worn = loadoutBonuses(kit, [100, 100]);
+    for (const [stat, value] of Object.entries(fresh)) {
+      expect(worn[stat as keyof typeof worn] ?? 0).toBeLessThanOrEqual(value);
+      expect(worn[stat as keyof typeof worn] ?? 0).toBeGreaterThanOrEqual(0);
+    }
+    expect(Object.values(worn).reduce((a, b) => a + b, 0)).toBeLessThan(
+      Object.values(fresh).reduce((a, b) => a + b, 0),
+    );
+  });
+
+  it('stops counting a threadbare piece towards a supplier set', () => {
+    const pair = items('helmet-nordlys-carbon', 'suit-nordlys-thermal');
+    // Two pieces from one supplier give +1 composure; with one piece worn out the set bonus is lost.
+    const whole = loadoutBonuses(pair, [0, 0]);
+    const lone = loadoutBonuses(pair, [0, 90]);
+    expect(whole.composure ?? 0).toBeGreaterThan(lone.composure ?? 0);
+  });
+
+  it('lowers a driver’s effective stats but never touches the record', () => {
+    const kit = items('helmet-nordlys-carbon', 'suit-nordlys-thermal');
+    const fresh = applyGear(driver, kit);
+    const worn = applyGear(driver, kit, [100, 100]);
+    expect(worn.pace + worn.consistency + worn.racecraft + worn.composure).toBeLessThanOrEqual(
+      fresh.pace + fresh.consistency + fresh.racecraft + fresh.composure,
+    );
+    expect(driver).toEqual(world.drivers[0]);
   });
 });

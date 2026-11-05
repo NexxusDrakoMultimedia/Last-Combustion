@@ -415,6 +415,18 @@
   },
   "repairs": {
     "partWearFactor": 2,
+    "partWearEffect": 0.5,
+    "gearWearPerRaceKm": 0.03,
+    "gearWearEffect": 0.6,
+    "gearSetBonusWearLimit": 80,
+    "gearRenewShare": 0.5,
+    "gearTierFactor": {
+      "basic": 1,
+      "club": 0.8,
+      "pro": 0.6,
+      "elite": 0.45,
+      "legendary": 0.3
+    },
     "servicingShare": 0.25,
     "restorationShare": 0.12,
     "crashShare": 0.03

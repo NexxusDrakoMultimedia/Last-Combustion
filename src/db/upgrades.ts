@@ -17,6 +17,7 @@ import type { Layout, Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
 import { dealPrice } from './deals';
 import { all } from './entries';
+import { partServiceCost } from './repairs';
 
 /** The parts fitted to a car, in the order they were fitted. */
 export function fittedParts(db: Database, carId: number): PartData[] {
@@ -171,6 +172,8 @@ export interface PartOffer {
   /** What this garage pays for the part on this car, after any supplier deal. */
   price: number;
   fitted: boolean;
+  /** The fitted part's wear (0 new, 100 worn out), or null when it is not fitted. */
+  wear: number | null;
 }
 
 export interface UpgradeView {
@@ -182,6 +185,8 @@ export interface UpgradeView {
   legality: number;
   scrutineering: ScrutineeringResult;
   offers: PartOffer[];
+  /** What servicing all the fitted parts would cost now. */
+  serviceCost: number;
 }
 
 /** A car's fitted state and every part it could have, priced for this garage. */
@@ -189,6 +194,13 @@ export function upgradeView(db: Database, garageId: number, carId: number): Upgr
   const car = carRow(db, carId);
   if (car.garage_id !== garageId) throw new Error('The garage does not own this car.');
   const fitted = new Set(fittedParts(db, carId).map((p) => p.id));
+  const wears = new Map(
+    all(
+      db,
+      'SELECT p.stable_id, cp.wear FROM car_part cp JOIN part p ON p.id = cp.part_id WHERE cp.car_id = ?',
+      [carId],
+    ).map((r) => [r.stable_id as string, r.wear as number]),
+  );
   const suppliers = new Map(
     all(db, 'SELECT id, name FROM part_supplier').map((s) => [s.id as number, s.name as string]),
   );
@@ -220,7 +232,9 @@ export function upgradeView(db: Database, garageId: number, carId: number): Upgr
         price:
           supplierId === undefined ? base : dealPrice(db, 'supplier', garageId, supplierId, base),
         fitted: fitted.has(p.id),
+        wear: wears.get(p.id) ?? null,
       };
     }),
+    serviceCost: partServiceCost(db, garageId, carId),
   };
 }

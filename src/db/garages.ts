@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { listingPrice } from '../sim/economy';
+import { gearItem } from '../sim/gear';
 import type { RandomStream } from '../sim/rng';
 import { DRAKE_MOTORSPORTS, makeNewGarage, makeRookie } from '../sim/worldgen';
 import { seasonBalance } from '../sim/worldgen/data';
@@ -9,6 +10,7 @@ import { fairSalary } from '../sim/worldgen/rating';
 import type { Identity } from '../sim/worldgen/types';
 import { insertDriver, placeIdMap } from './drivers';
 import { all } from './entries';
+import { gearRenewCost } from './repairs';
 import { createUsedCar, ensureMarketGarage, transferCar, valueOfCar } from './market';
 
 const cfg = () => seasonBalance.garages;
@@ -179,4 +181,40 @@ export function openNewGarages(db: Database, o: OpeningOptions): number {
     garageId += 1;
   }
   return count;
+}
+
+/**
+ * Computer garages have their drivers' worn gear refurbished before the season, as far as their
+ * cash goes (the player's garage does it by hand). Returns how many items were refurbished.
+ */
+export function refurbishAiGear(db: Database, seasonId: number, year: number): number {
+  const date = `${year}-02-01`;
+  let renewed = 0;
+  for (const row of all(
+    db,
+    `SELECT e.garage_id, dg.driver_id, dg.wear, i.stable_id, i.id AS item_id
+       FROM entry e JOIN garage g ON g.id = e.garage_id AND g.is_player = 0 AND g.kind = 'racing'
+       JOIN driver_gear dg ON dg.driver_id = e.driver_id
+       JOIN gear_item i ON i.id = dg.item_id
+      WHERE e.season_id = ? AND e.series = 'main' AND dg.wear > 0 AND i.price > 0
+      ORDER BY e.garage_id, dg.driver_id, i.id`,
+    [seasonId],
+  )) {
+    const cost = gearRenewCost(gearItem(row.stable_id as string).price, row.wear as number);
+    const cash = Number(
+      all(db, 'SELECT cash FROM garage WHERE id = ?', [row.garage_id as number])[0]!.cash,
+    );
+    if (cost > cash) continue;
+    db.run(
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'gear', ?, 'Refurbished gear')",
+      [row.garage_id as number, date, -cost],
+    );
+    db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [cost, row.garage_id as number]);
+    db.run('UPDATE driver_gear SET wear = 0 WHERE driver_id = ? AND item_id = ?', [
+      row.driver_id as number,
+      row.item_id as number,
+    ]);
+    renewed += 1;
+  }
+  return renewed;
 }

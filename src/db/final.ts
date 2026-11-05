@@ -10,7 +10,7 @@ import { readCareer } from './career';
 import { all, loadEntries } from './entries';
 import { awardRoundFans } from './fans';
 import { splitPrize } from './prizes';
-import { wearParts } from './repairs';
+import { wearGear, wearParts } from './repairs';
 import { awardTitles } from './titles';
 
 export interface FinalSummary {
@@ -286,6 +286,7 @@ export function playFinal(
         entry.carId,
       ]);
       wearParts(db, entry.carId, c.km, 'race', entry.tier);
+      wearGear(db, entry.driver.id, c.km);
     }
     db.run("UPDATE round SET status = 'complete' WHERE id = ?", [roundId]);
     db.exec('COMMIT');

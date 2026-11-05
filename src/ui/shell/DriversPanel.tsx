@@ -9,8 +9,18 @@ import { button, field, quiet } from '../styles';
 
 /** Free agents to negotiate with, and the drivers already signed, who can be seated in an entry. */
 export function DriversPanel() {
-  const { agents, negotiation, hub, status, negotiate, offerContract, endNegotiation, seatDriver } =
-    useCareerStore();
+  const {
+    agents,
+    gear,
+    negotiation,
+    hub,
+    status,
+    negotiate,
+    offerContract,
+    endNegotiation,
+    seatDriver,
+    renewGear,
+  } = useCareerStore();
   const [salary, setSalary] = useState('');
   const [years, setYears] = useState('2');
   const [share, setShare] = useState('80');
@@ -106,56 +116,99 @@ export function DriversPanel() {
     );
   }
 
+  const cash = hub?.player?.cash ?? 0;
   return (
-    <ul className="space-y-2 text-sm">
-      {agents.length === 0 && <li className="text-lc-dim">{t('drivers.none')}</li>}
-      {agents.map((a) => (
-        <li
-          key={a.driverId}
-          className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
-        >
-          <span>
-            <span className="font-medium">
-              {a.name} {IDENTITY_SIGN[a.identity as Identity]}
-            </span>{' '}
-            <span className="text-lc-dim">{t('drivers.age', { age: a.age })}</span>
-            <br />
-            <span className="lc-num text-xs text-lc-dim">
-              {t('drivers.stats', {
-                rating: a.rating,
-                pace: a.pace,
-                consistency: a.consistency,
-                racecraft: a.racecraft,
-                tyres: a.tyreManagement,
-                composure: a.composure,
-                wet: a.wetSkill,
-              })}
+    <div className="space-y-6">
+      <ul className="space-y-2 text-sm">
+        {agents.length === 0 && <li className="text-lc-dim">{t('drivers.none')}</li>}
+        {agents.map((a) => (
+          <li
+            key={a.driverId}
+            className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
+          >
+            <span>
+              <span className="font-medium">
+                {a.name} {IDENTITY_SIGN[a.identity as Identity]}
+              </span>{' '}
+              <span className="text-lc-dim">{t('drivers.age', { age: a.age })}</span>
+              <br />
+              <span className="lc-num text-xs text-lc-dim">
+                {t('drivers.stats', {
+                  rating: a.rating,
+                  pace: a.pace,
+                  consistency: a.consistency,
+                  racecraft: a.racecraft,
+                  tyres: a.tyreManagement,
+                  composure: a.composure,
+                  wet: a.wetSkill,
+                })}
+              </span>
             </span>
-          </span>
-          <span className="flex items-center gap-2">
-            <span className="lc-num text-lc-dim">{formatMoney(a.fairValue)}</span>
-            {a.signed ? (
-              <button
-                type="button"
-                className={button}
-                disabled={busy || started}
-                onClick={() => void seatDriver(a.driverId)}
+            <span className="flex items-center gap-2">
+              <span className="lc-num text-lc-dim">{formatMoney(a.fairValue)}</span>
+              {a.signed ? (
+                <button
+                  type="button"
+                  className={button}
+                  disabled={busy || started}
+                  onClick={() => void seatDriver(a.driverId)}
+                >
+                  {t('drivers.seat')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={quiet}
+                  disabled={busy}
+                  onClick={() => void negotiate(a.driverId)}
+                >
+                  {t('drivers.negotiate')}
+                </button>
+              )}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {gear.length > 0 && (
+        <section className="space-y-2 text-sm">
+          <h3 className="lc-display text-sm text-lc-dim">{t('drivers.gearTitle')}</h3>
+          <p className="text-lc-dim">{t('drivers.gearIntro')}</p>
+          <ul className="space-y-1">
+            {gear.map((g) => (
+              <li
+                key={`${g.driverId}-${g.itemId}`}
+                className="flex flex-wrap items-center justify-between gap-2 border border-lc-line p-2"
               >
-                {t('drivers.seat')}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className={quiet}
-                disabled={busy}
-                onClick={() => void negotiate(a.driverId)}
-              >
-                {t('drivers.negotiate')}
-              </button>
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
+                <span>
+                  <span className="font-medium">{g.driverName}</span>
+                  <br />
+                  <span
+                    className={`lc-num text-xs ${g.wear >= 70 ? 'text-lc-bad' : 'text-lc-dim'}`}
+                  >
+                    {t('drivers.gearItem', {
+                      name: g.name,
+                      tier: t(`gear.tier.${g.tier}`),
+                      wear: Math.round(g.wear),
+                    })}
+                  </span>
+                </span>
+                {g.renewCost === null ? (
+                  <span className="text-xs text-lc-dim">{t('drivers.renewNone')}</span>
+                ) : (
+                  <button
+                    type="button"
+                    className={quiet}
+                    disabled={busy || g.wear <= 0 || g.renewCost > cash}
+                    onClick={() => void renewGear(g.driverId, g.itemId)}
+                  >
+                    {t('drivers.renew', { cost: formatMoney(g.renewCost) })}
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
   );
 }
