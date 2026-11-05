@@ -7,6 +7,8 @@ import { StarterChoice } from '../StarterChoice';
 import { button, quiet } from '../styles';
 import { DriversPanel } from './DriversPanel';
 import { Panel } from './Panel';
+import { MoneyPanel } from './MoneyPanel';
+import { SponsorsPanel } from './SponsorsPanel';
 import { UpgradesPanel } from './UpgradesPanel';
 import {
   ConditionBar,
@@ -17,7 +19,8 @@ import {
   UsedMarket,
 } from './panels';
 
-type PanelId = 'season' | 'garage' | 'market' | 'upgrades' | 'drivers' | 'menu';
+type PanelId =
+  'season' | 'garage' | 'market' | 'upgrades' | 'drivers' | 'sponsors' | 'money' | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'season', label: 'rail.season' },
@@ -26,8 +29,8 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'upgrades', label: 'rail.upgrades' },
   { id: 'drivers', label: 'rail.drivers' },
   { id: null, label: 'rail.staff' },
-  { id: null, label: 'rail.sponsors' },
-  { id: null, label: 'rail.money' },
+  { id: 'sponsors', label: 'rail.sponsors' },
+  { id: 'money', label: 'rail.money' },
 ];
 
 /** The game shell: a top bar, a rail of panels, the garage floor and the news strip. */
@@ -263,6 +266,20 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <DriversPanel />
+        </Panel>
+      )}
+      {!locked && open === 'sponsors' && (
+        <Panel
+          title={t('rail.sponsors')}
+          subtitle={t('sponsors.intro')}
+          onClose={() => setOpen(null)}
+        >
+          <SponsorsPanel />
+        </Panel>
+      )}
+      {!locked && open === 'money' && (
+        <Panel title={t('rail.money')} subtitle={t('money.intro')} onClose={() => setOpen(null)}>
+          <MoneyPanel />
         </Panel>
       )}
       {open === 'menu' && (
