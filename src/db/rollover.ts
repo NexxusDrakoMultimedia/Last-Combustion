@@ -3,12 +3,13 @@
 import type { Database } from 'sql.js';
 import { rankingNumbers, RANKED_NUMBERS } from '../sim/numbers';
 import { createRng } from '../sim/rng';
+import { seriesGrowth } from '../sim/fans';
 import { develop } from '../sim/progression';
 import { retires } from '../sim/rollover';
 import { ageOn } from '../sim/junior';
 import { buildCalendar, makeRookie, RESERVED_NUMBER } from '../sim/worldgen';
 import { balance as workBalance } from '../sim/worldgen/data';
-import { seasonBalance } from '../sim/worldgen/data';
+import { fanBalance, seasonBalance } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
@@ -169,7 +170,7 @@ export function startNextSeason(db: Database): Rollover {
         year,
         last.era as string,
         last.final_size as number,
-        last.series_fans as number,
+        Math.round((last.series_fans as number) * (1 + seriesGrowth(year))),
         'scheduled',
       ],
     );
@@ -180,6 +181,16 @@ export function startNextSeason(db: Database): Rollover {
     db.run(
       'INSERT INTO flag_fans (flag, season_id, fans) SELECT flag, ?, fans FROM flag_fans WHERE season_id = ?',
       [seasonId, lastId],
+    );
+    // Drivers with no seat lose a few fans; retired drivers lose more each year.
+    db.run(
+      `UPDATE driver SET fans = CAST(ROUND(fans * ?) AS INTEGER)
+        WHERE retired_year IS NULL AND id NOT IN (SELECT driver_id FROM entry WHERE season_id = ?)`,
+      [1 - fanBalance.inactivityLoss, lastId],
+    );
+    db.run(
+      'UPDATE driver SET fans = CAST(ROUND(fans * ?) AS INTEGER) WHERE retired_year IS NOT NULL AND retired_year < ?',
+      [1 - fanBalance.retiredLoss, year - 1],
     );
     const courseIds = new Map(
       all(db, 'SELECT id, stable_id FROM course').map((c) => [

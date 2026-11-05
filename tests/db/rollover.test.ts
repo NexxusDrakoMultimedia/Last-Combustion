@@ -133,6 +133,12 @@ describe('starting the next season', () => {
     expect(avg((born) => born <= 1994)).toBeLessThan(0);
   });
 
+  it('grows the series audience by 26% for the new season', () => {
+    const s = (year: number) =>
+      Number(scalar(db, `SELECT series_fans FROM season WHERE year = ${year}`));
+    expect(s(2032)).toBe(Math.round(s(2031) * 1.26));
+  });
+
   it('carries the flag fans over into the new season', () => {
     const rows = (year: number) =>
       Number(

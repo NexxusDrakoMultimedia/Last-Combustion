@@ -10,7 +10,7 @@ import {
   type RoundResult,
   type Standing,
 } from '../sim/standings';
-import { seasonBalance } from '../sim/worldgen/data';
+import { fanBalance, seasonBalance } from '../sim/worldgen/data';
 import { all } from './entries';
 import { splitPrize } from './prizes';
 
@@ -143,6 +143,21 @@ export function endSeason(db: Database): SeasonEnd {
       bonusesPaid += b.total as number;
     }
     db.run('UPDATE season_bonus SET paid = 1 WHERE season_id = ? AND paid = 0', [seasonId]);
+
+    // Garages earn merchandise income from their fans.
+    for (const g of all(
+      db,
+      `SELECT g.id, g.fans FROM garage g WHERE g.kind = 'racing' AND g.fans > 0
+          AND EXISTS (SELECT 1 FROM entry e WHERE e.garage_id = g.id AND e.season_id = ?) ORDER BY g.id`,
+      [seasonId],
+    )) {
+      pay(
+        g.id as number,
+        'merchandise',
+        (g.fans as number) * fanBalance.merchandisePerFan,
+        `${year} merchandise`,
+      );
+    }
 
     // The champion's shield decal goes on the driver and on the car they drove that season.
     const championCar = all(
