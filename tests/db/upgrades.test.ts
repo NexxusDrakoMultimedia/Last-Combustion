@@ -6,7 +6,14 @@ import { garageFinance } from '../../src/db/finance';
 import { playPrelims } from '../../src/db/prelims';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
-import { fitPart, fittedParts, legalityOf, removePart, scrutineerCar } from '../../src/db/upgrades';
+import {
+  fitPart,
+  fittedParts,
+  legalityOf,
+  removePart,
+  scrutineerCar,
+  upgradeView,
+} from '../../src/db/upgrades';
 import { refreshUsedMarket, openListings } from '../../src/db/market';
 import { persistWorld } from '../../src/db/world';
 import { maxTyreWidthMm, parts } from '../../src/sim/upgrades';
@@ -139,5 +146,24 @@ describe('scrutineering', () => {
       );
     };
     expect(timeOf(true)).toBeLessThan(timeOf(false));
+  });
+});
+
+describe('the upgrade view', () => {
+  it('lists every part for a car, marks what is fitted and tracks legality', () => {
+    const db = newCareer('upgrade-view');
+    const [carId, garageId] = entryOf(db);
+    const before = upgradeView(db, garageId, carId);
+    expect(before.offers).toHaveLength(parts.length);
+    expect(before.offers.every((o) => !o.fitted && o.price > 0 && o.supplier !== '')).toBe(true);
+    expect(before.legality).toBe(100);
+    expect(before.scrutineering.legal).toBe(true);
+    const engine = parts.find((p) => p.category === 'engine' && p.grade === 'race')!;
+    fitPart(db, garageId, carId, engine.id);
+    const after = upgradeView(db, garageId, carId);
+    expect(after.offers.find((o) => o.part.id === engine.id)!.fitted).toBe(true);
+    expect(after.legality).toBe(100 - engine.legalityCost);
+    expect(after.maxTyreMm).toBeGreaterThanOrEqual(after.tyreWidthMm);
+    expect(() => upgradeView(db, garageId + 1, carId)).toThrow(/does not own/);
   });
 });
