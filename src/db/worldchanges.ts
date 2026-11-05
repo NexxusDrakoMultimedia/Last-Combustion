@@ -1,10 +1,57 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
-import { flagNames } from '../sim/worldgen/data';
-import { planWorldChanges, unionLongName, worldChangeData } from '../sim/worldchanges';
+import { balance, flagNames, flagRegions } from '../sim/worldgen/data';
+import {
+  planWorldChanges,
+  unionLongName,
+  worldChangeData,
+  type WorldChange,
+} from '../sim/worldchanges';
 import { readCareer } from './career';
 import { all } from './entries';
+
+/** Moves a region's fans when it leaves: out of the parent flag, and into the flag it joins. */
+function moveFans(db: Database, seasonId: number, event: WorldChange): void {
+  const fans = (flag: string): number | undefined => {
+    const row = all(db, 'SELECT fans FROM flag_fans WHERE flag = ? AND season_id = ?', [
+      flag,
+      seasonId,
+    ])[0];
+    return row ? (row.fans as number) : undefined;
+  };
+  const put = (flag: string, value: number) =>
+    db.run(
+      `INSERT INTO flag_fans (flag, season_id, fans) VALUES (?, ?, ?)
+       ON CONFLICT (flag, season_id) DO UPDATE SET fans = excluded.fans`,
+      [flag, seasonId, Math.max(0, Math.round(value))],
+    );
+  const minimum = balance.fans.flagMinimum;
+  for (const [parent, def] of Object.entries(flagRegions)) {
+    for (const [place, region] of Object.entries(def.places)) {
+      if (!event.regions.includes(place)) continue;
+      const tally = fans(region.key) ?? minimum;
+      const before = fans(parent) ?? 0;
+      if (def.mode === 'sum') {
+        // The home nation's fans leave the United Kingdom's total, and join the flag it moves to.
+        put(parent, before - tally);
+        if (event.to === region.key) put(region.key, tally);
+        else put(event.to, (fans(event.to) ?? minimum) + tally);
+      } else {
+        // A Spanish region takes its portion of Spain's fans with it.
+        put(parent, Math.max(minimum, before - tally));
+        put(event.to, Math.max(minimum, tally));
+      }
+    }
+  }
+  if (event.retires) {
+    // The union ends: what is left of it (England's fans and anyone with no home nation) goes to England.
+    const left = fans(event.retires) ?? 0;
+    const heir = event.also?.[0]?.to;
+    if (heir) put(heir, Math.max(fans(heir) ?? minimum, left));
+    put(event.retires, 0);
+  }
+}
 
 export interface AppliedChange {
   id: string;
@@ -67,6 +114,8 @@ export function applyWorldChanges(db: Database, year: number): AppliedChange[] {
       db.run('UPDATE garage SET flag = ? WHERE flag = ?', [heir, event.retires]);
       moved.garages += db.getRowsModified();
     }
+    const season = all(db, 'SELECT id FROM season ORDER BY year DESC LIMIT 1')[0];
+    if (season) moveFans(db, season.id as number, event);
     const names = flagNames[event.to];
     if (names) setName(event.to, names.short, names.long);
     done.add(event.id);
