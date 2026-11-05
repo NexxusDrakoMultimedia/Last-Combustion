@@ -451,7 +451,8 @@
       "newPerYearMax": 10,
       "newPrestige": 6,
       "newFreeAgentShare": 0.6,
-      "maxEntries": 390
+      "maxEntries": 390,
+      "maxEntriesPerGarage": 8
     },
     "progression": {
       "growthEndAge": 27,

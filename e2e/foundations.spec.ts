@@ -27,6 +27,10 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await page.getByRole('button', { name: messages['drivers.seat'] }).click();
   await page.keyboard.press('Escape');
 
+  await page.getByRole('button', { name: messages['rail.garage'] }).click();
+  await expect(page.getByRole('heading', { name: messages['entries.title'] })).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['rail.upgrades'] }).click();
   await expect(page.getByText('Road legality')).toBeVisible();
   await page.getByRole('button', { name: messages['upgrades.fit'] }).first().click();
