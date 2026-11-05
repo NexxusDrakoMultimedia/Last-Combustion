@@ -343,6 +343,33 @@
       "MR": 10
     }
   },
+  "fans": {
+    "gains": {
+      "win": 0.01,
+      "podium": 0.004,
+      "finalRest": 0.001,
+      "pointsScorer": 0.0001,
+      "pole": 0.003,
+      "overtake": 0.0002,
+      "hometownMultiplier": 1.2
+    },
+    "shares": {
+      "garage": 0.4,
+      "car": 0.3,
+      "flag": 0.15
+    },
+    "capShare": 0.4,
+    "inactivityLoss": 0.03,
+    "retiredLoss": 0.05,
+    "merchandisePerFan": 2,
+    "series": {
+      "firstYear": 2031,
+      "earlyYears": 5,
+      "earlyGrowth": 0.25,
+      "lateGrowth": 0.08,
+      "festivalGrowth": 0.01
+    }
+  },
   "negotiation": {
     "counterMargins": [0.15, 0.07, 0.02],
     "lowballWalkShare": [0.6, 0.8],

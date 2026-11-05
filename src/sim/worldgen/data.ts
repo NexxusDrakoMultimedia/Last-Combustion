@@ -31,6 +31,7 @@ export const sponsorBalance = balanceJson.sponsors;
 export const dealBalance = balanceJson.deals;
 export const repairBalance = balanceJson.repairs;
 export const seasonBalance = balanceJson.season;
+export const fanBalance = balanceJson.fans;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
 export interface FlagRegion {

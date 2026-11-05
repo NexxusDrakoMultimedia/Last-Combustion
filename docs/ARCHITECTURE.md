@@ -85,3 +85,5 @@ The shell is in `src/ui/shell` (`Shell.tsx` with the top bar, rail and floor, `P
 Prize money: `src/db/prizes.ts` splits a driver's prize (race prize, champion's prize, bonuses) between the garage and the driver by the contract's `garage_prize_share` (migration 0023).
 
 Garages: `src/db/garages.ts` pays the computer garages their sponsorship, folds the ones broke two seasons running and opens the year's new garages; `startNextSeason` calls it (migration 0024 adds `garage.broke_years`).
+
+Fans: `src/sim/fans.ts` has the gain table and series growth (pure), `src/db/fans.ts` gives out a round's fans from `playFinal`, and the rollover and season end handle growth, losses and merchandise.

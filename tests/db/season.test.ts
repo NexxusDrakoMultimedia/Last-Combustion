@@ -75,7 +75,8 @@ describe('standings through a season', () => {
     expect(Number(scalar(db, 'SELECT SUM(cash) FROM garage'))).toBe(
       cashBefore +
         10_000_000 +
-        bonuses -
+        bonuses +
+        Number(scalar(db, "SELECT SUM(amount) FROM ledger WHERE category = 'merchandise'")) -
         (Number(scalar(db, 'SELECT SUM(earnings) FROM driver')) - earningsBefore),
     );
     // The champion's garage and the champion share the prize by contract: the garage keeps a share, never all of it.
