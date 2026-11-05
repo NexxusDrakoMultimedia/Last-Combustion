@@ -6,6 +6,7 @@ import { useCareerStore } from '../../state/career.store';
 import { StarterChoice } from '../StarterChoice';
 import { button, quiet } from '../styles';
 import { Panel } from './Panel';
+import { UpgradesPanel } from './UpgradesPanel';
 import {
   ConditionBar,
   DriversTable,
@@ -15,13 +16,13 @@ import {
   UsedMarket,
 } from './panels';
 
-type PanelId = 'season' | 'garage' | 'market' | 'menu';
+type PanelId = 'season' | 'garage' | 'market' | 'upgrades' | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'season', label: 'rail.season' },
   { id: 'garage', label: 'rail.garage' },
   { id: 'market', label: 'rail.market' },
-  { id: null, label: 'rail.upgrades' },
+  { id: 'upgrades', label: 'rail.upgrades' },
   { id: null, label: 'rail.staff' },
   { id: null, label: 'rail.sponsors' },
   { id: null, label: 'rail.money' },
@@ -242,6 +243,15 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           {marketTab === 'market' ? <UsedMarket locked={locked} /> : <OwnedCars locked={locked} />}
+        </Panel>
+      )}
+      {!locked && open === 'upgrades' && (
+        <Panel
+          title={t('rail.upgrades')}
+          subtitle={t('upgrades.intro')}
+          onClose={() => setOpen(null)}
+        >
+          <UpgradesPanel />
         </Panel>
       )}
       {open === 'menu' && (

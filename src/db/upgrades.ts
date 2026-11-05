@@ -4,8 +4,10 @@ import type { Database } from 'sql.js';
 import {
   fitParts,
   legalityScore,
+  maxTyreWidthMm,
   part,
   partPrice,
+  parts,
   scrutineer,
   type PartCategory,
   type PartData,
@@ -161,4 +163,64 @@ export function scrutineerCar(db: Database, carId: number): ScrutineeringResult 
     fittedParts(db, carId),
     car.layout as Layout,
   );
+}
+
+export interface PartOffer {
+  part: PartData;
+  supplier: string;
+  /** What this garage pays for the part on this car, after any supplier deal. */
+  price: number;
+  fitted: boolean;
+}
+
+export interface UpgradeView {
+  carId: number;
+  modelName: string;
+  kerbKg: number;
+  tyreWidthMm: number;
+  maxTyreMm: number;
+  legality: number;
+  scrutineering: ScrutineeringResult;
+  offers: PartOffer[];
+}
+
+/** A car's fitted state and every part it could have, priced for this garage. */
+export function upgradeView(db: Database, garageId: number, carId: number): UpgradeView {
+  const car = carRow(db, carId);
+  if (car.garage_id !== garageId) throw new Error('The garage does not own this car.');
+  const fitted = new Set(fittedParts(db, carId).map((p) => p.id));
+  const suppliers = new Map(
+    all(db, 'SELECT id, name FROM part_supplier').map((s) => [s.id as number, s.name as string]),
+  );
+  const rows = new Map(
+    all(db, 'SELECT stable_id, supplier_id FROM part').map((p) => [
+      p.stable_id as string,
+      p.supplier_id as number,
+    ]),
+  );
+  const modelName = String(
+    all(db, 'SELECT m.name FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ?', [
+      carId,
+    ])[0]!.name,
+  );
+  return {
+    carId,
+    modelName,
+    kerbKg: car.kerb_kg_current as number,
+    tyreWidthMm: car.tyre_width_mm as number,
+    maxTyreMm: maxTyreWidthMm(car.kerb_kg_current as number, car.layout as Layout),
+    legality: legalityOf(db, carId),
+    scrutineering: scrutineerCar(db, carId),
+    offers: parts.map((p) => {
+      const supplierId = rows.get(p.id);
+      const base = partPrice(p, car.tier as Tier);
+      return {
+        part: p,
+        supplier: supplierId === undefined ? '' : (suppliers.get(supplierId) ?? ''),
+        price:
+          supplierId === undefined ? base : dealPrice(db, 'supplier', garageId, supplierId, base),
+        fitted: fitted.has(p.id),
+      };
+    }),
+  };
 }

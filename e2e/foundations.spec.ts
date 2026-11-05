@@ -18,6 +18,14 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await page.getByRole('button', { name: messages['starter.confirm'] }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 
+  await page.getByRole('button', { name: messages['rail.upgrades'] }).click();
+  await expect(page.getByText('Road legality')).toBeVisible();
+  await page.getByRole('button', { name: messages['upgrades.fit'] }).first().click();
+  await expect(
+    page.getByRole('button', { name: messages['upgrades.remove'] }).first(),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
   await expect(page.getByText(/Round 1 prelims: \d+ set a time/)).toBeVisible();
   await page.getByRole('button', { name: messages['hub.runFinal'] }).click();

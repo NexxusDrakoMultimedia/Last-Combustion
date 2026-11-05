@@ -17,6 +17,13 @@ import {
   starterOffers,
   type StarterOffers,
 } from '../db/starter';
+import {
+  fitPart as dbFitPart,
+  removePart as dbRemovePart,
+  upgradeView,
+  type UpgradeView,
+} from '../db/upgrades';
+import type { PartCategory } from '../sim/upgrades';
 import { ownedCars, setEntryCar, type OwnedCar } from '../db/garage';
 import { buyUsedCar, openListings, refreshUsedMarket, type Listing } from '../db/market';
 import { startNextSeason, type Rollover } from '../db/rollover';
@@ -56,6 +63,7 @@ interface CareerState {
   hub: HubView | undefined;
   starter: StarterOffers | undefined;
   cars: OwnedCar[];
+  upgrades: UpgradeView[];
   listings: Listing[];
   seasonEnd: SeasonEnd | undefined;
   rollover: Rollover | undefined;
@@ -65,6 +73,8 @@ interface CareerState {
   startCareer(setup: OwnerSetup): Promise<void>;
   chooseStarter(carId: number, driverId: number): Promise<void>;
   buyListing(listingId: number): Promise<void>;
+  fitPart(carId: number, partId: string): Promise<void>;
+  removePart(carId: number, category: PartCategory): Promise<void>;
   raceCar(carId: number): Promise<void>;
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
@@ -97,6 +107,12 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
       listings: openListings(db),
+      upgrades:
+        playerGarageId(db) === null
+          ? []
+          : ownedCars(db, playerGarageId(db)!).map((c) =>
+              upgradeView(db, playerGarageId(db)!, c.carId),
+            ),
     });
 
   const run = async (action: () => Promise<Notice | undefined>) => {
@@ -124,6 +140,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     hub: undefined,
     starter: undefined,
     cars: [],
+    upgrades: [],
     listings: [],
     seasonEnd: undefined,
     rollover: undefined,
@@ -172,6 +189,26 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const garageId = playerGarageId(openDb);
         if (garageId === null) return undefined;
         buyUsedCar(openDb, garageId, listingId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    fitPart: (carId, partId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbFitPart(openDb, garageId, carId, partId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    removePart: (carId, category) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbRemovePart(openDb, garageId, carId, category);
         refresh(openDb);
         return undefined;
       }),
