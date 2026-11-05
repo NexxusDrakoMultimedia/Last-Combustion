@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 
+import type { PlateState } from '../plates';
+
 export type RoadType = 'forest' | 'coast' | 'mountain' | 'night';
 export const ROAD_TYPES: readonly RoadType[] = ['forest', 'coast', 'mountain', 'night'];
 export type CarType = 'hypercar' | 'supercar' | 'jdm' | 'sports' | 'domestic' | 'other';
@@ -114,6 +116,10 @@ export interface Car {
   id: number;
   modelId: string;
   chassisNo: string;
+  /** The Australian licence plate that identifies the car, such as `DT·42·HW`. */
+  plate: string;
+  /** The state or territory the plate was issued in. */
+  plateState: PlateState;
   flag: string;
   fans: number;
   garageId: number;

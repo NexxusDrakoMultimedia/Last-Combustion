@@ -36,7 +36,7 @@ export function legalityOf(db: Database, carId: number): number {
 function carRow(db: Database, carId: number) {
   const car = all(
     db,
-    `SELECT c.id, c.garage_id, c.kerb_kg_current, c.tyre_width_mm, m.base_kerb_kg, m.max_tyre_mm, m.base_ps, m.tier, m.layout,
+    `SELECT c.id, c.plate, c.plate_state, c.garage_id, c.kerb_kg_current, c.tyre_width_mm, m.base_kerb_kg, m.max_tyre_mm, m.base_ps, m.tier, m.layout,
             g.kind
        FROM car c
        JOIN car_model m ON m.id = c.car_model_id
@@ -178,6 +178,8 @@ export interface PartOffer {
 
 export interface UpgradeView {
   carId: number;
+  plate: string;
+  plateState: string;
   modelName: string;
   kerbKg: number;
   tyreWidthMm: number;
@@ -217,6 +219,8 @@ export function upgradeView(db: Database, garageId: number, carId: number): Upgr
   );
   return {
     carId,
+    plate: car.plate as string,
+    plateState: car.plate_state as string,
     modelName,
     kerbKg: car.kerb_kg_current as number,
     tyreWidthMm: car.tyre_width_mm as number,

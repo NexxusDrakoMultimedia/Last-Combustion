@@ -8,6 +8,9 @@ import { valueOfCar } from './market';
 
 export interface OwnedCar {
   carId: number;
+  /** The car's Australian licence plate, which identifies it. */
+  plate: string;
+  plateState: string;
   modelName: string;
   modelYear: number;
   roadKm: number;
@@ -21,7 +24,7 @@ export interface OwnedCar {
 export function ownedCars(db: Database, garageId: number): OwnedCar[] {
   return all(
     db,
-    `SELECT c.id, c.model_year, c.road_km, c.wear, m.name,
+    `SELECT c.id, c.plate, c.plate_state, c.model_year, c.road_km, c.wear, m.name,
             (SELECT e.race_number FROM entry e
               WHERE e.car_id = c.id AND e.series = 'main'
                 AND e.season_id = (SELECT MAX(id) FROM season)) AS race_number
@@ -30,6 +33,8 @@ export function ownedCars(db: Database, garageId: number): OwnedCar[] {
     [garageId],
   ).map((r) => ({
     carId: r.id as number,
+    plate: r.plate as string,
+    plateState: r.plate_state as string,
     modelName: r.name as string,
     modelYear: r.model_year as number,
     roadKm: r.road_km as number,

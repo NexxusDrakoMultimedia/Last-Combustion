@@ -15,6 +15,8 @@ const STARTER_SALARY = 20_000;
 
 export interface StarterCar {
   carId: number;
+  plate: string;
+  plateState: string;
   modelName: string;
   modelYear: number;
   roadKm: number;
@@ -88,11 +90,13 @@ export function starterOffers(db: Database): StarterOffers | undefined {
   const year = readCareer(db)?.startYear ?? 0;
   const cars = all(
     db,
-    `SELECT c.id, c.model_year, c.road_km, c.wear, m.name FROM starter_offer o
+    `SELECT c.id, c.plate, c.plate_state, c.model_year, c.road_km, c.wear, m.name FROM starter_offer o
        JOIN car c ON c.id = o.subject_id JOIN car_model m ON m.id = c.car_model_id
       WHERE o.kind = 'car' ORDER BY o.id`,
   ).map((r) => ({
     carId: r.id as number,
+    plate: r.plate as string,
+    plateState: r.plate_state as string,
     modelName: r.name as string,
     modelYear: r.model_year as number,
     roadKm: r.road_km as number,
