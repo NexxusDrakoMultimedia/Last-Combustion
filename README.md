@@ -4,7 +4,9 @@ _Racing team simulation game based in a post-petrol world, where the last petrol
 
 A racing driver-management and car-upgrading game about a 2031 racing series for road-legal combustion cars, run on closed Australian public roads. Loosely inspired by _MF Ghost_; all names and branding are original.
 
-**Status:** milestone M0 (foundations) is in place: the project builds, creates a database, and saves and loads careers. There is no gameplay yet. See the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) and the [architecture notes](docs/ARCHITECTURE.md).
+**Status:** work towards the first playable season (milestone M5). The world, prelims, final races, car market, upgrades, negotiation, finances, standings and the season rollover are built and tested. The first screens let you start a Garage owner career, choose a starter car and driver, buy a used car, run each round and roll into the next season, with saving, loading and exporting. Screens for upgrades, driver signing and the rest of the economy are still to come, and the styling is plain. See the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) and the [architecture notes](docs/ARCHITECTURE.md).
+
+The web build is at [lc.nexxusdrako.au](https://lc.nexxusdrako.au) and deploys from `main`.
 
 ## Stack
 
@@ -31,10 +33,10 @@ Other commands:
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versioning](https://semver.org/), keeps a [changelog](CHANGELOG.md) and uses Conventional Commits.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versioning](https://semver.org/), will keep a [changelog](CHANGELOG.md) from the first release, and uses Conventional Commits.
 
 ## Licence
 
 Copyright (C) Nexxus Drako Multimedia. GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE).
 
-The name "Last Combustion", its logo and the character Pyra Drake and the hidden driver characters are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).
+The name "Last Combustion", its logo, the character Pyra Drake and the hidden driver characters are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).
