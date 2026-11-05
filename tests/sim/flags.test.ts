@@ -45,4 +45,26 @@ describe('excluded flags', () => {
       expect(existsSync(rename.art)).toBe(true);
     }
   });
+
+  it('names every recognised nation with a short and a long name, and nothing excluded', () => {
+    const nations = Object.entries(flagNames).filter(([code]) => /^[A-Z]{2}$/.test(code));
+    expect(nations.length).toBeGreaterThanOrEqual(200);
+    const shorts = new Set<string>();
+    for (const [code, names] of nations) {
+      expect(excludedFlags.has(code)).toBe(false);
+      expect(names.short.trim()).toBe(names.short);
+      expect(names.long.length).toBeGreaterThanOrEqual(names.short.length);
+      expect(shorts.has(names.short)).toBe(false);
+      shorts.add(names.short);
+    }
+    for (const code of ['AU', 'JP', 'XK', 'TW', 'PR', 'HK', 'PS', 'GI', 'FO', 'CZ', 'TR'])
+      expect(flagNames[code]).toBeDefined();
+    expect(flagNames.TW?.short).toBe('Chinese Taipei');
+    expect(flagNames.CZ).toEqual({ short: 'Czechia', long: 'Czech Republic' });
+  });
+
+  it('keeps the home nations out of the list until they split', () => {
+    for (const code of ['GB-ENG', 'GB-SCT', 'GB-WLS', 'EN', 'SCT', 'WLS', 'NIR'])
+      expect(flagNames[code]).toBeUndefined();
+  });
 });
