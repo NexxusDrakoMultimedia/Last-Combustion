@@ -12,7 +12,10 @@ import {
   manufacturers,
   nameLists,
   places,
+  flagNames,
+  flagRegions,
   populations,
+  type FlagRegion,
 } from './data';
 import { garageName, nickname, nicknameThemesFor, personName, pickNationality } from './names';
 import { generateLoadouts } from './loadouts';
@@ -459,17 +462,58 @@ export function generateWorld(seed: string | number): World {
   for (const d of drivers)
     (driverCar.get(d.id) as Car).fans = Math.round(f.carShareOfDriver * d.fans);
 
-  const flagTotals = new Map<string, number>();
-  for (const [code, population] of Object.entries(populations)) {
-    flagTotals.set(
-      code,
+  // Every named flag has a few fans at least. Those with a population get a national base too.
+  const minimum = f.flagMinimum;
+  const baseOf = (code: string, population: number) =>
+    Math.max(
+      minimum,
       population * f.nationalBaseRate * (code === HOST_COUNTRY ? f.hostMultiplier : 1),
     );
+  const flagTotals = new Map<string, number>();
+  for (const code of Object.keys(flagNames)) {
+    if (/^[A-Z]{2}$/.test(code)) flagTotals.set(code, baseOf(code, populations[code] ?? 0));
   }
-  const addToFlag = (code: string, fans: number) =>
-    flagTotals.set(code, (flagTotals.get(code) ?? 0) + f.flagShare * fans);
-  drivers.forEach((d) => addToFlag(d.flag, d.fans));
-  garages.forEach((g) => addToFlag(g.flag, g.fans));
+  for (const [code, population] of Object.entries(populations))
+    flagTotals.set(code, baseOf(code, population));
+
+  // Hidden regional tallies: each region that can become a nation keeps its own fans from the start.
+  const regionOf = (flag: string, placeId: string): FlagRegion | undefined => {
+    const place = placeById.get(placeId);
+    return place ? flagRegions[flag]?.places[place.region] : undefined;
+  };
+  const regionTotals = new Map<string, number>();
+  for (const [parent, def] of Object.entries(flagRegions)) {
+    if (def.mode !== 'sum') continue;
+    for (const region of Object.values(def.places))
+      regionTotals.set(region.key, baseOf(region.key, region.population));
+    flagTotals.set(parent, 0);
+  }
+  const addToFlag = (code: string, fans: number, placeId: string) => {
+    const region = regionOf(code, placeId);
+    if (region && flagRegions[code]?.mode === 'sum')
+      regionTotals.set(region.key, (regionTotals.get(region.key) ?? 0) + f.flagShare * fans);
+    else flagTotals.set(code, (flagTotals.get(code) ?? 0) + f.flagShare * fans);
+  };
+  drivers.forEach((d) => addToFlag(d.flag, d.fans, d.hometownPlaceId));
+  garages.forEach((g) => addToFlag(g.flag, g.fans, g.basePlaceId));
+  // The UK is the sum of its home nations (plus the fans of anyone with no home nation); Spain's
+  // regions each take a portion of Spain's fans by their real population.
+  for (const [parent, def] of Object.entries(flagRegions)) {
+    const regions = Object.values(def.places);
+    if (def.mode === 'sum') {
+      flagTotals.set(
+        parent,
+        (flagTotals.get(parent) ?? 0) +
+          regions.reduce((s, r) => s + (regionTotals.get(r.key) ?? 0), 0),
+      );
+    } else {
+      const total = flagTotals.get(parent) ?? 0;
+      const whole = populations[parent] ?? 1;
+      for (const r of regions)
+        regionTotals.set(r.key, Math.max(minimum, (total * r.population) / whole));
+    }
+  }
+  for (const [key, fans] of regionTotals) flagTotals.set(key, fans);
   const flagFans = [...flagTotals.entries()]
     .map(([flag, fans]) => ({ flag, fans: Math.round(fans) }))
     .sort((a, b) => a.flag.localeCompare(b.flag));

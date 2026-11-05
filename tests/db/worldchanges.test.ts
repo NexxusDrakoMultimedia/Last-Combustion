@@ -96,3 +96,57 @@ describe('the hidden drivers and Vyktory', () => {
     });
   });
 });
+
+describe('fans through the splits', () => {
+  it('moves each region’s fans out of its parent and into the flag it joins', () => {
+    const seed = findSeed();
+    const db = career(seed);
+    const fans = (flag: string) =>
+      Number(
+        scalar(
+          db,
+          `SELECT fans FROM flag_fans WHERE flag = '${flag}' AND season_id = (SELECT MAX(id) FROM season)`,
+        ) ?? 0,
+      );
+    const before = {
+      GB: fans('GB'),
+      IE: fans('IE'),
+      sct: fans('gb-sct'),
+      nir: fans('gb-nir'),
+      eng: fans('gb-eng'),
+    };
+    applyWorldChanges(db, worldChangeData.windowEnd);
+    expect(fans('IE')).toBe(before.IE + before.nir);
+    expect(fans('gb-sct')).toBe(before.sct);
+    expect(fans('GB')).toBe(0);
+    expect(fans('gb-eng')).toBeGreaterThanOrEqual(before.eng);
+    expect(fans('gb-eng') + fans('gb-sct') + fans('gb-wls') + before.nir).toBeGreaterThanOrEqual(
+      before.GB - 2,
+    );
+  });
+
+  it('takes a Spanish region’s portion out of Spain', () => {
+    let seed = '';
+    for (let i = 0; i < 500; i++) {
+      const plan = planWorldChanges(`es-${i}`);
+      if (plan.get('catalonia') != null) {
+        seed = `es-${i}`;
+        break;
+      }
+    }
+    const db = career(seed);
+    const fans = (flag: string) =>
+      Number(
+        scalar(
+          db,
+          `SELECT fans FROM flag_fans WHERE flag = '${flag}' AND season_id = (SELECT MAX(id) FROM season)`,
+        ) ?? 0,
+      );
+    const spain = fans('ES');
+    const portion = fans('es-ct');
+    applyWorldChanges(db, worldChangeData.windowEnd);
+    expect(fans('es-ct')).toBe(portion);
+    expect(fans('ES')).toBeLessThanOrEqual(spain - portion + 1);
+    expect(fans('ES')).toBeGreaterThanOrEqual(5);
+  });
+});

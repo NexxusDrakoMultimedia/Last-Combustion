@@ -129,6 +129,18 @@ describe('starting the next season', () => {
     expect(avg((born) => born <= 1994)).toBeLessThan(0);
   });
 
+  it('carries the flag fans over into the new season', () => {
+    const rows = (year: number) =>
+      Number(
+        scalar(
+          db,
+          `SELECT COUNT(*) FROM flag_fans WHERE season_id = (SELECT id FROM season WHERE year = ${year})`,
+        ),
+      );
+    expect(rows(2032)).toBe(rows(2031));
+    expect(rows(2032)).toBeGreaterThan(200);
+  });
+
   it('cannot start twice, or before the season ends', () => {
     expect(() => startNextSeason(db)).toThrow(/not ended/);
   });
