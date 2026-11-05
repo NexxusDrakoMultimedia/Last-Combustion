@@ -91,3 +91,5 @@ Fans: `src/sim/fans.ts` has the gain table and series growth (pure), `src/db/fan
 Wear: parts lose effect as they wear (`partEffects` in `src/sim/upgrades.ts`) and gear wears with racing (`wearGear`, `gearConditions` and `renewGear` in `src/db/repairs.ts`, migration 0025; `gearWornShare` in `src/sim/gear.ts`).
 
 The rail's Sponsors and Money panels (`src/ui/shell/SponsorsPanel.tsx`, `MoneyPanel.tsx`) read `activeSponsorDeal`, `approachableSponsors` and `garageFinance`, and negotiate through `openSponsorNegotiation` and `offerSponsorDeal`.
+
+Development: `src/sim/progression.ts` has `driverCurve` (a driver's own growth curve from the seed and id) and `develop` (curve, training and the soft cap), and `src/db/training.ts` sets levels and pays for them at the rollover (migration 0026).

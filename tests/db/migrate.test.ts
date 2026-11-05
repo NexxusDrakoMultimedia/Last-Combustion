@@ -79,6 +79,7 @@ describe('migrate', () => {
       'prize_share',
       'garage_finances',
       'gear_wear',
+      'training',
     ]);
   });
 

@@ -4,7 +4,7 @@ import type { Database } from 'sql.js';
 import { rankingNumbers, RANKED_NUMBERS } from '../sim/numbers';
 import { createRng } from '../sim/rng';
 import { seriesGrowth } from '../sim/fans';
-import { develop } from '../sim/progression';
+import { develop, driverCurve } from '../sim/progression';
 import { retires } from '../sim/rollover';
 import { ageOn } from '../sim/junior';
 import { buildCalendar, makeRookie, RESERVED_NUMBER } from '../sim/worldgen';
@@ -15,6 +15,7 @@ import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
+import { settleTraining } from './training';
 
 export interface Rollover {
   year: number;
@@ -24,6 +25,7 @@ export interface Rollover {
   entries: number;
   garagesClosed: number;
   garagesOpened: number;
+  trainingSpent: number;
   worldChanges: AppliedChange[];
 }
 
@@ -117,7 +119,9 @@ export function startNextSeason(db: Database): Rollover {
       nextDriverId += 1;
     }
 
-    // Everyone still racing grows or declines with age (rookies start next year).
+    // Training for the season just ended is paid for, then everyone still racing grows or declines
+    // with age along their own curve (rookies start next year).
+    const training = settleTraining(db, lastId, year, closedGarages);
     const develops = all(
       db,
       `SELECT d.id, d.birth_date, d.pace, d.consistency, d.racecraft, d.tyre_management, d.composure, d.wet_skill, d.potential
@@ -137,6 +141,10 @@ export function startNextSeason(db: Database): Rollover {
         },
         d.potential as number,
         ageOn(d.birth_date as string, `${year}-01-01`),
+        {
+          curve: driverCurve(career.masterSeed, d.id as number),
+          training: training.levels.get(d.id as number) ?? 0,
+        },
       );
       db.run(
         'UPDATE driver SET pace = ?, consistency = ?, racecraft = ?, tyre_management = ?, composure = ?, wet_skill = ? WHERE id = ?',
@@ -271,6 +279,7 @@ export function startNextSeason(db: Database): Rollover {
       entries: entries.length + garagesOpened,
       garagesClosed: closedGarages.size,
       garagesOpened,
+      trainingSpent: training.spent,
       worldChanges,
     };
   } catch (error) {
