@@ -65,7 +65,9 @@ describe('starting the next season', () => {
         db,
         'SELECT COUNT(*) FROM entry WHERE season_id = (SELECT id FROM season WHERE year = 2032)',
       ),
-    ).toBe(313);
+    ).toBe(result.entries);
+    expect(result.garagesClosed).toBe(0);
+    expect(result.entries).toBe(313 + result.garagesOpened);
     expect(readCareer(db)!.gameDate).toBe('2032-02-01');
   });
 
@@ -81,7 +83,7 @@ describe('starting the next season', () => {
         db,
         'SELECT COUNT(DISTINCT race_number) FROM entry WHERE season_id = (SELECT id FROM season WHERE year = 2032)',
       ),
-    ).toBe(313);
+    ).toBe(result.entries);
     expect(
       scalar(
         db,
@@ -95,7 +97,9 @@ describe('starting the next season', () => {
     expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE retired_year = 2031')).toBe(
       result.retired,
     );
-    expect(scalar(db, 'SELECT COUNT(*) FROM driver')).toBe(313 + result.rookies);
+    expect(Number(scalar(db, 'SELECT COUNT(*) FROM driver'))).toBeGreaterThanOrEqual(
+      313 + result.rookies,
+    );
     expect(
       scalar(
         db,
@@ -155,4 +159,102 @@ describe('determinism', () => {
       'SELECT group_concat(driver_id || ":" || race_number) FROM (SELECT driver_id, race_number FROM entry WHERE season_id = 2 ORDER BY id)';
     expect(scalar(a, q)).toBe(scalar(b, q));
   }, 240_000);
+});
+
+describe('garages closing and opening at the rollover', () => {
+  let db: Database;
+  let result: ReturnType<typeof startNextSeason>;
+  let doomed: number;
+  let doomedDriver: number;
+  let doomedCar: number;
+  let playerId: number;
+  beforeAll(() => {
+    db = playedSeason('garages-rollover');
+    // One computer garage has been broke for a year already and is deep in debt; the player's garage is too.
+    const row = db.exec(
+      `SELECT g.id, e.driver_id, e.car_id FROM garage g JOIN entry e ON e.garage_id = g.id
+        WHERE g.kind = 'racing' AND g.is_player = 0 AND g.name <> 'Drake Motorsports'
+        GROUP BY g.id ORDER BY g.id LIMIT 1`,
+    )[0]!.values[0] as number[];
+    [doomed, doomedDriver, doomedCar] = row as [number, number, number];
+    db.run('UPDATE garage SET cash = -90000000, broke_years = 1 WHERE id = ?', [doomed]);
+    playerId = Number(scalar(db, 'SELECT id FROM garage WHERE name = "Drake Motorsports"'));
+    db.run('UPDATE garage SET cash = -90000000, broke_years = 5 WHERE id = ?', [playerId]);
+    result = startNextSeason(db);
+  }, 180_000);
+
+  it('folds a computer garage after a second broke year and lists its cars', () => {
+    expect(result.garagesClosed).toBeGreaterThanOrEqual(1);
+    expect(scalar(db, `SELECT closed_year FROM garage WHERE id = ${doomed}`)).toBe(2031);
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM entry WHERE garage_id = ${doomed} AND season_id = (SELECT id FROM season WHERE year = 2032)`,
+      ),
+    ).toBe(0);
+    expect(
+      scalar(
+        db,
+        `SELECT g.kind FROM car c JOIN garage g ON g.id = c.garage_id WHERE c.id = ${doomedCar}`,
+      ),
+    ).toBe('market');
+    expect(
+      scalar(db, `SELECT status FROM market_listing WHERE car_id = ${doomedCar} ORDER BY id DESC`),
+    ).toBe('open');
+    // Its driver is a free agent unless a new garage signed them, and its contract ended with the garage.
+    expect(
+      scalar(db, `SELECT COUNT(*) FROM contract WHERE garage_id = ${doomed} AND end_year >= 2032`),
+    ).toBe(0);
+    expect(scalar(db, `SELECT retired_year FROM driver WHERE id = ${doomedDriver}`) === null).toBe(
+      true,
+    );
+  });
+
+  it('never folds Drake Motorsports', () => {
+    expect(scalar(db, `SELECT closed_year FROM garage WHERE id = ${playerId}`)).toBeNull();
+  });
+
+  it('opens three to ten new garages, each with a driver, a starter car and an entry', () => {
+    expect(result.garagesOpened).toBeGreaterThanOrEqual(3);
+    expect(result.garagesOpened).toBeLessThanOrEqual(10);
+    const fresh = db
+      .exec(`SELECT g.id FROM garage g WHERE g.founded_year = 2032 AND g.kind = 'racing'`)[0]!
+      .values.map((v) => v[0] as number);
+    expect(fresh.length).toBe(result.garagesOpened);
+    for (const id of fresh) {
+      expect(
+        scalar(
+          db,
+          `SELECT COUNT(*) FROM entry e JOIN contract c ON c.driver_id = e.driver_id AND c.garage_id = e.garage_id
+            WHERE e.garage_id = ${id} AND e.season_id = (SELECT id FROM season WHERE year = 2032)`,
+        ),
+      ).toBe(1);
+      expect(scalar(db, `SELECT fans FROM garage WHERE id = ${id}`)).toBe(5);
+    }
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) - COUNT(DISTINCT driver_id) FROM entry WHERE season_id = (SELECT id FROM season WHERE year = 2032)`,
+      ),
+    ).toBe(0);
+    expect(db.exec('PRAGMA foreign_key_check')).toEqual([]);
+  });
+
+  it('pays computer garages their sponsorship at the season end', () => {
+    expect(
+      Number(
+        scalar(db, "SELECT COUNT(*) FROM ledger WHERE category = 'sponsor' AND round_id IS NULL"),
+      ),
+    ).toBeGreaterThan(50);
+  });
+
+  it('gives the same garages for the same seed', () => {
+    const again = playedSeason('garages-rollover');
+    again.run('UPDATE garage SET cash = -90000000, broke_years = 1 WHERE id = ?', [doomed]);
+    again.run('UPDATE garage SET cash = -90000000, broke_years = 5 WHERE id = ?', [playerId]);
+    startNextSeason(again);
+    const names = (d: Database) =>
+      d.exec('SELECT name FROM garage WHERE founded_year = 2032 ORDER BY id')[0]!.values.join('|');
+    expect(names(again)).toBe(names(db));
+  }, 180_000);
 });

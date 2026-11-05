@@ -404,6 +404,16 @@
     "rookiePaceMean": 50,
     "rookieSalaryShare": 0.5,
     "contractRenewalYears": 1,
+    "garages": {
+      "sponsorPerEntry": 40000,
+      "sponsorPerPrestige": 1500,
+      "foldAfterBrokeYears": 2,
+      "newPerYearMin": 3,
+      "newPerYearMax": 10,
+      "newPrestige": 6,
+      "newFreeAgentShare": 0.6,
+      "maxEntries": 390
+    },
     "progression": {
       "growthEndAge": 27,
       "declineStartAge": 33,

@@ -213,7 +213,7 @@ export function closeAuction(db: Database, auctionId: number): AuctionResult {
   const rng = createRng(career.masterSeed).stream(`auction:close:${auctionId}`);
   const aiGarages = all(
     db,
-    "SELECT id, cash FROM garage WHERE kind = 'racing' AND is_player = 0 ORDER BY id",
+    "SELECT id, cash FROM garage WHERE kind = 'racing' AND is_player = 0 AND closed_year IS NULL ORDER BY id",
   );
   const market = ensureMarketGarage(db);
   const [lowFactor, highFactor] = cfg().aiFactor as [number, number];
@@ -240,10 +240,9 @@ export function closeAuction(db: Database, auctionId: number): AuctionResult {
       }
       // Only bidders who can still pay the price plus the premium count.
       const cash = new Map(
-        all(db, "SELECT id, cash FROM garage WHERE kind = 'racing'").map((g) => [
-          g.id as number,
-          g.cash as number,
-        ]),
+        all(db, "SELECT id, cash FROM garage WHERE kind = 'racing' AND closed_year IS NULL").map(
+          (g) => [g.id as number, g.cash as number],
+        ),
       );
       const able = bidders.filter((b) => (cash.get(b.garageId) ?? 0) >= buyerPays(b.max));
       const outcome = resolveLot(able, lot.reserve as number);
