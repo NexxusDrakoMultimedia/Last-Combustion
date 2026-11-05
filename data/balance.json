@@ -354,6 +354,12 @@
     "leverageScale": 500,
     "yearsPremium": 0.05,
     "releaseFeeShare": 0.5,
+    "prizeShare": {
+      "fair": 0.8,
+      "min": 0.3,
+      "max": 1,
+      "valuePerSeason": 300000
+    },
     "relationship": {
       "keptDeal": 5,
       "paidBonus": 3,

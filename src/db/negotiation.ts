@@ -2,14 +2,16 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import {
+  clampPrizeShare,
   clampRelationship,
   contractValue,
+  fairPrizeShare,
   leverageFrom,
   patienceFor,
   relationshipChange,
   releaseFee,
   respond,
-  salaryForValue,
+  termsForValue,
   walkAwayValue,
 } from '../sim/negotiation';
 import { fairSalary, overallRating } from '../sim/worldgen/rating';
@@ -141,6 +143,8 @@ export interface ContractTerms {
   salary: number;
   years: number;
   role?: 'lead' | 'development';
+  /** The share of the driver's prize money the garage keeps (default 80%); the driver takes the rest. */
+  garageShare?: number;
 }
 
 export type ContractOutcome =
@@ -174,7 +178,8 @@ export function offerDriverContract(
   const driverId = n.party_b_id as number;
   const role = terms.role ?? 'lead';
   const counterIndex = n.counters as number;
-  const value = contractValue(terms.salary, terms.years);
+  const garageShare = clampPrizeShare(terms.garageShare ?? fairPrizeShare());
+  const value = contractValue(terms.salary, terms.years, garageShare);
   const response = respond(
     value,
     n.walk_away as number,
@@ -189,7 +194,7 @@ export function offerDriverContract(
   const record = (outcome: 'accepted' | 'countered' | 'walked') =>
     db.run(
       "INSERT INTO offer (negotiation_id, round_no, from_side, terms, value, outcome) VALUES (?, ?, 'a', ?, ?, ?)",
-      [negotiationId, round, JSON.stringify({ ...terms, role }), value, outcome],
+      [negotiationId, round, JSON.stringify({ ...terms, role, garageShare }), value, outcome],
     );
 
   if (response.kind === 'walk') {
@@ -222,7 +227,11 @@ export function offerDriverContract(
     }
     return {
       kind: 'countered',
-      counter: { salary: salaryForValue(response.value, terms.years), years: terms.years, role },
+      counter: {
+        ...termsForValue(response.value, terms.years, garageShare),
+        years: terms.years,
+        role,
+      },
       patienceLeft: response.patienceLeft,
     };
   }
@@ -252,7 +261,7 @@ export function offerDriverContract(
     record('accepted');
     if (old) db.run('DELETE FROM contract WHERE id = ?', [old.id as number]);
     db.run(
-      'INSERT INTO contract (driver_id, garage_id, start_year, end_year, salary, role, release_fee) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO contract (driver_id, garage_id, start_year, end_year, salary, role, release_fee, garage_prize_share) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [
         driverId,
         garageId,
@@ -261,6 +270,7 @@ export function offerDriverContract(
         Math.round(terms.salary),
         role,
         releaseFee(terms.salary, terms.years),
+        garageShare,
       ],
     );
     const contractId = Number(all(db, 'SELECT MAX(id) AS n FROM contract')[0]!.n);

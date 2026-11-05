@@ -91,7 +91,7 @@ interface CareerState {
   chooseStarter(carId: number, driverId: number): Promise<void>;
   buyListing(listingId: number): Promise<void>;
   negotiate(driverId: number): Promise<void>;
-  offerContract(salary: number, years: number): Promise<void>;
+  offerContract(salary: number, years: number, garageShare?: number): Promise<void>;
   endNegotiation(): void;
   seatDriver(driverId: number): Promise<void>;
   fitPart(carId: number, partId: string): Promise<void>;
@@ -236,11 +236,15 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         return undefined;
       }),
 
-    offerContract: (salary, years) =>
+    offerContract: (salary, years, garageShare) =>
       run(async () => {
         const current = get().negotiation;
         if (!openDb || !current) return undefined;
-        const outcome = offerDriverContract(openDb, current.id, { salary, years });
+        const outcome = offerDriverContract(openDb, current.id, {
+          salary,
+          years,
+          garageShare,
+        });
         refresh(openDb);
         set({
           negotiation: {

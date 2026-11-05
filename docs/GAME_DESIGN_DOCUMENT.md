@@ -662,6 +662,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 Prize money and sponsors fund the garage, while fame, reputation, rivalries and the media turn results into stories.
 
 - **Prize money.** Each round pays prize money to the 15 finalists, weighted heavily to the win (table below). Placings outside the final earn no prize money. The season champion, decided on points, wins a $10,000,000 championship prize, and performance bonuses build up through the year. Prize money and sponsors are a garage's main income.
+- **The driver's share (built).** Prize money a driver wins (the final's prize, the champion's prize and the pole and overtake bonuses) is not all the garage's. Each contract sets the share the garage keeps, from 30% to 100%, 80% by default; the driver keeps the rest as personal earnings (`driver.earnings`). The share is a term of the contract negotiation: a driver values each point of share they take above the fair 20% at `valuePerSeason` (`data/balance.json`, `negotiation.prizeShare`), so asking for a bigger share cuts the salary they will accept and a driver who counters keeps the garage's share as offered and moves the salary (or, if the salary would fall below zero, the share). The sponsor's title fee and the sale of cars stay the garage's.
 - **Fame and reputation.** Two separate ratings. Fame is the 0–100 rating derived from fan count (see "Fans"), built from broadcast moments, attention flags and overtakes. Reputation is respect in the paddock, built from consistent results and clean racing. Sponsors chase fame; top garages hire on reputation.
 - **Driver development.** Drivers have stats that grow with experience on each kind of road: forest, coast, mountain and night. A driver can be brilliant on mountain roads and weak on coastal ones.
 - **Rivalries.** Repeated close finishes or contact between two drivers create a rivalry. Rivals racing each other draw extra broadcast attention and fame.
@@ -1060,9 +1061,9 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `driver_gear` | driver_id, item_id |
 | `flag_history` | subject_type (`driver` / `car` / `garage`), subject_id, season_id, flag (ISO code) |
 | `garage` | name, home_state, base_place_id, fans, flag, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile |
-| `driver` | name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id, fans, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year |
+| `driver` | name, gender, birth_date, nationality, flag, hometown_place_id, residence_place_id, fans, stats (columns for each stat), potential, fame, reputation, gold_border_year, silver_border_year, retired_year, earnings |
 | `driver_road_affinity` | driver_id, road_type, rating |
-| `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee |
+| `contract` | driver_id, garage_id, start_year, end_year, salary, role (`lead` / `development`), release_fee, garage_prize_share |
 | `manufacturer` | stable_id, name, home_country, type (`hypercar` / `supercar` / `sports` / `jdm` / `domestic` / `other`), character, next_refresh_year |
 | `car_model` | manufacturer_id, stable_id, name, tier, base_kerb_kg, max_tyre_mm, base_ps, layout, price_new, generation, introduced_year, retired_year (nullable), predecessor_id (nullable) |
 | `car` | car_model_id, chassis_no, model_year, flag, fans, garage_id, road_km, race_km, wear, kerb_kg_current, tyre_width_mm |

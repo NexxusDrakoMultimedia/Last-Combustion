@@ -94,9 +94,49 @@ export const relationshipChange = () => cfg().relationship;
 /** Keeps a relationship score in range. */
 export const clampRelationship = (score: number): number => clamp(Math.round(score), -100, 100);
 
-/** What a driver's contract is worth per season: longer contracts are worth 5% more per extra year to the driver. */
-export function contractValue(salary: number, years: number): number {
-  return salary * (1 + cfg().yearsPremium * (Math.max(1, years) - 1));
+/** The default share of a driver's prize money that the garage keeps. */
+export const fairPrizeShare = (): number => cfg().prizeShare.fair;
+
+/** Keeps a garage's prize share inside the allowed range. */
+export function clampPrizeShare(share: number): number {
+  const { min, max } = cfg().prizeShare;
+  return clamp(share, min, max);
+}
+
+/** What a driver gains per season from the garage keeping less than the fair share (a loss if it keeps more). */
+function prizeShareValue(garageShare: number): number {
+  const p = cfg().prizeShare;
+  return (p.fair - garageShare) * p.valuePerSeason;
+}
+
+/**
+ * What a driver's contract is worth per season: the salary, 5% more for each extra year (drivers
+ * like security), and the prize money the garage lets the driver keep above the fair share.
+ */
+export function contractValue(
+  salary: number,
+  years: number,
+  garageShare: number = fairPrizeShare(),
+): number {
+  return (
+    salary * (1 + cfg().yearsPremium * (Math.max(1, years) - 1)) + prizeShareValue(garageShare)
+  );
+}
+
+/**
+ * The terms that reach a target contract value over some years, keeping the garage's share where
+ * it is. If even a salary of zero is worth too much, the share is what gives.
+ */
+export function termsForValue(
+  value: number,
+  years: number,
+  garageShare: number = fairPrizeShare(),
+): { salary: number; garageShare: number } {
+  const premium = 1 + cfg().yearsPremium * (Math.max(1, years) - 1);
+  const salary = (value - prizeShareValue(garageShare)) / premium;
+  if (salary >= 0) return { salary: Math.round(salary), garageShare };
+  const p = cfg().prizeShare;
+  return { salary: 0, garageShare: clampPrizeShare(p.fair - value / p.valuePerSeason) };
 }
 
 /** The salary that gives a target contract value over some years. */

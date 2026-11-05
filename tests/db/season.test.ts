@@ -42,11 +42,13 @@ describe('standings through a season', () => {
   let db: Database;
   let end: ReturnType<typeof endSeason>;
   let cashBefore: number;
+  let earningsBefore: number;
   let bonuses: number;
   beforeAll(() => {
     db = newCareer('season-db');
     playSeason(db);
     cashBefore = Number(scalar(db, 'SELECT SUM(cash) FROM garage'));
+    earningsBefore = Number(scalar(db, 'SELECT SUM(earnings) FROM driver'));
     bonuses = Number(
       scalar(db, 'SELECT COALESCE(SUM(amount), 0) FROM season_bonus WHERE paid = 0'),
     );
@@ -71,7 +73,14 @@ describe('standings through a season', () => {
     expect(end.prizePaid).toBe(10_000_000);
     expect(end.bonusesPaid).toBe(bonuses);
     expect(Number(scalar(db, 'SELECT SUM(cash) FROM garage'))).toBe(
-      cashBefore + 10_000_000 + bonuses,
+      cashBefore +
+        10_000_000 +
+        bonuses -
+        (Number(scalar(db, 'SELECT SUM(earnings) FROM driver')) - earningsBefore),
+    );
+    // The champion's garage and the champion share the prize by contract: the garage keeps a share, never all of it.
+    expect(Number(scalar(db, 'SELECT SUM(earnings) FROM driver')) - earningsBefore).toBeGreaterThan(
+      0,
     );
     expect(scalar(db, 'SELECT status FROM season')).toBe('complete');
     expect(scalar(db, 'SELECT champion_driver_id FROM season')).toBe(end.championDriverId);
