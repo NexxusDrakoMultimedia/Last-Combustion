@@ -54,7 +54,7 @@ export function Panel({ title, subtitle, tabs, tab, onTab, onClose, children }: 
             <button
               type="button"
               aria-label={t('shell.close')}
-              className="border border-lc-line px-2 py-1 text-lc-dim hover:text-lc-text focus-visible:outline-2 focus-visible:outline-lc-accent"
+              className="border border-lc-line px-2 py-1 text-lc-dim hover:text-lc-text focus-visible:outline-2 focus-visible:outline-lc-accent-ink"
               onClick={onClose}
             >
               {'✕'}
@@ -69,9 +69,9 @@ export function Panel({ title, subtitle, tabs, tab, onTab, onClose, children }: 
                 type="button"
                 role="tab"
                 aria-selected={tab === x.id}
-                className={`lc-display px-4 py-2 text-xs focus-visible:outline-2 focus-visible:outline-lc-accent ${
+                className={`lc-display px-4 py-2 text-xs focus-visible:outline-2 focus-visible:outline-lc-accent-ink ${
                   tab === x.id
-                    ? 'border-b-2 border-lc-accent text-lc-text'
+                    ? 'border-b-2 border-lc-accent-ink text-lc-text'
                     : 'text-lc-dim hover:text-lc-text'
                 }`}
                 onClick={() => onTab?.(x.id)}

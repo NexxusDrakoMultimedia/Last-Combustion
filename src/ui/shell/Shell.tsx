@@ -152,7 +152,7 @@ export function Shell() {
               const car = s.cars.find((c) => c.inEntry === e.raceNumber);
               return (
                 <li key={e.raceNumber} className="border border-lc-line bg-lc-panel p-3">
-                  <p className="lc-display text-3xl text-lc-accent">
+                  <p className="lc-display text-3xl text-lc-accent-ink">
                     {t('shell.number', { number: e.raceNumber })}
                   </p>
                   <p className="text-sm font-medium">{e.driver}</p>
@@ -182,8 +182,8 @@ export function Shell() {
               type="button"
               disabled={r.id === null}
               title={r.id === null ? t('shell.soon') : undefined}
-              className={`lc-display border-b border-lc-line px-2 py-3 text-xs hover:bg-lc-raised focus-visible:outline-2 focus-visible:outline-lc-accent disabled:opacity-40 disabled:hover:bg-transparent ${
-                open === r.id ? 'text-lc-accent' : ''
+              className={`lc-display border-b border-lc-line px-2 py-3 text-xs hover:bg-lc-raised focus-visible:outline-2 focus-visible:outline-lc-accent-ink disabled:opacity-40 disabled:hover:bg-transparent ${
+                open === r.id ? 'text-lc-accent-ink' : ''
               }`}
               onClick={() => r.id && setOpen(r.id)}
             >
