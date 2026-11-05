@@ -13,6 +13,7 @@ export function DriversPanel() {
     useCareerStore();
   const [salary, setSalary] = useState('');
   const [years, setYears] = useState('2');
+  const [share, setShare] = useState('80');
   const busy = status === 'busy';
   const started = hub?.rounds.some((r) => r.status !== 'scheduled') ?? false;
 
@@ -34,6 +35,7 @@ export function DriversPanel() {
             {t('drivers.counter', {
               salary: formatMoney(counter.salary),
               years: counter.years,
+              share: Math.round((counter.garageShare ?? 0.8) * 100),
             })}
           </p>
         )}
@@ -42,7 +44,7 @@ export function DriversPanel() {
         )}
         {walked && <p className="text-lc-bad">{t('drivers.walked', { name: negotiation.name })}</p>}
         {!accepted && !walked && (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-4">
             <label className="space-y-1 text-sm" htmlFor="offer-salary">
               {t('drivers.salary')}
               <input
@@ -68,12 +70,29 @@ export function DriversPanel() {
                 ))}
               </select>
             </label>
+            <label className="space-y-1 text-sm" htmlFor="offer-share">
+              {t('drivers.share')}
+              <select
+                id="offer-share"
+                className={field}
+                value={share}
+                onChange={(e) => setShare(e.target.value)}
+              >
+                {[30, 40, 50, 60, 70, 80, 90, 100].map((p) => (
+                  <option key={p} value={p}>
+                    {t('drivers.shareOption', { percent: p })}
+                  </option>
+                ))}
+              </select>
+            </label>
             <div className="flex items-end">
               <button
                 type="button"
                 className={button}
                 disabled={busy || salary === ''}
-                onClick={() => void offerContract(Number(salary), Number(years))}
+                onClick={() =>
+                  void offerContract(Number(salary), Number(years), Number(share) / 100)
+                }
               >
                 {t('drivers.offer')}
               </button>

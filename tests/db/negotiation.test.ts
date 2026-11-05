@@ -185,3 +185,50 @@ describe('negotiating a driver contract', () => {
     expect(scalar(loaded, 'SELECT COUNT(*) FROM negotiation')).toBe(1);
   });
 });
+
+describe('the share of a driver prize money the garage keeps', () => {
+  it('is part of the offer: asking the driver to leave more with the garage is worth less to them', async () => {
+    const { contractValue, fairPrizeShare } = await import('../../src/sim/negotiation');
+    const fair = fairPrizeShare();
+    expect(contractValue(50_000, 2, fair)).toBeCloseTo(contractValue(50_000, 2), 5);
+    expect(contractValue(50_000, 2, 1)).toBeLessThan(contractValue(50_000, 2, fair));
+    expect(contractValue(50_000, 2, 0.5)).toBeGreaterThan(contractValue(50_000, 2, fair));
+  });
+
+  it('is stored on the signed contract', () => {
+    const db = newCareer('share-stored');
+    const { driverId, garageId } = freeAgentPair(db);
+    const n = openDriverNegotiation(db, garageId, driverId);
+    const outcome = offerDriverContract(db, n.id, {
+      salary: 100_000_000,
+      years: 2,
+      garageShare: 0.6,
+    });
+    expect(outcome.kind).toBe('accepted');
+    expect(
+      scalar(db, `SELECT garage_prize_share FROM contract WHERE driver_id = ${driverId}`),
+    ).toBeCloseTo(0.6, 5);
+  });
+
+  it('stays within 30% to 100%', () => {
+    const db = newCareer('share-default');
+    const { driverId, garageId } = freeAgentPair(db);
+    const n = openDriverNegotiation(db, garageId, driverId);
+    offerDriverContract(db, n.id, { salary: 100_000_000, years: 1, garageShare: 5 });
+    expect(
+      scalar(db, `SELECT garage_prize_share FROM contract WHERE driver_id = ${driverId}`),
+    ).toBe(1);
+  });
+
+  it('is kept when the driver counters, with the salary doing the adjusting', () => {
+    const db = newCareer('share-counter');
+    const { driverId, garageId } = freeAgentPair(db);
+    const n = openDriverNegotiation(db, garageId, driverId);
+    const outcome = offerDriverContract(db, n.id, { salary: 1, years: 1, garageShare: 0.9 });
+    expect(outcome.kind === 'countered' || outcome.kind === 'walked').toBe(true);
+    if (outcome.kind === 'countered') {
+      expect(outcome.counter.garageShare).toBeGreaterThanOrEqual(0.3);
+      expect(outcome.counter.garageShare).toBeLessThanOrEqual(1);
+    }
+  });
+});
