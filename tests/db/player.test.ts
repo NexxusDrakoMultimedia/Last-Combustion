@@ -5,6 +5,7 @@ import { createCareer } from '../../src/db/career';
 import { playFinal } from '../../src/db/final';
 import { playPrelims } from '../../src/db/prelims';
 import { hubView } from '../../src/db/hub';
+import { computeStandings } from '../../src/db/season';
 import {
   foundPlayerGarage,
   playerView,
@@ -94,5 +95,19 @@ describe('the hub view', () => {
     expect(after.standings[0]!.rank).toBe(1);
     expect(hub.player?.garageName).toBe('Test Garage Racing');
     expect(hub.championName).toBeNull();
+  });
+});
+
+describe('a garage under a flag with no fan population', () => {
+  it('plays a round and appears in the national standings', () => {
+    const db = fresh();
+    foundPlayerGarage(db, { ...setup, flag: 'XK' });
+    for (let n = 1; n <= 2; n++) {
+      playPrelims(db, n);
+      playFinal(db, n);
+    }
+    const nations = computeStandings(db, 1).garageNations.map((s) => s.id);
+    expect(db.exec('SELECT flag FROM garage WHERE is_player = 1')[0]!.values[0]![0]).toBe('XK');
+    expect(nations.length).toBeGreaterThan(1);
   });
 });

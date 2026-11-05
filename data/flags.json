@@ -125,6 +125,782 @@
     "LI": {
       "short": "Liechtenstein",
       "long": "Principality of Liechtenstein"
+    },
+    "AD": {
+      "short": "Andorra",
+      "long": "Principality of Andorra"
+    },
+    "AE": {
+      "short": "United Arab Emirates",
+      "long": "United Arab Emirates"
+    },
+    "AF": {
+      "short": "Afghanistan",
+      "long": "Afghanistan"
+    },
+    "AG": {
+      "short": "Antigua and Barbuda",
+      "long": "Antigua and Barbuda"
+    },
+    "AI": {
+      "short": "Anguilla",
+      "long": "Anguilla"
+    },
+    "AL": {
+      "short": "Albania",
+      "long": "Republic of Albania"
+    },
+    "AM": {
+      "short": "Armenia",
+      "long": "Republic of Armenia"
+    },
+    "AO": {
+      "short": "Angola",
+      "long": "Republic of Angola"
+    },
+    "AR": {
+      "short": "Argentina",
+      "long": "Argentine Republic"
+    },
+    "AS": {
+      "short": "American Samoa",
+      "long": "American Samoa"
+    },
+    "AT": {
+      "short": "Austria",
+      "long": "Republic of Austria"
+    },
+    "AW": {
+      "short": "Aruba",
+      "long": "Aruba"
+    },
+    "AZ": {
+      "short": "Azerbaijan",
+      "long": "Republic of Azerbaijan"
+    },
+    "BA": {
+      "short": "Bosnia and Herzegovina",
+      "long": "Bosnia and Herzegovina"
+    },
+    "BB": {
+      "short": "Barbados",
+      "long": "Barbados"
+    },
+    "BD": {
+      "short": "Bangladesh",
+      "long": "People's Republic of Bangladesh"
+    },
+    "BE": {
+      "short": "Belgium",
+      "long": "Kingdom of Belgium"
+    },
+    "BF": {
+      "short": "Burkina Faso",
+      "long": "Burkina Faso"
+    },
+    "BG": {
+      "short": "Bulgaria",
+      "long": "Republic of Bulgaria"
+    },
+    "BH": {
+      "short": "Bahrain",
+      "long": "Kingdom of Bahrain"
+    },
+    "BI": {
+      "short": "Burundi",
+      "long": "Republic of Burundi"
+    },
+    "BJ": {
+      "short": "Benin",
+      "long": "Republic of Benin"
+    },
+    "BM": {
+      "short": "Bermuda",
+      "long": "Bermuda"
+    },
+    "BN": {
+      "short": "Brunei",
+      "long": "Brunei Darussalam"
+    },
+    "BO": {
+      "short": "Bolivia",
+      "long": "Plurinational State of Bolivia"
+    },
+    "BT": {
+      "short": "Bhutan",
+      "long": "Kingdom of Bhutan"
+    },
+    "BW": {
+      "short": "Botswana",
+      "long": "Republic of Botswana"
+    },
+    "BY": {
+      "short": "Belarus",
+      "long": "Republic of Belarus"
+    },
+    "BZ": {
+      "short": "Belize",
+      "long": "Belize"
+    },
+    "CD": {
+      "short": "DR Congo",
+      "long": "Democratic Republic of the Congo"
+    },
+    "CF": {
+      "short": "Central African Republic",
+      "long": "Central African Republic"
+    },
+    "CG": {
+      "short": "Congo",
+      "long": "Republic of the Congo"
+    },
+    "CH": {
+      "short": "Switzerland",
+      "long": "Swiss Confederation"
+    },
+    "CI": {
+      "short": "Ivory Coast",
+      "long": "Republic of Côte d'Ivoire"
+    },
+    "CK": {
+      "short": "Cook Islands",
+      "long": "Cook Islands"
+    },
+    "CL": {
+      "short": "Chile",
+      "long": "Republic of Chile"
+    },
+    "CM": {
+      "short": "Cameroon",
+      "long": "Republic of Cameroon"
+    },
+    "CN": {
+      "short": "China",
+      "long": "People's Republic of China"
+    },
+    "CO": {
+      "short": "Colombia",
+      "long": "Republic of Colombia"
+    },
+    "CR": {
+      "short": "Costa Rica",
+      "long": "Republic of Costa Rica"
+    },
+    "CU": {
+      "short": "Cuba",
+      "long": "Republic of Cuba"
+    },
+    "CV": {
+      "short": "Cape Verde",
+      "long": "Republic of Cabo Verde"
+    },
+    "CW": {
+      "short": "Curaçao",
+      "long": "Curaçao"
+    },
+    "CY": {
+      "short": "Cyprus",
+      "long": "Republic of Cyprus"
+    },
+    "CZ": {
+      "short": "Czechia",
+      "long": "Czech Republic"
+    },
+    "DJ": {
+      "short": "Djibouti",
+      "long": "Republic of Djibouti"
+    },
+    "DK": {
+      "short": "Denmark",
+      "long": "Kingdom of Denmark"
+    },
+    "DM": {
+      "short": "Dominica",
+      "long": "Commonwealth of Dominica"
+    },
+    "DO": {
+      "short": "Dominican Republic",
+      "long": "Dominican Republic"
+    },
+    "DZ": {
+      "short": "Algeria",
+      "long": "People's Democratic Republic of Algeria"
+    },
+    "EC": {
+      "short": "Ecuador",
+      "long": "Republic of Ecuador"
+    },
+    "EE": {
+      "short": "Estonia",
+      "long": "Republic of Estonia"
+    },
+    "EG": {
+      "short": "Egypt",
+      "long": "Arab Republic of Egypt"
+    },
+    "ER": {
+      "short": "Eritrea",
+      "long": "State of Eritrea"
+    },
+    "ES": {
+      "short": "Spain",
+      "long": "Kingdom of Spain"
+    },
+    "ET": {
+      "short": "Ethiopia",
+      "long": "Federal Democratic Republic of Ethiopia"
+    },
+    "FI": {
+      "short": "Finland",
+      "long": "Republic of Finland"
+    },
+    "FJ": {
+      "short": "Fiji",
+      "long": "Republic of Fiji"
+    },
+    "FM": {
+      "short": "Micronesia",
+      "long": "Federated States of Micronesia"
+    },
+    "FO": {
+      "short": "Faroe Islands",
+      "long": "Faroe Islands"
+    },
+    "GA": {
+      "short": "Gabon",
+      "long": "Gabonese Republic"
+    },
+    "GD": {
+      "short": "Grenada",
+      "long": "Grenada"
+    },
+    "GE": {
+      "short": "Georgia",
+      "long": "Georgia"
+    },
+    "GH": {
+      "short": "Ghana",
+      "long": "Republic of Ghana"
+    },
+    "GI": {
+      "short": "Gibraltar",
+      "long": "Gibraltar"
+    },
+    "GM": {
+      "short": "Gambia",
+      "long": "Republic of the Gambia"
+    },
+    "GN": {
+      "short": "Guinea",
+      "long": "Republic of Guinea"
+    },
+    "GQ": {
+      "short": "Equatorial Guinea",
+      "long": "Republic of Equatorial Guinea"
+    },
+    "GR": {
+      "short": "Greece",
+      "long": "Hellenic Republic"
+    },
+    "GT": {
+      "short": "Guatemala",
+      "long": "Republic of Guatemala"
+    },
+    "GU": {
+      "short": "Guam",
+      "long": "Guam"
+    },
+    "GW": {
+      "short": "Guinea-Bissau",
+      "long": "Republic of Guinea-Bissau"
+    },
+    "GY": {
+      "short": "Guyana",
+      "long": "Co-operative Republic of Guyana"
+    },
+    "HK": {
+      "short": "Hong Kong",
+      "long": "Hong Kong, China"
+    },
+    "HN": {
+      "short": "Honduras",
+      "long": "Republic of Honduras"
+    },
+    "HR": {
+      "short": "Croatia",
+      "long": "Republic of Croatia"
+    },
+    "HT": {
+      "short": "Haiti",
+      "long": "Republic of Haiti"
+    },
+    "HU": {
+      "short": "Hungary",
+      "long": "Hungary"
+    },
+    "ID": {
+      "short": "Indonesia",
+      "long": "Republic of Indonesia"
+    },
+    "IL": {
+      "short": "Israel",
+      "long": "State of Israel"
+    },
+    "IN": {
+      "short": "India",
+      "long": "Republic of India"
+    },
+    "IQ": {
+      "short": "Iraq",
+      "long": "Republic of Iraq"
+    },
+    "IR": {
+      "short": "Iran",
+      "long": "Islamic Republic of Iran"
+    },
+    "IS": {
+      "short": "Iceland",
+      "long": "Iceland"
+    },
+    "JM": {
+      "short": "Jamaica",
+      "long": "Jamaica"
+    },
+    "JO": {
+      "short": "Jordan",
+      "long": "Hashemite Kingdom of Jordan"
+    },
+    "KE": {
+      "short": "Kenya",
+      "long": "Republic of Kenya"
+    },
+    "KG": {
+      "short": "Kyrgyzstan",
+      "long": "Kyrgyz Republic"
+    },
+    "KH": {
+      "short": "Cambodia",
+      "long": "Kingdom of Cambodia"
+    },
+    "KI": {
+      "short": "Kiribati",
+      "long": "Republic of Kiribati"
+    },
+    "KM": {
+      "short": "Comoros",
+      "long": "Union of the Comoros"
+    },
+    "KN": {
+      "short": "Saint Kitts and Nevis",
+      "long": "Federation of Saint Kitts and Nevis"
+    },
+    "KP": {
+      "short": "North Korea",
+      "long": "Democratic People's Republic of Korea"
+    },
+    "KW": {
+      "short": "Kuwait",
+      "long": "State of Kuwait"
+    },
+    "KY": {
+      "short": "Cayman Islands",
+      "long": "Cayman Islands"
+    },
+    "KZ": {
+      "short": "Kazakhstan",
+      "long": "Republic of Kazakhstan"
+    },
+    "LA": {
+      "short": "Laos",
+      "long": "Lao People's Democratic Republic"
+    },
+    "LB": {
+      "short": "Lebanon",
+      "long": "Lebanese Republic"
+    },
+    "LC": {
+      "short": "Saint Lucia",
+      "long": "Saint Lucia"
+    },
+    "LK": {
+      "short": "Sri Lanka",
+      "long": "Democratic Socialist Republic of Sri Lanka"
+    },
+    "LR": {
+      "short": "Liberia",
+      "long": "Republic of Liberia"
+    },
+    "LS": {
+      "short": "Lesotho",
+      "long": "Kingdom of Lesotho"
+    },
+    "LT": {
+      "short": "Lithuania",
+      "long": "Republic of Lithuania"
+    },
+    "LU": {
+      "short": "Luxembourg",
+      "long": "Grand Duchy of Luxembourg"
+    },
+    "LV": {
+      "short": "Latvia",
+      "long": "Republic of Latvia"
+    },
+    "LY": {
+      "short": "Libya",
+      "long": "State of Libya"
+    },
+    "MA": {
+      "short": "Morocco",
+      "long": "Kingdom of Morocco"
+    },
+    "MC": {
+      "short": "Monaco",
+      "long": "Principality of Monaco"
+    },
+    "MD": {
+      "short": "Moldova",
+      "long": "Republic of Moldova"
+    },
+    "ME": {
+      "short": "Montenegro",
+      "long": "Montenegro"
+    },
+    "MG": {
+      "short": "Madagascar",
+      "long": "Republic of Madagascar"
+    },
+    "MH": {
+      "short": "Marshall Islands",
+      "long": "Republic of the Marshall Islands"
+    },
+    "MK": {
+      "short": "North Macedonia",
+      "long": "Republic of North Macedonia"
+    },
+    "ML": {
+      "short": "Mali",
+      "long": "Republic of Mali"
+    },
+    "MM": {
+      "short": "Myanmar",
+      "long": "Republic of the Union of Myanmar"
+    },
+    "MN": {
+      "short": "Mongolia",
+      "long": "Mongolia"
+    },
+    "MO": {
+      "short": "Macau",
+      "long": "Macao, China"
+    },
+    "MR": {
+      "short": "Mauritania",
+      "long": "Islamic Republic of Mauritania"
+    },
+    "MS": {
+      "short": "Montserrat",
+      "long": "Montserrat"
+    },
+    "MT": {
+      "short": "Malta",
+      "long": "Republic of Malta"
+    },
+    "MU": {
+      "short": "Mauritius",
+      "long": "Republic of Mauritius"
+    },
+    "MV": {
+      "short": "Maldives",
+      "long": "Republic of Maldives"
+    },
+    "MW": {
+      "short": "Malawi",
+      "long": "Republic of Malawi"
+    },
+    "MX": {
+      "short": "Mexico",
+      "long": "United Mexican States"
+    },
+    "MY": {
+      "short": "Malaysia",
+      "long": "Malaysia"
+    },
+    "MZ": {
+      "short": "Mozambique",
+      "long": "Republic of Mozambique"
+    },
+    "NA": {
+      "short": "Namibia",
+      "long": "Republic of Namibia"
+    },
+    "NC": {
+      "short": "New Caledonia",
+      "long": "New Caledonia"
+    },
+    "NE": {
+      "short": "Niger",
+      "long": "Republic of the Niger"
+    },
+    "NG": {
+      "short": "Nigeria",
+      "long": "Federal Republic of Nigeria"
+    },
+    "NI": {
+      "short": "Nicaragua",
+      "long": "Republic of Nicaragua"
+    },
+    "NO": {
+      "short": "Norway",
+      "long": "Kingdom of Norway"
+    },
+    "NP": {
+      "short": "Nepal",
+      "long": "Federal Democratic Republic of Nepal"
+    },
+    "NR": {
+      "short": "Nauru",
+      "long": "Republic of Nauru"
+    },
+    "OM": {
+      "short": "Oman",
+      "long": "Sultanate of Oman"
+    },
+    "PA": {
+      "short": "Panama",
+      "long": "Republic of Panama"
+    },
+    "PE": {
+      "short": "Peru",
+      "long": "Republic of Peru"
+    },
+    "PG": {
+      "short": "Papua New Guinea",
+      "long": "Independent State of Papua New Guinea"
+    },
+    "PH": {
+      "short": "Philippines",
+      "long": "Republic of the Philippines"
+    },
+    "PK": {
+      "short": "Pakistan",
+      "long": "Islamic Republic of Pakistan"
+    },
+    "PL": {
+      "short": "Poland",
+      "long": "Republic of Poland"
+    },
+    "PR": {
+      "short": "Puerto Rico",
+      "long": "Commonwealth of Puerto Rico"
+    },
+    "PS": {
+      "short": "Palestine",
+      "long": "State of Palestine"
+    },
+    "PT": {
+      "short": "Portugal",
+      "long": "Portuguese Republic"
+    },
+    "PW": {
+      "short": "Palau",
+      "long": "Republic of Palau"
+    },
+    "PY": {
+      "short": "Paraguay",
+      "long": "Republic of Paraguay"
+    },
+    "QA": {
+      "short": "Qatar",
+      "long": "State of Qatar"
+    },
+    "RO": {
+      "short": "Romania",
+      "long": "Romania"
+    },
+    "RS": {
+      "short": "Serbia",
+      "long": "Republic of Serbia"
+    },
+    "RU": {
+      "short": "Russia",
+      "long": "Russian Federation"
+    },
+    "RW": {
+      "short": "Rwanda",
+      "long": "Republic of Rwanda"
+    },
+    "SA": {
+      "short": "Saudi Arabia",
+      "long": "Kingdom of Saudi Arabia"
+    },
+    "SB": {
+      "short": "Solomon Islands",
+      "long": "Solomon Islands"
+    },
+    "SC": {
+      "short": "Seychelles",
+      "long": "Republic of Seychelles"
+    },
+    "SD": {
+      "short": "Sudan",
+      "long": "Republic of the Sudan"
+    },
+    "SI": {
+      "short": "Slovenia",
+      "long": "Republic of Slovenia"
+    },
+    "SK": {
+      "short": "Slovakia",
+      "long": "Slovak Republic"
+    },
+    "SL": {
+      "short": "Sierra Leone",
+      "long": "Republic of Sierra Leone"
+    },
+    "SM": {
+      "short": "San Marino",
+      "long": "Republic of San Marino"
+    },
+    "SN": {
+      "short": "Senegal",
+      "long": "Republic of Senegal"
+    },
+    "SO": {
+      "short": "Somalia",
+      "long": "Federal Republic of Somalia"
+    },
+    "SR": {
+      "short": "Suriname",
+      "long": "Republic of Suriname"
+    },
+    "SS": {
+      "short": "South Sudan",
+      "long": "Republic of South Sudan"
+    },
+    "ST": {
+      "short": "São Tomé and Príncipe",
+      "long": "Democratic Republic of São Tomé and Príncipe"
+    },
+    "SV": {
+      "short": "El Salvador",
+      "long": "Republic of El Salvador"
+    },
+    "SY": {
+      "short": "Syria",
+      "long": "Syrian Arab Republic"
+    },
+    "SZ": {
+      "short": "Eswatini",
+      "long": "Kingdom of Eswatini"
+    },
+    "TC": {
+      "short": "Turks and Caicos Islands",
+      "long": "Turks and Caicos Islands"
+    },
+    "TD": {
+      "short": "Chad",
+      "long": "Republic of Chad"
+    },
+    "TG": {
+      "short": "Togo",
+      "long": "Togolese Republic"
+    },
+    "TH": {
+      "short": "Thailand",
+      "long": "Kingdom of Thailand"
+    },
+    "TJ": {
+      "short": "Tajikistan",
+      "long": "Republic of Tajikistan"
+    },
+    "TL": {
+      "short": "Timor-Leste",
+      "long": "Democratic Republic of Timor-Leste"
+    },
+    "TM": {
+      "short": "Turkmenistan",
+      "long": "Turkmenistan"
+    },
+    "TN": {
+      "short": "Tunisia",
+      "long": "Republic of Tunisia"
+    },
+    "TO": {
+      "short": "Tonga",
+      "long": "Kingdom of Tonga"
+    },
+    "TR": {
+      "short": "Türkiye",
+      "long": "Republic of Türkiye"
+    },
+    "TT": {
+      "short": "Trinidad and Tobago",
+      "long": "Republic of Trinidad and Tobago"
+    },
+    "TW": {
+      "short": "Chinese Taipei",
+      "long": "Chinese Taipei"
+    },
+    "TZ": {
+      "short": "Tanzania",
+      "long": "United Republic of Tanzania"
+    },
+    "UG": {
+      "short": "Uganda",
+      "long": "Republic of Uganda"
+    },
+    "UY": {
+      "short": "Uruguay",
+      "long": "Oriental Republic of Uruguay"
+    },
+    "UZ": {
+      "short": "Uzbekistan",
+      "long": "Republic of Uzbekistan"
+    },
+    "VC": {
+      "short": "Saint Vincent and the Grenadines",
+      "long": "Saint Vincent and the Grenadines"
+    },
+    "VE": {
+      "short": "Venezuela",
+      "long": "Bolivarian Republic of Venezuela"
+    },
+    "VG": {
+      "short": "British Virgin Islands",
+      "long": "British Virgin Islands"
+    },
+    "VI": {
+      "short": "US Virgin Islands",
+      "long": "Virgin Islands of the United States"
+    },
+    "VN": {
+      "short": "Vietnam",
+      "long": "Socialist Republic of Viet Nam"
+    },
+    "VU": {
+      "short": "Vanuatu",
+      "long": "Republic of Vanuatu"
+    },
+    "WS": {
+      "short": "Samoa",
+      "long": "Independent State of Samoa"
+    },
+    "XK": {
+      "short": "Kosovo",
+      "long": "Republic of Kosovo"
+    },
+    "YE": {
+      "short": "Yemen",
+      "long": "Republic of Yemen"
+    },
+    "ZM": {
+      "short": "Zambia",
+      "long": "Republic of Zambia"
+    },
+    "ZW": {
+      "short": "Zimbabwe",
+      "long": "Republic of Zimbabwe"
     }
   },
   "renames": [
