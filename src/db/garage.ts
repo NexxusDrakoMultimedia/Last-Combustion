@@ -74,3 +74,50 @@ export function setEntryCar(
     throw new Error('The cars cannot be changed once the season has started.');
   db.run('UPDATE entry SET car_id = ? WHERE id = ?', [carId, entry.id as number]);
 }
+
+/**
+ * Seats a driver the garage has under contract in one of its entries for this season. The driver
+ * must not be racing for another garage, and the entry cannot change once a round has run. The
+ * driver who was in the seat stays under contract but is no longer racing.
+ */
+export function setEntryDriver(
+  db: Database,
+  garageId: number,
+  raceNumber: number,
+  driverId: number,
+): void {
+  const career = all(db, 'SELECT game_date FROM career WHERE id = 1')[0];
+  if (!career) throw new Error('There is no career in this database.');
+  const year = Number(String(career.game_date).slice(0, 4));
+  const season = all(db, 'SELECT id FROM season ORDER BY year DESC LIMIT 1')[0];
+  if (!season) throw new Error('There is no season in this database.');
+  const entry = all(
+    db,
+    "SELECT id, driver_id FROM entry WHERE season_id = ? AND series = 'main' AND garage_id = ? AND race_number = ?",
+    [season.id as number, garageId, raceNumber],
+  )[0];
+  if (!entry) throw new Error('That garage has no such entry.');
+  if (entry.driver_id === driverId) return;
+  if (
+    !all(db, 'SELECT 1 FROM contract WHERE driver_id = ? AND garage_id = ? AND end_year >= ?', [
+      driverId,
+      garageId,
+      year,
+    ])[0]
+  )
+    throw new Error('That driver is not under contract with this garage.');
+  if (
+    all(db, "SELECT 1 FROM entry WHERE season_id = ? AND series = 'main' AND driver_id = ?", [
+      season.id as number,
+      driverId,
+    ])[0]
+  )
+    throw new Error('That driver is already racing in an entry.');
+  if (
+    all(db, "SELECT 1 FROM round WHERE season_id = ? AND status <> 'scheduled'", [
+      season.id as number,
+    ])[0]
+  )
+    throw new Error('The drivers cannot be changed once the season has started.');
+  db.run('UPDATE entry SET driver_id = ? WHERE id = ?', [driverId, entry.id as number]);
+}

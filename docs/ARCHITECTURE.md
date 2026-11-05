@@ -79,3 +79,5 @@ The simulation worker (`src/workers`), the rest of the economy and every gamepla
 The shell is in `src/ui/shell` (`Shell.tsx` with the top bar, rail and floor, `Panel.tsx` for dialogs, `panels.tsx` for panel contents). Colours are tokens in `src/index.css`.
 
 `upgradeView` in `src/db/upgrades.ts` builds the read-model for the Upgrades panel (`src/ui/shell/UpgradesPanel.tsx`).
+
+`src/db/freeagents.ts` lists the drivers the player can approach, and `setEntryDriver` in `src/db/garage.ts` seats a signed driver. The screen is `src/ui/shell/DriversPanel.tsx`.

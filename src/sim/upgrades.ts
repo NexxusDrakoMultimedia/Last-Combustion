@@ -109,13 +109,12 @@ export function fitParts(base: BaseCar, fitted: readonly PartData[]): FittedCar 
   const kerbKg = base.kerbKg + fitted.reduce((s, p) => s + p.deltaKg, 0);
   const wanted = base.tyreMm + fitted.reduce((s, p) => s + p.tyreMm, 0);
   const effects = partEffects(fitted);
+  // The Equalizer always wins: a very light car's limit can be below the usual minimum tyre.
+  const limit = maxTyreWidthMm(kerbKg, base.layout);
   return {
     ps: Math.round(base.ps * (1 + effects.psPct)),
     kerbKg,
-    tyreWidthMm: Math.max(
-      upgradeBalance.minTyreMm,
-      Math.min(wanted, maxTyreWidthMm(kerbKg, base.layout)),
-    ),
+    tyreWidthMm: Math.min(limit, Math.max(upgradeBalance.minTyreMm, Math.min(wanted, limit))),
     bonus: effects.bonus,
   };
 }

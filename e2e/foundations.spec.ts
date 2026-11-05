@@ -18,6 +18,15 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await page.getByRole('button', { name: messages['starter.confirm'] }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 
+  await page.getByRole('button', { name: messages['rail.drivers'] }).click();
+  await page.getByRole('button', { name: messages['drivers.negotiate'] }).first().click();
+  await page.getByLabel(messages['drivers.salary']).fill('2000000');
+  await page.getByRole('button', { name: messages['drivers.offer'] }).click();
+  await expect(page.getByText(/has signed/)).toBeVisible();
+  await page.getByRole('button', { name: messages['drivers.back'] }).click();
+  await page.getByRole('button', { name: messages['drivers.seat'] }).click();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['rail.upgrades'] }).click();
   await expect(page.getByText('Road legality')).toBeVisible();
   await page.getByRole('button', { name: messages['upgrades.fit'] }).first().click();
