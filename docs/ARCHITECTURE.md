@@ -89,3 +89,5 @@ Garages: `src/db/garages.ts` pays the computer garages their sponsorship, folds 
 Fans: `src/sim/fans.ts` has the gain table and series growth (pure), `src/db/fans.ts` gives out a round's fans from `playFinal`, and the rollover and season end handle growth, losses and merchandise.
 
 Wear: parts lose effect as they wear (`partEffects` in `src/sim/upgrades.ts`) and gear wears with racing (`wearGear`, `gearConditions` and `renewGear` in `src/db/repairs.ts`, migration 0025; `gearWornShare` in `src/sim/gear.ts`).
+
+The rail's Sponsors and Money panels (`src/ui/shell/SponsorsPanel.tsx`, `MoneyPanel.tsx`) read `activeSponsorDeal`, `approachableSponsors` and `garageFinance`, and negotiate through `openSponsorNegotiation` and `offerSponsorDeal`.

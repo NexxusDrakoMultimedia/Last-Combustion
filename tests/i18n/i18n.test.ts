@@ -2,7 +2,14 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatLapTime, formatMoney, t, type MessageKey } from '../../src/i18n';
+import {
+  formatDate,
+  formatLapTime,
+  formatMoney,
+  hasText,
+  t,
+  type MessageKey,
+} from '../../src/i18n';
 
 describe('i18n', () => {
   it('looks up text', () => {
@@ -35,5 +42,10 @@ describe('i18n', () => {
     for (const [key, value] of Object.entries(catalogue)) {
       expect(value.trim(), key).not.toBe('');
     }
+  });
+
+  it('knows whether a key built at run time has text', () => {
+    expect(hasText('money.cash')).toBe(true);
+    expect(hasText('money.category.nonsense')).toBe(false);
   });
 });

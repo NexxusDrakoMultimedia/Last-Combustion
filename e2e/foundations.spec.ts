@@ -35,6 +35,17 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   ).toBeVisible();
   await page.keyboard.press('Escape');
 
+  await page.getByRole('button', { name: messages['rail.sponsors'] }).click();
+  await page.getByRole('button', { name: messages['sponsors.negotiate'] }).first().click();
+  await page.getByLabel(messages['sponsors.fee']).fill('1000');
+  await page.getByRole('button', { name: messages['sponsors.ask'] }).click();
+  await expect(page.getByText(/is now your title sponsor/)).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: messages['rail.money'] }).click();
+  await expect(page.getByText(messages['money.cash'], { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
   await expect(page.getByText(/Round 1 prelims: \d+ set a time/)).toBeVisible();
   await page.getByRole('button', { name: messages['hub.runFinal'] }).click();
