@@ -16,9 +16,12 @@ export function AuctionSection({ locked }: { locked: boolean }) {
   const cash = hub?.player?.cash ?? 0;
   const busy = status === 'busy';
   const spare = cars.filter((c) => c.inEntry === null);
-  const car = carId === '' ? String(spare[0]?.carId ?? '') : carId;
   const alreadyConsigned = new Set(auction?.lotViews.filter((l) => l.mine).map((l) => l.carId));
   const consignable = spare.filter((c) => !alreadyConsigned.has(c.carId));
+  // The chosen car, or the first one left when the choice is empty or already consigned.
+  const car = consignable.some((c) => String(c.carId) === carId)
+    ? carId
+    : String(consignable[0]?.carId ?? '');
 
   return (
     <div className="space-y-6 text-sm">

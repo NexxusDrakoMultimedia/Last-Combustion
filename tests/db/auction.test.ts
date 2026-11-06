@@ -144,6 +144,23 @@ describe('closing an auction', () => {
     );
   });
 
+  it('lets a garage consign a second car, and refuses the same car twice', () => {
+    const db = newCareer();
+    const auction = openAuction(db);
+    const { carId, garageId } = spareCar(db);
+    const other = db.exec(
+      `SELECT id FROM car WHERE garage_id = ${garageId} AND id != ${carId} AND id NOT IN (SELECT car_id FROM entry) LIMIT 1`,
+    )[0]?.values[0]?.[0];
+    consignCar(db, garageId, carId, auction.id, 1000);
+    expect(() => consignCar(db, garageId, carId, auction.id, 1000)).toThrow(/already a lot/);
+    if (other !== undefined) {
+      consignCar(db, garageId, Number(other), auction.id, 2000);
+      expect(
+        scalar(db, `SELECT COUNT(*) FROM auction_lot WHERE seller_garage_id = ${garageId}`),
+      ).toBe(2);
+    }
+  });
+
   it('refuses to consign a car with an entry or not owned, and cannot close twice', () => {
     const db = newCareer();
     const auction = openAuction(db);

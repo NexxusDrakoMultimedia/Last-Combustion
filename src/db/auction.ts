@@ -150,6 +150,14 @@ export function consignCar(
     throw new Error('This car has an entry this season and cannot be sold.');
   }
   if (reserve < 0) throw new Error('The reserve cannot be negative.');
+  if (
+    all(db, 'SELECT 1 AS n FROM auction_lot WHERE auction_id = ? AND car_id = ?', [
+      auctionId,
+      carId,
+    ]).length > 0
+  ) {
+    throw new Error('This car is already a lot in this auction.');
+  }
   db.run(
     'INSERT INTO auction_lot (auction_id, car_id, seller_garage_id, reserve) VALUES (?, ?, ?, ?)',
     [auctionId, carId, garageId, Math.round(reserve)],

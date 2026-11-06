@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { badgesFor, NO_BADGE, type NumberBadge } from './registry';
 import type { Database } from 'sql.js';
+import { RANKED_NUMBERS, rankingNumbers } from '../sim/numbers';
 import { RESERVED_NUMBER } from '../sim/worldgen';
 import { seasonBalance } from '../sim/worldgen/data';
 import { all } from './entries';
@@ -231,14 +232,51 @@ export function addEntry(
       seasonId,
     ]).map((r) => r.race_number as number),
   );
-  let number = 41;
-  while (taken.has(number) || number === RESERVED_NUMBER) number += 1;
+  // A ranked driver (last season's top 40) must take the number the ranking gave them, even
+  // when they were withdrawn and are seated again in another car.
+  let number = rankedNumberOf(db, seasonId, driverId, taken);
+  if (number === null) {
+    number = 41;
+    while (taken.has(number) || number === RESERVED_NUMBER) number += 1;
+  }
   db.run(
     "INSERT INTO entry (season_id, garage_id, driver_id, car_id, race_number, series) VALUES (?, ?, ?, ?, ?, 'main')",
     [seasonId, garageId, driverId, carId, number],
   );
   refreshPlayerPrestige(db);
   return garageEntries(db, garageId).find((e) => e.raceNumber === number)!;
+}
+
+/**
+ * The ranked number (1 to 40) that last season's driver table gives a driver for this season, or
+ * null if the driver has none or the number is already taken by another entry.
+ */
+function rankedNumberOf(
+  db: Database,
+  seasonId: number,
+  driverId: number,
+  taken: ReadonlySet<number>,
+): number | null {
+  const last = all(db, 'SELECT id FROM season WHERE id < ? ORDER BY id DESC LIMIT 1', [
+    seasonId,
+  ])[0];
+  if (!last) return null;
+  const table = all(
+    db,
+    "SELECT subject FROM standing_snapshot WHERE season_id = ? AND table_kind = 'driver' ORDER BY position",
+    [last.id as number],
+  );
+  const racing = new Set(
+    all(db, "SELECT driver_id FROM entry WHERE season_id = ? AND series = 'main'", [seasonId]).map(
+      (r) => r.driver_id as number,
+    ),
+  );
+  racing.add(driverId);
+  const numbers = rankingNumbers(
+    table.map((t) => ({ driverId: Number(t.subject), racing: racing.has(Number(t.subject)) })),
+  );
+  const number = numbers.get(driverId);
+  return number !== undefined && number <= RANKED_NUMBERS && !taken.has(number) ? number : null;
 }
 
 /**
