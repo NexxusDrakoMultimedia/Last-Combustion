@@ -26,7 +26,7 @@ body {
   background-color: var(--color-lc-bg);
   color: var(--color-lc-text);
   font-family:
-    'Fira Sans',
+    Roboto,
     system-ui,
     -apple-system,
     'Segoe UI',
@@ -36,14 +36,30 @@ body {
 
 /* Headings and tabs: condensed, upper case, spaced. */
 .lc-display {
-  font-family:
-    'Fira Sans Condensed', 'Arial Narrow', 'Roboto Condensed', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Roboto Condensed', 'Arial Narrow', 'Segoe UI', system-ui, sans-serif;
+  font-stretch: condensed;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .lc-num {
-  font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+  font-family: 'Roboto Mono', ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
   font-variant-numeric: tabular-nums;
+}
+
+/* News headlines: a slab serif. */
+.lc-headline {
+  font-family: 'Roboto Slab', Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+}
+
+/* News text: a serif. */
+.lc-news {
+  font-family: 'Roboto Serif', Georgia, 'Times New Roman', serif;
+}
+
+/* In-game social media and internet text: a flexible sans. */
+.lc-social {
+  font-family: 'Roboto Flex', Roboto, system-ui, sans-serif;
 }
