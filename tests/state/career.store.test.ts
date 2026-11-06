@@ -135,4 +135,86 @@ describe('career store', () => {
       expect(seen).toEqual([]);
     });
   });
+
+  describe('the dealers and the auction house', () => {
+    const setup = {
+      ownerName: 'Test Owner',
+      identity: 'masculine' as const,
+      birthDate: '1990-06-01',
+      garageName: 'Market Test Racing',
+      flag: 'AU',
+      primaryColour: '#112233',
+      secondaryColour: '#ddeeff',
+    };
+    async function started() {
+      await useCareerStore.getState().startCareer(setup);
+      const starter = useCareerStore.getState().starter!;
+      await useCareerStore
+        .getState()
+        .chooseStarter(starter.cars[0]!.carId, starter.drivers[0]!.driverId);
+    }
+
+    it('opens the first auction with the career, and shows each dealer’s price', async () => {
+      await started();
+      const state = useCareerStore.getState();
+      expect(state.auction?.lotViews).toHaveLength(8);
+      expect(state.auction!.lotViews.every((l) => !l.mine && l.myBid === null)).toBe(true);
+      expect(state.dealer.length).toBeGreaterThan(20);
+    });
+
+    it('buys a new car from a dealer and sells a spare one back', async () => {
+      await started();
+      const cash = () => useCareerStore.getState().hub!.player!.cash;
+      const before = cash();
+      const offer = useCareerStore.getState().dealer[0]!;
+      await useCareerStore.getState().buyNewCar(offer.modelId);
+      expect(useCareerStore.getState().cars).toHaveLength(2);
+      expect(cash()).toBe(before - offer.price);
+      const spare = useCareerStore.getState().cars.find((c) => c.inEntry === null)!;
+      await useCareerStore.getState().sellCar(spare.carId);
+      expect(useCareerStore.getState().cars).toHaveLength(1);
+      expect(cash()).toBeGreaterThan(before - offer.price);
+    });
+
+    it('bids on a lot, consigns a car, and hears the result after the next round', async () => {
+      await started();
+      const offer = useCareerStore.getState().dealer[0]!;
+      await useCareerStore.getState().buyNewCar(offer.modelId);
+      const spare = useCareerStore.getState().cars.find((c) => c.inEntry === null)!;
+      await useCareerStore.getState().consign(spare.carId, 5_000_000_000);
+      const lot = useCareerStore.getState().auction!.lotViews.find((l) => !l.mine)!;
+      await useCareerStore.getState().placeBid(lot.id, lot.openingPrice);
+      const view = useCareerStore.getState().auction!;
+      expect(view.lotViews.find((l) => l.id === lot.id)!.myBid).toBe(lot.openingPrice);
+      expect(view.lotViews.some((l) => l.mine)).toBe(true);
+      const firstId = view.id;
+      await useCareerStore.getState().runNextPrelims();
+      await useCareerStore.getState().runNextFinal();
+      const after = useCareerStore.getState();
+      expect(after.auctionClosing?.auctionId).toBe(firstId);
+      expect(after.auctionClosing!.lots.some((l) => l.outcome === 'unsold')).toBe(true);
+      expect(after.auction!.id).not.toBe(firstId);
+      expect(after.auction!.lotViews).toHaveLength(8);
+    }, 120_000);
+
+    it('reports the market actions as design events', async () => {
+      await started();
+      const seen: TelemetryEvent[] = [];
+      addSink({ send: (e) => void seen.push(e) });
+      try {
+        await useCareerStore.getState().buyNewCar(useCareerStore.getState().dealer[0]!.modelId);
+        const lot = useCareerStore.getState().auction!.lotViews[0]!;
+        await useCareerStore.getState().placeBid(lot.id, lot.openingPrice);
+      } finally {
+        clearSinks();
+      }
+      const ids = seen.flatMap((e) => (e.kind === 'design' ? [e.id] : []));
+      expect(ids).toContain('Action:BuyNewCar');
+      expect(ids).toContain('Action:AuctionBid');
+      const sinks = seen.flatMap((e) =>
+        e.kind === 'resource' && e.flow === 'Sink' ? [e.itemType] : [],
+      );
+      expect(sinks).toContain('CarPurchase');
+    }, 120_000);
+  });
 });

@@ -56,6 +56,44 @@ export function modelsOnSale(
     }));
 }
 
+export interface DealerOffer {
+  modelId: number;
+  name: string;
+  maker: string;
+  tier: string;
+  /** The list price. */
+  listPrice: number;
+  /** What this garage pays after any manufacturer deal. */
+  price: number;
+}
+
+/** The new cars a dealer sells now, with the price this garage pays after its manufacturer deals, cheapest first. */
+export function dealerOffers(db: Database, garageId: number): DealerOffer[] {
+  const year = yearOf(db);
+  return all(
+    db,
+    `SELECT m.id, m.name, m.tier, m.price_new, m.manufacturer_id, m.introduced_year, m.retired_year, f.name AS maker
+       FROM car_model m JOIN manufacturer f ON f.id = m.manufacturer_id ORDER BY m.price_new, m.id`,
+  )
+    .filter((m) => isOnSale(m as never, year))
+    .map((m) => ({
+      modelId: m.id as number,
+      name: m.name as string,
+      maker: m.maker as string,
+      tier: m.tier as string,
+      listPrice: m.price_new as number,
+      price: newCarPrice(
+        m.price_new as number,
+        activeDiscount(db, 'manufacturer', garageId, m.manufacturer_id as number, year),
+      ),
+    }));
+}
+
+/** What a dealer would pay for a car now (a share of its value). */
+export function dealerQuote(db: Database, carId: number): number {
+  return dealerBuybackPrice(valueOfCar(db, carId));
+}
+
 /**
  * Buys a new car from a dealer: a new chassis with no kilometres, owned by the garage,
  * paid for from its cash. `discount` (0 to 1) is what negotiation won off the list price.

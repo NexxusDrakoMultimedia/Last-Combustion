@@ -46,6 +46,13 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await expect(page.getByText(/is now your title sponsor/)).toBeVisible();
   await page.keyboard.press('Escape');
 
+  await page.getByRole('button', { name: messages['rail.market'] }).click();
+  await page.getByRole('tab', { name: messages['dealer.heading'] }).click();
+  await expect(page.getByRole('heading', { name: messages['dealer.newTitle'] })).toBeVisible();
+  await page.getByRole('tab', { name: messages['auction.heading'] }).click();
+  await expect(page.getByRole('heading', { name: messages['auction.openTitle'] })).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['rail.money'] }).click();
   await expect(page.getByText(messages['money.cash'], { exact: true })).toBeVisible();
   await page.keyboard.press('Escape');

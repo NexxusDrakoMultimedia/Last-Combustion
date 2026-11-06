@@ -40,7 +40,25 @@ import {
   openDriverNegotiation,
   type ContractOutcome,
 } from '../db/negotiation';
-import { buyUsedCar, openListings, refreshUsedMarket, type Listing } from '../db/market';
+import {
+  buyNewCar,
+  buyUsedCar,
+  dealerOffers,
+  openListings,
+  refreshUsedMarket,
+  sellToDealer,
+  type DealerOffer,
+  type Listing,
+} from '../db/market';
+import {
+  auctionCycle,
+  consignCar,
+  currentAuction,
+  ensureAuction,
+  placeBid as dbPlaceBid,
+  type AuctionClosing,
+  type AuctionView,
+} from '../db/auction';
 import { startNextSeason, type Rollover } from '../db/rollover';
 import { setTraining as dbSetTraining, trainedDrivers, type TrainedDriver } from '../db/training';
 import { garageFinance, type GarageFinance } from '../db/finance';
@@ -142,6 +160,12 @@ interface CareerState {
   entries: GarageEntry[];
   sponsors: SponsorsView | undefined;
   money: GarageFinance | undefined;
+  /** The auction that is open now, with each lot as the player sees it. */
+  auction: AuctionView | undefined;
+  /** What the last auction to close meant for the player. */
+  auctionClosing: AuctionClosing | undefined;
+  /** The new cars dealers sell, at the price the player's garage pays. */
+  dealer: DealerOffer[];
   sponsorNegotiation: ActiveSponsorNegotiation | undefined;
   listings: Listing[];
   seasonEnd: SeasonEnd | undefined;
@@ -165,6 +189,10 @@ interface CareerState {
   renewGear(driverId: number, itemId: string): Promise<void>;
   setTraining(driverId: number, level: number): Promise<void>;
   raceCar(carId: number): Promise<void>;
+  buyNewCar(modelId: number): Promise<void>;
+  sellCar(carId: number): Promise<void>;
+  placeBid(lotId: number, amount: number): Promise<void>;
+  consign(carId: number, reserve: number): Promise<void>;
   addEntry(carId: number, driverId: number): Promise<void>;
   removeEntry(raceNumber: number): Promise<void>;
   finishSeason(): Promise<void>;
@@ -215,6 +243,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               approachable: approachableSponsors(db, playerGarageId(db)!),
             },
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
+      auction: playerGarageId(db) === null ? undefined : currentAuction(db, playerGarageId(db)!),
+      dealer: playerGarageId(db) === null ? [] : dealerOffers(db, playerGarageId(db)!),
       upgrades:
         playerGarageId(db) === null
           ? []
@@ -263,6 +293,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     entries: [],
     sponsors: undefined,
     money: undefined,
+    auction: undefined,
+    auctionClosing: undefined,
+    dealer: [],
     sponsorNegotiation: undefined,
     listings: [],
     seasonEnd: undefined,
@@ -285,6 +318,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         foundPlayerGarage(db, setup);
         createStarterOffers(db);
         refreshUsedMarket(db);
+        ensureAuction(db);
         openDb?.close();
         openDb = db;
         set({
@@ -495,6 +529,47 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         return undefined;
       }, 'RemoveEntry'),
 
+    buyNewCar: (modelId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        buyNewCar(openDb, garageId, modelId);
+        refresh(openDb);
+        return undefined;
+      }, 'BuyNewCar'),
+
+    sellCar: (carId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        sellToDealer(openDb, garageId, carId);
+        refresh(openDb);
+        return undefined;
+      }, 'SellCar'),
+
+    placeBid: (lotId, amount) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbPlaceBid(openDb, garageId, lotId, amount);
+        refresh(openDb);
+        return undefined;
+      }, 'AuctionBid'),
+
+    consign: (carId, reserve) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        const auction = get().auction;
+        if (garageId === null || !auction) return undefined;
+        consignCar(openDb, garageId, carId, auction.id, reserve);
+        refresh(openDb);
+        return undefined;
+      }, 'AuctionConsign'),
+
     finishSeason: () =>
       run(async () => {
         if (!openDb) return undefined;
@@ -513,6 +588,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       run(async () => {
         if (!openDb) return undefined;
         const rollover = startNextSeason(openDb);
+        ensureAuction(openDb);
         refresh(openDb);
         track({ kind: 'progression', status: 'Start', path: ['Season', `Y${rollover.year}`] });
         set({
@@ -565,7 +641,13 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (round === null) return undefined;
         const summary = playFinal(openDb, round);
         const settlement = settleRound(openDb, round);
+        // The auction house closes its auction between rounds and opens the next one.
+        const closing =
+          playerGarageId(openDb) === null
+            ? undefined
+            : auctionCycle(openDb, playerGarageId(openDb));
         refresh(openDb);
+        set({ auctionClosing: closing });
         track({
           kind: 'progression',
           status: 'Complete',
@@ -589,6 +671,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const loaded = await loadFromSlot(SQL, services.platform.saves, 'slot1');
         openDb?.close();
         openDb = loaded.db;
+        if (playerGarageId(openDb) !== null) ensureAuction(openDb);
         refresh(openDb);
         return { key: 'debug.loaded' };
       }, 'Load'),

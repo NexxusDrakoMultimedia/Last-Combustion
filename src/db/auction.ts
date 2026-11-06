@@ -46,7 +46,10 @@ export function openAuction(
   if (!career) throw new Error('There is no career in this database.');
   const opensOn = career.gameDate;
   const closesOn = kind === 'weekly' ? addDays(opensOn, cfg().weekDays) : opensOn;
-  const rng = createRng(career.masterSeed).stream(`auction:${kind}:${opensOn}`);
+  // The date alone is not enough to tell auctions apart (the game date moves only a few times a
+  // season), so the number of auctions held so far is part of the stream's name.
+  const held = Number(all(db, 'SELECT COUNT(*) AS n FROM auction')[0]!.n);
+  const rng = createRng(career.masterSeed).stream(`auction:${kind}:${opensOn}:${held}`);
   const market = ensureMarketGarage(db);
   db.exec('BEGIN');
   try {
@@ -75,6 +78,10 @@ export function openAuction(
 export interface Lot {
   id: number;
   carId: number;
+  roadKm: number;
+  wear: number;
+  /** The garage that put the car up, or null for a private seller. */
+  sellerGarageId: number | null;
   plate: string;
   plateState: string;
   modelName: string;
@@ -87,9 +94,10 @@ export interface Lot {
 
 /** The lots of an auction that is still open. */
 export function openLots(db: Database, auctionId: number): Lot[] {
+  const market = ensureMarketGarage(db);
   return all(
     db,
-    `SELECT l.id, l.car_id, l.reserve, c.plate, c.plate_state, c.model_year, m.name,
+    `SELECT l.id, l.car_id, l.reserve, l.seller_garage_id, c.plate, c.plate_state, c.model_year, c.road_km, c.wear, m.name,
             (SELECT MAX(amount) FROM auction_bid b WHERE b.lot_id = l.id) AS top
        FROM auction_lot l
        JOIN auction a ON a.id = l.auction_id AND a.status = 'open'
@@ -100,6 +108,9 @@ export function openLots(db: Database, auctionId: number): Lot[] {
   ).map((r) => ({
     id: r.id as number,
     carId: r.car_id as number,
+    roadKm: r.road_km as number,
+    wear: Math.round((r.wear as number) * 10) / 10,
+    sellerGarageId: r.seller_garage_id === market ? null : (r.seller_garage_id as number),
     plate: r.plate as string,
     plateState: r.plate_state as string,
     modelName: r.name as string,
@@ -297,4 +308,114 @@ export function closeAuction(db: Database, auctionId: number): AuctionResult {
     throw error;
   }
   return result;
+}
+
+export interface AuctionLotView extends Lot {
+  /** This garage's own highest maximum bid on the lot, if it has bid. */
+  myBid: number | null;
+  /** The garage consigned this lot itself. */
+  mine: boolean;
+}
+
+export interface AuctionView extends AuctionSummary {
+  lotViews: AuctionLotView[];
+}
+
+/** The open auction, if there is one, with each lot as one garage sees it. */
+export function currentAuction(db: Database, garageId: number): AuctionView | undefined {
+  const auction = all(
+    db,
+    "SELECT id, kind, opens_on, closes_on FROM auction WHERE status = 'open' ORDER BY id DESC LIMIT 1",
+  )[0];
+  if (!auction) return undefined;
+  const id = auction.id as number;
+  const mine = new Map(
+    all(
+      db,
+      `SELECT b.lot_id, MAX(b.amount) AS top FROM auction_bid b JOIN auction_lot l ON l.id = b.lot_id
+        WHERE l.auction_id = ? AND b.bidder_garage_id = ? GROUP BY b.lot_id`,
+      [id, garageId],
+    ).map((r) => [r.lot_id as number, r.top as number]),
+  );
+  const lots = openLots(db, id).map((l) => ({
+    ...l,
+    myBid: mine.get(l.id) ?? null,
+    mine: l.sellerGarageId === garageId,
+    // The shared field is the best bid anyone has made, which the garage never sees: only its own.
+    highestBid: mine.get(l.id) ?? null,
+  }));
+  return {
+    id,
+    kind: auction.kind as 'weekly' | 'festival',
+    opensOn: auction.opens_on as string,
+    closesOn: auction.closes_on as string,
+    lots: lots.length,
+    lotViews: lots,
+  };
+}
+
+/** Opens a weekly auction if none is open. Returns it, or undefined if one was already open. */
+export function ensureAuction(db: Database): AuctionSummary | undefined {
+  if (all(db, "SELECT 1 AS n FROM auction WHERE status = 'open' LIMIT 1")[0]) return undefined;
+  return openAuction(db, 'weekly');
+}
+
+export interface PlayerLotResult {
+  plate: string;
+  modelName: string;
+  /** `won`: the garage bought it; `sold`: it consigned it and it sold; `unsold`: its own lot found no buyer; `lost`: it bid and did not win. */
+  outcome: 'won' | 'sold' | 'unsold' | 'lost';
+  price: number | null;
+}
+
+export interface AuctionClosing {
+  auctionId: number;
+  result: AuctionResult;
+  /** What happened to the lots the garage bought, sold or bid on. */
+  lots: PlayerLotResult[];
+}
+
+/** What a closed auction meant for one garage: its wins, its sales and the lots it bid on and lost. */
+export function playerLots(db: Database, auctionId: number, garageId: number): PlayerLotResult[] {
+  const out: PlayerLotResult[] = [];
+  for (const r of all(
+    db,
+    `SELECT l.id, l.status, l.final_price, l.seller_garage_id, l.buyer_garage_id, c.plate, m.name,
+            EXISTS (SELECT 1 FROM auction_bid b WHERE b.lot_id = l.id AND b.bidder_garage_id = ?) AS bid
+       FROM auction_lot l JOIN car c ON c.id = l.car_id JOIN car_model m ON m.id = c.car_model_id
+      WHERE l.auction_id = ? ORDER BY l.id`,
+    [garageId, auctionId],
+  )) {
+    const base = {
+      plate: r.plate as string,
+      modelName: r.name as string,
+      price: (r.final_price as number | null) ?? null,
+    };
+    if (r.buyer_garage_id === garageId) out.push({ ...base, outcome: 'won' });
+    else if (r.seller_garage_id === garageId)
+      out.push({ ...base, outcome: r.status === 'sold' ? 'sold' : 'unsold' });
+    else if (r.bid === 1) out.push({ ...base, outcome: 'lost' });
+  }
+  return out;
+}
+
+/**
+ * Runs the auction house between rounds: the open auction closes (computer garages bid, and the
+ * lots go to the best bidder over the reserve), then a new weekly auction opens. Returns what the
+ * closing meant for the garage, or undefined if there was nothing to close.
+ */
+export function auctionCycle(db: Database, garageId: number | null): AuctionClosing | undefined {
+  const open = all(db, "SELECT id FROM auction WHERE status = 'open' ORDER BY id")[0];
+  let closing: AuctionClosing | undefined;
+  if (open) {
+    const auctionId = open.id as number;
+    const result = closeAuction(db, auctionId);
+    closing = {
+      auctionId,
+      result,
+      lots: garageId === null ? [] : playerLots(db, auctionId, garageId),
+    };
+  }
+  openAuction(db, 'weekly');
+  return closing;
 }
