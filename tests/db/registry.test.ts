@@ -64,6 +64,16 @@ describe('the registry over two seasons', () => {
     playSeason(db);
   }, 240_000);
 
+  it('gives every driver who raced the main colour of their garage for the number plate', () => {
+    const in2032 = badgesFor(db, 2032);
+    const row = db.exec(
+      `SELECT e.driver_id, g.primary_colour FROM entry e JOIN garage g ON g.id = e.garage_id
+        WHERE e.series = 'main' AND e.season_id = (SELECT id FROM season WHERE year = 2032) LIMIT 1`,
+    )[0]!.values[0] as [number, string];
+    expect(in2032.get(row[0])!.colour).toBe(row[1]);
+    expect(in2032.get(championId)!.colour).not.toBeNull();
+  });
+
   it('puts a black box on last season’s champion and a gold border on everyone who reached a final', () => {
     const in2031 = badgesFor(db, 2031);
     const in2032 = badgesFor(db, 2032);

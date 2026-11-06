@@ -259,7 +259,7 @@ Every series keeps five championship tables, all calculated from the same round 
 
 ## Numbers, borders and liveries
 
-Numbers 1–40 follow last season's rankings (and the top 40 must take them) and 41 and up are open to anyone, the champion's number is boxed in black, and a gold border marks anyone who has ever reached a final.
+Numbers 1–40 follow last season's rankings (and the top 40 must take them) and 41 and up are open to anyone, the champion's number is boxed in black, and a gold border marks anyone who has ever reached a final. The border belongs to the number itself, not the plate.
 
 **Race numbers & Special Numbers**
 
@@ -268,7 +268,8 @@ Numbers 1–40 follow last season's rankings (and the top 40 must take them) and
 - **Numbers 41 and up: open to anyone.** Any driver may apply for any free number from 41 upward. Numbers are re-chosen each season, and last season's holder gets first refusal.
 - **Number #313 (Reserved):** Permanently retired and reserved for founder Pyra Drake.
 - **Clashes** (decided by the series office under Ingrid Halloran): after first refusal, priority goes to gold-bordered drivers first, then more career points, then earliest registration.
-- **Black box:** the reigning champion's #1 carries a black box.
+- **Black box:** the reigning champion's #1 carries a black box: the numerals sit in a black rectangle on the plate.
+- **How a number looks (built).** The **number plate** is the garage's main colour, with white or black digits, whichever reads better on it (contrast by WCAG relative luminance, `readableOn` in `src/sim/colour.ts`). The **border is on the number, not the plate**: a gold outline round the digits for a driver who has reached a final, a silver one for a Junior points scorer without gold. The **reigning champion** has all three: the black box round the numerals (white digits), the gold outline on them, and the garage-coloured plate behind. The plate shows the colour of the garage the driver raced for in the season shown, so an old season's number keeps its old colour. A number with no garage (a driver who did not race that season) uses a neutral light plate.
 - **Fame:** a number builds recognition over time; changing it resets some of that. Taking a ranked number (1 to 40) does not reset it: the driver keeps the number fame they have built, and the fame of a ranked number they hold carries on in the same way.
 - **Preferred number.** Each driver has a preferred number, the one they chose for themselves (stored as `driver.preferred_number`, set when they are created). It stays part of their legacy, shown on their profile and in the records, even while a ranked number has to be worn, and a driver who is no longer ranked can go back to it (with first refusal, see above).
 
