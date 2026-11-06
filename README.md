@@ -2,11 +2,26 @@
 
 _Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft._
 
-A racing driver-management and car-upgrading game about a 2031 racing series for road-legal combustion cars, run on closed Australian public roads. Loosely inspired by _MF Ghost_; all names and branding are original.
+Petrol is the rarest thing in the world, and a handful of people still race combustion cars on it. In 2031 they meet on closed Australian public roads for a new championship, six rounds a season, in ordinary road-legal cars. You run a garage. You buy and upgrade the cars, sign the drivers, keep the money coming in, and try to build a name that lasts through the seasons. Every driver, car, garage and race is remembered.
 
-**Status:** work towards the first playable season (milestone M5). The world, prelims, final races, car market, upgrades, negotiation, finances, standings and the season rollover are built and tested. The first screens let you start a Garage owner career, choose a starter car and driver, buy a used car, run each round and roll into the next season, with saving, loading and exporting. Screens for upgrades, driver signing and the rest of the economy are still to come, and the styling is plain. See the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) and the [architecture notes](docs/ARCHITECTURE.md).
+It is a management game first: as much a garage simulation as a racing one. The people, the parts, the suppliers and the books matter as much as the lap times. The names, the world and the branding are all original, and the idea is loosely inspired by _MF Ghost_.
 
-The web build is at [lc.nexxusdrako.au](https://lc.nexxusdrako.au) and deploys from `main`.
+**Play it:** the web build is at [lc.nexxusdrako.au](https://lc.nexxusdrako.au) and deploys from `main`. [How to play](docs/HOW_TO_PLAY.md) walks through a first season.
+
+## Where it is
+
+The game is being built in milestones (M0 to M8, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is built, and the first release, **0.1.0**, is being prepared. There is no release yet, so everything here is a work in progress, and the styling is plain.
+
+You can already:
+
+- start a Garage owner career with your own garage, flag, base state and colours, and pick a starter car and driver;
+- race six rounds a season (seven days of prelims, then a final), end the season and begin the next, for as many seasons as you like;
+- buy cars from dealers, the used market and the auction house, fit upgrade parts, and restore a worn chassis;
+- sign drivers, train them, hire mechanics and executives, and negotiate with a title sponsor and with the suppliers of electricity, water and fuel;
+- follow the standings, full race results, season awards and records, and look up any driver, car, garage or race in the Registry;
+- save, load and export your career.
+
+Still to come are the story and press layer, ownership and the cap table, facilities, the Junior Series and more career modes. The Game Design Document lists what is built and what is planned, section by section.
 
 ## Find us
 
@@ -18,11 +33,7 @@ Made by Nexxus Drako Multimedia. The same links are on the game's About screen.
 - Discord: [join the server](https://discord.gg/ek64RstbSX)
 - GitHub: [Nexxus-Drako](https://www.github.com/Nexxus-Drako)
 
-## Stack
-
-TypeScript, React, Tailwind CSS, Zustand and SQLite (SQL.js) in the browser, with Electron desktop builds.
-
-## Getting started
+## Run it yourself
 
 You need Node.js 22 and pnpm 10 (`corepack enable` sets pnpm up from `package.json`).
 
@@ -31,19 +42,39 @@ pnpm install
 pnpm dev
 ```
 
-Other commands:
+The game is TypeScript, React, Tailwind CSS and Zustand, with SQLite (SQL.js) running in the browser as the single source of truth for the world. Electron desktop builds come later.
 
-| Command                                            | What it does                                               |
-| -------------------------------------------------- | ---------------------------------------------------------- |
-| `pnpm test`                                        | Unit and property tests (Vitest)                           |
-| `pnpm build` then `pnpm test:e2e`                  | Build, then run the browser tests (Playwright)             |
-| `pnpm lint`, `pnpm typecheck`, `pnpm format:check` | Static checks                                              |
-| `pnpm licenses`                                    | Checks production dependencies for GPL-compatible licences |
-| `pnpm docs:lint`                                   | Lints the Markdown files                                   |
+| Command                                                | What it does                                                          |
+| ------------------------------------------------------ | --------------------------------------------------------------------- |
+| `pnpm dev`                                             | Starts the game with live reload                                      |
+| `pnpm build`                                           | Type-checks and builds the web app into `dist/`                       |
+| `pnpm test`                                            | Unit and property tests (Vitest, fast-check)                          |
+| `pnpm test:e2e`                                        | Browser tests (Playwright); build first                               |
+| `pnpm lint`, `pnpm typecheck`, `pnpm format:check`     | Static checks                                                         |
+| `pnpm run licenses`                                    | Checks the production dependencies for GPL-compatible licences        |
+| `pnpm docs:lint`, `pnpm docs:style`, `pnpm docs:check` | Checks the Markdown, the writing style and the facts in the documents |
+
+## Documents
+
+| Read                                                 | For                                                          |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [How to play](docs/HOW_TO_PLAY.md)                   | A first season, the screens, a glossary and known limits     |
+| [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) | The rules and numbers, the source of truth for what to build |
+| [Architecture](docs/ARCHITECTURE.md)                 | How the code is organised                                    |
+| [Data files](docs/DATA_FILES.md)                     | What each file in `data/` holds, and how mods use them       |
+| [Releasing](docs/RELEASING.md)                       | Versions, milestone branches and the release steps           |
+| [Contributing](CONTRIBUTING.md)                      | How to help, from set-up to pull request                     |
+| [Credits](CREDITS.md)                                | Third-party assets and their licences                        |
+| [Trademarks](TRADEMARKS.md)                          | What is reserved and what you may do                         |
+| [Security](SECURITY.md)                              | How to report a vulnerability                                |
+
+## Privacy
+
+The game has no accounts and no server of its own. The web build asks before it collects anonymous usage data (which buttons are used, counts and money moved, never names or save contents). Say no and nothing is sent. Local and test builds send nothing.
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versioning](https://semver.org/), will keep a [changelog](CHANGELOG.md) from the first release, and uses Conventional Commits.
+Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versioning](https://semver.org/), starts its [changelog](CHANGELOG.md) at the first release, and uses Conventional Commits.
 
 ## Licence
 
