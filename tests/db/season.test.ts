@@ -137,3 +137,51 @@ describe('ending a season too early', () => {
     expect(() => endSeason(db)).toThrow(/Round 2 is not complete/);
   });
 });
+
+describe('the garage champion and the garage of the drivers’ champion', () => {
+  let db: Database;
+  let end: ReturnType<typeof endSeason>;
+  beforeAll(() => {
+    // With this seed the drivers' champion does not drive for the Garage Championship winner.
+    db = newCareer('g1');
+    playSeason(db);
+    end = endSeason(db);
+  }, 120_000);
+
+  it('records the Garage Championship winner from the garage table, apart from the drivers’ champion’s garage', () => {
+    expect(end.championGarageId).not.toBe(end.championDriverGarageId);
+    expect(scalar(db, 'SELECT champion_garage_id FROM season')).toBe(end.championGarageId);
+    expect(scalar(db, 'SELECT champion_driver_garage_id FROM season')).toBe(
+      end.championDriverGarageId,
+    );
+    expect(
+      Number(
+        scalar(
+          db,
+          "SELECT subject FROM standing_snapshot WHERE table_kind = 'garage' AND position = 1",
+        ),
+      ),
+    ).toBe(end.championGarageId);
+    expect(
+      scalar(
+        db,
+        `SELECT garage_id FROM entry WHERE driver_id = ${end.championDriverId} AND series = 'main' AND season_id = 1`,
+      ),
+    ).toBe(end.championDriverGarageId);
+  });
+
+  it('pays the champion’s prize to the drivers’ champion’s garage', () => {
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM ledger WHERE category = 'championship_prize' AND garage_id = ${end.championDriverGarageId}`,
+      ),
+    ).toBe(1);
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM ledger WHERE category = 'championship_prize' AND garage_id = ${end.championGarageId}`,
+      ),
+    ).toBe(0);
+  });
+});
