@@ -69,7 +69,10 @@ export function computeStandings(db: Database, seasonId: number): StandingsTable
 export interface SeasonEnd {
   year: number;
   championDriverId: number;
+  /** The garage that won the Garage Championship. */
   championGarageId: number;
+  /** The garage of the drivers' champion, which is paid the champion's prize. */
+  championDriverGarageId: number;
   championPoints: number;
   prizePaid: number;
   bonusesPaid: number;
@@ -106,7 +109,8 @@ export function endSeason(db: Database): SeasonEnd {
     'SELECT garage_id FROM entry WHERE season_id = ? AND driver_id = ? AND series = ? LIMIT 1',
     [seasonId, championDriverId, 'main'],
   )[0];
-  const championGarageId = garageRow!.garage_id as number;
+  const championDriverGarageId = garageRow!.garage_id as number;
+  const championGarageId = tables.garages[0]!.id as number;
   const date = `${year}-11-11`;
   const lastRound = rounds.length;
 
@@ -121,9 +125,9 @@ export function endSeason(db: Database): SeasonEnd {
     };
     const prize = seasonBalance.championPrize;
     // The champion's prize and the bonuses are the driver's earnings, split with the garage by contract.
-    const championSplit = splitPrize(db, championGarageId, championDriverId, year, prize);
+    const championSplit = splitPrize(db, championDriverGarageId, championDriverId, year, prize);
     pay(
-      championGarageId,
+      championDriverGarageId,
       'championship_prize',
       championSplit.garage,
       `${year} Drivers' Championship`,
@@ -201,8 +205,8 @@ export function endSeason(db: Database): SeasonEnd {
     snapshot.free();
 
     db.run(
-      "UPDATE season SET status = 'complete', champion_driver_id = ?, champion_garage_id = ? WHERE id = ?",
-      [championDriverId, championGarageId, seasonId],
+      "UPDATE season SET status = 'complete', champion_driver_id = ?, champion_driver_garage_id = ?, champion_garage_id = ? WHERE id = ?",
+      [championDriverId, championDriverGarageId, championGarageId, seasonId],
     );
     const awards = awardSeason(db, seasonId, year, tables);
     refreshPlayerPrestige(db);
@@ -211,6 +215,7 @@ export function endSeason(db: Database): SeasonEnd {
       year,
       championDriverId,
       championGarageId,
+      championDriverGarageId,
       championPoints: champion.points,
       prizePaid: prize,
       bonusesPaid,

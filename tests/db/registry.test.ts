@@ -39,6 +39,7 @@ describe('the registry over two seasons', () => {
   let championId: number;
   let championCarId: number;
   let championGarageId: number;
+  let championDriverGarageId: number;
   beforeAll(() => {
     db = createNewDatabase(SQL);
     createCareer(db, {
@@ -52,6 +53,7 @@ describe('the registry over two seasons', () => {
     const end = endSeason(db);
     championId = end.championDriverId;
     championGarageId = end.championGarageId;
+    championDriverGarageId = end.championDriverGarageId;
     championCarId = Number(
       db.exec(
         `SELECT car_id FROM entry WHERE driver_id = ${championId} AND series = 'main' AND season_id = 1`,
@@ -83,7 +85,7 @@ describe('the registry over two seasons', () => {
     expect(p.career.points).toBeGreaterThan(0);
     expect(p.seasons.map((s) => s.year)).toEqual([2031, 2032]);
     expect(p.seasons[0]!.rank).toBe(1);
-    expect(p.seasons[0]!.garage.id).toBe(championGarageId);
+    expect(p.seasons[0]!.garage.id).toBe(championDriverGarageId);
     expect(p.seasons[0]!.car.id).toBe(championCarId);
     expect(p.seasons[0]!.car.plate).not.toBe('');
     expect(p.seasons[0]!.badge.blackBox).toBe(false);
@@ -115,7 +117,9 @@ describe('the registry over two seasons', () => {
     expect(p.entries.length).toBeGreaterThan(0);
     expect(p.entries[0]!.car.plate).not.toBe('');
     expect(p.cars.length).toBeGreaterThan(0);
-    expect(p.drivers.some((d) => d.id === championId)).toBe(true);
+    expect(garageProfile(db, championDriverGarageId).drivers.some((d) => d.id === championId)).toBe(
+      true,
+    );
     expect(p.cash).toBeNull();
     expect(() => garageProfile(db, 999_999)).toThrow(/no garage/);
   });
