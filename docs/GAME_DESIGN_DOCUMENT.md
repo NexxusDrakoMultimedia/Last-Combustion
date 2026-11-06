@@ -31,13 +31,14 @@ The player runs a garage: buying and tuning cars, signing drivers, chasing spons
 
 ## Game modes
 
-The game has three career modes, all endless and all starting as an underdog with one cheap road car, a small budget and no prestige.
+The game has three career modes (and a fourth planned, the Employed manager), all endless and all starting as an underdog with one cheap road car, a small budget and no prestige.
 
 | Mode | The player is | Controls |
 | --- | --- | --- |
 | Garage owner | The owner and manager of a garage | Cars, drivers, sponsors, suppliers and race calls for every entry |
 | Owner-driver | A garage owner who also races one of its cars | Everything above, plus their own driver's development and career |
 | Driver manager | A single driver managing their own career | Their car, contracts with garages, sponsors and their own race calls |
+| Employed manager (planned) | A manager or executive on a computer garage's payroll, with options and a path to ownership | The part of the garage the role covers; buys shares and works towards a takeover or a garage of their own (see "People and relationships") |
 
 - **Endless play.** Seasons continue past 2036, with drivers ageing and retiring and new generations arriving.
 - **Fictional brands.** All cars and manufacturers are fictional, so no licensing is needed.
@@ -695,17 +696,17 @@ Every garage is a company, and who owns it matters. The player starts as the sol
 
 **Holding other companies.** The player's own wealth (personal cash and holdings) is tracked beside the garage's. The player can buy stakes in other garages, in manufacturers and in suppliers when their holders will sell, hold them for dividends and influence, and build up to a **takeover**: a bid for a controlling stake that the target's board must support or fight. A successful takeover merges the target into the player's garage (its cars, staff and drivers move across, its entries count towards the eight-entry limit, its name and fans pass to the new owner and its record stays in the almanac under its old name). Manufacturers and suppliers owned by the player give the owner's garage the strategic benefits above.
 
-**Listing.** A garage with enough value and prestige can **list** on the Last Combustion Exchange (a fictional market): it sells a block of shares to the public, raising a large sum, and from then on its share price moves with results, news and the quarterly reports (one per round), analysts comment, and a public company has stricter disclosure and a harder time ignoring its shareholders. A listing can be reversed by a buy-out. Listing is a late-game decision.
+**Listing (1.0.0).** A garage can become an *open* (publicly traded) company: it lists on the Last Combustion Exchange (a fictional market), selling a block of shares to the public. A garage needs enough value and prestige to list. From then on its share price moves with results, news and its quarterly reports (one per round), analysts comment, a public company has stricter disclosure and a harder time ignoring its shareholders, and anyone, the player included, can buy and sell its shares on the exchange without the board's say, up to a takeover. A listing can be reversed by a buy-out and delisting. Computer garages list, trade and delist under the same rules, so the exchange has listed garages from the start of a long game. Listing is a late-game feature that ships in 1.0.0 (M8).
 
 **Succession and failure.** When an owner dies or retires (see "Careers over time"), their shares pass by will to the surviving family, split as the owner arranged, and the successor the player takes over as may hold a minority. Each heir who inherits becomes a shareholder with their own personality and wishes, so a dynasty's garage can end up with a family dispute (relatives who want a dividend or a sale), which is a storyline. In a bankruptcy the shareholders lose their holdings, a bailout that the player accepts is paid for in shares for the bank (about 30%), and the bank's holding is sold on as the garage recovers.
 
-**Computer garages.** Every garage in the starting world has a cap table drawn from the seed: most (about 70%) belong to their founder and family, a fifth have an outside investor with a board seat, and a few are held by a sponsor or a manufacturer. A garage's cap table shapes its AI profile and behaviour (a family garage is loyal and cautious, an investor-backed one chases growth, a manufacturer-backed one runs that manufacturer's cars and a garage near a no-confidence vote may sack its driver), and the player can read it in the almanac, because ownership is part of the story.
+**Computer garages.** Every garage in the world has a full cap table, modelled by the same rules as the player's: the same classes, option pool, valuation, board, dividends and votes. The starting world draws them from the seed: most (about 70%) belong to their founder and family, a fifth have an outside investor with a board seat, and a few are held by a sponsor or a manufacturer. Computer garages raise money, pay dividends, buy and sell shares, are taken over, list and are delisted by the same rules, so ownership changes in the world while the player plays, and a headline marks the big moves. A garage's cap table shapes its AI profile and behaviour (a family garage is loyal and cautious, an investor-backed one chases growth, a manufacturer-backed one runs that manufacturer's cars, and a garage near a no-confidence vote may sack its driver), and the player can read any garage's cap table in the almanac, because ownership is part of the story.
 
 **Screens.** A Cap table panel (rail: Ownership) shows the holders, their percentages (current and fully diluted), the valuation and its history, the board and the pending matters. A funding-round screen sets the terms. A portfolio view shows the owner's other holdings and net worth.
 
 **Data.** Tables: `share_class`, `shareholding` (garage, holder type and id, class, shares, price per share, date and vesting), `share_event` (issues, transfers, buy-backs, dividends and listings), `valuation` (garage, date, value) and `board_member`. Negotiation kinds `equity_round`, `share_purchase` and `takeover` join the existing list. All telemetry about this stays categories and amounts (see "Telemetry").
 
-**Build order.** Ownership belongs to M6 (depth) after executives and supply contracts: first the cap table and valuation, then rounds and dividends, then control and the board, then holdings, takeovers and listing.
+**Build order.** Ownership belongs to M6 (depth) after executives and supply contracts: first the cap table and valuation (for the player and every computer garage), then rounds and dividends, then control and the board, then holdings and takeovers. Listing on the exchange is M8, for the 1.0.0 release.
 
 ## People and relationships
 
@@ -725,11 +726,11 @@ A garage is run by people, and the player's dealings with them are a game of the
 
 **Family and dynasty.** The owner and the people around them can have families. A character can form a *partnership* (and marry, if both wish) with another character, and have children, who appear in the game as characters from the age of 18 and are not shown before that. Children inherit a mix of their parents' traits and aptitudes, plus a share of upbringing (a mechanic's child grows up good with engines) and some chance, and can become drivers (their pace and potential follow the parents and the training they get), mechanics, executives, journalists or garage owners in their own right. The family name stays on the livery across generations; the almanac keeps a family tree and records dynasties ("third-generation champion"). When the owner dies or retires, an heir is the natural successor (see "Careers over time"), takes their shares (see "Ownership and the cap table") and inherits their relationships at a discount, and a family with several heirs may fight over the garage. Relationships can also end, and where they do, shares each partner holds stay with them.
 
-**Career paths.** The three modes (Garage owner, Owner-driver, Driver manager) are joined by a longer climb: a character can start as an employed *manager or executive* at a computer garage, earn reputation and contacts on a salary, take options, buy shares and eventually take the garage over (a management buy-out) or leave to found their own. The same road runs the other way for an owner who loses a vote of confidence. Whether this becomes a fourth starting mode is an open question (see "Decisions and open questions").
+**Career paths.** The three modes (Garage owner, Owner-driver, Driver manager) are joined by a fourth, planned mode, the **Employed manager**: the character starts as a manager or executive on a computer garage's payroll, earns reputation and contacts on a salary, takes options and buys shares, and in time takes the garage over (a management buy-out), buys into another or leaves to found their own. It uses the executive roles, the cap table and the board, and the way back from a lost vote of confidence runs the same road in reverse (an owner who loses control becomes an employed manager of their own old garage). The mode is planned for M8 with the other modes and is not part of the first playable season.
 
 **Screens.** A People panel lists the garage's staff and executives with morale, a Contacts panel holds the book and what each person can do, a Social screen runs the events and conversations, a Press screen shows the journalists and how they see the garage, and a Family page holds the tree. Each person's page shows their personality words, traits, morale, relationships and history.
 
-**Data and build order.** Tables `person` (a unified record linking to the character, driver, staff or executive rows), `relationship_kind`, `contact`, `social_event`, `conversation`, `journalist` and `family_link`; text and balance in `data/people.json`. This is M6 (depth) and M8 work, built after ownership: relationship kinds and morale first, then contacts and events, then the press, then family and dynasty.
+**Data and build order.** Tables `person` (a unified record linking to the character, driver, staff or executive rows), `relationship_kind`, `contact`, `social_event`, `conversation`, `journalist` and `family_link`; text and balance in `data/people.json`. The layer is split between milestones. **M6 (depth)** gets the parts that change how the garage plays: morale, relationship kinds, contacts, social events and the press. **M8 (modes and release)** gets the parts that depend on all the modes and on the polished succession rules: family and dynasty (partners, children, heirs, the family tree) and the Employed manager mode. Within M6 the order is relationship kinds and morale, then contacts and events, then the press.
 
 ## Negotiations
 
@@ -982,6 +983,10 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
   - **Extra crew.** Optional but beneficial.
 - **A garage is a business.** Mechanics (built), executives, facilities, utility, fuel and logistics suppliers (with a spot market, contracts and outages), a cap table with shares, funding rounds, a board and takeovers, and a social and family layer all belong to the design (see "Garage operations", "Ownership and the cap table" and "People and relationships"). They are staged in M6 and M8.
 - **Family in the game.** Partners, marriage and children exist, and children appear as characters only from the age of 18.
+- **Employed manager.** A fourth, planned career mode: a manager or executive on a computer garage's payroll who earns options, buys shares and works towards owning the garage (M8).
+- **Cap tables.** Every computer garage has a full cap table, modelled like the player's.
+- **Listing.** Garages can be open, publicly traded companies on the Last Combustion Exchange, the player's and the computer garages' alike, and this ships in 1.0.0 (M8).
+- **People layer staging.** Morale, relationship kinds, contacts, social events and the press are M6; family and dynasty and the Employed manager mode are M8.
 - **Telemetry stays anonymous.** Events about staff, suppliers, shares and people carry categories, counts and amounts only, never names (see "Telemetry"). A garage can hire extra mechanics for the Junior block. Each one speeds repairs and car changeovers between the two events and lowers the chance of setup errors. Without them the garage still runs both series by splitting its crew.
 
 ## Auction house and car trading
@@ -1054,9 +1059,9 @@ The full design is large, so development is staged. Each milestone must be playa
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, mid-race incidents with pauses, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase (dealers, used market, auction house, private negotiation), upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
-| M6 Depth | Story and feedback, and the garage as a business | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map; executives, supply contracts and the spot market, outages and facilities ("Garage operations"); the cap table, funding rounds, control and dividends ("Ownership and the cap table"); morale, relationship kinds, contacts, social events and the press ("People and relationships") | |
+| M6 Depth | Story and feedback, and the garage as a business | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map; executives, supply contracts and the spot market, outages and facilities ("Garage operations"); the cap table, funding rounds, control and dividends ("Ownership and the cap table"); morale, relationship kinds, contacts, social events and the press ("People and relationships"); a full cap table for every garage, funding rounds, control, dividends, holdings and takeovers | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
-| M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
+| M8 Modes and release | All career modes (three, and the planned Employed manager), polish, and the 1.0.0 release | Owner-driver, driver manager, the Employed manager mode, family and dynasty, listing garages on the exchange (open, publicly traded garages, 1.0.0), tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
 
 **MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season, and begin 2032 with all records saved.
 
@@ -1834,8 +1839,4 @@ Branding and social media are planned work for after the first playable season (
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and the artwork of the Drake characters are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
-- [ ] Whether an employed-manager start (climb from executive to owner by buying shares) becomes a fourth career mode or only the way back from a lost vote of confidence.
-- [ ] How far the cap table is modelled for computer garages (a full table each, or only the main holders and a control flag).
-- [ ] Whether a listing on the Last Combustion Exchange is in the first release or later.
-- [ ] How much of the people layer (morale, relationship kinds, family) ships in M6 and how much in M8.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).
