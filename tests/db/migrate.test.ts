@@ -86,6 +86,7 @@ describe('migrate', () => {
       'supply',
       'awards',
       'headquarters',
+      'daily_life',
     ]);
   });
 

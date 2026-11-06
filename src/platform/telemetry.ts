@@ -115,6 +115,8 @@ export const LEDGER_CATEGORIES = [
   'electricity',
   'water',
   'race_fuel',
+  'delivery',
+  'relocation',
 ] as const;
 
 /** Categories reported together as one item type (GameAnalytics allows 20 item types). */
@@ -122,6 +124,9 @@ const ITEM_GROUP: Readonly<Record<string, string>> = {
   electricity: 'utilities',
   water: 'utilities',
   race_fuel: 'utilities',
+  repairs: 'servicing',
+  restoration: 'servicing',
+  relocation: 'travel',
 };
 
 const groupOf = (category: string): string => ITEM_GROUP[category] ?? category;

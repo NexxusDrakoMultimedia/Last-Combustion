@@ -240,6 +240,25 @@
     "overtakeBonus": 10000,
     "classifiedShare": 0.5
   },
+  "daily": {
+    "deliveryPerDay": 250,
+    "dailyKm": 60,
+    "leadInDays": 3,
+    "relocationCost": 5000,
+    "affinityPerDay": 0.1,
+    "affinityCap": 70,
+    "defaultAreaFactor": 1,
+    "areaFactor": {
+      "NSW": 1.1,
+      "Vic": 1.1,
+      "Qld": 1.0,
+      "SA": 0.95,
+      "WA": 1.0,
+      "Tas": 0.85,
+      "NT": 0.8,
+      "ACT": 1.05
+    }
+  },
   "economy": {
     "usedShareOfNew": {
       "start": 0.7,

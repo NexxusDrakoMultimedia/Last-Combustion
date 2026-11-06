@@ -5,8 +5,21 @@ import { formatMoney, t } from '../../i18n';
 import { IDENTITY_SIGN } from '../../sim/identity';
 import type { Identity } from '../../sim/worldgen/types';
 import { useCareerStore } from '../../state/career.store';
-import { seasonBalance } from '../../sim/worldgen/data';
+import { places, seasonBalance } from '../../sim/worldgen/data';
 import { button, field, quiet } from '../styles';
+
+/** Every place a driver could move to: Australia first, then the rest by country and name. */
+const PLACE_OPTIONS = [...places]
+  .sort(
+    (a, b) =>
+      Number(b.country === 'AU') - Number(a.country === 'AU') ||
+      a.country.localeCompare(b.country, 'en') ||
+      a.name.localeCompare(b.name, 'en'),
+  )
+  .map((p) => ({
+    id: p.id,
+    label: `${p.name}, ${p.region}${p.country === 'AU' ? '' : ` (${p.country})`}`,
+  }));
 
 /** Free agents to negotiate with, and the drivers already signed, who can be seated in an entry. */
 export function DriversPanel() {
@@ -14,7 +27,9 @@ export function DriversPanel() {
     agents,
     gear,
     trained,
+    daily,
     setTraining,
+    moveDriverHome,
     negotiation,
     hub,
     status,
@@ -201,6 +216,61 @@ export function DriversPanel() {
                     </option>
                   ))}
                 </select>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {daily && daily.drivers.length > 0 && (
+        <section className="space-y-2 text-sm">
+          <h3 className="lc-display text-sm text-lc-dim">{t('daily.title')}</h3>
+          <p className="text-lc-dim">{t('daily.intro')}</p>
+          {daily.nextGap && (
+            <p className="lc-num">
+              {t('daily.nextGap', {
+                round: daily.nextGap.round,
+                days: daily.nextGap.days,
+                income: formatMoney(daily.nextGap.income),
+              })}
+            </p>
+          )}
+          <ul className="space-y-1">
+            {daily.drivers.map((d) => (
+              <li key={d.driverId} className="space-y-1 border border-lc-line p-2">
+                <p>
+                  <span className="font-medium">{d.name}</span>{' '}
+                  <span className="text-lc-dim">
+                    {t('daily.lives', { place: d.residence })}{' '}
+                    {t('daily.roads', {
+                      road: t(`road.${d.roadType}` as never),
+                      rating: Math.round(d.affinity),
+                      factor: d.areaFactor,
+                    })}
+                  </span>
+                </p>
+                {d.movingTo && (
+                  <p className="text-lc-warn">{t('daily.moving', { place: d.movingTo })}</p>
+                )}
+                {daily.canMove && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      aria-label={t('daily.moveTo', { name: d.name })}
+                      className={field}
+                      disabled={busy}
+                      value=""
+                      onChange={(e) => {
+                        if (e.target.value) void moveDriverHome(d.driverId, e.target.value);
+                      }}
+                    >
+                      <option value="">{t('daily.move', { cost: formatMoney(daily.cost) })}</option>
+                      {PLACE_OPTIONS.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
