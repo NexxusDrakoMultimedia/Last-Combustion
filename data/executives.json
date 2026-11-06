@@ -32,7 +32,7 @@
     },
     "operations_director": {
       "name": "Operations Director",
-      "built": false,
+      "built": true,
       "max": { "utilities": 0.15 }
     },
     "finance_director": {

@@ -262,10 +262,13 @@
       "unique": 4
     },
     "costs": {
-      "entryFee": 3000,
+      "entryFee": 2200,
+      "raceFuel": 800,
+      "electricity": 300,
+      "water": 120,
       "raceTyres": 1500,
       "practiceTyres": 2100,
-      "servicing": 1200,
+      "servicing": 780,
       "travelBase": 2000,
       "travelPerKm": 1,
       "travelPerExtraEntry": 750,

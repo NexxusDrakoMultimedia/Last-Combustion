@@ -1,0 +1,160 @@
+{
+  "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year.",
+  "maxYears": 3,
+  "discount": { "base": 0.04, "perPrestige": 0.001, "cap": 0.15 },
+  "tiers": {
+    "local": { "minPrestige": 0, "strength": 35 },
+    "regional": { "minPrestige": 10, "strength": 50 },
+    "national": { "minPrestige": 30, "strength": 65 },
+    "global": { "minPrestige": 50, "strength": 80 }
+  },
+  "categories": {
+    "electricity": { "trend": 0.0, "volatility": 0.07, "shockChance": 0.08, "shock": [0.2, 0.45] },
+    "water": { "trend": 0.01, "volatility": 0.05, "shockChance": 0.05, "shock": [0.15, 0.35] },
+    "race_fuel": { "trend": 0.03, "volatility": 0.06, "shockChance": 0.1, "shock": [0.2, 0.5] },
+    "travel_fuel": {
+      "trend": 0.015,
+      "volatility": 0.07,
+      "shockChance": 0.08,
+      "shock": [0.15, 0.4]
+    },
+    "logistics": { "trend": 0.01, "volatility": 0.05, "shockChance": 0.06, "shock": [0.15, 0.35] }
+  },
+  "suppliers": [
+    {
+      "id": 1,
+      "name": "Gawler Grid Power",
+      "category": "electricity",
+      "tier": "local",
+      "priceIndex": 1.05,
+      "reliability": 0.9,
+      "states": ["SA", "NT"]
+    },
+    {
+      "id": 2,
+      "name": "Murray Basin Energy",
+      "category": "electricity",
+      "tier": "regional",
+      "priceIndex": 0.97,
+      "reliability": 0.94,
+      "states": ["SA", "Vic", "NSW", "Tas", "ACT"]
+    },
+    {
+      "id": 3,
+      "name": "Aurora Green Power",
+      "category": "electricity",
+      "tier": "global",
+      "priceIndex": 0.88,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 4,
+      "name": "Barossa Bore Water",
+      "category": "water",
+      "tier": "local",
+      "priceIndex": 1.1,
+      "reliability": 0.92,
+      "states": ["SA", "Vic"]
+    },
+    {
+      "id": 5,
+      "name": "Riverbend Water Co",
+      "category": "water",
+      "tier": "regional",
+      "priceIndex": 0.98,
+      "reliability": 0.95,
+      "states": ["SA", "Vic", "NSW", "Qld", "ACT"]
+    },
+    {
+      "id": 6,
+      "name": "Aquarius Bulk Supply",
+      "category": "water",
+      "tier": "national",
+      "priceIndex": 0.9,
+      "reliability": 0.98,
+      "states": null
+    },
+    {
+      "id": 7,
+      "name": "Ironbark Fuels",
+      "category": "race_fuel",
+      "tier": "regional",
+      "priceIndex": 1.12,
+      "reliability": 0.9,
+      "states": ["SA", "Vic", "NSW", "Qld", "WA"]
+    },
+    {
+      "id": 8,
+      "name": "Redline Allocation Co",
+      "category": "race_fuel",
+      "tier": "national",
+      "priceIndex": 0.96,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 9,
+      "name": "Last Drop Petroleum",
+      "category": "race_fuel",
+      "tier": "global",
+      "priceIndex": 0.86,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 10,
+      "name": "Roadhouse Fuel Co-op",
+      "category": "travel_fuel",
+      "tier": "local",
+      "priceIndex": 1.08,
+      "reliability": 0.93,
+      "states": ["SA", "Vic", "NSW"]
+    },
+    {
+      "id": 11,
+      "name": "Outback Diesel",
+      "category": "travel_fuel",
+      "tier": "regional",
+      "priceIndex": 0.99,
+      "reliability": 0.94,
+      "states": ["SA", "NT", "WA", "Qld", "NSW"]
+    },
+    {
+      "id": 12,
+      "name": "Greenline Biofuels",
+      "category": "travel_fuel",
+      "tier": "national",
+      "priceIndex": 0.92,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 13,
+      "name": "Coastal Haulage",
+      "category": "logistics",
+      "tier": "local",
+      "priceIndex": 1.1,
+      "reliability": 0.88,
+      "states": ["SA", "Vic", "Tas"]
+    },
+    {
+      "id": 14,
+      "name": "Bluebell Freight",
+      "category": "logistics",
+      "tier": "regional",
+      "priceIndex": 1.0,
+      "reliability": 0.93,
+      "states": ["SA", "Vic", "NSW", "Qld", "WA", "NT"]
+    },
+    {
+      "id": 15,
+      "name": "TransContinental Logistics",
+      "category": "logistics",
+      "tier": "global",
+      "priceIndex": 0.87,
+      "reliability": 0.98,
+      "states": null
+    }
+  ]
+}

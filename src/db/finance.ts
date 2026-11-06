@@ -10,6 +10,7 @@ import { all } from './entries';
 import { crashRepairCost } from './repairs';
 import { roundSalaries } from './executives';
 import { garageCrewStrength, roundWages } from './staff';
+import { supplyRates } from './supply';
 
 export interface RoundSettlement {
   roundNumber: number;
@@ -49,7 +50,7 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
 
   const rows = all(
     db,
-    `SELECT e.garage_id, e.id AS entry_id, r.prelim_pos, r.dnf_reason, m.tier, m.price_new, p.latitude AS lat, p.longitude AS lon
+    `SELECT e.garage_id, e.id AS entry_id, r.prelim_pos, r.dnf_reason, m.tier, m.price_new, p.latitude AS lat, p.longitude AS lon, g.is_player
        FROM entry e
        JOIN result r ON r.entry_id = e.id AND r.round_id = ?
        JOIN car c ON c.id = e.car_id
@@ -81,12 +82,17 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
           .length,
         upkeep: entries.map((e) => upkeepFactor(e.tier as Tier)),
         distanceKm: distanceKm({ lat: first.lat as number, lon: first.lon as number }, venue),
+        // Only the player's garage shops around; computer garages pay the base prices.
+        rates: first.is_player === 1 ? supplyRates(db, garageId, seasonYear) : undefined,
       });
       const lines: [string, number][] = [
         ['entry_fee', costs.entryFees],
         ['tyres', costs.tyres],
         ['servicing', costs.servicing],
         ['travel', costs.travel],
+        ['electricity', costs.electricity],
+        ['water', costs.water],
+        ['race_fuel', costs.raceFuel],
       ];
       // A crash in the round (a prelim run or the final) costs a repair bill.
       const repairs = Math.round(

@@ -45,10 +45,10 @@ describe('executive slots and pay', () => {
     }
   });
 
-  it('leave out the Operations Director until utilities are built', () => {
+  it('builds every role now that the Operations Director has utilities to cut', () => {
     expect(EXECUTIVE_ROLES).toContain('operations_director');
-    expect(BUILT_ROLES).not.toContain('operations_director');
-    expect(BUILT_ROLES).toHaveLength(7);
+    expect(BUILT_ROLES).toContain('operations_director');
+    expect(BUILT_ROLES).toHaveLength(8);
   });
 });
 

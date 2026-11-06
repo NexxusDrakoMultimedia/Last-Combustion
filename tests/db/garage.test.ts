@@ -219,7 +219,7 @@ describe('a second entry', () => {
         `SELECT -SUM(amount) FROM ledger WHERE garage_id = ${garageId} AND category = 'entry_fee'`,
       )[0]!.values[0]![0],
     );
-    expect(fees).toBe(2 * 3000);
+    expect(fees).toBe(2 * 2200);
     expect(
       Number(db.exec(`SELECT cash FROM garage WHERE id = ${garageId}`)[0]!.values[0]![0]),
     ).toBeLessThan(cashBefore);

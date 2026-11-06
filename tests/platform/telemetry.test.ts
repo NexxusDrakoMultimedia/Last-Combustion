@@ -101,6 +101,14 @@ describe('money events', () => {
     expect([...LEDGER_CATEGORIES].sort()).toEqual(named);
   });
 
+  it('report electricity, water and race fuel together as one item type, within the 20 allowed', () => {
+    expect(RESOURCE_ITEM_TYPES).toContain('Utilities');
+    expect(RESOURCE_ITEM_TYPES).not.toContain('Electricity');
+    expect(
+      ledgerDeltas({ water: 0 }, { electricity: -300, water: -100.4, race_fuel: -800 }),
+    ).toEqual([{ kind: 'resource', flow: 'Sink', itemType: 'Utilities', amount: 1200 }]);
+  });
+
   it('report what moved between two looks: sources for gains, sinks for losses', () => {
     const events = ledgerDeltas(
       { prize: 1000, tyres: -500, travel: -200 },

@@ -88,6 +88,14 @@ import {
   type Executive,
   type ExecutiveOutcome,
 } from '../db/executives';
+import {
+  offerSupplyContract,
+  openSupplyNegotiation,
+  supplyView,
+  type SupplyOutcome,
+  type SupplyView,
+} from '../db/supply';
+import type { SupplyCategory } from '../sim/supply';
 import { BUILT_ROLES, type ExecutiveOffer, type ExecutiveRole } from '../sim/executives';
 import {
   fireMechanic,
@@ -164,6 +172,17 @@ export interface ActiveExecutiveNegotiation {
   last?: ExecutiveOutcome;
 }
 
+export interface ActiveSupplyNegotiation {
+  id: number;
+  supplierId: number;
+  name: string;
+  category: SupplyCategory;
+  /** The fair discount, as a fraction. */
+  fairValue: number;
+  patience: number;
+  last?: SupplyOutcome;
+}
+
 export interface Notice {
   key: MessageKey;
   values?: MessageValues;
@@ -199,6 +218,9 @@ interface CareerState {
   executiveCapacity: { slots: number; used: number };
   executiveOffers: { role: ExecutiveRole; offers: ExecutiveOffer[] }[];
   executiveNegotiation: ActiveExecutiveNegotiation | undefined;
+  /** The garage's utility, fuel and logistics suppliers, markets and contracts. */
+  supply: SupplyView | undefined;
+  supplyNegotiation: ActiveSupplyNegotiation | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
   auction: AuctionView | undefined;
   /** What the last auction to close meant for the player. */
@@ -231,6 +253,9 @@ interface CareerState {
   negotiateExecutive(role: ExecutiveRole, offer: number): Promise<void>;
   offerExecutive(salary: number, years: number): Promise<void>;
   endExecutiveNegotiation(): void;
+  negotiateSupply(supplierId: number): Promise<void>;
+  offerSupply(discount: number, years: number): Promise<void>;
+  endSupplyNegotiation(): void;
   dismissExecutive(executiveId: number): Promise<void>;
   hireMechanic(offer: number): Promise<void>;
   fireMechanic(staffId: number): Promise<void>;
@@ -302,6 +327,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               role,
               offers: executiveCandidates(db, playerGarageId(db)!, role),
             })),
+      supply: playerGarageId(db) === null ? undefined : supplyView(db, playerGarageId(db)!),
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
       staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
@@ -359,6 +385,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     executiveCapacity: { slots: 0, used: 0 },
     executiveOffers: [],
     executiveNegotiation: undefined,
+    supply: undefined,
+    supplyNegotiation: undefined,
     staff: [],
     staffOffers: [],
     crew: 0,
@@ -634,6 +662,52 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         });
         return undefined;
       }),
+
+    negotiateSupply: (supplierId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        const category = get().supply?.categories.find((c) =>
+          c.suppliers.some((x) => x.id === supplierId),
+        );
+        const chosen = category?.suppliers.find((x) => x.id === supplierId);
+        if (!category || !chosen) return undefined;
+        const n = openSupplyNegotiation(openDb, garageId, supplierId);
+        set({
+          supplyNegotiation: {
+            id: n.id,
+            supplierId,
+            name: chosen.name,
+            category: category.category,
+            fairValue: n.fairValue,
+            patience: n.patience,
+          },
+        });
+        return undefined;
+      }, 'SupplyNegotiate'),
+
+    offerSupply: (discount, years) =>
+      run(async () => {
+        const current = get().supplyNegotiation;
+        if (!openDb || !current) return undefined;
+        const outcome = offerSupplyContract(openDb, current.id, { discount, years });
+        refresh(openDb);
+        trackDesign(Math.round(discount * 100), 'Supply', 'Offer', current.category, outcome.kind);
+        set({
+          supplyNegotiation: {
+            ...current,
+            patience: outcome.kind === 'countered' ? outcome.patienceLeft : current.patience,
+            last: outcome,
+          },
+        });
+        return undefined;
+      }, 'SupplyOffer'),
+
+    endSupplyNegotiation: () => {
+      set({ supplyNegotiation: undefined });
+      if (openDb) refresh(openDb);
+    },
 
     endExecutiveNegotiation: () => {
       set({ executiveNegotiation: undefined });
