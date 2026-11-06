@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo-wordmark.svg" />
+    <img src="assets/brand/logo-wordmark-light.svg" alt="The Last Combustion of the Petrol Engine" width="640" />
+  </picture>
+</p>
+
 # Last Combustion
 
 _The full name is **The Last Combustion of the Petrol Engine**._
@@ -8,11 +15,11 @@ Petrol is the rarest thing in the world, and a handful of people still race comb
 
 It is a management game first: as much a garage simulation as a racing one. The people, the parts, the suppliers and the books matter as much as the lap times. The names, the world and the branding are all original, and the idea is loosely inspired by _MF Ghost_.
 
-**Play it:** the web build is at [lc.nexxusdrako.au](https://lc.nexxusdrako.au) and deploys from `main`. [How to play](docs/HOW_TO_PLAY.md) walks through a first season.
+**Play it:** the web build is at [lc.nexxusdrako.au](https://lc.nexxusdrako.au) and deploys from `main`. It is made for a desktop or laptop with a mouse and a large screen, not for phones. [How to play](docs/HOW_TO_PLAY.md) walks through a first season.
 
 ## Where it is
 
-The game is being built in milestones (M0 to M8, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is built, and the first release, **0.1.0**, is being prepared. There is no release yet, so everything here is a work in progress, and the styling is plain.
+The game is being built in milestones (M0 to M8, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is built and released as **0.1.0**. It is an early version: it has one career mode and leaves out a lot of the design, so expect rough edges (see [what the first release does not have](docs/HOW_TO_PLAY.md#what-the-first-release-does-not-have)). Bugs and ideas are welcome through the Feedback button in the game or the [issue form](https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose).
 
 You can already:
 
@@ -24,6 +31,15 @@ You can already:
 - save, load and export your career.
 
 Still to come are the story and press layer, ownership and the cap table, facilities, the Junior Series and more career modes. The Game Design Document lists what is built and what is planned, section by section.
+
+## Screenshots
+
+|                                                                                                      |                                                                                                                                    |
+| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| ![The garage floor and the news after the first round](assets/brand/screenshots/03-garage-floor.png) | ![The full results of a final, with flags, gold-bordered numbers and licence plates](assets/brand/screenshots/04-race-results.png) |
+| ![A driver's Registry profile](assets/brand/screenshots/05-driver-profile.png)                       | ![The Registry index](assets/brand/screenshots/06-registry.png)                                                                    |
+
+The press kit, with the logo files, is in [docs/PRESS.md](docs/PRESS.md).
 
 ## Find us
 
@@ -64,6 +80,7 @@ The game is TypeScript, React, Tailwind CSS and Zustand, with SQLite (SQL.js) ru
 | [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) | The rules and numbers, the source of truth for what to build |
 | [Architecture](docs/ARCHITECTURE.md)                 | How the code is organised                                    |
 | [Data files](docs/DATA_FILES.md)                     | What each file in `data/` holds, and how mods use them       |
+| [Press kit](docs/PRESS.md)                           | The description, facts, logo files and screenshots           |
 | [Releasing](docs/RELEASING.md)                       | Versions, milestone branches and the release steps           |
 | [Contributing](CONTRIBUTING.md)                      | How to help, from set-up to pull request                     |
 | [Credits](CREDITS.md)                                | Third-party assets and their licences                        |

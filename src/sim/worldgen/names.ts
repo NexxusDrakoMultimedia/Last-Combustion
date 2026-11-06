@@ -43,13 +43,22 @@ export function surname(rng: RandomStream, nationality: string): string {
 }
 
 /** A garage name from a random theme (heritage, engineering, animals, places and so on) that has not been used yet. */
-export function garageName(rng: RandomStream, nationality: string, used: Set<string>): string {
+export function garageName(
+  rng: RandomStream,
+  nationality: string,
+  used: Set<string>,
+  /** The town or city the garage is from: a name that carries a place carries this one. */
+  home?: string,
+): string {
   const regional = places.filter((p) => p.country === nationality);
   const pool = regional.length > 0 ? regional : places;
   return generateName(
     rng,
     garageThemes,
-    { surname: () => surname(rng, nationality), place: () => rng.pick(pool).name },
+    {
+      surname: () => surname(rng, nationality),
+      place: () => home ?? rng.pick(pool).name,
+    },
     { used },
   ).name;
 }

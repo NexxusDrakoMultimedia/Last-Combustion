@@ -40,3 +40,11 @@ path = "assets/flags/**"
 precedence = "override"
 SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
 SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# The brand assets: the logo, favicons, social images, profile art and screenshots. The name and the logo
+# are trademarks of Nexxus Drako Multimedia (see TRADEMARKS.md); the files are covered by the GPL as copyright works.
+[[annotations]]
+path = ["assets/brand/**", "public/favicon.svg", "public/*.png", "public/site.webmanifest"]
+precedence = "override"
+SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
+SPDX-License-Identifier = "GPL-3.0-or-later"

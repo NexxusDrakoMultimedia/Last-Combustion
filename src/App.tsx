@@ -4,6 +4,7 @@ import { t } from './i18n';
 import { useCareerStore } from './state/career.store';
 import { About } from './ui/About';
 import { ConsentBanner } from './ui/ConsentBanner';
+import { MobileNotice } from './ui/MobileNotice';
 import { Shell } from './ui/shell/Shell';
 import { NewCareer } from './ui/NewCareer';
 
@@ -28,6 +29,7 @@ export function App() {
           </details>
         </main>
       )}
+      <MobileNotice />
       <ConsentBanner />
     </>
   );

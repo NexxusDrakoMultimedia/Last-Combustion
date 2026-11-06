@@ -41,7 +41,7 @@ export function Panel({ title, subtitle, tabs, tab, onTab, onClose, children }: 
         aria-modal="true"
         aria-labelledby="panel-title"
         tabIndex={-1}
-        className="flex max-h-[85vh] w-full max-w-3xl flex-col border border-lc-line bg-lc-panel shadow-2xl outline-none"
+        className="flex max-h-[85vh] w-full max-w-5xl flex-col border border-lc-line bg-lc-panel shadow-2xl outline-none"
       >
         <header className="flex items-start justify-between gap-4 border-b border-lc-line p-4">
           <div>

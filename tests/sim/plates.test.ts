@@ -106,6 +106,16 @@ describe('Australian licence plates', () => {
     }
   });
 
+  it('never run past 8 characters, which is how wide the plate badge is drawn', () => {
+    const rng = createRng('long').stream('p');
+    const used = new Set<string>();
+    for (const state of PLATE_STATES) {
+      for (let i = 0; i < 300; i++)
+        expect(makePlate(rng, state, used).length, state).toBeLessThanOrEqual(8);
+    }
+    for (const c of Object.values(customPlates)) expect(c.plate.length).toBeLessThanOrEqual(8);
+  });
+
   it('still recognise plates made under the older series formats', () => {
     expect(statesOfPlate('DT·42·HW')).toContain('NSW');
     expect(statesOfPlate('S123·BCD')).toContain('SA');

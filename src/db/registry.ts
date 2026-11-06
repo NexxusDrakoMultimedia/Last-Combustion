@@ -23,11 +23,11 @@ const latestYear = (db: Database): number =>
 
 /** One trophy (a race win) or shield (a championship) on a car's or driver's livery. */
 export interface Decal {
-  kind: 'trophy' | 'shield';
+  kind: 'trophy' | 'shield' | 'star';
   /** Gold for the Super Series, silver for the Junior Series. */
   series: 'main' | 'junior';
   year: number;
-  /** The round and course of a win; null for a championship. */
+  /** The round and course of a win; null for a championship or a star. */
   round: number | null;
   course: string | null;
 }
@@ -48,6 +48,19 @@ export function decalsOf(db: Database, owner: 'driver' | 'car', id: number): Dec
     year: r.year as number,
     round: (r.round as number | null) ?? null,
     course: (r.course as string | null) ?? null,
+  }));
+}
+
+/** A star for each Garage Championship a garage has won, oldest first (a garage's trophies, as it were). */
+export function garageStars(db: Database, garageId: number): Decal[] {
+  return all(db, 'SELECT year FROM season WHERE champion_garage_id = ? ORDER BY year', [
+    garageId,
+  ]).map((s) => ({
+    kind: 'star',
+    series: 'main',
+    year: s.year as number,
+    round: null,
+    course: null,
   }));
 }
 
@@ -423,6 +436,8 @@ export interface GarageProfile {
   cars: CarRef[];
   seasons: (SeasonLine & { entries: number })[];
   championships: number[];
+  /** A star for each Garage Championship won. */
+  decals: Decal[];
   /** The seasons with at least a point, and the first and last of them. */
   scoring: ScoringSpan;
   drivers: (Ref & { years: string })[];
@@ -506,6 +521,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     championships: all(db, 'SELECT year FROM season WHERE champion_garage_id = ? ORDER BY year', [
       garageId,
     ]).map((s) => s.year as number),
+    decals: garageStars(db, garageId),
     scoring: scoringSpan(
       seasonRows.map((s) => ({ year: s.year as number, points: Number(s.points) })),
     ),

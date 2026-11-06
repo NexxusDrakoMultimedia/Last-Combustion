@@ -199,6 +199,11 @@ export function makeRookie(
   return makeDriver(rng, id, { year, rookie });
 }
 
+/** The name of a place, for a garage name that carries one. */
+function homeName(placeId: string): string {
+  return (placeById.get(placeId) as { name: string }).name;
+}
+
 /**
  * A new computer garage for a season after the first: a one-car team founded that year, with a
  * name, nation, base and colours drawn the same way as the first field's garages.
@@ -224,7 +229,7 @@ export function makeNewGarage(
   const prestige = seasonBalance.garages.newPrestige;
   return {
     id,
-    name: garageName(rng, nationality, usedNames),
+    name: garageName(rng, nationality, usedNames, homeName(hqPlaceId)),
     flag,
     basePlaceId,
     hqPlaceId,
@@ -346,7 +351,9 @@ export function generateWorld(seed: string | number): World {
           );
     return {
       id: index + 1,
-      name: isDrake ? DRAKE_MOTORSPORTS : garageName(gRng, nationality, usedNames),
+      name: isDrake
+        ? DRAKE_MOTORSPORTS
+        : garageName(gRng, nationality, usedNames, homeName(hqPlaceId)),
       flag,
       basePlaceId,
       hqPlaceId,

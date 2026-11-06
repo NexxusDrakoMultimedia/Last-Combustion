@@ -88,6 +88,10 @@ Open **Menu** and press **Save to slot 1**. The save is kept in your browser. **
 - **A button is greyed out.** Entries and some deals are locked once a season has started, and money-spending buttons are off when you cannot afford them. The tooltip or the panel text says why.
 - **A privacy prompt appeared.** The web build asks before it collects anonymous usage data (see the README). Saying no sends nothing.
 
+## Where to play
+
+Last Combustion is built for a computer: a desktop or laptop with a mouse and a screen of at least about 1024 pixels across (a tall 1080 by 1920 screen works too). It is not meant for phones or tablets, and on one the game says so once, with a button to carry on anyway.
+
 ## What the first release does not have
 
 Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no ownership or cap table, no facilities, no outages, no story or press layer, and computer garages do not shop around for suppliers. The Game Design Document lists all of it, built and planned.

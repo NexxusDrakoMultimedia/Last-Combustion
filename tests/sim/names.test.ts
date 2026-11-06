@@ -3,9 +3,16 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { expand, generateName } from '../../src/sim/names/generate';
+import { generateWorld } from '../../src/sim/worldgen';
 import { createRng } from '../../src/sim/rng';
 import { earnedTitles, qualifies, title, titles } from '../../src/sim/titles';
-import { carCategories, denyCarNames, garageThemes, nameLists } from '../../src/sim/worldgen/data';
+import {
+  carCategories,
+  denyCarNames,
+  garageThemes,
+  nameLists,
+  places,
+} from '../../src/sim/worldgen/data';
 import {
   carModelName,
   garageName,
@@ -104,5 +111,20 @@ describe('titles', () => {
     expect(qualifies({ points: 5 }, t)).toBe(true);
     expect(earnedTitles({ points: 5 })).toContain('point-scorer');
     expect(earnedTitles({})).toEqual([]);
+  });
+});
+
+describe('garage names that carry a place', () => {
+  it('name the town or city the garage is from, never another', () => {
+    const world = generateWorld(31396);
+    const named = world.garages.filter((g) => g.name !== 'Drake Motorsports');
+    let carrying = 0;
+    for (const g of named) {
+      const home = places.find((p) => p.id === g.hqPlaceId)?.name as string;
+      const others = places.filter((p) => p.name !== home && g.name.split(' ').includes(p.name));
+      expect(others.map((p) => p.name)).toEqual([]);
+      if (g.name.includes(home)) carrying++;
+    }
+    expect(carrying).toBeGreaterThan(0);
   });
 });

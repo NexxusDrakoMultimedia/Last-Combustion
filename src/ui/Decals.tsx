@@ -12,11 +12,13 @@ export function DecalIcon({ decal }: { decal: Decal }) {
   const label =
     decal.kind === 'shield'
       ? t('decal.shield', { year: decal.year })
-      : t('decal.trophy', {
-          year: decal.year,
-          round: decal.round ?? 0,
-          course: decal.course ?? '',
-        });
+      : decal.kind === 'star'
+        ? t('decal.star', { year: decal.year })
+        : t('decal.trophy', {
+            year: decal.year,
+            round: decal.round ?? 0,
+            course: decal.course ?? '',
+          });
   return (
     <svg
       role="img"
@@ -27,7 +29,15 @@ export function DecalIcon({ decal }: { decal: Decal }) {
       className="inline-block"
     >
       <title>{label}</title>
-      {decal.kind === 'shield' ? (
+      {decal.kind === 'star' ? (
+        <path
+          d="M10 1.5l2.5 5.4 5.9.7-4.4 4 1.2 5.8L10 14.5l-5.2 2.9 1.2-5.8-4.4-4 5.9-.7z"
+          fill={colour}
+          stroke="#6b5a1e"
+          strokeWidth="0.8"
+          strokeLinejoin="round"
+        />
+      ) : decal.kind === 'shield' ? (
         <path
           d="M3 2h14v8c0 4-3 7-7 8-4-1-7-4-7-8z"
           fill={colour}
@@ -59,6 +69,36 @@ export function DecalRow({ decals }: { decals: Decal[] }) {
       <p className="flex flex-wrap gap-1">
         {[...shields, ...trophies].map((d, i) => (
           <DecalIcon key={`${d.kind}-${d.year}-${d.round ?? 0}-${i}`} decal={d} />
+        ))}
+      </p>
+    </div>
+  );
+}
+
+/** A compact row of decals, icons only, for the right-hand end of a profile header (shields, then stars, then trophies). */
+export function DecalStrip({ decals }: { decals: Decal[] }) {
+  if (decals.length === 0) return null;
+  const order = { shield: 0, star: 1, trophy: 2 } as const;
+  const sorted = [...decals].sort((a, b) => order[a.kind] - order[b.kind]);
+  return (
+    <p className="ml-auto flex max-w-[45%] flex-wrap justify-end gap-1">
+      {sorted.map((d, i) => (
+        <DecalIcon key={`${d.kind}-${d.year}-${d.round ?? 0}-${i}`} decal={d} />
+      ))}
+    </p>
+  );
+}
+
+/** A row of a garage's Garage Championship stars, with a count. */
+export function StarRow({ decals }: { decals: Decal[] }) {
+  const stars = decals.filter((d) => d.kind === 'star');
+  if (stars.length === 0) return <p className="text-lc-dim">{t('decal.noStars')}</p>;
+  return (
+    <div className="space-y-1">
+      <p className="text-lc-dim">{t('decal.starCount', { count: stars.length })}</p>
+      <p className="flex flex-wrap gap-1">
+        {stars.map((d) => (
+          <DecalIcon key={`star-${d.year}`} decal={d} />
         ))}
       </p>
     </div>

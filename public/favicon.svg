@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-FileCopyrightText: Nexxus Drako Multimedia -->
+<!-- The Last Combustion logo. The name and logo are trademarks of Nexxus Drako Multimedia (see TRADEMARKS.md). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><rect width="256" height="256" rx="56" fill="#0d1116"/><g transform="translate(24 24) scale(0.8125)"><circle cx="128" cy="128" r="112" fill="none" stroke="#a3203a" stroke-width="16"/><path d="M128 212 C82 212 60 178 68 146 C74 122 96 110 102 86 C105 72 103 60 96 48 C132 56 166 86 166 130 C178 122 184 110 184 98 C202 114 212 138 204 164 C195 194 166 212 128 212 Z" fill="#e6ebf0"/><path d="M128 206 C106 206 96 188 100 172 C103 160 114 154 118 142 C132 148 148 160 148 180 C148 194 140 206 128 206 Z" fill="#a3203a"/></g></svg>
