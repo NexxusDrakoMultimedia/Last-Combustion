@@ -8,6 +8,8 @@ import { StarterChoice } from '../StarterChoice';
 import { button, quiet } from '../styles';
 import { DriversPanel } from './DriversPanel';
 import { Panel } from './Panel';
+import { AuctionSection } from './AuctionSection';
+import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
@@ -259,13 +261,18 @@ export function Shell() {
           title={t('rail.market')}
           tabs={[
             { id: 'market', label: t('market.heading') },
+            { id: 'dealer', label: t('dealer.heading') },
+            { id: 'auction', label: t('auction.heading') },
             { id: 'cars', label: t('market.cars') },
           ]}
           tab={marketTab}
           onTab={setMarketTab}
           onClose={() => setOpen(null)}
         >
-          {marketTab === 'market' ? <UsedMarket locked={locked} /> : <OwnedCars locked={locked} />}
+          {marketTab === 'market' && <UsedMarket locked={locked} />}
+          {marketTab === 'dealer' && <DealerSection locked={locked} />}
+          {marketTab === 'auction' && <AuctionSection locked={locked} />}
+          {marketTab === 'cars' && <OwnedCars locked={locked} />}
         </Panel>
       )}
       {!locked && open === 'upgrades' && (

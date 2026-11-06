@@ -98,3 +98,5 @@ Entries: `addEntry`, `removeEntry` and `garageEntries` in `src/db/garage.ts`; th
 Plates: `src/sim/plates.ts` and `data/plates.json` (formats, colours and personalised plates), `registerCar` and `registerAllCars` in `src/db/plates.ts` (migration 0027), and the `Plate` badge in `src/ui/Plate.tsx`.
 
 Telemetry: `src/platform/telemetry.ts` (events, `track`, sinks, money from the ledger), `gameanalytics.ts` (GameAnalytics, primary), `analytics.ts` (Google tag, secondary) and `consent.ts` (the visitor's choice); the store reports its actions, progression and money, and the shell reports panel opens.
+
+Market: `dealerOffers` and `dealerQuote` in `src/db/market.ts`, and `currentAuction`, `ensureAuction`, `auctionCycle` and `playerLots` in `src/db/auction.ts`; the Market panel's Dealers and Auctions tabs are `src/ui/shell/DealerSection.tsx` and `AuctionSection.tsx`.
