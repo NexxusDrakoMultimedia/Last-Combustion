@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 Nothing yet.
 
+## [0.1.2] - 2026-11-06
+
+### Changed
+
+- About a third of new garages (31%) now fly a foreign flag, up from about one in eight, because the share now counts every garage that is not Australian. Saves you already have keep the garages they have.
+- The logo and brand art are licensed CC BY-SA 4.0 (see the Credits tab); the name and logo stay trademarks.
+
 ## [0.1.1] - 2026-11-06
 
 ### Changed

@@ -18,6 +18,7 @@ import {
   garageName,
   nickname,
   nicknameThemesFor,
+  pickForeignNationality,
   pickNationality,
 } from '../../src/sim/worldgen/names';
 
@@ -126,5 +127,24 @@ describe('garage names that carry a place', () => {
       if (g.name.includes(home)) carrying++;
     }
     expect(carrying).toBeGreaterThan(0);
+  });
+});
+
+describe('foreign garages', () => {
+  it('never draws the host country for a foreign flag', () => {
+    const rng = createRng('foreign').stream('t');
+    for (let i = 0; i < 2000; i++) expect(pickForeignNationality(rng)).not.toBe('AU');
+  });
+
+  it('flies a foreign flag over about 31% of the garages in a new world', () => {
+    let foreign = 0;
+    let total = 0;
+    for (let seed = 1; seed <= 20; seed++)
+      for (const g of generateWorld(seed).garages) {
+        total++;
+        if (g.flag !== 'AU') foreign++;
+      }
+    expect(foreign / total).toBeGreaterThan(0.26);
+    expect(foreign / total).toBeLessThan(0.38);
   });
 });
