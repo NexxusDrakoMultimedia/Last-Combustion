@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { RESERVED_NUMBER } from '../sim/worldgen';
+import { seasonBalance } from '../sim/worldgen/data';
 import { all } from './entries';
 import { valueOfCar } from './market';
 
@@ -120,4 +122,119 @@ export function setEntryDriver(
   )
     throw new Error('The drivers cannot be changed once the season has started.');
   db.run('UPDATE entry SET driver_id = ? WHERE id = ?', [driverId, entry.id as number]);
+}
+
+export interface GarageEntry {
+  raceNumber: number;
+  driverId: number;
+  driverName: string;
+  carId: number;
+  carName: string;
+}
+
+/** The entries a garage has this season, lowest race number first. */
+export function garageEntries(db: Database, garageId: number): GarageEntry[] {
+  return all(
+    db,
+    `SELECT e.race_number, e.driver_id, d.name AS driver_name, e.car_id, m.name AS car_name
+       FROM entry e JOIN driver d ON d.id = e.driver_id
+       JOIN car c ON c.id = e.car_id JOIN car_model m ON m.id = c.car_model_id
+      WHERE e.garage_id = ? AND e.series = 'main' AND e.season_id = (SELECT MAX(id) FROM season)
+      ORDER BY e.race_number`,
+    [garageId],
+  ).map((r) => ({
+    raceNumber: r.race_number as number,
+    driverId: r.driver_id as number,
+    driverName: r.driver_name as string,
+    carId: r.car_id as number,
+    carName: r.car_name as string,
+  }));
+}
+
+function beforeSeasonStarts(db: Database, seasonId: number): void {
+  if (all(db, "SELECT 1 FROM round WHERE season_id = ? AND status <> 'scheduled'", [seasonId])[0])
+    throw new Error('The entries cannot be changed once the season has started.');
+}
+
+/**
+ * Adds an entry for the garage this season: a car it owns that is not racing yet, and a driver it
+ * has under contract who is not racing yet. The entry takes the lowest free race number from 41 up
+ * (never #313). A garage may have up to eight entries, and each one adds entry fees, tyres,
+ * servicing and travel every round. Entries cannot be added once the season has started.
+ */
+export function addEntry(
+  db: Database,
+  garageId: number,
+  carId: number,
+  driverId: number,
+): GarageEntry {
+  const career = all(db, 'SELECT game_date FROM career WHERE id = 1')[0];
+  if (!career) throw new Error('There is no career in this database.');
+  const year = Number(String(career.game_date).slice(0, 4));
+  const season = all(db, 'SELECT id FROM season ORDER BY year DESC LIMIT 1')[0];
+  if (!season) throw new Error('There is no season in this database.');
+  const seasonId = season.id as number;
+  beforeSeasonStarts(db, seasonId);
+  const garage = all(db, 'SELECT kind, closed_year FROM garage WHERE id = ?', [garageId])[0];
+  if (!garage || garage.kind !== 'racing' || garage.closed_year !== null)
+    throw new Error(`There is no racing garage ${garageId}.`);
+  if (garageEntries(db, garageId).length >= seasonBalance.garages.maxEntriesPerGarage)
+    throw new Error(
+      `A garage can have at most ${seasonBalance.garages.maxEntriesPerGarage} entries.`,
+    );
+  const car = all(db, 'SELECT garage_id FROM car WHERE id = ?', [carId])[0];
+  if (!car || car.garage_id !== garageId) throw new Error('That car is not in this garage.');
+  if (
+    all(db, "SELECT 1 FROM entry WHERE season_id = ? AND series = 'main' AND car_id = ?", [
+      seasonId,
+      carId,
+    ])[0]
+  )
+    throw new Error('That car is already racing in an entry.');
+  if (
+    !all(db, 'SELECT 1 FROM contract WHERE driver_id = ? AND garage_id = ? AND end_year >= ?', [
+      driverId,
+      garageId,
+      year,
+    ])[0]
+  )
+    throw new Error('That driver is not under contract with this garage.');
+  if (
+    all(db, "SELECT 1 FROM entry WHERE season_id = ? AND series = 'main' AND driver_id = ?", [
+      seasonId,
+      driverId,
+    ])[0]
+  )
+    throw new Error('That driver is already racing in an entry.');
+  const taken = new Set(
+    all(db, "SELECT race_number FROM entry WHERE season_id = ? AND series = 'main'", [
+      seasonId,
+    ]).map((r) => r.race_number as number),
+  );
+  let number = 41;
+  while (taken.has(number) || number === RESERVED_NUMBER) number += 1;
+  db.run(
+    "INSERT INTO entry (season_id, garage_id, driver_id, car_id, race_number, series) VALUES (?, ?, ?, ?, ?, 'main')",
+    [seasonId, garageId, driverId, carId, number],
+  );
+  return garageEntries(db, garageId).find((e) => e.raceNumber === number)!;
+}
+
+/**
+ * Withdraws one of the garage's entries for this season (before it starts). The car and driver stay
+ * with the garage. A garage keeps at least one entry.
+ */
+export function removeEntry(db: Database, garageId: number, raceNumber: number): void {
+  const season = all(db, 'SELECT id FROM season ORDER BY year DESC LIMIT 1')[0];
+  if (!season) throw new Error('There is no season in this database.');
+  const seasonId = season.id as number;
+  beforeSeasonStarts(db, seasonId);
+  const entries = garageEntries(db, garageId);
+  if (!entries.some((e) => e.raceNumber === raceNumber))
+    throw new Error('That garage has no such entry.');
+  if (entries.length <= 1) throw new Error('A garage keeps at least one entry.');
+  db.run(
+    "DELETE FROM entry WHERE season_id = ? AND series = 'main' AND garage_id = ? AND race_number = ?",
+    [seasonId, garageId, raceNumber],
+  );
 }

@@ -7,6 +7,7 @@ import { StarterChoice } from '../StarterChoice';
 import { button, quiet } from '../styles';
 import { DriversPanel } from './DriversPanel';
 import { Panel } from './Panel';
+import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { UpgradesPanel } from './UpgradesPanel';
@@ -233,7 +234,10 @@ export function Shell() {
           }
           onClose={() => setOpen(null)}
         >
-          <OwnedCars locked={locked} />
+          <div className="space-y-6">
+            <OwnedCars locked={locked} />
+            <EntriesSection locked={locked} />
+          </div>
         </Panel>
       )}
       {!locked && open === 'market' && (

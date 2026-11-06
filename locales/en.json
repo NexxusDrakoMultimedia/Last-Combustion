@@ -237,5 +237,16 @@
   "money.category.car_purchase": "Cars bought",
   "money.category.car_sale": "Cars sold",
   "money.category.parts": "Parts",
-  "money.category.restoration": "Restoration"
+  "money.category.restoration": "Restoration",
+  "entries.title": "Entries",
+  "entries.intro": "An entry is one car and one driver. Each extra entry costs up to about {cost} a round in fees, tyres, servicing and travel. Entries can be changed until the season starts.",
+  "entries.number": "#{n}",
+  "entries.pair": "{driver} in the {car}",
+  "entries.remove": "Withdraw",
+  "entries.car": "Spare car",
+  "entries.driver": "Signed driver",
+  "entries.add": "Add entry",
+  "entries.full": "The garage has as many entries as it is allowed.",
+  "entries.needCar": "To add an entry you need a spare car that is not racing.",
+  "entries.needDriver": "To add an entry you need a signed driver who is not racing. Sign one in the Drivers panel."
 }
