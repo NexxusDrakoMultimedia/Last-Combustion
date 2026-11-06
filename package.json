@@ -25,6 +25,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "gameanalytics": "^5.0.0",
     "idb-keyval": "^6.3.0",
     "intl-messageformat": "^12.1.4",
     "react": "^19.3.1",

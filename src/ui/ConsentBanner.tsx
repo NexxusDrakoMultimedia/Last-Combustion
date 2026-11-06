@@ -2,28 +2,25 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useEffect, useState } from 'react';
 import { t } from '../i18n';
-import {
-  analyticsId,
-  applyConsent,
-  readConsent,
-  saveConsent,
-  type Consent,
-} from '../platform/analytics';
+import { readConsent, saveConsent, type Consent } from '../platform/analytics';
+import { applyTelemetryConsent, telemetryConfigured } from '../platform/consent';
+import { APP_VERSION } from '../db/session';
 
 /**
- * Asks whether the web build may use Google Analytics cookies. It appears only when the build
- * has an analytics ID, never loads the tag before the visitor accepts, and can be reopened.
+ * Asks whether the web build may count how the game is used (GameAnalytics and the Google tag).
+ * It appears only when the build has a telemetry key, nothing is loaded or sent before the
+ * visitor accepts, and it can be reopened.
  */
 export function ConsentBanner() {
-  const id = analyticsId();
+  const configured = telemetryConfigured();
   const [consent, setConsent] = useState<Consent | undefined>(() => readConsent());
   const [open, setOpen] = useState(() => readConsent() === undefined);
 
   useEffect(() => {
-    applyConsent(consent, id);
-  }, [consent, id]);
+    applyTelemetryConsent(consent, { build: `web ${APP_VERSION}` });
+  }, [consent]);
 
-  if (!id) return null;
+  if (!configured) return null;
 
   const choose = (value: Consent) => {
     saveConsent(value);

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 
+import type { TelemetryEvent, TelemetrySink } from './telemetry';
+
 /**
- * Optional web analytics (the Google tag), used only on the hosted web build. The measurement
- * ID is given at build time as `VITE_GTAG_ID`; without it nothing here does anything. The
- * Google script is loaded only after the visitor accepts, never before.
+ * Optional web analytics (the Google tag, the secondary telemetry tool), used only on the hosted
+ * web build. The measurement ID is given at build time as `VITE_GTAG_ID`; without it nothing here
+ * does anything. The Google script is loaded only after the visitor accepts, never before.
  */
 
 const CONSENT_KEY = 'lc.analytics-consent';
@@ -115,4 +117,43 @@ export function applyConsent(
   if (!id) return;
   if (value === 'granted') loadGoogleTag(id, doc, win);
   else if (value === 'denied') stopGoogleTag(id, doc, win);
+}
+
+/**
+ * Turns the game's events into Google tag events. There are only four event names (`lc_design`,
+ * `lc_progression`, `lc_resource` and `lc_error`) with the details as parameters, so the property
+ * stays far from Google's limit on distinct event names.
+ */
+export function createGoogleTagSink(
+  win: TagWindow = window as unknown as TagWindow,
+): TelemetrySink {
+  return {
+    send(event: TelemetryEvent) {
+      const gtag = win.gtag as ((...args: unknown[]) => void) | undefined;
+      if (!gtag) return;
+      switch (event.kind) {
+        case 'design':
+          gtag('event', 'lc_design', { event_id: event.id, value: event.value });
+          break;
+        case 'progression':
+          gtag('event', 'lc_progression', {
+            status: event.status,
+            path: event.path.join(':'),
+            value: event.score,
+          });
+          break;
+        case 'resource':
+          gtag('event', 'lc_resource', {
+            flow: event.flow,
+            item_type: event.itemType,
+            value: event.amount,
+            currency: 'AUD',
+          });
+          break;
+        case 'error':
+          gtag('event', 'lc_error', { severity: event.severity, message: event.message });
+          break;
+      }
+    },
+  };
 }
