@@ -14,8 +14,12 @@ const pub = resolve(root, 'public');
 mkdirSync(brand, { recursive: true });
 mkdirSync(pub, { recursive: true });
 
+// The header (XML declaration and a one-line comment) is dropped line by line.
 const svg = (name) =>
-  readFileSync(resolve(brand, name), 'utf8').replace(/<\?xml[^>]*\?>|<!--[\s\S]*?-->/g, '');
+  readFileSync(resolve(brand, name), 'utf8')
+    .split('\n')
+    .filter((line) => !line.startsWith('<?xml') && !line.startsWith('<!--'))
+    .join('\n');
 // The fonts are embedded in the page, so the render looks the same wherever it runs.
 const font = (pkg, file) =>
   `data:font/woff2;base64,${readFileSync(resolve(root, 'node_modules/@fontsource', pkg, 'files', file)).toString('base64')}`;
