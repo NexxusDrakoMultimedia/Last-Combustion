@@ -855,6 +855,64 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 
 **Screen.** The Negotiation screen shows the term list, the value meter, the other side's mood and patience, the history of offers and the relationship score, with one-click acceptance of a counter.
 
+## Scouting and fog of war
+
+**Status: planned for M6 (Depth).** Today every rating in the game is shown exactly. This section is the design for hiding them behind a fog that the player clears by scouting.
+
+**The idea.** What the player knows about anything outside their own garage is an estimate. With almost no information it is a plain description in words. As the player learns more it becomes a range of values, and the range gets tighter and tighter until it is exact. Better scouts, more scouts, a bigger name, more fans and more success all clear the fog faster, and so does simply watching someone race season after season. Things the player owns are always exact, and so is everything public: results, points, numbers, plates, titles and records (the Registry's facts). The fog covers the hidden numbers behind them.
+
+**What it covers.**
+
+| Subject | What is hidden behind the fog |
+| --- | --- |
+| Drivers | Pace, Consistency, Racecraft, Tyre management, Composure, Wet skill, road affinity, and Potential (which stays the foggiest of all), their fair salary and their mood |
+| Cars | Power, weight, tyre width, grip, handling, reliability, the wear of the chassis and of each fitted part, how many restorations it has had, and its legality score |
+| Garages | Prestige, cash and finances, fans, staff and executive skill, sponsors and suppliers, ownership and the cap table (a listed garage publishes its accounts, so those are exact) |
+| Deals | The other side's hidden walk-away value in a negotiation ("Negotiations", rule 8: "the player sees a range that narrows with relationship, scouting and past deals") |
+
+**Three levels of detail.** For each hidden number the player sees one of three things:
+
+1. **A basic description.** A word from a band, never a number: the stat's band is *weak* (0–24), *modest* (25–44), *solid* (45–64), *strong* (65–84) or *elite* (85–100), and a driver or car also gets a one-line sketch such as "A young, quick driver, still raw" or "A light, rear-driven sports car with a tired chassis".
+2. **A range.** A low and a high, such as `Pace 48 to 62`, drawn as a bar. The true value is always inside it, though not at its middle.
+3. **An exact value,** marked as confirmed.
+
+**Knowledge.** Each thing the player looks at has a knowledge score from 0 to 100, worked out for that player. It is the sum of five parts, capped at 100:
+
+| Part | Up to | Where it comes from |
+| --- | --- | --- |
+| Scouts | 50 | `50 × (1 − Π(1 − skill ÷ 100))` over the scouts that cover the subject. Each scout counts at full skill when assigned to it, half when covering its kind (drivers, cars or garages) in general, and a quarter otherwise. The product means every extra scout helps but with diminishing returns, and a great scout beats a crowd of poor ones |
+| Evidence | 25 | What the player has watched: 2.5 for each scored final of that driver, car or garage in the last three seasons. A driver who never reaches a final stays hard to read |
+| Visibility | 15 | `15 × fame ÷ 100` of the subject (a driver's fame, a garage's fame from its fans, a car's fans). A star is easy to read and an unknown is not |
+| Standing | 10 | The player's own name: `5 × prestige ÷ 100 + 5 × fame ÷ 100`. People tell a famous, successful garage more |
+| Experience | 30 | 30 for anyone signed or owned now (they are exact anyway), 20 within a year of working together, 10 within three years |
+
+**From knowledge to what is shown.** The half-width of a range, in stat points, is `20 × (1 − knowledge ÷ 100)²`, but a stat is only shown as a range from knowledge 15 up, and as exact from 95 up. Potential uses double the width and is never shown exact before 100.
+
+| Knowledge | Shown | Half-width of the range |
+| --- | --- | --- |
+| 0–14 | Basic description only | none |
+| 15 | A very wide range | about ±14 |
+| 30 | A wide range | about ±10 |
+| 50 | A useful range | about ±5 |
+| 70 | A tight range | about ±2 |
+| 85 | A very tight range | about ±0.5 |
+| 95–100 | Exact | none |
+
+**The range is stable and honest.** Where the true value sits inside the range is drawn once for each player, subject and season from a named stream (`scout:<subject>:<year>`), so a range never jumps about between screens or on a reload, and a bigger knowledge always gives a range inside the smaller one (it only tightens). A range never excludes the truth.
+
+**Scouts.** A scout is a member of staff, hired in the Staff panel like a mechanic. Each has a skill from 0 to 100, a wage that rises with it, a notice period and a focus (drivers, cars or garages). The player can assign a scout to a particular subject, which is how to chase a prospect or size up a rival. A **Head of Scouting** is planned as a ninth executive: their skill adds to every scout the garage has, up to 25%, and they are the first to hear of rising drivers. Computer garages do not scout for now; they decide as if they knew the true values.
+
+**Other ways to learn.**
+
+- **Attention flags** (see "Attention flags") add 25 knowledge about the flagged driver for that season.
+- **Watching a rival race** every round adds to Evidence automatically; a driver who beats the field adds to it faster.
+- **An inspection** (planned fee) takes one car to exact for that sale, as at the used market and the auction house, where a car's wear and parts are ranges until it is inspected or bought.
+- **A trial or a former contract** gives Experience for the following years.
+
+**Where it shows.** The Drivers panel (free agents), the Market and auction listings (cars), the Sponsors, Operations and Executives panels (the other side of a deal), the Registry (any profile of something the player does not own) and the Negotiations screen all show the same three levels, with the knowledge score on hover and a short note on what would clear the fog (a scout, a season of watching, an inspection).
+
+**Data and rules.** A `scout` staff table and a `scout_assignment` table are planned, and the weights and bands above live in `data/scouting.json` (planned), so mods can tune them. The calculation is pure (`src/sim/scouting.ts`, planned) and its draws use named streams, so a save replays identically. Telemetry reports counts and amounts only (scouts hired, assignments made), never names.
+
 ## Career and economy systems
 
 Prize money and sponsors fund the garage, while fame, reputation, rivalries and the media turn results into stories.
@@ -1154,7 +1212,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, mid-race incidents with pauses, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase (dealers, used market, auction house, private negotiation), upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
-| M6 Depth | Story and feedback, and the garage as a business | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map; executives, supply contracts and the spot market, outages and facilities ("Garage operations"); the cap table, funding rounds, control and dividends ("Ownership and the cap table"); the financial ledger's yearly summaries per category, transactions list and balance sheet of assets held ("The financial ledger"); morale, relationship kinds, contacts, social events and the press ("People and relationships"); a full cap table for every garage, funding rounds, control, dividends, holdings and takeovers | |
+| M6 Depth | Story and feedback, and the garage as a business | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map; executives, supply contracts and the spot market, outages and facilities ("Garage operations"); the cap table, funding rounds, control and dividends ("Ownership and the cap table"); the financial ledger's yearly summaries per category, transactions list and balance sheet of assets held ("The financial ledger"); morale, relationship kinds, contacts, social events and the press ("People and relationships"); scouting and fog of war, with scouts, a Head of Scouting and ranges that tighten into exact values ("Scouting and fog of war"); a full cap table for every garage, funding rounds, control, dividends, holdings and takeovers | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
 | M8 Modes and release | All career modes (three, and the planned Employed manager), polish, and the release of 0.4.0 (1.0.0 is declared separately) | Owner-driver, driver manager, the Employed manager mode, family and dynasty, listing garages on the exchange (open, publicly traded garages) with published accounts, credit ratings and loans from the financial ledger, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
 
