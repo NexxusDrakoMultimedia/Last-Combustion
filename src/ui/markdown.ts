@@ -54,16 +54,25 @@ const cells = (line: string): string[] =>
 const isSeparator = (line: string): boolean =>
   /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(line.trim());
 
-/** Removes HTML comments, repeating until none are left (removing one can join the pieces around it into another). */
+/**
+ * Removes HTML comments by scanning for them, repeating until none are left (removing one can join
+ * the pieces around it into another). A comment that never closes hides the rest of its line only.
+ */
 function stripComments(source: string): string {
+  const OPEN = '<!--';
+  const CLOSE = '-->';
   let text = source;
   for (;;) {
-    const next = text.replace(/<!--[\s\S]*?-->/g, '');
-    if (next === text) break;
-    text = next;
+    const start = text.indexOf(OPEN);
+    if (start === -1) return text;
+    const close = text.indexOf(CLOSE, start + OPEN.length);
+    if (close !== -1) {
+      text = text.slice(0, start) + text.slice(close + CLOSE.length);
+      continue;
+    }
+    const lineEnd = text.indexOf('\n', start);
+    text = lineEnd === -1 ? text.slice(0, start) : text.slice(0, start) + text.slice(lineEnd);
   }
-  // An opener that never closes hides the rest of the line, not the rest of the document.
-  return text.replace(/<!--.*$/gm, '');
 }
 
 /** Reads headings, paragraphs, bullet lists and tables from Markdown. Comments and anything else are skipped. */
