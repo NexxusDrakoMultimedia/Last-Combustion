@@ -5,6 +5,7 @@ import { RESERVED_NUMBER } from '../sim/worldgen';
 import { seasonBalance } from '../sim/worldgen/data';
 import { all } from './entries';
 import { valueOfCar } from './market';
+import { refreshPlayerPrestige } from './prestige';
 
 export interface OwnedCar {
   carId: number;
@@ -226,6 +227,7 @@ export function addEntry(
     "INSERT INTO entry (season_id, garage_id, driver_id, car_id, race_number, series) VALUES (?, ?, ?, ?, ?, 'main')",
     [seasonId, garageId, driverId, carId, number],
   );
+  refreshPlayerPrestige(db);
   return garageEntries(db, garageId).find((e) => e.raceNumber === number)!;
 }
 
@@ -246,4 +248,5 @@ export function removeEntry(db: Database, garageId: number, raceNumber: number):
     "DELETE FROM entry WHERE season_id = ? AND series = 'main' AND garage_id = ? AND race_number = ?",
     [seasonId, garageId, raceNumber],
   );
+  refreshPlayerPrestige(db);
 }

@@ -8,7 +8,8 @@ import { part, partPrice } from '../sim/upgrades';
 import { repairBalance } from '../sim/worldgen/data';
 import type { Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
-import { dealPrice } from './deals';
+import { garageBonuses } from './bonuses';
+import { partPriceFor } from './deals';
 import { all } from './entries';
 import { garageCrewStrength } from './staff';
 
@@ -22,7 +23,10 @@ export function wearParts(
 ): void {
   const owner = all(db, 'SELECT garage_id FROM car WHERE id = ?', [carId])[0];
   // A good crew looks after the parts: they wear more slowly.
-  const crew = owner ? partWearFactor(garageCrewStrength(db, owner.garage_id as number)) : 1;
+  const crew = owner
+    ? partWearFactor(garageCrewStrength(db, owner.garage_id as number)) *
+      (1 - garageBonuses(db, owner.garage_id as number).partWear)
+    : 1;
   const delta = wearAdded(km, kind, tier) * repairBalance.partWearFactor * crew;
   if (delta <= 0) return;
   db.run('UPDATE car_part SET wear = MIN(100, wear + ?) WHERE car_id = ?', [delta, carId]);
@@ -89,9 +93,8 @@ export function partServiceCost(db: Database, garageId: number, carId: number): 
   );
   let cost = 0;
   for (const f of fitted) {
-    const price = dealPrice(
+    const price = partPriceFor(
       db,
-      'supplier',
       garageId,
       f.supplier_id as number,
       partPrice(part(f.stable_id as string), car.tier as Tier),
@@ -149,8 +152,8 @@ export interface GearCondition {
 }
 
 /** What refurbishing a worn item costs: half its price in proportion to its wear. */
-export function gearRenewCost(price: number, wear: number): number {
-  return Math.round(repairBalance.gearRenewShare * price * (wear / 100));
+export function gearRenewCost(price: number, wear: number, saving = 0): number {
+  return Math.round(repairBalance.gearRenewShare * price * (wear / 100) * (1 - saving));
 }
 
 /** The wear of every item a driver wears. */
@@ -201,7 +204,7 @@ export function renewGear(
     [driverId, itemId],
   )[0];
   if (!row) throw new Error('The driver does not wear this item.');
-  const cost = gearRenewCost(item.price, row.wear as number);
+  const cost = gearRenewCost(item.price, row.wear as number, garageBonuses(db, garageId).gearCost);
   db.exec('BEGIN');
   try {
     charge(db, garageId, 'gear', cost, `Refurbished ${item.name}`);

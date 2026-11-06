@@ -15,13 +15,13 @@ export function openingPrice(reserve: number): number {
 }
 
 /** What the buyer pays on top of the hammer price. */
-export function buyerPays(price: number): number {
-  return Math.round(price * (1 + cfg().buyerPremium));
+export function buyerPays(price: number, cut = 0): number {
+  return Math.round(price * (1 + Math.max(0, cfg().buyerPremium - cut)));
 }
 
 /** What the seller receives after the seller's fee. */
-export function sellerReceives(price: number): number {
-  return Math.round(price * (1 - cfg().sellerFee));
+export function sellerReceives(price: number, cut = 0): number {
+  return Math.round(price * (1 - Math.max(0, cfg().sellerFee - cut)));
 }
 
 /** A bidder's highest price (a proxy bid: the auction raises their bid for them up to it). */

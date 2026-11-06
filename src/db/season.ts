@@ -11,7 +11,9 @@ import {
   type Standing,
 } from '../sim/standings';
 import { fanBalance, seasonBalance } from '../sim/worldgen/data';
+import { garageBonuses } from './bonuses';
 import { all } from './entries';
+import { refreshPlayerPrestige } from './prestige';
 import { splitPrize } from './prizes';
 
 /** Every main-series result of a season, with the groups each one scores for. */
@@ -154,7 +156,11 @@ export function endSeason(db: Database): SeasonEnd {
       pay(
         g.id as number,
         'merchandise',
-        (g.fans as number) * fanBalance.merchandisePerFan,
+        Math.round(
+          (g.fans as number) *
+            fanBalance.merchandisePerFan *
+            (1 + garageBonuses(db, g.id as number).merchandise),
+        ),
         `${year} merchandise`,
       );
     }
@@ -195,6 +201,7 @@ export function endSeason(db: Database): SeasonEnd {
       "UPDATE season SET status = 'complete', champion_driver_id = ?, champion_garage_id = ? WHERE id = ?",
       [championDriverId, championGarageId, seasonId],
     );
+    refreshPlayerPrestige(db);
     db.exec('COMMIT');
     return {
       year,

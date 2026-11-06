@@ -4,6 +4,7 @@ import balanceJson from '../../../data/balance.json';
 import carModelsJson from '../../../data/car_models.json';
 import coursesJson from '../../../data/courses.json';
 import commentatorsJson from '../../../data/commentators.json';
+import executivesJson from '../../../data/executives.json';
 import flagsJson from '../../../data/flags.json';
 import manufacturersJson from '../../../data/manufacturers.json';
 import namesJson from '../../../data/names.json';
@@ -33,6 +34,7 @@ export const repairBalance = balanceJson.repairs;
 export const seasonBalance = balanceJson.season;
 export const fanBalance = balanceJson.fans;
 export const staffBalance = balanceJson.staff;
+export const executiveData = executivesJson;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
 export interface FlagRegion {

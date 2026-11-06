@@ -10,6 +10,7 @@ import {
 } from '../sim/negotiation';
 import { eligibleSponsors, titleSponsorFee } from '../sim/sponsors';
 import { sponsorBalance } from '../sim/worldgen/data';
+import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
 import { adjustRelationship, relationshipScore, type Negotiation } from './negotiation';
@@ -27,7 +28,8 @@ export function approachableSponsors(
 ): { stableId: string; name: string; tier: string }[] {
   const garage = all(db, 'SELECT prestige FROM garage WHERE id = ?', [garageId])[0];
   if (!garage) throw new Error(`There is no garage ${garageId}.`);
-  return eligibleSponsors(garage.prestige as number).map((s) => ({
+  const reach = (garage.prestige as number) + garageBonuses(db, garageId).sponsorPrestige;
+  return eligibleSponsors(reach).map((s) => ({
     stableId: s.id,
     name: s.name,
     tier: s.tier,
@@ -74,7 +76,8 @@ export function openSponsorNegotiation(
     sponsorStableId,
   ])[0];
   if (!sponsor) throw new Error(`Unknown sponsor "${sponsorStableId}".`);
-  if ((garage.prestige as number) < (sponsor.min_prestige as number)) {
+  const bonuses = garageBonuses(db, garageId);
+  if ((garage.prestige as number) + bonuses.sponsorPrestige < (sponsor.min_prestige as number)) {
     throw new Error('The garage does not have the prestige this sponsor wants.');
   }
   if (activeSponsorDeal(db, garageId, year)) {
@@ -106,7 +109,7 @@ export function openSponsorNegotiation(
       [garageId],
     )[0]!.f,
   );
-  const fair = titleSponsorFee(garage.prestige as number, bestFame);
+  const fair = titleSponsorFee(garage.prestige as number, bestFame) * (1 + bonuses.sponsorFee);
   const relationship = relationshipScore(
     db,
     { type: 'garage', id: garageId },
@@ -115,11 +118,11 @@ export function openSponsorNegotiation(
   const garageStrength = ((garage.prestige as number) + bestFame) / 2;
   const walkAway = walkAwayValue(fair, 'pays', {
     // The sponsor is the stronger party when it outweighs the garage: positive leverage lowers what it pays.
-    leverage: leverageFrom(sponsor.strength as number, garageStrength),
+    leverage: leverageFrom(sponsor.strength as number, garageStrength) - bonuses.leverage,
     relationship,
     rivalInterest: 0,
   });
-  const patience = patienceFor(relationship);
+  const patience = patienceFor(relationship) + (bonuses.extraPatience ? 1 : 0);
   db.run(
     `INSERT INTO negotiation (kind, window, party_a_type, party_a_id, party_b_type, party_b_id, patience_left, fair_value, walk_away)
      VALUES ('sponsor_deal', ?, 'garage', ?, 'sponsor', ?, ?, ?, ?)`,
