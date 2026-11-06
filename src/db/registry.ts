@@ -642,6 +642,21 @@ export function activeYearsOf(db: Database): Map<string, ActiveYears> {
   return out;
 }
 
+/** The flag code of every driver and garage (keyed `driver:12` and `garage:3`), as it is now. */
+export function flagsOf(db: Database): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const d of all(db, 'SELECT id, flag FROM driver'))
+    out.set(`driver:${d.id as number}`, d.flag as string);
+  for (const g of all(db, "SELECT id, flag FROM garage WHERE kind = 'racing'"))
+    out.set(`garage:${g.id as number}`, g.flag as string);
+  return out;
+}
+
+/** Whether Australia has become the Commonwealth of Vyktory in this career. */
+export function vyktoryHappened(db: Database): boolean {
+  return all(db, "SELECT 1 AS n FROM world_event WHERE event_id = 'vyktory' LIMIT 1").length > 0;
+}
+
 /** The dragon-blooded drivers: the twelve canonical characters, who carry the dragon mark. */
 export function dragonDriverIds(db: Database): Set<number> {
   return new Set(all(db, 'SELECT id FROM driver WHERE easter_egg = 1').map((d) => d.id as number));

@@ -5,6 +5,7 @@ import { t } from '../i18n';
 import type { RegistryTarget } from '../db/registry';
 import { EASTER_HINT_KEY, EASTER_MARK } from '../sim/easter';
 import { useCareerStore } from '../state/career.store';
+import { EntityFlag } from './Flag';
 
 /** The dragon beside a dragon-blooded driver's name. Its hint is deliberately cryptic. */
 export function DragonMark() {
@@ -35,6 +36,11 @@ export function RegistryLink({ to, children }: { to: RegistryTarget; children: R
       }`}
       onClick={() => open(to)}
     >
+      {(to.kind === 'driver' || to.kind === 'garage') && (
+        <>
+          <EntityFlag kind={to.kind} id={to.id} />{' '}
+        </>
+      )}
       {children}
       {dragon && (
         <>
@@ -56,9 +62,9 @@ export function YearsActive({ kind, id }: { kind: 'driver' | 'garage' | 'car'; i
   const [start, end] = years;
   const text =
     end === null
-      ? t('registry.years', { start, end: t('registry.present') })
+      ? t('registry.years', { start, end: t('registry.yearsPresent') })
       : end === start
         ? t('registry.yearsOne', { year: start })
         : t('registry.years', { start, end });
-  return <span className="lc-num text-lc-dim">{text}</span>;
+  return <span className="lc-num whitespace-nowrap text-lc-dim">{text}</span>;
 }

@@ -193,7 +193,7 @@
   "registry.obscureNote": "Retired or folded without ever scoring a point. Their links are grey, and their profiles still open.",
   "registry.years": "({start}-{end})",
   "registry.yearsOne": "({year})",
-  "registry.present": "present",
+  "registry.yearsPresent": "present",
   "registry.debut": "First season",
   "registry.scoringSeasons": "Seasons with points",
   "registry.scoringYears": "First and last year with points",

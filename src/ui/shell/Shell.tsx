@@ -15,6 +15,7 @@ import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { About, FeedbackLink } from '../About';
+import { EntityFlag } from '../Flag';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { RegistryLink } from '../RegistryLink';
@@ -173,6 +174,7 @@ export function Shell() {
       <header className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-lc-line bg-lc-panel px-4 py-2">
         <div>
           <p className="lc-display text-lg leading-tight">
+            {player && <EntityFlag kind="garage" id={player.garageId} />}{' '}
             {player?.garageName ?? t('hub.noGarage')}
           </p>
           <p className="lc-display text-xs text-lc-dim">{t('shell.year', { year: hub.year })}</p>
