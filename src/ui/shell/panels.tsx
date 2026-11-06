@@ -72,7 +72,8 @@ export function SeasonCalendar() {
 }
 
 export function OwnedCars({ locked }: { locked: boolean }) {
-  const { cars, hub, status, raceCar } = useCareerStore();
+  const { cars, hub, status, raceCar, restoreCar } = useCareerStore();
+  const cash = hub?.player?.cash ?? 0;
   const started = hub?.rounds.some((r) => r.status !== 'scheduled') ?? false;
   return (
     <ul className="space-y-2 text-sm">
@@ -91,8 +92,27 @@ export function OwnedCars({ locked }: { locked: boolean }) {
                 value: formatMoney(c.value),
               })}
             </span>
+            <br />
+            <span className="text-xs text-lc-dim">
+              {t('market.restoreHint', {
+                count: c.restoration.restorations,
+                from: Math.round(c.wear),
+                to: Math.round(c.restoration.wearAfter),
+                floor: c.restoration.floorAfter,
+              })}
+            </span>
           </span>
           <ConditionBar wear={c.wear} />
+          <button
+            type="button"
+            className={quiet}
+            disabled={
+              locked || status === 'busy' || !c.restoration.worthwhile || c.restoration.cost > cash
+            }
+            onClick={() => void restoreCar(c.carId)}
+          >
+            {t('market.restore', { cost: formatMoney(c.restoration.cost) })}
+          </button>
           {c.inEntry !== null ? (
             <span className="text-lc-dim">{t('market.racing', { number: c.inEntry })}</span>
           ) : (

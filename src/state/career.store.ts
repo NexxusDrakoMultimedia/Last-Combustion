@@ -73,6 +73,7 @@ import {
 import {
   garageGear,
   renewGear as dbRenewGear,
+  restoreChassis as dbRestoreChassis,
   serviceParts as dbServiceParts,
   type GearCondition,
 } from '../db/repairs';
@@ -268,6 +269,7 @@ interface CareerState {
   fitPart(carId: number, partId: string): Promise<void>;
   removePart(carId: number, category: PartCategory): Promise<void>;
   serviceParts(carId: number): Promise<void>;
+  restoreCar(carId: number): Promise<void>;
   renewGear(driverId: number, itemId: string): Promise<void>;
   setTraining(driverId: number, level: number): Promise<void>;
   moveDriverHome(driverId: number, place: string): Promise<void>;
@@ -598,6 +600,17 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'RemovePart'),
+
+    restoreCar: (carId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        const done = dbRestoreChassis(openDb, garageId, carId);
+        refresh(openDb);
+        trackDesign(done.restorations + 1, 'Car', 'Restore');
+        return undefined;
+      }, 'RestoreCar'),
 
     serviceParts: (carId) =>
       run(async () => {

@@ -7,6 +7,7 @@ import { seasonBalance } from '../sim/worldgen/data';
 import { all } from './entries';
 import { valueOfCar } from './market';
 import { refreshPlayerPrestige } from './prestige';
+import { restorationQuote, type RestorationQuote } from './repairs';
 
 export interface OwnedCar {
   carId: number;
@@ -20,6 +21,8 @@ export interface OwnedCar {
   value: number;
   /** The race number of the entry that uses this car this season, or null if it sits in the garage. */
   inEntry: number | null;
+  /** What a full restoration would cost and leave, and how many it has had. */
+  restoration: RestorationQuote;
 }
 
 /** The cars a garage owns, with the entry each one is racing in this season. */
@@ -43,6 +46,7 @@ export function ownedCars(db: Database, garageId: number): OwnedCar[] {
     wear: Math.round((r.wear as number) * 10) / 10,
     value: valueOfCar(db, r.id as number),
     inEntry: (r.race_number as number | null) ?? null,
+    restoration: restorationQuote(db, r.id as number),
   }));
 }
 

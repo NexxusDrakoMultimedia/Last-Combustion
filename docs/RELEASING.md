@@ -57,6 +57,7 @@ Before every release, all of the documentation gets a thorough pass. It is slow 
 - **0.1.0** is written as a simple list of the game's features, because nothing came before it.
 - **From then on** it follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): each pull request adds a line under `[Unreleased]` (Added, Changed, Fixed, Removed, Security) on the milestone branch, and the release pull request turns `[Unreleased]` into the dated version heading.
 - Breaking changes to saves or mods are called out at the top of the entry.
+- Players read it: the About screen's Changelog tab shows `CHANGELOG.md` as it is, and its Credits tab shows `CREDITS.md`, so write both for players, in plain words.
 
 ## Branding and social assets for 0.1.0
 

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { restorationFloor } from '../sim/wear';
 import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
 import { readCareer } from './career';
@@ -257,6 +258,9 @@ export interface CarProfile {
   roadKm: number;
   raceKm: number;
   wear: number;
+  /** How many full restorations the chassis has had, and the least wear it can have now. */
+  restorations: number;
+  wearFloor: number;
   kerbKg: number;
   tyreWidthMm: number;
   /** The garage that has it now, or null while it is for sale. */
@@ -319,6 +323,8 @@ export function carProfile(db: Database, carId: number): CarProfile {
     roadKm: c.road_km as number,
     raceKm: c.race_km as number,
     wear: Math.round(Number(c.wear) * 10) / 10,
+    restorations: c.restorations as number,
+    wearFloor: restorationFloor(c.restorations as number),
     kerbKg: c.kerb_kg_current as number,
     tyreWidthMm: c.tyre_width_mm as number,
     garage:

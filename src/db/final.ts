@@ -3,7 +3,7 @@
 import type { Database } from 'sql.js';
 import { FinalRace, type Call, type FinalEntry } from '../sim/final/engine';
 import { createRng } from '../sim/rng';
-import { wearFromKm } from '../sim/wear';
+import { chassisWear } from '../sim/wear';
 import { courses, finalBalance, pointsTables, prizeTables } from '../sim/worldgen/data';
 import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
@@ -283,7 +283,7 @@ export function playFinal(
       const raceKmTotal = Math.round(entry.raceKm + c.km);
       db.run('UPDATE car SET race_km = ?, wear = ? WHERE id = ?', [
         raceKmTotal,
-        Math.max(0, wearFromKm(entry.roadKm, raceKmTotal, entry.tier) - entry.wearOffset),
+        chassisWear(entry.roadKm, raceKmTotal, entry.tier, entry.wearOffset, entry.restorations),
         entry.carId,
       ]);
       wearParts(db, entry.carId, c.km, 'race', entry.tier);

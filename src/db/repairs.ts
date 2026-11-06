@@ -3,7 +3,14 @@
 import type { Database } from 'sql.js';
 import { gearItem, type GearSlot, type GearTier } from '../sim/gear';
 import { partWearFactor } from '../sim/staff';
-import { wearAdded } from '../sim/wear';
+import {
+  chassisWear,
+  restoredWear,
+  restorationCost,
+  restorationFloor,
+  wearAdded,
+  wearFromKm,
+} from '../sim/wear';
 import { part, partPrice } from '../sim/upgrades';
 import { repairBalance } from '../sim/worldgen/data';
 import type { Tier } from '../sim/worldgen/types';
@@ -220,26 +227,86 @@ export function renewGear(
   return cost;
 }
 
-/**
- * Restores the chassis, taking all its wear away. It costs 12% of the new price in proportion to
- * the wear. The wear is recorded as an offset, so later kilometres wear the car from zero again.
- */
-export function restoreChassis(db: Database, garageId: number, carId: number): number {
-  const car = owned(db, garageId, carId);
+export interface RestorationQuote {
+  /** Full restorations the chassis has had so far. */
+  restorations: number;
+  /** What the next one costs: the car's new price, a quarter more for each earlier one. */
+  cost: number;
+  /** The wear the chassis would have afterwards, and the least wear it could ever have again. */
+  wearAfter: number;
+  floorAfter: number;
+  /** Whether it would take enough wear away to be worth doing. */
+  worthwhile: boolean;
+}
+
+/** What a full restoration of a car would cost and leave. */
+export function restorationQuote(db: Database, carId: number): RestorationQuote {
+  const car = all(
+    db,
+    `SELECT c.wear, c.restorations, m.price_new FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ?`,
+    [carId],
+  )[0];
+  if (!car) throw new Error(`There is no car ${carId}.`);
+  const restorations = car.restorations as number;
   const wear = car.wear as number;
-  const cost = Math.round(
-    (car.price_new as number) * repairBalance.restorationShare * (wear / 100),
+  const wearAfter = Math.max(
+    restoredWear(wear, restorations + 1),
+    restorationFloor(restorations + 1),
   );
+  return {
+    restorations,
+    cost: restorationCost(car.price_new as number, restorations),
+    wearAfter,
+    floorAfter: restorationFloor(restorations + 1),
+    worthwhile: wear - wearAfter >= repairBalance.restoration.minGain,
+  };
+}
+
+export interface Restoration extends RestorationQuote {
+  wearBefore: number;
+}
+
+/**
+ * Fully restores the chassis (see the GDD, "Wear and reliability"). It strips the car down and
+ * rebuilds it, which takes most of the wear away (nine tenths of whatever is above the new floor)
+ * and costs as much as a new car, a quarter more for each restoration it has had before. But the
+ * floor rises with each one: 5 points of wear a restoration, up to 60, below which the chassis can
+ * never go again. The car keeps its kilometres, owners, decals and every other part of its history;
+ * the wear taken off is recorded as an offset, so later kilometres wear it on from where it stands.
+ */
+export function restoreChassis(db: Database, garageId: number, carId: number): Restoration {
+  const car = owned(db, garageId, carId);
+  const quote = restorationQuote(db, carId);
+  if (!quote.worthwhile)
+    throw new Error('This chassis is not worn enough for a full restoration to be worth doing.');
+  const row = all(db, 'SELECT road_km, race_km, restorations FROM car WHERE id = ?', [carId])[0]!;
+  const raw = wearFromKm(row.road_km as number, row.race_km as number, car.tier as Tier);
+  const offset = Math.max(0, raw - quote.wearAfter);
+  const restorations = (row.restorations as number) + 1;
   db.exec('BEGIN');
   try {
-    charge(db, garageId, 'restoration', cost, `Restoration, car ${carId}`);
-    db.run('UPDATE car SET wear = 0, wear_offset = wear_offset + ? WHERE id = ?', [wear, carId]);
+    charge(db, garageId, 'restoration', quote.cost, `Restoration ${restorations}, car ${carId}`);
+    db.run('UPDATE car SET wear_offset = ?, restorations = ? WHERE id = ?', [
+      offset,
+      restorations,
+      carId,
+    ]);
+    db.run('UPDATE car SET wear = ? WHERE id = ?', [
+      chassisWear(
+        row.road_km as number,
+        row.race_km as number,
+        car.tier as Tier,
+        offset,
+        restorations,
+      ),
+      carId,
+    ]);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
     throw error;
   }
-  return cost;
+  return { ...quote, wearBefore: car.wear as number };
 }
 
 /** What crash damage costs to repair: 3% of the car's new price. */

@@ -11,7 +11,7 @@ import {
   relocationCost,
   roadTypeOfPlace,
 } from '../sim/daily';
-import { wearFromKm } from '../sim/wear';
+import { chassisWear } from '../sim/wear';
 import type { RoadType } from '../sim/worldgen/types';
 import type { Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
@@ -62,7 +62,7 @@ export function settleDailyLife(
   const days = gapDaysBefore(db, seasonId, roundNumber);
   const entries = all(
     db,
-    `SELECT e.car_id, e.driver_id, c.road_km, c.race_km, c.wear_offset, m.tier,
+    `SELECT e.car_id, e.driver_id, c.road_km, c.race_km, c.wear_offset, c.restorations, m.tier,
             p.stable_id AS place, p.region
        FROM entry e JOIN car c ON c.id = e.car_id JOIN car_model m ON m.id = c.car_model_id
        JOIN driver d ON d.id = e.driver_id JOIN place p ON p.id = d.residence_place_id
@@ -79,7 +79,13 @@ export function settleDailyLife(
     const tier = e.tier as Tier;
     db.run('UPDATE car SET road_km = ?, wear = ? WHERE id = ?', [
       Math.round(roadKm),
-      Math.max(0, wearFromKm(roadKm, e.race_km as number, tier) - (e.wear_offset as number)),
+      chassisWear(
+        roadKm,
+        e.race_km as number,
+        tier,
+        e.wear_offset as number,
+        e.restorations as number,
+      ),
       e.car_id as number,
     ]);
     wearParts(db, e.car_id as number, distance, 'road', tier);
