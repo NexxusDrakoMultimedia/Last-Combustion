@@ -22,6 +22,7 @@
     "test:e2e": "playwright test",
     "licenses": "node scripts/check-licenses.mjs",
     "docs:lint": "markdownlint-cli2",
+    "docs:style": "node scripts/check-style.mjs",
     "prepare": "husky"
   },
   "dependencies": {
