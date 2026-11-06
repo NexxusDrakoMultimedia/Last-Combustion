@@ -4,8 +4,11 @@ import type { RandomStream } from '../rng';
 import { generateName } from '../names/generate';
 import {
   HOST_COUNTRY,
+  balance,
   carCategories,
   denyCarNames,
+  excludedFlags,
+  flagNames,
   garageThemes,
   nameLists,
   nicknameThemes,
@@ -23,11 +26,17 @@ export function pickNationality(rng: RandomStream): string {
   );
 }
 
+/** Every flag a garage may fly except the host country's, for the foreign wildcard. */
+const WILDCARD_FLAGS = Object.keys(flagNames)
+  .filter((code) => code !== HOST_COUNTRY && !excludedFlags.has(code))
+  .sort();
+
 /** A nationality other than the host country, weighted the same way, for a garage that flies a foreign flag. */
 export function pickForeignNationality(rng: RandomStream): string {
   const codes = Object.keys(nameLists.nationalityWeights).filter((c) => c !== HOST_COUNTRY);
-  if (rng.chance(nameLists.wildcardNationShare))
-    return rng.pick(Object.keys(nameLists.byNationality).filter((c) => c !== HOST_COUNTRY));
+  // Now and then the flag is chosen with no weighting at all, from every flag there is. A nation we have
+  // no name lists for gets Australian-style names for now (more lists are planned).
+  if (rng.chance(balance.garage.foreignWildcardShare)) return rng.pick(WILDCARD_FLAGS);
   return rng.weighted(
     codes,
     codes.map((code) => nameLists.nationalityWeights[code] as number),

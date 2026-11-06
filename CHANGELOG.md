@@ -12,7 +12,7 @@ Nothing yet.
 
 ### Changed
 
-- About a third of new garages (31%) now fly a foreign flag, up from about one in eight, because the share now counts every garage that is not Australian. Saves you already have keep the garages they have.
+- About a third of new garages (31%) now fly a foreign flag, up from about one in eight, because the share now counts every garage that is not Australian. One foreign garage in ten flies a flag drawn from every flag in the game, not only from the nations we have name lists for. Saves you already have keep the garages they have.
 - The logo and brand art are licensed CC BY-SA 4.0 (see the Credits tab); the name and logo stay trademarks.
 
 ## [0.1.1] - 2026-11-06

@@ -41,6 +41,7 @@
     },
     "garage": {
       "australianFlagShare": 0.69,
+      "foreignWildcardShare": 0.1,
       "prestigeBase": 2,
       "prestigePerEntry": 4,
       "cashBase": 50000,
