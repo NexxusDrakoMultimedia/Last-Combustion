@@ -29,12 +29,26 @@ M0 to M4 were built before there were players and have no release. Before 1.0.0 
 ## Release steps
 
 1. The milestone's definition of done in the design document is met, and the document's "built" notes match the code.
-2. `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build && pnpm test:e2e`, `pnpm docs:lint`, `pnpm run licenses` and `reuse lint` all pass on the release pull request.
-3. Bump `version` in `package.json`, and show the version on the About and menu screen.
-4. Write the changelog entry (below).
-5. Check the notices: `CREDITS.md` lists every third-party asset, the privacy prompt and telemetry text still match what is collected, and anything the design document marks "to be checked before release" (for example the flag list against the official lists) has been checked. `TRADEMARKS.md` is a draft that needs legal review before the first public release.
-6. Merge, tag `vX.Y.Z`, publish the GitHub Release with the changelog entry as its notes, and confirm the Pages deploy.
-7. Post the release with the social assets.
+2. **The documentation pass** (below) is done, as its own commits on the release pull request.
+3. `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build && pnpm test:e2e`, `pnpm docs:lint`, `pnpm docs:style`, `pnpm run licenses` and `reuse lint` all pass on the release pull request.
+4. Bump `version` in `package.json`, and show the version on the About and menu screen.
+5. Write the changelog entry (below).
+6. Check the notices: `CREDITS.md` lists every third-party asset, the privacy prompt and telemetry text still match what is collected, and anything the design document marks "to be checked before release" (for example the flag list against the official lists) has been checked. `TRADEMARKS.md` is a draft that needs legal review before the first public release.
+7. Merge, tag `vX.Y.Z`, publish the GitHub Release with the changelog entry as its notes, and confirm the Pages deploy.
+8. Post the release with the social assets.
+
+## The documentation pass
+
+Before every release, all of the documentation gets a thorough pass. It is slow on purpose: take no shortcuts and check every claim against the code. It is done on the release pull request, in commits of its own that change words and structure only, never a game rule. If the pass finds a place where the code and the document disagree and it is not clear which is right, stop and ask the project owner.
+
+**What is covered.** Every Markdown file (`README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `TRADEMARKS.md`, `CREDITS.md`, `CHANGELOG.md`, everything in `docs/` and `docs/adr/`, and the issue and pull request templates), the player-facing text in `locales/en.json`, the `source` notes in the data files, and the comments that describe a rule.
+
+1. **Fix.** Check every statement of fact against the code and the data: numbers against `data/*.json`, commands against `package.json`, file and function names against the source, "built" and "to come" labels against what the game does today, version and milestone status against this page. Follow every link and cross-reference. Correct what is stale, wrong or missing, and update the date or version of anything that names one.
+2. **Unify.** One name for each thing, used everywhere: the same words for the series, rounds, prelims, finals, entries, garages and the Ledger, written the same way each time. One shape for headings, tables, lists, and "built so far" notes. One voice, tense and level of detail within a section.
+3. **Deduplicate.** Every rule is stated once, in the section that owns it, and everywhere else links to it. Where the design document repeats itself across its "built so far" notes, merge the notes into the section they belong to. Keep a short summary only where a reader would otherwise have to jump around, and make sure the summary and the source agree.
+4. **Polish.** Add what a reader needs and does not yet have: how to play (with screenshots from the release), the glossary, how saves, versions and migrations work, what the data files contain, how modding works, troubleshooting, known limits, and what is planned next. Make the README work for a first-time visitor in a minute, and make contributing easy to start.
+5. **Humanize.** Write the way a person who loves the game would explain it: plain words, short sentences, active voice, specific examples. Cut filler, hype, stock phrases and anything that reads as machine-written. **No em dashes** anywhere (use a comma, a colon, a full stop or brackets), and an en dash only in a number range; `pnpm docs:style` enforces both. Keep player-facing text consistent in tone with the game's world.
+6. **Check.** `pnpm docs:lint`, `pnpm docs:style`, a link check, `reuse lint`, and a read-through of the finished pages in order, as a new player and as a new contributor. List what changed in the pull request description.
 
 ## Changelog
 

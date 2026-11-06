@@ -1,4 +1,4 @@
-# Last Combustion — Game Design Document
+# Last Combustion: Game Design Document
 
 Nov 2, 2026 · @Pyra Drake
 
@@ -795,7 +795,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 
 **When deals happen**
 
-- **Off-season (Nov 11 – Feb 28).** The main window. Contracts and deals expire at season end and every party negotiates.
+- **Off-season (Nov 11 to Feb 28).** The main window. Contracts and deals expire at season end and every party negotiates.
 - **During the season.** Sponsors, suppliers and manufacturer supply can be negotiated at any time. A driver can be moved only by paying the release fee. Leaving a deal early triggers its penalties.
 - **AI deals.** Between AI parties, deals are resolved in batches with the same valuation, in descending order of prestige, and they produce headlines.
 
