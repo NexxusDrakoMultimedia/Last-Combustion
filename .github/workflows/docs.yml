@@ -5,6 +5,9 @@ on:
     paths:
       - '**/*.md'
       - '.markdownlint-cli2.jsonc'
+      - 'locales/*.json'
+      - 'data/**/*.json'
+      - 'scripts/check-style.mjs'
 
 permissions:
   contents: read
@@ -22,3 +25,4 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm run docs:lint
+      - run: pnpm run docs:style
