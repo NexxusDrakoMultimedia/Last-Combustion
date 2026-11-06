@@ -90,6 +90,13 @@ import {
 } from '../db/executives';
 import { recordBook, type RecordBook } from '../db/records';
 import {
+  fullStandings,
+  roundClassification,
+  seasonYears,
+  type FullStandings,
+  type RoundClassification,
+} from '../db/tables';
+import {
   offerSupplyContract,
   openSupplyNegotiation,
   supplyView,
@@ -224,6 +231,10 @@ interface CareerState {
   supplyNegotiation: ActiveSupplyNegotiation | undefined;
   /** The record book and the champions and awards of every finished season (read when the Almanac opens). */
   recordBook: RecordBook | undefined;
+  /** The seasons in the save, and the full tables and round classification last asked for (read when the Season panel needs them). */
+  years: number[];
+  standingsView: FullStandings | undefined;
+  classificationView: RoundClassification | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
   auction: AuctionView | undefined;
   /** What the last auction to close meant for the player. */
@@ -260,6 +271,8 @@ interface CareerState {
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
   loadRecords(): void;
+  loadStandings(year: number): void;
+  loadClassification(year: number, round: number): void;
   dismissExecutive(executiveId: number): Promise<void>;
   hireMechanic(offer: number): Promise<void>;
   fireMechanic(staffId: number): Promise<void>;
@@ -331,6 +344,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               role,
               offers: executiveCandidates(db, playerGarageId(db)!, role),
             })),
+      years: seasonYears(db),
       supply: playerGarageId(db) === null ? undefined : supplyView(db, playerGarageId(db)!),
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
       staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
@@ -392,6 +406,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     supply: undefined,
     supplyNegotiation: undefined,
     recordBook: undefined,
+    years: [],
+    standingsView: undefined,
+    classificationView: undefined,
     staff: [],
     staffOffers: [],
     crew: 0,
@@ -708,6 +725,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         });
         return undefined;
       }, 'SupplyOffer'),
+
+    loadStandings: (year) => {
+      if (openDb) set({ standingsView: fullStandings(openDb, year) });
+    },
+
+    loadClassification: (year, round) => {
+      if (openDb) set({ classificationView: roundClassification(openDb, year, round) });
+    },
 
     loadRecords: () => {
       if (openDb) set({ recordBook: recordBook(openDb) });

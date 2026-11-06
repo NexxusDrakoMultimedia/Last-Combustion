@@ -58,6 +58,11 @@ export function formatLapTime(ms: number): string {
   return `${minutes}:${seconds.toFixed(3).padStart(6, '0')}`;
 }
 
+/** Formats a gap to the leader in milliseconds, such as `+1.234` (seconds). */
+export function formatGap(ms: number): string {
+  return `+${(ms / 1000).toFixed(3)}`;
+}
+
 /** Formats an amount in Australian dollars. */
 export function formatMoney(amount: number): string {
   return new Intl.NumberFormat(formatLocale(), {
