@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
 import { economyBalance, seasonBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
+import { Plate } from '../Plate';
 import { button, field, quiet } from '../styles';
 
 /** What one more entry can cost the garage each round, at most (fee, tyres, servicing and extra travel). */
@@ -40,6 +41,7 @@ export function EntriesSection({ locked }: { locked: boolean }) {
           >
             <span>
               <span className="lc-num font-medium">{t('entries.number', { n: e.raceNumber })}</span>{' '}
+              <Plate plate={e.plate} state={e.plateState} />{' '}
               {t('entries.pair', { driver: e.driverName, car: e.carName })}
             </span>
             {entries.length > 1 && (
@@ -73,7 +75,11 @@ export function EntriesSection({ locked }: { locked: boolean }) {
             >
               {spareCars.map((c) => (
                 <option key={c.carId} value={c.carId}>
-                  {c.modelName}
+                  {t('upgrades.carOption', {
+                    state: c.plateState,
+                    plate: c.plate,
+                    model: c.modelName,
+                  })}
                 </option>
               ))}
             </select>

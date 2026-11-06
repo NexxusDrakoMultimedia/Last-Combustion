@@ -135,13 +135,15 @@ export interface GarageEntry {
   driverName: string;
   carId: number;
   carName: string;
+  plate: string;
+  plateState: string;
 }
 
 /** The entries a garage has this season, lowest race number first. */
 export function garageEntries(db: Database, garageId: number): GarageEntry[] {
   return all(
     db,
-    `SELECT e.race_number, e.driver_id, d.name AS driver_name, e.car_id, m.name AS car_name
+    `SELECT e.race_number, e.driver_id, d.name AS driver_name, e.car_id, m.name AS car_name, c.plate, c.plate_state
        FROM entry e JOIN driver d ON d.id = e.driver_id
        JOIN car c ON c.id = e.car_id JOIN car_model m ON m.id = c.car_model_id
       WHERE e.garage_id = ? AND e.series = 'main' AND e.season_id = (SELECT MAX(id) FROM season)
@@ -153,6 +155,8 @@ export function garageEntries(db: Database, garageId: number): GarageEntry[] {
     driverName: r.driver_name as string,
     carId: r.car_id as number,
     carName: r.car_name as string,
+    plate: r.plate as string,
+    plateState: r.plate_state as string,
   }));
 }
 
