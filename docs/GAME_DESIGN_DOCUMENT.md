@@ -873,7 +873,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 **Three levels of detail.** For each hidden number the player sees one of three things:
 
 1. **A basic description.** A word from a band, never a number: the stat's band is *weak* (0–24), *modest* (25–44), *solid* (45–64), *strong* (65–84) or *elite* (85–100), and a driver or car also gets a one-line sketch such as "A young, quick driver, still raw" or "A light, rear-driven sports car with a tired chassis".
-2. **A range.** A low and a high, such as `Pace 48 to 62`, drawn as a bar. The true value is always inside it, though not at its middle.
+2. **A range.** A low and a high in whole numbers, such as `Pace 48 to 62`, drawn as a bar. The true value is always inside it, though not at its middle, and a range never runs past 0 or 100.
 3. **An exact value,** marked as confirmed.
 
 **Knowledge.** Each thing the player looks at has a knowledge score from 0 to 100, worked out for that player. It is the sum of five parts, capped at 100:
@@ -886,19 +886,20 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 | Standing | 10 | The player's own name: `5 × prestige ÷ 100 + 5 × fame ÷ 100`. People tell a famous, successful garage more |
 | Experience | 30 | 30 for anyone signed or owned now (they are exact anyway), 20 within a year of working together, 10 within three years |
 
-**From knowledge to what is shown.** The half-width of a range, in stat points, is `20 × (1 − knowledge ÷ 100)²`, but a stat is only shown as a range from knowledge 15 up, and as exact from 95 up. Potential uses double the width and is never shown exact before 100.
+**From knowledge to what is shown.** Ranges are always whole numbers. The first range, at knowledge 15, is the widest: the true value is somewhere within 20 points either side (a range up to 40 points across). Each step of knowledge tightens it, one whole point at a time, down to 2 points either side (a range 4 points across) at knowledge 94, and from knowledge 95 the value is exact. The half-width is `20 − floor((knowledge − 15) × 19 ÷ 80)` for knowledge 15 to 94. Below 15 only the basic description is shown. Potential reads as if knowledge were 10 lower, so it stays the foggiest number of all, and it is exact only for the player's own drivers.
 
 | Knowledge | Shown | Half-width of the range |
 | --- | --- | --- |
 | 0–14 | Basic description only | none |
-| 15 | A very wide range | about ±14 |
-| 30 | A wide range | about ±10 |
-| 50 | A useful range | about ±5 |
-| 70 | A tight range | about ±2 |
-| 85 | A very tight range | about ±0.5 |
+| 15 | The widest range | 20 |
+| 30 | A wide range | 17 |
+| 50 | A useful range | 12 |
+| 70 | A tight range | 7 |
+| 85 | A very tight range | 4 |
+| 94 | The tightest range | 2 |
 | 95–100 | Exact | none |
 
-**The range is stable and honest.** Where the true value sits inside the range is drawn once for each player, subject and season from a named stream (`scout:<subject>:<year>`), so a range never jumps about between screens or on a reload, and a bigger knowledge always gives a range inside the smaller one (it only tightens). A range never excludes the truth.
+**The range is stable and honest.** Where the true value sits inside the range is drawn once for each player, subject and season from a named stream (`scout:<subject>:<year>`), so a range never jumps about between screens or on a reload, and more knowledge always gives a range inside the narrower-knowledge one (it only tightens, one whole point at a time). A range never excludes the truth.
 
 **Scouts.** A scout is a member of staff, hired in the Staff panel like a mechanic. Each has a skill from 0 to 100, a wage that rises with it, a notice period and a focus (drivers, cars or garages). The player can assign a scout to a particular subject, which is how to chase a prospect or size up a rival. A **Head of Scouting** is planned as a ninth executive: their skill adds to every scout the garage has, up to 25%, and they are the first to hear of rising drivers. Computer garages do not scout for now; they decide as if they knew the true values.
 
