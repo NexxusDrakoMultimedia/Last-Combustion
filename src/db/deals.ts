@@ -10,6 +10,7 @@ import {
   walkAwayValue,
 } from '../sim/negotiation';
 import { dealBalance } from '../sim/worldgen/data';
+import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
 import { adjustRelationship, relationshipScore, type Negotiation } from './negotiation';
@@ -43,6 +44,18 @@ export function activeDiscount(
 }
 
 /** A price after a garage's deal with a party. */
+/** What a garage pays for a part from a supplier: the price after any supplier deal, less its Technical Director's saving. */
+export const partPriceFor = (
+  db: Database,
+  garageId: number,
+  supplierId: number,
+  price: number,
+): number =>
+  Math.round(
+    dealPrice(db, 'supplier', garageId, supplierId, price) *
+      (1 - garageBonuses(db, garageId).partPrice),
+  );
+
 export const dealPrice = (
   db: Database,
   kind: DealKind,
@@ -97,12 +110,13 @@ export function openDealNegotiation(
     { type: 'garage', id: garageId },
     { type: kind, id: partyId },
   );
+  const bonuses = garageBonuses(db, garageId);
   const walkAway = walkAwayValue(fair, 'pays', {
-    leverage: leverageFrom(partyStrength(kind), garage.prestige as number),
+    leverage: leverageFrom(partyStrength(kind), garage.prestige as number) - bonuses.leverage,
     relationship,
     rivalInterest: 0,
   });
-  const patience = patienceFor(relationship);
+  const patience = patienceFor(relationship) + (bonuses.extraPatience ? 1 : 0);
   db.run(
     `INSERT INTO negotiation (kind, window, party_a_type, party_a_id, party_b_type, party_b_id, patience_left, fair_value, walk_away)
      VALUES (?, ?, 'garage', ?, ?, ?, ?, ?, ?)`,

@@ -15,7 +15,7 @@ import {
 } from '../sim/upgrades';
 import type { Layout, Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
-import { dealPrice } from './deals';
+import { partPriceFor } from './deals';
 import { all } from './entries';
 import { partServiceCost } from './repairs';
 
@@ -89,9 +89,8 @@ export function fitPart(db: Database, garageId: number, carId: number, partId: s
   const garage = all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!;
   const supplier = all(db, 'SELECT supplier_id FROM part WHERE stable_id = ?', [wanted.id])[0];
   const price = supplier
-    ? dealPrice(
+    ? partPriceFor(
         db,
-        'supplier',
         garageId,
         supplier.supplier_id as number,
         partPrice(wanted, car.tier as Tier),
@@ -233,8 +232,7 @@ export function upgradeView(db: Database, garageId: number, carId: number): Upgr
       return {
         part: p,
         supplier: supplierId === undefined ? '' : (suppliers.get(supplierId) ?? ''),
-        price:
-          supplierId === undefined ? base : dealPrice(db, 'supplier', garageId, supplierId, base),
+        price: supplierId === undefined ? base : partPriceFor(db, garageId, supplierId, base),
         fitted: fitted.has(p.id),
         wear: wears.get(p.id) ?? null,
       };

@@ -16,6 +16,7 @@ import {
 } from '../sim/negotiation';
 import { fairSalary, overallRating } from '../sim/worldgen/rating';
 import { ROAD_TYPES, type RoadType } from '../sim/worldgen/types';
+import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
 
@@ -123,12 +124,13 @@ export function openDriverNegotiation(
     { type: 'driver', id: driverId },
   );
   const driverStrength = ((d.reputation as number) + (d.fame as number)) / 2;
+  const bonuses = garageBonuses(db, garageId);
   const walkAway = walkAwayValue(fair, 'wants_more', {
-    leverage: leverageFrom(driverStrength, garage.prestige as number),
+    leverage: leverageFrom(driverStrength, garage.prestige as number) - bonuses.leverage,
     relationship,
     rivalInterest: 0,
   });
-  const patience = patienceFor(relationship);
+  const patience = patienceFor(relationship) + (bonuses.extraPatience ? 1 : 0);
   db.run(
     `INSERT INTO negotiation (kind, window, party_a_type, party_a_id, party_b_type, party_b_id, patience_left, fair_value, walk_away)
      VALUES ('driver_contract', ?, 'garage', ?, 'driver', ?, ?, ?, ?)`,

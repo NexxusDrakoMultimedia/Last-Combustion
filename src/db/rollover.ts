@@ -14,6 +14,8 @@ import { readCareer } from './career';
 import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
+import { expireExecutives } from './executives';
+import { refreshPlayerPrestige } from './prestige';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
 import { settleTraining } from './training';
 
@@ -144,6 +146,7 @@ export function startNextSeason(db: Database): Rollover {
         {
           curve: driverCurve(career.masterSeed, d.id as number),
           training: training.levels.get(d.id as number) ?? 0,
+          trainingBoost: training.boosts.get(d.id as number) ?? 0,
         },
       );
       db.run(
@@ -268,6 +271,8 @@ export function startNextSeason(db: Database): Rollover {
         identityRng.chance(workBalance.driver.nonBinaryShare) ? 'non_binary' : rolled,
     });
     refurbishAiGear(db, seasonId, year);
+    expireExecutives(db, year);
+    refreshPlayerPrestige(db);
     const worldChanges = applyWorldChanges(db, year);
     db.run('UPDATE career SET game_date = ? WHERE id = 1', [`${year}-02-01`]);
     db.exec('COMMIT');

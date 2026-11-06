@@ -65,6 +65,8 @@ export interface DevelopOptions {
   curve?: GrowthCurve;
   /** Training level 0 to 3: faster growth, slower decline and a higher soft cap. */
   training?: number;
+  /** A Sporting Director's boost to what training does (0.25 is a quarter more growth and less decline). */
+  trainingBoost?: number;
 }
 
 /**
@@ -85,7 +87,13 @@ export function develop(
 ): DriverStats {
   const p = seasonBalance.progression;
   const curve = options.curve ?? AVERAGE_CURVE;
-  const train = trainingLevel(options.training ?? 0);
+  const base = trainingLevel(options.training ?? 0);
+  const lift = 1 + (options.trainingBoost ?? 0);
+  const train = {
+    ...base,
+    growth: base.growth * lift,
+    decline: Math.min(0.95, base.decline * lift),
+  };
   const next = { ...stats };
   for (const key of DEVELOPING_STATS) {
     let delta = rng.normal(0, p.noise);

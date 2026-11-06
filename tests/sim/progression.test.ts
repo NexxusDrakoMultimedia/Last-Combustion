@@ -170,3 +170,28 @@ describe('training', () => {
     );
   });
 });
+
+describe('a Sporting Director’s boost to training', () => {
+  it('makes training help more: faster growth, slower decline', () => {
+    const mean = (boost: number, age: number, base: number) => {
+      let total = 0;
+      for (let i = 0; i < 200; i++) {
+        const rng = createRng(`boost${i}`).stream('d');
+        total += develop(rng, stats(base), 80, age, { training: 2, trainingBoost: boost }).pace;
+      }
+      return total / 200;
+    };
+    expect(mean(0.25, 21, 45)).toBeGreaterThan(mean(0, 21, 45));
+    expect(mean(0.25, 40, 70)).toBeGreaterThan(mean(0, 40, 70));
+    expect(mean(0, 21, 45)).toBe(
+      (() => {
+        let total = 0;
+        for (let i = 0; i < 200; i++)
+          total += develop(createRng(`boost${i}`).stream('d'), stats(45), 80, 21, {
+            training: 2,
+          }).pace;
+        return total / 200;
+      })(),
+    );
+  });
+});

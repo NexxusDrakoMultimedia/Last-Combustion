@@ -8,6 +8,7 @@ import { economyBalance } from '../sim/worldgen/data';
 import type { Tier } from '../sim/worldgen/types';
 import { all } from './entries';
 import { crashRepairCost } from './repairs';
+import { roundSalaries } from './executives';
 import { garageCrewStrength, roundWages } from './staff';
 
 export interface RoundSettlement {
@@ -103,6 +104,12 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
       if (wages > 0) {
         lines.push(['wages', wages]);
         costs.total += wages;
+      }
+      // The executives' salaries for the round.
+      const salaries = roundSalaries(db, garageId);
+      if (salaries > 0) {
+        lines.push(['salaries', salaries]);
+        costs.total += salaries;
       }
       for (const [category, amount] of lines) {
         db.run(

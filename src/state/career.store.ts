@@ -79,6 +79,17 @@ import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
 import {
+  dismissExecutive,
+  executiveCandidates,
+  executiveCapacity,
+  garageExecutives,
+  offerExecutiveContract,
+  openExecutiveNegotiation,
+  type Executive,
+  type ExecutiveOutcome,
+} from '../db/executives';
+import { BUILT_ROLES, type ExecutiveOffer, type ExecutiveRole } from '../sim/executives';
+import {
   fireMechanic,
   garageCrewStrength,
   garageStaff,
@@ -143,6 +154,16 @@ export interface SponsorsView {
   approachable: { stableId: string; name: string; tier: string }[];
 }
 
+export interface ActiveExecutiveNegotiation {
+  id: number;
+  role: ExecutiveRole;
+  name: string;
+  skill: number;
+  fairValue: number;
+  patience: number;
+  last?: ExecutiveOutcome;
+}
+
 export interface Notice {
   key: MessageKey;
   values?: MessageValues;
@@ -173,6 +194,11 @@ interface CareerState {
   staff: Mechanic[];
   staffOffers: MechanicOffer[];
   crew: number;
+  /** The executives the garage employs, the slots its prestige allows, and who is on offer for each empty role. */
+  executives: Executive[];
+  executiveCapacity: { slots: number; used: number };
+  executiveOffers: { role: ExecutiveRole; offers: ExecutiveOffer[] }[];
+  executiveNegotiation: ActiveExecutiveNegotiation | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
   auction: AuctionView | undefined;
   /** What the last auction to close meant for the player. */
@@ -202,6 +228,10 @@ interface CareerState {
   renewGear(driverId: number, itemId: string): Promise<void>;
   setTraining(driverId: number, level: number): Promise<void>;
   raceCar(carId: number): Promise<void>;
+  negotiateExecutive(role: ExecutiveRole, offer: number): Promise<void>;
+  offerExecutive(salary: number, years: number): Promise<void>;
+  endExecutiveNegotiation(): void;
+  dismissExecutive(executiveId: number): Promise<void>;
   hireMechanic(offer: number): Promise<void>;
   fireMechanic(staffId: number): Promise<void>;
   buyNewCar(modelId: number): Promise<void>;
@@ -258,6 +288,20 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               approachable: approachableSponsors(db, playerGarageId(db)!),
             },
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
+      executives: playerGarageId(db) === null ? [] : garageExecutives(db, playerGarageId(db)!),
+      executiveCapacity:
+        playerGarageId(db) === null
+          ? { slots: 0, used: 0 }
+          : executiveCapacity(db, playerGarageId(db)!),
+      executiveOffers:
+        playerGarageId(db) === null
+          ? []
+          : BUILT_ROLES.filter(
+              (role) => !garageExecutives(db, playerGarageId(db)!).some((e) => e.role === role),
+            ).map((role) => ({
+              role,
+              offers: executiveCandidates(db, playerGarageId(db)!, role),
+            })),
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
       staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
@@ -311,6 +355,10 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     entries: [],
     sponsors: undefined,
     money: undefined,
+    executives: [],
+    executiveCapacity: { slots: 0, used: 0 },
+    executiveOffers: [],
+    executiveNegotiation: undefined,
     staff: [],
     staffOffers: [],
     crew: 0,
@@ -549,6 +597,58 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'RemoveEntry'),
+
+    negotiateExecutive: (role, offer) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        const chosen = get().executiveOffers.find((o) => o.role === role)?.offers[offer];
+        if (garageId === null || !chosen) return undefined;
+        const n = openExecutiveNegotiation(openDb, garageId, role, offer);
+        set({
+          executiveNegotiation: {
+            id: n.id,
+            role,
+            name: chosen.name,
+            skill: chosen.skill,
+            fairValue: n.fairValue,
+            patience: n.patience,
+          },
+        });
+        return undefined;
+      }, 'ExecutiveNegotiate'),
+
+    offerExecutive: (salary, years) =>
+      run(async () => {
+        const current = get().executiveNegotiation;
+        if (!openDb || !current) return undefined;
+        const outcome = offerExecutiveContract(openDb, current.id, { salary, years });
+        refresh(openDb);
+        trackDesign(Math.round(salary), 'Executive', 'Offer', current.role, outcome.kind);
+        set({
+          executiveNegotiation: {
+            ...current,
+            patience: outcome.kind === 'countered' ? outcome.patienceLeft : current.patience,
+            last: outcome,
+          },
+        });
+        return undefined;
+      }),
+
+    endExecutiveNegotiation: () => {
+      set({ executiveNegotiation: undefined });
+      if (openDb) refresh(openDb);
+    },
+
+    dismissExecutive: (executiveId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dismissExecutive(openDb, garageId, executiveId);
+        refresh(openDb);
+        return undefined;
+      }, 'DismissExecutive'),
 
     hireMechanic: (offer) =>
       run(async () => {

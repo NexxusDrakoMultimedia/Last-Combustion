@@ -9,6 +9,7 @@ import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
 import { all, loadEntries } from './entries';
 import { awardRoundFans } from './fans';
+import { refreshPlayerPrestige } from './prestige';
 import { splitPrize } from './prizes';
 import { wearGear, wearParts } from './repairs';
 import { awardTitles } from './titles';
@@ -289,6 +290,8 @@ export function playFinal(
       wearGear(db, entry.driver.id, c.km);
     }
     db.run("UPDATE round SET status = 'complete' WHERE id = ?", [roundId]);
+    // Reaching a final earns gold borders, which lift the player's garage.
+    refreshPlayerPrestige(db);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
