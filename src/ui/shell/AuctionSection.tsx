@@ -67,7 +67,7 @@ export function AuctionSection({ locked }: { locked: boolean }) {
                 <li key={l.id} className="space-y-1 border border-lc-line p-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span>
-                      <Plate plate={l.plate} state={l.plateState} />{' '}
+                      <Plate plate={l.plate} state={l.plateState} carId={l.carId} />{' '}
                       <span className="font-medium">{l.modelName}</span>{' '}
                       <span className="text-lc-dim">
                         {t('auction.lotDetail', {

@@ -16,6 +16,8 @@ export interface RecordLine {
 /** A finished season in the history: its champions and awards. */
 export interface SeasonSummary {
   year: number;
+  championDriverId: number;
+  championGarageId: number;
   championDriver: string;
   championGarage: string;
   championPoints: number;
@@ -100,12 +102,14 @@ export function recordBook(db: Database): RecordBook {
 
   const seasons = all(
     db,
-    `SELECT s.year, d.name AS driver, g.name AS garage,
+    `SELECT s.year, s.champion_driver_id AS driver_id, s.champion_garage_id AS garage_id, d.name AS driver, g.name AS garage,
             (SELECT points FROM standing_snapshot WHERE season_id = s.id AND table_kind = 'driver' AND position = 1) AS points
        FROM season s JOIN driver d ON d.id = s.champion_driver_id JOIN garage g ON g.id = s.champion_garage_id
       WHERE s.status = 'complete' ORDER BY s.year DESC`,
   ).map((r) => ({
     year: r.year as number,
+    championDriverId: r.driver_id as number,
+    championGarageId: r.garage_id as number,
     championDriver: r.driver as string,
     championGarage: r.garage as string,
     championPoints: Math.round(((r.points as number | null) ?? 0) * 10) / 10,

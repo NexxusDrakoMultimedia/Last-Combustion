@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { flagNames } from '../sim/worldgen/data';
+import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 import { all } from './entries';
 import { computeStandings } from './season';
 
@@ -16,6 +17,10 @@ export const TABLE_KINDS: TableKind[] = [
 ];
 
 export interface TableRow {
+  badge: NumberBadge;
+  /** The driver's or garage's id (0 for a manufacturer or nation), for linking to its profile. */
+  driverId: number;
+  garageId: number;
   rank: number;
   name: string;
   /** The garage for a driver, the home country for a manufacturer; empty otherwise. */
@@ -54,11 +59,12 @@ export function fullStandings(db: Database, year: number): FullStandings {
   if (!season) throw new Error(`There is no ${year} season.`);
   const seasonId = season.id as number;
   const standings = computeStandings(db, seasonId);
+  const badges = badgesFor(db, year);
 
   const drivers = new Map(
     all(
       db,
-      `SELECT d.id, d.name, e.race_number, g.name AS garage, g.is_player
+      `SELECT d.id, d.name, e.race_number, e.garage_id, g.name AS garage, g.is_player
          FROM entry e JOIN driver d ON d.id = e.driver_id JOIN garage g ON g.id = e.garage_id
         WHERE e.season_id = ? AND e.series = 'main'`,
       [seasonId],
@@ -85,6 +91,9 @@ export function fullStandings(db: Database, year: number): FullStandings {
     s: { rank: number; points: number; wins: number },
     extra: Pick<TableRow, 'name'> & Partial<TableRow>,
   ): TableRow => ({
+    badge: NO_BADGE,
+    driverId: 0,
+    garageId: 0,
     detail: '',
     raceNumber: 0,
     mine: false,
@@ -105,6 +114,9 @@ export function fullStandings(db: Database, year: number): FullStandings {
         const d = drivers.get(s.id as number);
         return row(s, {
           name: String(d?.name ?? ''),
+          driverId: s.id as number,
+          badge: badges.get(s.id as number) ?? NO_BADGE,
+          garageId: Number(d?.garage_id ?? 0),
           detail: String(d?.garage ?? ''),
           raceNumber: Number(d?.race_number ?? 0),
           mine: d?.is_player === 1,
@@ -112,7 +124,11 @@ export function fullStandings(db: Database, year: number): FullStandings {
       }),
       garages: standings.garages.map((s) => {
         const g = garages.get(s.id as number);
-        return row(s, { name: String(g?.name ?? ''), mine: g?.is_player === 1 });
+        return row(s, {
+          name: String(g?.name ?? ''),
+          garageId: s.id as number,
+          mine: g?.is_player === 1,
+        });
       }),
       manufacturers: standings.manufacturers.map((s) => {
         const m = makers.get(s.id as number);
@@ -126,6 +142,13 @@ export function fullStandings(db: Database, year: number): FullStandings {
 
 /** One line of a prelim or final classification. */
 export interface ResultRow {
+  /** What the driver's number carries that season. */
+  badge: NumberBadge;
+  driverId: number;
+  garageId: number;
+  carId: number;
+  plate: string;
+  plateState: string;
   /** The finishing position, or null for a car that did not finish. */
   position: number | null;
   raceNumber: number;
@@ -176,7 +199,7 @@ export function roundClassification(
   const rows = all(
     db,
     `SELECT r.prelim_pos, r.prelim_time_ms, r.final_pos, r.final_time_ms, r.points, r.prize, r.pole,
-            r.dnf_reason, e.race_number, d.name AS driver, g.name AS garage, g.is_player, m.name AS car
+            r.dnf_reason, e.race_number, e.driver_id, e.garage_id, e.car_id, c.plate, c.plate_state, d.name AS driver, g.name AS garage, g.is_player, m.name AS car
        FROM result r
        JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
        JOIN driver d ON d.id = e.driver_id
@@ -194,6 +217,12 @@ export function roundClassification(
     points: number,
   ): ResultRow => ({
     position,
+    badge: badges.get(r.driver_id as number) ?? NO_BADGE,
+    driverId: r.driver_id as number,
+    garageId: r.garage_id as number,
+    carId: r.car_id as number,
+    plate: String(r.plate ?? ''),
+    plateState: String(r.plate_state ?? ''),
     raceNumber: r.race_number as number,
     driver: r.driver as string,
     garage: r.garage as string,
@@ -207,6 +236,7 @@ export function roundClassification(
     mine: r.is_player === 1,
   });
 
+  const badges = badgesFor(db, year);
   const prelimRows = rows
     .filter((r) => r.prelim_time_ms !== null || r.dnf_reason !== null)
     .sort(
