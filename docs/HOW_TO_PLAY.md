@@ -35,7 +35,7 @@ Press **Start career**. You then choose a **starter car** from three used cars a
 | Staff      | Mechanics and executives                                                                   |
 | Operations | The suppliers of electricity, water and fuel, and their contracts                          |
 | Sponsors   | Your title sponsor                                                                         |
-| Almanac    | Champions and awards for every season, and the record book                                 |
+| Almanac    | Champions and awards for every season, and the record book with leaderboards               |
 | Registry   | A profile for every driver, car, garage, prelim and race                                   |
 | Money      | Your cash, income and spending by category                                                 |
 

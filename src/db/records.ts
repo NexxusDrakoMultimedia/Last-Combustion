@@ -4,6 +4,16 @@ import type { Database } from 'sql.js';
 import { seasonAwards, type AwardWon } from './awards';
 import { all } from './entries';
 
+/** One place on a record's leaderboard: someone with a non-zero score in that category. */
+export interface BoardRow {
+  subjectType: 'driver' | 'garage';
+  subjectId: number;
+  name: string;
+  value: number;
+  /** Set for single-season records: the season of this person's best. */
+  year?: number;
+}
+
 /** One all-time record: who holds it, how much, and the year for a single-season record. */
 export interface RecordLine {
   id: string;
@@ -11,6 +21,11 @@ export interface RecordLine {
   value: number;
   /** Set for single-season records. */
   year?: number;
+  /** Who holds the record. */
+  subjectType: 'driver' | 'garage';
+  subjectId: number;
+  /** Everyone with a non-zero score in the category, best first (the holder is first). */
+  board: BoardRow[];
 }
 
 /** A finished season in the history: its champions and awards. */
@@ -31,73 +46,100 @@ export interface RecordBook {
 
 type Row = Record<string, string | number | null>;
 
-const best = (rows: Row[], id: string, withYear = false): RecordLine | undefined => {
-  const r = rows[0];
-  if (!r || !((r.value as number) > 0)) return undefined;
+const round1 = (v: number) => Math.round(v * 10) / 10;
+
+/** A record and its leaderboard from rows already ordered best first; a category nobody has scored in has no record. */
+function recordOf(
+  rows: Row[],
+  id: string,
+  scope: 'driver' | 'garage',
+  withYear = false,
+): RecordLine | undefined {
+  const board: BoardRow[] = rows
+    .filter((r) => (r.value as number) > 0)
+    .map((r) => ({
+      subjectType: scope,
+      subjectId: r.id as number,
+      name: String(r.name),
+      value: round1(r.value as number),
+      ...(withYear ? { year: r.year as number } : {}),
+    }));
+  const top = board[0];
+  if (!top) return undefined;
   return {
     id,
-    holder: String(r.name),
-    value: Math.round((r.value as number) * 10) / 10,
-    ...(withYear ? { year: r.year as number } : {}),
+    holder: top.name,
+    value: top.value,
+    ...(withYear ? { year: top.year } : {}),
+    subjectType: scope,
+    subjectId: top.subjectId,
+    board,
   };
-};
+}
 
 /**
  * The record book of the Super Series: all-time and single-season records for drivers and garages,
- * and the champions and awards of every finished season (newest first). Ties go to whoever set the
- * record first, so the book never changes under a holder.
+ * each with a leaderboard of everyone who has scored in the category, and the champions and awards of
+ * every finished season (newest first). Ties go to whoever set the score first, so the book never
+ * changes under a holder.
  */
 export function recordBook(db: Database): RecordBook {
-  const career = (
-    scope: 'driver' | 'garage',
-    metric: string,
-    value: string,
-    extraJoin = '',
-  ): Row[] =>
+  const career = (scope: 'driver' | 'garage', value: string): Row[] =>
     all(
       db,
-      `SELECT x.name AS name, ${value} AS value
+      `SELECT x.id AS id, x.name AS name, ${value} AS value
          FROM result r JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
-         JOIN ${scope} x ON x.id = e.${scope}_id ${extraJoin}
-        GROUP BY x.id HAVING ${metric} ORDER BY value DESC, MIN(r.round_id), x.id LIMIT 1`,
+         JOIN ${scope} x ON x.id = e.${scope}_id
+        GROUP BY x.id HAVING value > 0 ORDER BY value DESC, MIN(r.round_id), x.id`,
     );
-  const bySeason = (scope: 'driver' | 'garage', value: string): Row[] =>
-    all(
+  // One row for each driver or garage: their best season.
+  const bySeason = (scope: 'driver' | 'garage', value: string): Row[] => {
+    const rows = all(
       db,
-      `SELECT x.name AS name, s.year AS year, ${value} AS value
+      `SELECT x.id AS id, x.name AS name, s.year AS year, ${value} AS value
          FROM result r JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
          JOIN round ro ON ro.id = r.round_id JOIN season s ON s.id = ro.season_id
          JOIN ${scope} x ON x.id = e.${scope}_id
-        GROUP BY x.id, s.id ORDER BY value DESC, s.year, x.id LIMIT 1`,
+        GROUP BY x.id, s.id HAVING value > 0 ORDER BY value DESC, s.year, x.id`,
     );
+    const seen = new Set<number>();
+    return rows.filter((r) => {
+      if (seen.has(r.id as number)) return false;
+      seen.add(r.id as number);
+      return true;
+    });
+  };
   const titles = (scope: 'driver' | 'garage'): Row[] =>
     all(
       db,
-      `SELECT x.name AS name, COUNT(*) AS value FROM season s
+      `SELECT x.id AS id, x.name AS name, COUNT(*) AS value FROM season s
          JOIN ${scope} x ON x.id = s.champion_${scope}_id
-        GROUP BY x.id ORDER BY value DESC, MIN(s.year), x.id LIMIT 1`,
+        GROUP BY x.id ORDER BY value DESC, MIN(s.year), x.id`,
     );
 
   const lines = [
-    best(career('driver', 'value > 0', 'SUM(r.points)'), 'driver_points'),
-    best(
-      career('driver', 'value > 0', 'COUNT(CASE WHEN r.final_pos = 1 THEN 1 END)'),
+    recordOf(career('driver', 'SUM(r.points)'), 'driver_points', 'driver'),
+    recordOf(
+      career('driver', 'COUNT(CASE WHEN r.final_pos = 1 THEN 1 END)'),
       'driver_wins',
+      'driver',
     ),
-    best(career('driver', 'value > 0', 'SUM(r.pole)'), 'driver_poles'),
-    best(titles('driver'), 'driver_titles'),
-    best(bySeason('driver', 'SUM(r.points)'), 'driver_season_points', true),
-    best(
+    recordOf(career('driver', 'SUM(r.pole)'), 'driver_poles', 'driver'),
+    recordOf(titles('driver'), 'driver_titles', 'driver'),
+    recordOf(bySeason('driver', 'SUM(r.points)'), 'driver_season_points', 'driver', true),
+    recordOf(
       bySeason('driver', 'COUNT(CASE WHEN r.final_pos = 1 THEN 1 END)'),
       'driver_season_wins',
+      'driver',
       true,
     ),
-    best(
-      career('garage', 'value > 0', 'COUNT(CASE WHEN r.final_pos = 1 THEN 1 END)'),
+    recordOf(
+      career('garage', 'COUNT(CASE WHEN r.final_pos = 1 THEN 1 END)'),
       'garage_wins',
+      'garage',
     ),
-    best(titles('garage'), 'garage_titles'),
-    best(bySeason('garage', 'SUM(r.points)'), 'garage_season_points', true),
+    recordOf(titles('garage'), 'garage_titles', 'garage'),
+    recordOf(bySeason('garage', 'SUM(r.points)'), 'garage_season_points', 'garage', true),
   ];
 
   const seasons = all(

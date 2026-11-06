@@ -4,6 +4,11 @@ import { t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
 import { RegistryLink } from '../RegistryLink';
 
+const recordValue = (r: { value: number; year?: number }) =>
+  r.year === undefined
+    ? t('almanac.recordValue', { value: r.value })
+    : t('almanac.recordValueYear', { value: r.value, year: r.year });
+
 /** The almanac: every finished season's champions and awards, and the record book. */
 export function AlmanacPanel({ tab }: { tab: string }) {
   const book = useCareerStore((s) => s.recordBook);
@@ -12,24 +17,40 @@ export function AlmanacPanel({ tab }: { tab: string }) {
 
   if (tab === 'records')
     return (
-      <dl className="space-y-1 text-sm">
+      <div className="space-y-2 text-sm">
         {book.records.map((r) => (
-          <div
-            key={r.id}
-            className="flex flex-wrap items-baseline justify-between gap-2 border border-lc-line p-2"
-          >
-            <dt className="text-lc-dim">{t(`almanac.record.${r.id}` as never)}</dt>
-            <dd>
-              <span className="font-medium">{r.holder}</span>{' '}
-              <span className="lc-num">
-                {r.year === undefined
-                  ? t('almanac.recordValue', { value: r.value })
-                  : t('almanac.recordValueYear', { value: r.value, year: r.year })}
+          <details key={r.id} className="border border-lc-line">
+            <summary className="flex cursor-pointer flex-wrap items-baseline justify-between gap-2 p-2 focus-visible:outline-2 focus-visible:outline-lc-accent-ink">
+              <span className="text-lc-dim">{t(`almanac.record.${r.id}` as never)}</span>
+              <span>
+                <span className="font-medium">{r.holder}</span>{' '}
+                <span className="lc-num">{recordValue(r)}</span>
               </span>
-            </dd>
-          </div>
+            </summary>
+            <div className="space-y-1 border-t border-lc-line p-2">
+              <p className="lc-display text-xs text-lc-dim">
+                {t('almanac.leaderboard', { count: r.board.length })}
+              </p>
+              <ol className="space-y-1">
+                {r.board.map((row, i) => (
+                  <li
+                    key={`${row.subjectId}`}
+                    className="flex flex-wrap items-baseline justify-between gap-2"
+                  >
+                    <span>
+                      <span className="lc-num inline-block w-8 text-lc-dim">{i + 1}</span>
+                      <RegistryLink to={{ kind: row.subjectType, id: row.subjectId }}>
+                        {row.name}
+                      </RegistryLink>
+                    </span>
+                    <span className="lc-num">{recordValue(row)}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </details>
         ))}
-      </dl>
+      </div>
     );
 
   return (

@@ -325,6 +325,7 @@
   "almanac.championsLead": "Drivers' champion",
   "almanac.championsPoints": "({points} points).",
   "almanac.championsGarage": "Garages' champion",
+  "almanac.leaderboard": "Leaderboard: everyone with a score ({count})",
   "almanac.recordValue": "{value}",
   "almanac.recordValueYear": "{value} in {year}",
   "almanac.record.driver_points": "Most career points",

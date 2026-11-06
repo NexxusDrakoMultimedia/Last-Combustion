@@ -157,4 +157,24 @@ describe('season awards over two seasons', () => {
     const careerPoints = book.records.find((r) => r.id === 'driver_points')!;
     expect(careerPoints.value).toBeGreaterThanOrEqual(seasonPoints.value);
   });
+
+  it('gives every record a leaderboard of everyone with a non-zero score, best first', () => {
+    const book = recordBook(db);
+    for (const r of book.records) {
+      expect(r.board.length, r.id).toBeGreaterThan(0);
+      expect(r.board[0]).toMatchObject({ name: r.holder, value: r.value, subjectId: r.subjectId });
+      for (const row of r.board) expect(row.value, r.id).toBeGreaterThan(0);
+      for (let i = 1; i < r.board.length; i++)
+        expect(r.board[i]!.value, r.id).toBeLessThanOrEqual(r.board[i - 1]!.value);
+      expect(new Set(r.board.map((row) => row.subjectId)).size, r.id).toBe(r.board.length);
+    }
+    // Career points: exactly the drivers who have scored.
+    const scorers = Number(
+      db.exec(
+        `SELECT COUNT(*) FROM (SELECT e.driver_id FROM result r JOIN entry e ON e.id = r.entry_id
+           WHERE e.series = 'main' GROUP BY e.driver_id HAVING SUM(r.points) > 0)`,
+      )[0]!.values[0]![0],
+    );
+    expect(book.records.find((r) => r.id === 'driver_points')!.board).toHaveLength(scorers);
+  });
 });
