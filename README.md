@@ -97,6 +97,6 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versionin
 
 ## Licence
 
-Copyright (C) Nexxus Drako Multimedia. GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE).
+Copyright (C) Nexxus Drako Multimedia. GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE). The brand art (the logo, favicons, social cards and profile images in `assets/brand` and `public`) is licensed under [Creative Commons Attribution-ShareAlike 4.0](LICENSES/CC-BY-SA-4.0.txt), which is one-way compatible with the GPL. Screenshots of the game stay under the GPL.
 
 The name "Last Combustion", its logo, the character Pyra Drake, the two series administrators, the four commentators and the dragon-blooded driver characters are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).

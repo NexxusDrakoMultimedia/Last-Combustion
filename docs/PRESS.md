@@ -22,7 +22,7 @@ It is a management game first: as much a garage simulation as a racing one. The 
 | Platform  | Web browser (desktop builds are planned)                                                                              |
 | Version   | 0.1.0, the first playable season                                                                                      |
 | Price     | Free                                                                                                                  |
-| Licence   | GNU General Public License, version 3 or later (see [LICENSE](../LICENSE))                                            |
+| Licence   | Software: GPL 3 or later (see [LICENSE](../LICENSE)). Brand art: CC BY-SA 4.0 (see [Credits](../CREDITS.md))          |
 | Play it   | [lc.nexxusdrako.au](https://lc.nexxusdrako.au)                                                                        |
 | Source    | [github.com/NexxusDrakoMultimedia/Last-Combustion](https://github.com/NexxusDrakoMultimedia/Last-Combustion)          |
 | Languages | English                                                                                                               |

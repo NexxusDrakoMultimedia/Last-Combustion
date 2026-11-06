@@ -15,7 +15,7 @@ The following are trademarks and intellectual property of **Nexxus Drako Multime
 
 Nexxus Drako Multimedia claims no copyright or trademark in any other character. Every character Nexxus Drako Multimedia claims is dragon-blooded: Pyra Drake, the administrators, the commentators and the twelve drivers who carry the dragon mark.
 
-The GNU General Public License (version 3 or later) covers the software and the content released under it. It does not give you the right to use these names, the logo or the characters. This is the additional term allowed by section 7(e) of the GPLv3.
+The GNU General Public License (version 3 or later) covers the software and the content released under it. It does not give you the right to use these names, the logo or the characters. This is the additional term allowed by section 7(e) of the GPLv3. The logo and other brand art files are also available under Creative Commons Attribution-ShareAlike 4.0 as copyright works, which grants copyright permissions only: that licence does not give you any trademark rights (see its section 2(b)(1)), so the rules below apply to the logo whatever its file licence.
 
 ## What you may do
 

@@ -18,6 +18,7 @@ import {
   garageName,
   nickname,
   nicknameThemesFor,
+  pickForeignNationality,
   pickNationality,
 } from '../../src/sim/worldgen/names';
 
@@ -126,5 +127,41 @@ describe('garage names that carry a place', () => {
       if (g.name.includes(home)) carrying++;
     }
     expect(carrying).toBeGreaterThan(0);
+  });
+});
+
+describe('foreign garages', () => {
+  it('never draws the host country for a foreign flag', () => {
+    const rng = createRng('foreign').stream('t');
+    for (let i = 0; i < 2000; i++) expect(pickForeignNationality(rng)).not.toBe('AU');
+  });
+
+  it('sometimes draws any flag at all, including nations with no name lists, but never an excluded one', () => {
+    const rng = createRng('wild').stream('t');
+    const picks = new Set(Array.from({ length: 6000 }, () => pickForeignNationality(rng)));
+    expect([...picks].some((c) => !(c in nameLists.byNationality))).toBe(true);
+    for (const excluded of ['AU', 'AQ', 'UN', 'EAC']) expect(picks.has(excluded)).toBe(false);
+  });
+
+  it('gives a garage under a flag with no name lists Australian-style names and a home', () => {
+    const garages = generateWorld(7).garages;
+    const unlisted = garages.filter((g) => !(g.flag in nameLists.byNationality));
+    expect(unlisted.length).toBeGreaterThan(0);
+    for (const g of unlisted) {
+      expect(g.name.length).toBeGreaterThan(0);
+      expect(g.basePlaceId.startsWith('au-')).toBe(true);
+    }
+  });
+
+  it('flies a foreign flag over about 31% of the garages in a new world', () => {
+    let foreign = 0;
+    let total = 0;
+    for (let seed = 1; seed <= 20; seed++)
+      for (const g of generateWorld(seed).garages) {
+        total++;
+        if (g.flag !== 'AU') foreign++;
+      }
+    expect(foreign / total).toBeGreaterThan(0.26);
+    expect(foreign / total).toBeLessThan(0.38);
   });
 });

@@ -41,10 +41,19 @@ precedence = "override"
 SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
-# The brand assets: the logo, favicons, social images, profile art and screenshots. The name and the logo
-# are trademarks of Nexxus Drako Multimedia (see TRADEMARKS.md); the files are covered by the GPL as copyright works.
+# The brand art: the logo, favicons, social images and profile art. The files are licensed CC BY-SA 4.0, which
+# is one-way compatible with GPL-3.0 (art under it can be used in this GPL project). The name and the logo are
+# still trademarks of Nexxus Drako Multimedia: the licence does not grant them (see TRADEMARKS.md).
 [[annotations]]
-path = ["assets/brand/**", "public/favicon.svg", "public/*.png", "public/site.webmanifest"]
+path = ["assets/brand/**", "public/favicon.svg", "public/*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# Screenshots are pictures of the game itself, so they stay under the GPL with the rest of the project, as does
+# the web manifest.
+[[annotations]]
+path = ["assets/brand/screenshots/**", "public/site.webmanifest"]
 precedence = "override"
 SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
 SPDX-License-Identifier = "GPL-3.0-or-later"

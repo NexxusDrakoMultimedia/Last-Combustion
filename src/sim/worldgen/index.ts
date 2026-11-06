@@ -26,7 +26,14 @@ import {
   populations,
   type FlagRegion,
 } from './data';
-import { garageName, nickname, nicknameThemesFor, personName, pickNationality } from './names';
+import {
+  garageName,
+  nickname,
+  nicknameThemesFor,
+  personName,
+  pickForeignNationality,
+  pickNationality,
+} from './names';
 import { generateLoadouts } from './loadouts';
 import { clamp, fairSalary, fameFromFans, overallRating } from './rating';
 import {
@@ -219,7 +226,7 @@ export function makeNewGarage(
   const cfg = balance;
   const flag =
     founder?.flag ??
-    (rng.chance(cfg.garage.australianFlagShare) ? HOST_COUNTRY : pickNationality(rng));
+    (rng.chance(cfg.garage.australianFlagShare) ? HOST_COUNTRY : pickForeignNationality(rng));
   const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
   // The flag is where the garage's main factory, founder, owner or executive office is. To race in
   // the series the garage must be based in an Australian state or territory.
@@ -332,7 +339,7 @@ export function generateWorld(seed: string | number): World {
   const garages: Garage[] = sizes.map((size, index) => {
     const isDrake = index === drakeIndex;
     const hostFlag = gRng.chance(cfg.garage.australianFlagShare);
-    const flag = isDrake || hostFlag ? HOST_COUNTRY : pickNationality(gRng);
+    const flag = isDrake || hostFlag ? HOST_COUNTRY : pickForeignNationality(gRng);
     const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
     const prestige = clamp(
       cfg.garage.prestigeBase + cfg.garage.prestigePerEntry * size + (isDrake ? 15 : 0),
