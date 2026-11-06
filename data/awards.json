@@ -1,0 +1,12 @@
+{
+  "source": "Season awards, given out when a season ends (see the GDD, 'Awards'). 'subject' says who wins it. Each award goes to the highest value; a tie goes to the one with more points, then the lower id. 'min' is the least value that earns it.",
+  "awards": [
+    { "id": "fan_favourite", "subject": "driver", "min": 1 },
+    { "id": "rookie_of_the_year", "subject": "driver", "min": 0.5 },
+    { "id": "hard_charger", "subject": "driver", "min": 1 },
+    { "id": "most_improved", "subject": "driver", "min": 1 },
+    { "id": "pole_sitter", "subject": "driver", "min": 1 },
+    { "id": "overtaker", "subject": "driver", "min": 1 },
+    { "id": "most_improved_garage", "subject": "garage", "min": 1 }
+  ]
+}

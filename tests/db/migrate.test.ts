@@ -84,6 +84,7 @@ describe('migrate', () => {
       'staff',
       'executives',
       'supply',
+      'awards',
     ]);
   });
 

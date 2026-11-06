@@ -77,6 +77,12 @@ export function awardRoundFans(db: Database, roundId: number): void {
     const fans = capFans(Math.max(0, (row.fans as number) + gain), audience);
     db.run(`UPDATE ${table} SET fans = ? WHERE id = ?`, [fans, id]);
     if (table === 'driver')
+      db.run(
+        `INSERT INTO driver_season_fans (season_id, driver_id, gained) VALUES (?, ?, ?)
+         ON CONFLICT (season_id, driver_id) DO UPDATE SET gained = gained + excluded.gained`,
+        [seasonId, id, fans - (row.fans as number)],
+      );
+    if (table === 'driver')
       db.run('UPDATE driver SET fame = ? WHERE id = ?', [Math.round(fameFromFans(fans)), id]);
   };
   const addFlag = (flag: string, fans: number, hometownRegion?: string) => {
