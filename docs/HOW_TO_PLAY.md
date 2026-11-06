@@ -68,6 +68,8 @@ The Money panel breaks it down by category. Suppliers charge the market rate unl
 
 Every chassis and every part wears. Racing wears a car ten times as fast as road driving, and a worn chassis is slower and breaks down more. In Upgrades you can service parts (cheap, resets part wear). The chassis can only be fixed by a **full restoration** in Cars. It costs as much as a new car, a quarter more each time, removes most of the wear, and leaves a minimum wear that rises with each restoration. Click it twice, because it spends real money. The car keeps its whole history.
 
+Cars also have a lifespan. A car older than the limit for its class (25 years for a Starter, 20 for a Mid, 12 for a Premium) that has never scored a point retires at the end of the season and can no longer race. Score a point and it is safe, so watch the age of an old starter car you have not yet got a result with.
+
 ## Looking after the driver
 
 - **Training.** Set a level for each driver in Drivers. It is paid at the end of the season and helps them improve and keep their peak longer.
@@ -102,6 +104,7 @@ Only the Garage owner mode, with one save slot and no race calls. There is no Ju
 - **Plate:** every car is identified by its Australian licence plate and the state that issued it.
 - **Prelims:** seven days of timed laps before each final. Every entry runs one lap; the fastest start the final.
 - **Prestige:** a garage's standing, from its entries, its gold-bordered drivers and its titles. It decides which sponsors, suppliers and executives will deal with you.
-- **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds.
+- **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds. Each tab is split into Champions, Race winners, Active, Retired and Obscure.
+- **Greylinked (Obscure):** a driver, car or garage that retired or folded without ever scoring a point. It is listed apart and its links are grey, but its profile still opens.
 - **Road affinity:** how good a driver is on forest, coast, mountain and night roads.
 - **Wear:** from 0 (new) to 100 (worn out), for the chassis and for each part.

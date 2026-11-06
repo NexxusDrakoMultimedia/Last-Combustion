@@ -13,6 +13,7 @@ import type { ResultRow } from '../../db/tables';
 import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { DecalRow } from '../Decals';
+import { STATUS_ORDER, type RegistryStatus } from '../../db/status';
 import { DragonMark, RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
@@ -204,6 +205,8 @@ function CarPage({ p }: { p: CarProfile }) {
             t('registry.ownedBy'),
             p.garage ? (
               <RegistryLink to={{ kind: 'garage', id: p.garage.id }}>{p.garage.name}</RegistryLink>
+            ) : p.retiredYear !== null ? (
+              t('registry.retiredYear', { year: p.retiredYear })
             ) : (
               t('registry.forSale')
             ),
@@ -528,6 +531,37 @@ function RoundPage({ p }: { p: RoundProfile }) {
   );
 }
 
+/** A list split into Champions, Race winners, Active, Retired and Obscure (greylinked), empty sections left out. */
+function ByStatus<T extends { status: RegistryStatus }>({
+  items,
+  render,
+  columns = true,
+}: {
+  items: T[];
+  render: (item: T) => ReactNode;
+  columns?: boolean;
+}) {
+  return (
+    <div className="space-y-5">
+      {STATUS_ORDER.map((status) => {
+        const group = items.filter((i) => i.status === status);
+        if (group.length === 0) return null;
+        return (
+          <section key={status} className="space-y-2">
+            <h3 className="lc-display text-xs text-lc-dim">
+              {t(`registry.section.${status}` as never, { count: group.length })}
+            </h3>
+            {status === 'obscure' && <p className="text-lc-dim">{t('registry.obscureNote')}</p>}
+            <ul className={columns ? 'grid gap-1 sm:grid-cols-2' : 'space-y-1'}>
+              {group.map(render)}
+            </ul>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
 const INDEX_TABS = ['drivers', 'cars', 'garages', 'rounds'] as const;
 type IndexTab = (typeof INDEX_TABS)[number];
 
@@ -584,34 +618,37 @@ function IndexPage({ data }: { data: RegistryIndex }) {
       </div>
       <div role="tabpanel" id="registry-tab-panel" aria-labelledby={`registry-tab-${tab}`}>
         {tab === 'drivers' && (
-          <ul className="grid gap-1 sm:grid-cols-2">
-            {drivers.map((d) => (
+          <ByStatus
+            items={drivers}
+            render={(d) => (
               <li key={d.id} className="flex items-center gap-2">
                 {d.number !== null && <RaceNumber number={d.number} badge={d.badge} />}
                 <RegistryLink to={{ kind: 'driver', id: d.id }}>{d.name}</RegistryLink>
                 {d.garage && <span className="text-lc-dim">{d.garage}</span>}
               </li>
-            ))}
-          </ul>
+            )}
+          />
         )}
         {tab === 'cars' && (
-          <ul className="grid gap-1 sm:grid-cols-2">
-            {cars.map((c) => (
+          <ByStatus
+            items={cars}
+            render={(c) => (
               <li key={c.id} className="flex items-center gap-2">
                 <Plate plate={c.plate} state={c.plateState} carId={c.id} />
                 <span className="text-lc-dim">{c.model}</span>
               </li>
-            ))}
-          </ul>
+            )}
+          />
         )}
         {tab === 'garages' && (
-          <ul className="grid gap-1 sm:grid-cols-2">
-            {garages.map((g) => (
+          <ByStatus
+            items={garages}
+            render={(g) => (
               <li key={g.id}>
                 <RegistryLink to={{ kind: 'garage', id: g.id }}>{g.name}</RegistryLink>
               </li>
-            ))}
-          </ul>
+            )}
+          />
         )}
         {tab === 'rounds' && (
           <ul className="space-y-1">

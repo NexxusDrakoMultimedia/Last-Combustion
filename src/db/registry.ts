@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { restorationFloor } from '../sim/wear';
+import { registryStatuses, type RegistryStatus } from './status';
 import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
 import { readCareer } from './career';
@@ -263,7 +264,9 @@ export interface CarProfile {
   wearFloor: number;
   kerbKg: number;
   tyreWidthMm: number;
-  /** The garage that has it now, or null while it is for sale. */
+  /** The season it retired after, if it did (too old, never scored). */
+  retiredYear: number | null;
+  /** The garage that has it now, or null while it is for sale or once it has retired. */
   garage: Ref | null;
   owners: {
     garage: Ref;
@@ -327,6 +330,7 @@ export function carProfile(db: Database, carId: number): CarProfile {
     wearFloor: restorationFloor(c.restorations as number),
     kerbKg: c.kerb_kg_current as number,
     tyreWidthMm: c.tyre_width_mm as number,
+    retiredYear: (c.retired_year as number | null) ?? null,
     garage:
       c.garage_kind === 'market'
         ? null
@@ -560,6 +564,9 @@ export function roundProfile(
   };
 }
 
+/** The keys (`driver:12`, `car:7`, `garage:3`) of everything greylinked: retired or folded without ever scoring. */
+export { greylinkedKeys } from './status';
+
 /** The dragon-blooded drivers: the twelve canonical characters, who carry the dragon mark. */
 export function dragonDriverIds(db: Database): Set<number> {
   return new Set(all(db, 'SELECT id FROM driver WHERE easter_egg = 1').map((d) => d.id as number));
@@ -576,15 +583,17 @@ export interface RegistryIndex {
     number: number | null;
     garage: string | null;
     badge: NumberBadge;
+    status: RegistryStatus;
   }[];
-  cars: CarRef[];
-  garages: Ref[];
+  cars: (CarRef & { status: RegistryStatus })[];
+  garages: (Ref & { status: RegistryStatus })[];
   rounds: { year: number; round: number; course: string; status: string }[];
 }
 
 export function registryIndex(db: Database): RegistryIndex {
   const year = latestYear(db);
   const badges = badgesFor(db, year);
+  const status = registryStatuses(db);
   return {
     drivers: all(
       db,
@@ -599,6 +608,7 @@ export function registryIndex(db: Database): RegistryIndex {
       number: (d.race_number as number | null) ?? null,
       garage: (d.garage as string | null) ?? null,
       badge: badges.get(d.id as number) ?? NO_BADGE,
+      status: status.driver.get(d.id as number) ?? 'active',
     })),
     cars: all(
       db,
@@ -609,11 +619,13 @@ export function registryIndex(db: Database): RegistryIndex {
       plate: String(c.plate ?? ''),
       plateState: String(c.plate_state ?? ''),
       model: c.model as string,
+      status: status.car.get(c.id as number) ?? 'active',
     })),
     garages: all(db, "SELECT id, name FROM garage WHERE kind = 'racing' ORDER BY name").map(
       (g) => ({
         id: g.id as number,
         name: g.name as string,
+        status: status.garage.get(g.id as number) ?? 'active',
       }),
     ),
     rounds: all(

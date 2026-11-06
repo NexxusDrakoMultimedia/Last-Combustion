@@ -15,6 +15,8 @@ import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
 import { applyMoves } from './daily';
+import { retireOldCars } from './carage';
+import { createUsedCar } from './market';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
@@ -68,7 +70,22 @@ export function startNextSeason(db: Database): Rollover {
   try {
     // Garages that stayed broke close; their entries are not carried over.
     const closedGarages = new Set(settleGarages(db, lastId, year));
-    const entries = allEntries.filter((e) => !closedGarages.has(e.garage_id as number));
+    const openEntries = allEntries.filter((e) => !closedGarages.has(e.garage_id as number));
+
+    // Cars past the oldest age for their tier that never scored a point retire. A computer garage
+    // that loses an entered car gets an old starter car to replace it; the player's entry is not
+    // carried over, because the player chooses their cars.
+    const retiredCars = new Map(retireOldCars(db, year).map((c) => [c.carId, c.garageId]));
+    const replacementRng = rng.stream(`rollover:${year}:car-replacements`);
+    const entries = openEntries.flatMap((e) => {
+      if (!retiredCars.has(e.car_id as number)) return [e];
+      if (e.is_player === 1) return [];
+      const { carId } = createUsedCar(db, replacementRng, e.garage_id as number, `${year}-02-01`, {
+        tier: 'starter',
+        excludeModelIds: [],
+      });
+      return [{ ...e, car_id: carId }];
+    });
 
     // Retirements: a retiring driver's seat goes to a rookie, who is signed on the same terms but a smaller salary.
     const replaced = new Map<number, number>();

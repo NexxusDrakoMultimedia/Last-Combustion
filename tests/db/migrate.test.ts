@@ -89,6 +89,7 @@ describe('migrate', () => {
       'daily_life',
       'restorations',
       'garage_champions',
+      'car_retirement',
     ]);
   });
 
@@ -234,5 +235,17 @@ describe('garage champions (schema version 35)', () => {
     // The old value is kept under its new name; the winner comes from the garage table.
     expect(rows[0]).toEqual([2031, 7, 12]);
     expect(rows[1]).toEqual([2032, null, null]);
+  });
+});
+
+describe('car retirement (schema version 36)', () => {
+  it('adds a retired year to cars and leaves existing cars active', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 35));
+    expect(getSchemaVersion(db)).toBe(35);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(36);
+    const columns = db.exec('PRAGMA table_info(car)')[0]!.values.map((v) => v[1]);
+    expect(columns).toContain('retired_year');
   });
 });
