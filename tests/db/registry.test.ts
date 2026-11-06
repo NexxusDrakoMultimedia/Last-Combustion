@@ -156,4 +156,19 @@ describe('the registry over two seasons', () => {
     expect(index.rounds[0]).toMatchObject({ year: 2032, round: 1 });
     expect(index.drivers.find((d) => d.id === championId)!.badge.gold).toBe(true);
   });
+
+  it('lists numbered drivers first by number, then the rest alphabetically', () => {
+    const { drivers } = registryIndex(db);
+    const numbered = drivers.filter((d) => d.number !== null);
+    const rest = drivers.filter((d) => d.number === null);
+    expect(numbered.length).toBeGreaterThan(0);
+    expect(rest.length).toBeGreaterThan(0);
+    expect(drivers.slice(0, numbered.length)).toEqual(numbered);
+    expect(numbered.map((d) => d.number)).toEqual(
+      numbered.map((d) => d.number!).sort((a, b) => a - b),
+    );
+    expect(rest.map((d) => d.name)).toEqual(
+      [...rest.map((d) => d.name)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    );
+  });
 });
