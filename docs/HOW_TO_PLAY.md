@@ -66,7 +66,7 @@ The Money panel breaks it down by category. Suppliers charge the market rate unl
 
 ## Looking after the car
 
-Every chassis and every part wears. Racing wears a car ten times as fast as road driving, and a worn chassis is slower and breaks down more. In Upgrades you can service parts (cheap, resets part wear). The chassis can only be fixed by a **full restoration** in Cars. It costs as much as a new car, a quarter more each time, removes most of the wear, and leaves a minimum wear that rises with each restoration. Click it twice, because it spends real money. The car keeps its whole history.
+Every chassis and every part wears. Racing wears a car ten times as fast as road driving, and a worn chassis is slower and breaks down more. In Upgrades you can service parts (cheap, resets part wear). The chassis can only be fixed by a **full restoration** in Cars. It costs as much as a new car, a quarter more each time, removes most of the wear, and leaves a minimum wear that rises with each restoration. The button is greyed out when it would not help, as on a brand-new or lightly worn car, because the minimum wear would leave it worse off. Click it twice, because it spends real money. The car keeps its whole history.
 
 Cars also have a lifespan. A car older than the limit for its class (25 years for a Starter, 20 for a Mid, 12 for a Premium) that has never scored a point retires at the end of the season and can no longer race. Score a point and it is safe, so watch the age of an old starter car you have not yet got a result with.
 
