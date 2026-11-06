@@ -13,6 +13,7 @@ import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
+import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
 import {
   ConditionBar,
@@ -24,7 +25,7 @@ import {
 } from './panels';
 
 type PanelId =
-  'season' | 'garage' | 'market' | 'upgrades' | 'drivers' | 'sponsors' | 'money' | 'menu';
+  'season' | 'garage' | 'market' | 'upgrades' | 'drivers' | 'staff' | 'sponsors' | 'money' | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'season', label: 'rail.season' },
@@ -32,7 +33,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'market', label: 'rail.market' },
   { id: 'upgrades', label: 'rail.upgrades' },
   { id: 'drivers', label: 'rail.drivers' },
-  { id: null, label: 'rail.staff' },
+  { id: 'staff', label: 'rail.staff' },
   { id: 'sponsors', label: 'rail.sponsors' },
   { id: 'money', label: 'rail.money' },
 ];
@@ -291,6 +292,11 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <DriversPanel />
+        </Panel>
+      )}
+      {!locked && open === 'staff' && (
+        <Panel title={t('rail.staff')} subtitle={t('staff.intro')} onClose={() => setOpen(null)}>
+          <StaffPanel />
         </Panel>
       )}
       {!locked && open === 'sponsors' && (

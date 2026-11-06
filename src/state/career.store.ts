@@ -78,6 +78,15 @@ import {
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
+import {
+  fireMechanic,
+  garageCrewStrength,
+  garageStaff,
+  hireMechanic,
+  mechanicCandidates,
+  type Mechanic,
+} from '../db/staff';
+import type { MechanicOffer } from '../sim/staff';
 import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
 import { getServices } from './services';
 
@@ -160,6 +169,10 @@ interface CareerState {
   entries: GarageEntry[];
   sponsors: SponsorsView | undefined;
   money: GarageFinance | undefined;
+  /** The mechanics the garage employs, the ones on offer, and how well they cover its entries (0 to 1). */
+  staff: Mechanic[];
+  staffOffers: MechanicOffer[];
+  crew: number;
   /** The auction that is open now, with each lot as the player sees it. */
   auction: AuctionView | undefined;
   /** What the last auction to close meant for the player. */
@@ -189,6 +202,8 @@ interface CareerState {
   renewGear(driverId: number, itemId: string): Promise<void>;
   setTraining(driverId: number, level: number): Promise<void>;
   raceCar(carId: number): Promise<void>;
+  hireMechanic(offer: number): Promise<void>;
+  fireMechanic(staffId: number): Promise<void>;
   buyNewCar(modelId: number): Promise<void>;
   sellCar(carId: number): Promise<void>;
   placeBid(lotId: number, amount: number): Promise<void>;
@@ -243,6 +258,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               approachable: approachableSponsors(db, playerGarageId(db)!),
             },
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
+      staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
+      staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
+      crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
       auction: playerGarageId(db) === null ? undefined : currentAuction(db, playerGarageId(db)!),
       dealer: playerGarageId(db) === null ? [] : dealerOffers(db, playerGarageId(db)!),
       upgrades:
@@ -293,6 +311,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     entries: [],
     sponsors: undefined,
     money: undefined,
+    staff: [],
+    staffOffers: [],
+    crew: 0,
     auction: undefined,
     auctionClosing: undefined,
     dealer: [],
@@ -528,6 +549,26 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'RemoveEntry'),
+
+    hireMechanic: (offer) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        hireMechanic(openDb, garageId, offer);
+        refresh(openDb);
+        return undefined;
+      }, 'HireMechanic'),
+
+    fireMechanic: (staffId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        fireMechanic(openDb, garageId, staffId);
+        refresh(openDb);
+        return undefined;
+      }, 'FireMechanic'),
 
     buyNewCar: (modelId) =>
       run(async () => {

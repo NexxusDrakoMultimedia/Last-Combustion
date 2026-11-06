@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { gearItem, type GearSlot, type GearTier } from '../sim/gear';
+import { partWearFactor } from '../sim/staff';
 import { wearAdded } from '../sim/wear';
 import { part, partPrice } from '../sim/upgrades';
 import { repairBalance } from '../sim/worldgen/data';
@@ -9,6 +10,7 @@ import type { Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
 import { dealPrice } from './deals';
 import { all } from './entries';
+import { garageCrewStrength } from './staff';
 
 /** Adds wear to every part fitted to a car for some distance driven (parts wear faster than the chassis). */
 export function wearParts(
@@ -18,7 +20,10 @@ export function wearParts(
   kind: 'road' | 'race',
   tier: Tier,
 ): void {
-  const delta = wearAdded(km, kind, tier) * repairBalance.partWearFactor;
+  const owner = all(db, 'SELECT garage_id FROM car WHERE id = ?', [carId])[0];
+  // A good crew looks after the parts: they wear more slowly.
+  const crew = owner ? partWearFactor(garageCrewStrength(db, owner.garage_id as number)) : 1;
+  const delta = wearAdded(km, kind, tier) * repairBalance.partWearFactor * crew;
   if (delta <= 0) return;
   db.run('UPDATE car_part SET wear = MIN(100, wear + ?) WHERE car_id = ?', [delta, carId]);
 }
