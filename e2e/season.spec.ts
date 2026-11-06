@@ -44,7 +44,25 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   expect(await prelims.getByRole('row').count()).toBeGreaterThan(100);
   await page.locator('#results-round').selectOption('3');
   await page.getByRole('button', { name: messages['tables.session.final'] }).click();
-  await expect(page.getByRole('table', { name: messages['tables.session.final'] })).toBeVisible();
+  const finalTable = page.getByRole('table', { name: messages['tables.session.final'] });
+  await expect(finalTable).toBeVisible();
+  // Finalists carry a gold border on their number.
+  await expect(finalTable.getByRole('img', { name: /gold border/ }).first()).toBeVisible();
+
+  // Names, plates and rounds open profiles in the Ledger, which link on to each other.
+  await finalTable.getByRole('button').first().click();
+  await expect(page.getByText(messages['ledger.driverDecals'])).toBeVisible();
+  await page
+    .getByRole('table')
+    .getByRole('button', { name: /Licence plate/ })
+    .first()
+    .click();
+  await expect(page.getByText(messages['ledger.carDecals'])).toBeVisible();
+  await page.getByRole('button', { name: messages['ledger.index'] }).click();
+  await expect(page.getByText(/Prelims and races \(\d+\)/)).toBeVisible();
+  await page.getByRole('button', { name: messages['ledger.race'], exact: true }).first().click();
+  await expect(page.getByRole('heading', { name: /round \d+ race/ })).toBeVisible();
+  await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
 
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();

@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
 import { economyBalance, seasonBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
+import { LedgerLink } from '../LedgerLink';
 import { Plate } from '../Plate';
+import { RaceNumber } from '../RaceNumber';
 import { button, field, quiet } from '../styles';
 
 /** What one more entry can cost the garage each round, at most (fee, tyres, servicing and extra travel). */
@@ -40,9 +42,10 @@ export function EntriesSection({ locked }: { locked: boolean }) {
             className="flex flex-wrap items-center justify-between gap-2 border border-lc-line p-2"
           >
             <span>
-              <span className="lc-num font-medium">{t('entries.number', { n: e.raceNumber })}</span>{' '}
-              <Plate plate={e.plate} state={e.plateState} />{' '}
-              {t('entries.pair', { driver: e.driverName, car: e.carName })}
+              <RaceNumber number={e.raceNumber} badge={e.badge} />{' '}
+              <Plate plate={e.plate} state={e.plateState} carId={e.carId} />{' '}
+              <LedgerLink to={{ kind: 'driver', id: e.driverId }}>{e.driverName}</LedgerLink>{' '}
+              <span className="text-lc-dim">{e.carName}</span>
             </span>
             {entries.length > 1 && (
               <button

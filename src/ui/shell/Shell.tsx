@@ -15,6 +15,7 @@ import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { AlmanacPanel } from './AlmanacPanel';
+import { LedgerPanel } from './LedgerPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
@@ -31,6 +32,7 @@ type PanelId =
   | 'operations'
   | 'sponsors'
   | 'almanac'
+  | 'ledger'
   | 'money'
   | 'menu';
 
@@ -44,6 +46,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'operations', label: 'rail.operations' },
   { id: 'sponsors', label: 'rail.sponsors' },
   { id: 'almanac', label: 'rail.almanac' },
+  { id: 'ledger', label: 'rail.ledger' },
   { id: 'money', label: 'rail.money' },
 ];
 
@@ -62,7 +65,9 @@ export function Shell() {
     rollover,
     notice,
   } = s;
-  const [open, setPanel] = useState<PanelId | null>(null);
+  const [openPanel, setPanel] = useState<PanelId | null>(null);
+  // A profile opened from anywhere (a plate, a name, a number) shows the Ledger over whatever is open.
+  const open = s.ledgerPage ? 'ledger' : openPanel;
   const [seasonTab, setSeason] = useState('calendar');
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
@@ -70,6 +75,10 @@ export function Shell() {
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
     if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
+    if (id === 'ledger') {
+      s.openLedger({ kind: 'index' });
+      return;
+    }
     if (id === 'almanac') s.loadRecords();
     setPanel(id);
   };
@@ -351,6 +360,11 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <AlmanacPanel tab={almanacTab} />
+        </Panel>
+      )}
+      {!locked && open === 'ledger' && (
+        <Panel title={t('rail.ledger')} subtitle={t('ledger.intro')} onClose={s.closeLedger}>
+          <LedgerPanel />
         </Panel>
       )}
       {!locked && open === 'operations' && (

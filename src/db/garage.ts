@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { badgesFor, NO_BADGE, type NumberBadge } from './ledger';
 import type { Database } from 'sql.js';
 import { RESERVED_NUMBER } from '../sim/worldgen';
 import { seasonBalance } from '../sim/worldgen/data';
@@ -138,10 +139,14 @@ export interface GarageEntry {
   carName: string;
   plate: string;
   plateState: string;
+  /** What the number carries: gold or silver border, black box. */
+  badge: NumberBadge;
 }
 
 /** The entries a garage has this season, lowest race number first. */
 export function garageEntries(db: Database, garageId: number): GarageEntry[] {
+  const year = Number(all(db, 'SELECT MAX(year) AS y FROM season')[0]?.y ?? 0);
+  const badges = badgesFor(db, year);
   return all(
     db,
     `SELECT e.race_number, e.driver_id, d.name AS driver_name, e.car_id, m.name AS car_name, c.plate, c.plate_state
@@ -151,6 +156,7 @@ export function garageEntries(db: Database, garageId: number): GarageEntry[] {
       ORDER BY e.race_number`,
     [garageId],
   ).map((r) => ({
+    badge: badges.get(r.driver_id as number) ?? NO_BADGE,
     raceNumber: r.race_number as number,
     driverId: r.driver_id as number,
     driverName: r.driver_name as string,

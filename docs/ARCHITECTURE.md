@@ -58,6 +58,8 @@ Sponsors: `src/sim/sponsors.ts` has the sponsor list (`data/sponsors.json`), eli
 
 Deals: `src/sim/deals.ts` has the fair supplier and manufacturer discounts, and `src/db/deals.ts` has `openDealNegotiation`, `offerDeal` and `activeDiscount`, which `fitPart` and `buyNewCar` use to price parts and new cars (migration 0012 adds `supplier_deal` and `manufacturer_deal` and rebuilds the negotiation tables again).
 
+The Ledger: `src/db/ledger.ts` has `driverProfile`, `carProfile`, `garageProfile`, `roundProfile` (prelim or race), `ledgerIndex` and `ledgerPage`, `decalsOf` (the trophies and shields) and re-exports the number badges from `src/db/badges.ts` (`badgesFor`: gold and silver borders and the black box, by season). The UI is `src/ui/shell/LedgerPanel.tsx`, `LedgerLink`, `RaceNumber` and `Decals` in `src/ui`; the store keeps the trail of pages (`openLedger`, `ledgerBack`, `closeLedger`), and the Shell shows the Ledger over whatever panel is open.
+
 Results and standings: `src/db/tables.ts` has `fullStandings` (every row of the five championship tables for any season, from `computeStandings`) and `roundClassification` (the full prelim and final classification of any round), read on demand by the Season panel's Results and Standings tabs (`src/ui/shell/TablesPanel.tsx`).
 
 Awards and records: `src/sim/awards.ts` (`data/awards.json`, `pickWinner`), `src/db/awards.ts` (`awardSeason`, called by `endSeason` with the final tables; `seasonAwards`) and `src/db/records.ts` (`recordBook`, read when the Almanac panel opens); migration 0031 adds `season_award` and `driver_season_fans`. `e2e/season.spec.ts` plays a whole season in the browser, ends it, reads the Almanac and starts the next season.

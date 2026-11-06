@@ -88,6 +88,7 @@ import {
   type Executive,
   type ExecutiveOutcome,
 } from '../db/executives';
+import { ledgerPage, type LedgerPage, type LedgerTarget } from '../db/ledger';
 import { recordBook, type RecordBook } from '../db/records';
 import {
   fullStandings,
@@ -233,6 +234,9 @@ interface CareerState {
   recordBook: RecordBook | undefined;
   /** The seasons in the save, and the full tables and round classification last asked for (read when the Season panel needs them). */
   years: number[];
+  /** The Ledger: where the player has been (newest last) and the page now showing. */
+  ledgerTrail: LedgerTarget[];
+  ledgerPage: LedgerPage | undefined;
   standingsView: FullStandings | undefined;
   classificationView: RoundClassification | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
@@ -271,6 +275,9 @@ interface CareerState {
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
   loadRecords(): void;
+  openLedger(target: LedgerTarget): void;
+  ledgerBack(): void;
+  closeLedger(): void;
   loadStandings(year: number): void;
   loadClassification(year: number, round: number): void;
   dismissExecutive(executiveId: number): Promise<void>;
@@ -408,6 +415,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     recordBook: undefined,
     years: [],
     standingsView: undefined,
+    ledgerTrail: [],
+    ledgerPage: undefined,
     classificationView: undefined,
     staff: [],
     staffOffers: [],
@@ -733,6 +742,35 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     loadClassification: (year, round) => {
       if (openDb) set({ classificationView: roundClassification(openDb, year, round) });
     },
+
+    openLedger: (target) => {
+      if (!openDb) return;
+      try {
+        const page = ledgerPage(openDb, target);
+        trackDesign(undefined, 'Ledger', 'Open', target.kind);
+        const trail = get().ledgerTrail;
+        const top = trail[trail.length - 1];
+        set({
+          ledgerPage: page,
+          ledgerTrail:
+            top && JSON.stringify(top) === JSON.stringify(target) ? trail : [...trail, target],
+        });
+      } catch (error) {
+        set({ notice: describeError(error) });
+      }
+    },
+
+    ledgerBack: () => {
+      const trail = get().ledgerTrail.slice(0, -1);
+      const previous = trail[trail.length - 1];
+      if (!openDb || !previous) {
+        set({ ledgerTrail: [], ledgerPage: undefined });
+        return;
+      }
+      set({ ledgerTrail: trail, ledgerPage: ledgerPage(openDb, previous) });
+    },
+
+    closeLedger: () => set({ ledgerTrail: [], ledgerPage: undefined }),
 
     loadRecords: () => {
       if (openDb) set({ recordBook: recordBook(openDb) });

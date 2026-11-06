@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { formatGap, formatLapTime, formatMoney, t } from '../../i18n';
 import { TABLE_KINDS, type ResultRow, type TableKind } from '../../db/tables';
 import { useCareerStore } from '../../state/career.store';
+import { LedgerLink } from '../LedgerLink';
+import { Plate } from '../Plate';
+import { RaceNumber } from '../RaceNumber';
 import { field, quiet } from '../styles';
 
 const mine = 'bg-lc-raised font-medium';
@@ -101,12 +104,25 @@ export function StandingsPanel() {
                 >
                   <td className="lc-num py-1">{r.rank}</td>
                   <td>
-                    {r.raceNumber > 0
-                      ? t('hub.driverCell', { number: r.raceNumber, driver: r.name })
-                      : r.name}
+                    {r.driverId > 0 ? (
+                      <span className="inline-flex items-center gap-2">
+                        <RaceNumber number={r.raceNumber} badge={r.badge} />
+                        <LedgerLink to={{ kind: 'driver', id: r.driverId }}>{r.name}</LedgerLink>
+                      </span>
+                    ) : r.garageId > 0 && kind === 'garages' ? (
+                      <LedgerLink to={{ kind: 'garage', id: r.garageId }}>{r.name}</LedgerLink>
+                    ) : (
+                      r.name
+                    )}
                   </td>
                   {(kind === 'drivers' || kind === 'manufacturers') && (
-                    <td className="text-lc-dim">{r.detail}</td>
+                    <td className="text-lc-dim">
+                      {kind === 'drivers' && r.garageId > 0 ? (
+                        <LedgerLink to={{ kind: 'garage', id: r.garageId }}>{r.detail}</LedgerLink>
+                      ) : (
+                        r.detail
+                      )}
+                    </td>
                   )}
                   <td className="lc-num">{r.points}</td>
                   <td className="lc-num">{r.wins}</td>
@@ -178,7 +194,10 @@ export function ResultsPanel() {
       </div>
       {ready && (
         <p className="text-lc-dim">
-          {t('tables.roundLine', { round: c.round, course: c.course, count: rows.length })}
+          {t('tables.roundLine', { round: c.round, course: c.course, count: rows.length })}{' '}
+          <LedgerLink to={{ kind: session === 'final' ? 'race' : 'prelim', year, round }}>
+            {t('tables.openProfile')}
+          </LedgerLink>
         </p>
       )}
       {ready && rows.length === 0 ? (
@@ -207,11 +226,18 @@ export function ResultsPanel() {
                 >
                   <td className="lc-num py-1">{r.position ?? t('tables.none')}</td>
                   <td>
-                    {t('hub.driverCell', { number: r.raceNumber, driver: r.driver })}
-                    {r.pole && session === 'prelims' && ` ${t('tables.pole')}`}
+                    <span className="inline-flex items-center gap-2">
+                      <RaceNumber number={r.raceNumber} badge={r.badge} />
+                      <LedgerLink to={{ kind: 'driver', id: r.driverId }}>{r.driver}</LedgerLink>
+                      {r.pole && session === 'prelims' && ` ${t('tables.pole')}`}
+                    </span>
                   </td>
-                  <td className="text-lc-dim">{r.garage}</td>
-                  <td className="text-lc-dim">{r.car}</td>
+                  <td className="text-lc-dim">
+                    <LedgerLink to={{ kind: 'garage', id: r.garageId }}>{r.garage}</LedgerLink>
+                  </td>
+                  <td className="text-lc-dim">
+                    <Plate plate={r.plate} state={r.plateState} carId={r.carId} /> {r.car}
+                  </td>
                   <td className="lc-num">{timeCell(r)}</td>
                   <td className="lc-num">
                     {r.gapMs !== null && r.gapMs > 0 ? formatGap(r.gapMs) : ''}
