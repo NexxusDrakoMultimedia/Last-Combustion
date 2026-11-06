@@ -102,3 +102,5 @@ Telemetry: `src/platform/telemetry.ts` (events, `track`, sinks, money from the l
 Market: `dealerOffers` and `dealerQuote` in `src/db/market.ts`, and `currentAuction`, `ensureAuction`, `auctionCycle` and `playerLots` in `src/db/auction.ts`; the Market panel's Dealers and Auctions tabs are `src/ui/shell/DealerSection.tsx` and `AuctionSection.tsx`.
 
 Staff: `src/sim/staff.ts` (wages, offers, crew cover and what it saves, pure) and `src/db/staff.ts` (hiring, notice and crew cover; migration 0028); wages are charged in `settleRound`, part wear in `wearParts` and the crash-repair bill in `src/db/finance.ts` follow the crew; the Staff panel is `src/ui/shell/StaffPanel.tsx`.
+
+Executives: `data/executives.json` and `src/sim/executives.ts` (roles, slots, offers and the bonuses, pure), `src/db/executives.ts` (offers, the negotiation, salaries, notice and expiry; migration 0029), `src/db/bonuses.ts` (`garageBonuses`, which every system that an executive touches reads) and `src/db/prestige.ts` (the player's prestige); the Executives tab is `src/ui/shell/ExecutivesSection.tsx`.

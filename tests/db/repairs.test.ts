@@ -7,6 +7,7 @@ import { playFinal } from '../../src/db/final';
 import { playPrelims } from '../../src/db/prelims';
 import {
   crashRepairCost,
+  gearRenewCost,
   garageGear,
   gearConditions,
   partConditions,
@@ -273,5 +274,13 @@ describe('part wear changes performance and the service bill', () => {
     const fresh = psOf();
     db.run('UPDATE car_part SET wear = 100 WHERE car_id = ?', [carId]);
     expect(psOf()).toBeLessThan(fresh);
+  });
+});
+
+describe('refurbishing gear with a Sporting Director', () => {
+  it('costs a fifth less at full skill, and the same with none', () => {
+    expect(gearRenewCost(10_000, 50)).toBe(2500);
+    expect(gearRenewCost(10_000, 50, 0.2)).toBe(2000);
+    expect(gearRenewCost(10_000, 0, 0.2)).toBe(0);
   });
 });

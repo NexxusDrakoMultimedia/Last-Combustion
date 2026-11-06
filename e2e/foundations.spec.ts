@@ -41,6 +41,9 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
 
   await page.getByRole('button', { name: messages['rail.staff'] }).click();
   await page.getByRole('button', { name: messages['staff.hire'] }).first().click();
+  await page.getByRole('tab', { name: messages['executive.tab'] }).click();
+  await expect(page.getByText(/executive roles? filled/)).toBeVisible();
+  await page.getByRole('tab', { name: messages['staff.mechanicsTab'] }).click();
   await expect(
     page.getByRole('button', { name: new RegExp(messages['staff.fire'].split('{')[0]!) }),
   ).toBeVisible();

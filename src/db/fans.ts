@@ -4,6 +4,7 @@ import type { Database } from 'sql.js';
 import { capFans, driverFanGain } from '../sim/fans';
 import { fameFromFans } from '../sim/worldgen';
 import { fanBalance, finalBalance, flagRegions, populations } from '../sim/worldgen/data';
+import { garageBonuses } from './bonuses';
 import { all } from './entries';
 
 /** Adds fans to a flag in a season (the row is made if the flag has none yet). */
@@ -63,6 +64,12 @@ export function awardRoundFans(db: Database, roundId: number): void {
     ]),
   );
   const gone = departedFlags(db);
+  // A Head of Marketing makes a garage's drivers win more fans from the same result.
+  const marketing = new Map<number, number>();
+  const fansFor = (garageId: number): number => {
+    if (!marketing.has(garageId)) marketing.set(garageId, 1 + garageBonuses(db, garageId).fans);
+    return marketing.get(garageId)!;
+  };
 
   const add = (table: 'driver' | 'garage' | 'car', id: number, gain: number) => {
     if (gain === 0) return;
@@ -90,13 +97,14 @@ export function awardRoundFans(db: Database, roundId: number): void {
   for (const r of rows) {
     const entryId = r.entry_id as number;
     const home = String(round.state) === String(r.hometown_region);
-    const gain = driverFanGain(audience, {
+    const base = driverFanGain(audience, {
       finalPos: (r.final_pos as number | null) ?? null,
       points: (r.points as number) ?? 0,
       pole: r.pole === 1,
       overtakes: overtakes.get(entryId) ?? 0,
       home,
     });
+    const gain = Math.round(base * fansFor(r.garage_id as number));
     if (gain === 0) continue;
     add('driver', r.driver_id as number, gain);
     add('garage', r.garage_id as number, Math.round(gain * share.garage));

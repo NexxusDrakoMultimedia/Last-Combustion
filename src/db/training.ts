@@ -4,6 +4,7 @@ import type { Database } from 'sql.js';
 import { ageOn } from '../sim/junior';
 import { trainingLevel } from '../sim/progression';
 import { seasonBalance } from '../sim/worldgen/data';
+import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
 
@@ -55,8 +56,9 @@ export function settleTraining(
   lastSeasonId: number,
   year: number,
   closedGarages: ReadonlySet<number>,
-): { levels: Map<number, number>; spent: number } {
+): { levels: Map<number, number>; boosts: Map<number, number>; spent: number } {
   const levels = new Map<number, number>();
+  const boosts = new Map<number, number>();
   const cfg = seasonBalance.training;
   let spent = 0;
   for (const e of all(
@@ -93,6 +95,7 @@ export function settleTraining(
     }
     db.run('UPDATE driver SET training = ? WHERE id = ?', [level, driverId]);
     levels.set(driverId, level);
+    boosts.set(driverId, closedGarages.has(garageId) ? 0 : garageBonuses(db, garageId).training);
   }
-  return { levels, spent };
+  return { levels, boosts, spent };
 }

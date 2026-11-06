@@ -13,6 +13,7 @@ import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
+import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
 import {
@@ -56,6 +57,7 @@ export function Shell() {
   const [open, setPanel] = useState<PanelId | null>(null);
   const [seasonTab, setSeason] = useState('calendar');
   const [marketTab, setMarket] = useState('market');
+  const [staffTab, setStaff] = useState('mechanics');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
     if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
@@ -64,6 +66,10 @@ export function Shell() {
   const setSeasonTab = (tab: string) => {
     trackDesign(undefined, 'Panel', 'Tab', 'season', tab);
     setSeason(tab);
+  };
+  const setStaffTab = (tab: string) => {
+    trackDesign(undefined, 'Panel', 'Tab', 'staff', tab);
+    setStaff(tab);
   };
   const setMarketTab = (tab: string) => {
     trackDesign(undefined, 'Panel', 'Tab', 'market', tab);
@@ -295,8 +301,18 @@ export function Shell() {
         </Panel>
       )}
       {!locked && open === 'staff' && (
-        <Panel title={t('rail.staff')} subtitle={t('staff.intro')} onClose={() => setOpen(null)}>
-          <StaffPanel />
+        <Panel
+          title={t('rail.staff')}
+          subtitle={t('staff.intro')}
+          tabs={[
+            { id: 'mechanics', label: t('staff.mechanicsTab') },
+            { id: 'executives', label: t('executive.tab') },
+          ]}
+          tab={staffTab}
+          onTab={setStaffTab}
+          onClose={() => setOpen(null)}
+        >
+          {staffTab === 'mechanics' ? <StaffPanel /> : <ExecutivesSection />}
         </Panel>
       )}
       {!locked && open === 'sponsors' && (

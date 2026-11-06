@@ -1,0 +1,54 @@
+{
+  "source": "Executive roles for the garage-operations design (see the GDD, 'Garage operations'). 'max' is the effect at skill 100; the effect grows in proportion to skill. A role with built = false is not offered until what it affects exists.",
+  "salaryBase": 40000,
+  "salaryPerSkill": 1200,
+  "skill": [35, 90],
+  "offersPerRole": 3,
+  "firstSlotPrestige": 10,
+  "prestigePerSlot": 10,
+  "contractYears": [1, 3],
+  "retireAge": [60, 70],
+  "roles": {
+    "chief_executive": {
+      "name": "Chief Executive",
+      "built": true,
+      "max": { "othersBonus": 0.1 }
+    },
+    "commercial_director": {
+      "name": "Commercial Director",
+      "built": true,
+      "max": { "sponsorFee": 0.2, "sponsorPrestige": 10 }
+    },
+    "contracts_director": {
+      "name": "Contracts Director",
+      "built": true,
+      "max": { "leverage": 0.05 },
+      "extraPatienceFromSkill": 80
+    },
+    "head_of_marketing": {
+      "name": "Head of Marketing",
+      "built": true,
+      "max": { "fans": 0.25, "merchandise": 0.3 }
+    },
+    "operations_director": {
+      "name": "Operations Director",
+      "built": false,
+      "max": { "utilities": 0.15 }
+    },
+    "finance_director": {
+      "name": "Finance Director",
+      "built": true,
+      "max": { "auctionPremium": 0.03, "auctionFee": 0.02 }
+    },
+    "technical_director": {
+      "name": "Technical Director",
+      "built": true,
+      "max": { "partPrice": 0.1, "partWear": 0.15 }
+    },
+    "sporting_director": {
+      "name": "Sporting Director",
+      "built": true,
+      "max": { "training": 0.25, "gearCost": 0.2 }
+    }
+  }
+}

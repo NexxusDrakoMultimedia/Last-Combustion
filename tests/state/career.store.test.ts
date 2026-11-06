@@ -268,4 +268,32 @@ describe('career store', () => {
       expect(wages.length).toBeGreaterThan(0);
     }, 120_000);
   });
+
+  describe('executives', () => {
+    const setup = {
+      ownerName: 'Test Owner',
+      identity: 'masculine' as const,
+      birthDate: '1990-06-01',
+      garageName: 'Executive Store Racing',
+      flag: 'AU',
+      primaryColour: '#112233',
+      secondaryColour: '#ddeeff',
+    };
+
+    it('shows the roles on offer but no slot at the start, and refuses an appointment', async () => {
+      await useCareerStore.getState().startCareer(setup);
+      const starter = useCareerStore.getState().starter!;
+      await useCareerStore
+        .getState()
+        .chooseStarter(starter.cars[0]!.carId, starter.drivers[0]!.driverId);
+      const state = useCareerStore.getState();
+      expect(state.executiveCapacity).toEqual({ slots: 0, used: 0 });
+      expect(state.executiveOffers).toHaveLength(7);
+      expect(state.executiveOffers.every((o) => o.offers.length === 3)).toBe(true);
+      expect(state.executives).toEqual([]);
+      await state.negotiateExecutive('finance_director', 0);
+      expect(useCareerStore.getState().notice?.key).toBe('debug.error');
+      expect(useCareerStore.getState().executiveNegotiation).toBeUndefined();
+    });
+  });
 });

@@ -12,6 +12,7 @@ import {
 } from '../sim/auction';
 import { createRng } from '../sim/rng';
 import { economyBalance } from '../sim/worldgen/data';
+import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
 import { createUsedCar, ensureMarketGarage, valueOfCar } from './market';
@@ -187,7 +188,7 @@ export function placeBid(db: Database, garageId: number, lotId: number, amount: 
   if (mine !== null && amount < mine + minIncrement(mine)) {
     throw new Error('A new bid must beat your last bid by the minimum increment.');
   }
-  if ((garage.cash as number) < buyerPays(amount)) {
+  if ((garage.cash as number) < buyerPays(amount, garageBonuses(db, garageId).auctionPremium)) {
     throw new Error('The garage cannot afford this bid with the buyer premium.');
   }
   db.run(
@@ -259,7 +260,15 @@ export function closeAuction(db: Database, auctionId: number): AuctionResult {
           (g) => [g.id as number, g.cash as number],
         ),
       );
-      const able = bidders.filter((b) => (cash.get(b.garageId) ?? 0) >= buyerPays(b.max));
+      const premiumCut = new Map<number, number>();
+      const cutOf = (garageId: number): number => {
+        if (!premiumCut.has(garageId))
+          premiumCut.set(garageId, garageBonuses(db, garageId).auctionPremium);
+        return premiumCut.get(garageId)!;
+      };
+      const able = bidders.filter(
+        (b) => (cash.get(b.garageId) ?? 0) >= buyerPays(b.max, cutOf(b.garageId)),
+      );
       const outcome = resolveLot(able, lot.reserve as number);
       if (!outcome.winner) {
         db.run("UPDATE auction_lot SET status = 'unsold' WHERE id = ?", [lot.id as number]);
@@ -268,8 +277,11 @@ export function closeAuction(db: Database, auctionId: number): AuctionResult {
       }
       const buyer = outcome.winner.garageId;
       const price = outcome.price;
-      const pays = buyerPays(price);
-      const gets = sellerReceives(price);
+      const pays = buyerPays(price, garageBonuses(db, buyer).auctionPremium);
+      const gets = sellerReceives(
+        price,
+        seller === market ? 0 : garageBonuses(db, seller).auctionFee,
+      );
       db.run('UPDATE car_ownership SET to_date = ? WHERE car_id = ? AND to_date IS NULL', [
         date,
         carId,
