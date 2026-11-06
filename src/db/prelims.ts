@@ -3,7 +3,7 @@
 import type { Database } from 'sql.js';
 import type { Sector } from '../sim/courses/sectors';
 import { simulateRoundPrelims, type PrelimEntry } from '../sim/prelim/round';
-import { wearFromKm } from '../sim/wear';
+import { chassisWear } from '../sim/wear';
 import { courses } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { all, loadEntries, type Row } from './entries';
@@ -155,7 +155,7 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
       const raceKm = Math.round(entry.raceKm + added);
       db.run('UPDATE car SET race_km = ?, wear = ? WHERE id = ?', [
         raceKm,
-        Math.max(0, wearFromKm(entry.roadKm, raceKm, entry.tier) - entry.wearOffset),
+        chassisWear(entry.roadKm, raceKm, entry.tier, entry.wearOffset, entry.restorations),
         entry.carId,
       ]);
       wearParts(db, entry.carId, added, 'race', entry.tier);

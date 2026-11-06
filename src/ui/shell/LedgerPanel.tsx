@@ -200,6 +200,12 @@ function CarPage({ p }: { p: CarProfile }) {
           [t('ledger.roadKm'), p.roadKm.toLocaleString('en')],
           [t('ledger.raceKm'), p.raceKm.toLocaleString('en')],
           [t('ledger.wear'), p.wear],
+          [
+            t('ledger.restorations'),
+            p.restorations === 0
+              ? t('ledger.none')
+              : t('ledger.restorationsValue', { count: p.restorations, floor: p.wearFloor }),
+          ],
           [t('ledger.weight'), t('ledger.weightValue', { kg: p.kerbKg, mm: p.tyreWidthMm })],
           [t('ledger.fans'), p.fans.toLocaleString('en')],
         ]}

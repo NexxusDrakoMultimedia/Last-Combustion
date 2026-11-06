@@ -461,7 +461,13 @@
       "legendary": 0.3
     },
     "servicingShare": 0.25,
-    "restorationShare": 0.12,
+    "restoration": {
+      "costStep": 0.25,
+      "floorStep": 5,
+      "floorCap": 60,
+      "keepShare": 0.1,
+      "minGain": 1
+    },
     "crashShare": 0.03
   },
   "season": {
