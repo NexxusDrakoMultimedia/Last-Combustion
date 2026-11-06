@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   formatDate,
+  formatGap,
   formatLapTime,
   formatMoney,
   hasText,
@@ -35,6 +36,12 @@ describe('i18n', () => {
   it('formats lap times', () => {
     expect(formatLapTime(3_507_123)).toBe('58:27.123');
     expect(formatLapTime(65_040)).toBe('1:05.040');
+    // Past an hour the time shows hours (a final can take almost five).
+    expect(formatLapTime(16_966_780)).toBe('4:42:46.780');
+    expect(formatLapTime(3_600_000)).toBe('1:00:00.000');
+    expect(formatLapTime(3_599_999)).toBe('59:59.999');
+    expect(formatGap(1234)).toBe('+1.234');
+    expect(formatGap(68_159)).toBe('+1:08.159');
   });
 
   it('has no empty messages', () => {

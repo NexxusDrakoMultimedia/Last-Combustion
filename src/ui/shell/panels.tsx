@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { useState } from 'react';
 import { formatDate, formatMoney, t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
-import { button, quiet } from '../styles';
+import { button, dataTable, quiet } from '../styles';
 import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 
@@ -31,7 +32,7 @@ export function SeasonCalendar() {
   const hub = useCareerStore((s) => s.hub);
   if (!hub) return null;
   return (
-    <table className="w-full text-left text-sm">
+    <table className={`${dataTable} text-sm`}>
       <caption className="sr-only">{t('hub.calendar')}</caption>
       <thead className="lc-display text-xs text-lc-dim">
         <tr>
@@ -73,6 +74,7 @@ export function SeasonCalendar() {
 
 export function OwnedCars({ locked }: { locked: boolean }) {
   const { cars, hub, status, raceCar, restoreCar } = useCareerStore();
+  const [confirming, setConfirming] = useState<number | null>(null);
   const cash = hub?.player?.cash ?? 0;
   const started = hub?.rounds.some((r) => r.status !== 'scheduled') ?? false;
   return (
@@ -109,9 +111,17 @@ export function OwnedCars({ locked }: { locked: boolean }) {
             disabled={
               locked || status === 'busy' || !c.restoration.worthwhile || c.restoration.cost > cash
             }
-            onClick={() => void restoreCar(c.carId)}
+            onClick={() => {
+              if (confirming === c.carId) {
+                setConfirming(null);
+                void restoreCar(c.carId);
+              } else setConfirming(c.carId);
+            }}
+            onBlur={() => setConfirming((now) => (now === c.carId ? null : now))}
           >
-            {t('market.restore', { cost: formatMoney(c.restoration.cost) })}
+            {t(confirming === c.carId ? 'market.restoreConfirm' : 'market.restore', {
+              cost: formatMoney(c.restoration.cost),
+            })}
           </button>
           {c.inEntry !== null ? (
             <span className="text-lc-dim">{t('market.racing', { number: c.inEntry })}</span>

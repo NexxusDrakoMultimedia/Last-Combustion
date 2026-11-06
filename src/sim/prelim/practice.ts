@@ -70,7 +70,9 @@ export function simulatePractice(
           covered += lapKm;
         }
       }
-      raceKm.set(entry.carId, (raceKm.get(entry.carId) ?? 0) + covered);
+      // Practice runs are short, gentle test runs: only a tenth of their distance counts as race
+      // kilometres, so a season of practice wears a car about as much as a few laps of racing.
+      raceKm.set(entry.carId, (raceKm.get(entry.carId) ?? 0) + covered * cfg.kmShare);
       if (!outForDay && rng.chance(cfg.breakthroughPerDay)) {
         const gain = Math.round(rng.float(0.001, 0.003) * 10000) / 10000;
         setupBonus.set(entry.entryId, Math.max(setupBonus.get(entry.entryId) ?? 0, gain));

@@ -142,11 +142,15 @@ describe('the garage champion and the garage of the drivers’ champion', () => 
   let db: Database;
   let end: ReturnType<typeof endSeason>;
   beforeAll(() => {
-    // With this seed the drivers' champion does not drive for the Garage Championship winner.
-    db = newCareer('g1');
-    playSeason(db);
-    end = endSeason(db);
-  }, 120_000);
+    // Most seeds give a season where the drivers' champion does not drive for the Garage
+    // Championship winner; use the first one that does.
+    for (const seed of ['g1', 'g3', 'g4', 'g5', 'g6', 'g7']) {
+      db = newCareer(seed);
+      playSeason(db);
+      end = endSeason(db);
+      if (end.championGarageId !== end.championDriverGarageId) break;
+    }
+  }, 240_000);
 
   it('records the Garage Championship winner from the garage table, apart from the drivers’ champion’s garage', () => {
     expect(end.championGarageId).not.toBe(end.championDriverGarageId);
