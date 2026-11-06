@@ -15,6 +15,12 @@ export function luminance(hex: string): number {
   );
 }
 
+/** The WCAG contrast ratio between two `#rrggbb` colours (1 for the same colour, 21 for black on white). */
+export function contrastRatio(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 /** Whether black or white digits are easier to read on a colour (the one with the higher contrast). */
 export function readableOn(hex: string): '#000000' | '#ffffff' {
   const l = luminance(hex);
