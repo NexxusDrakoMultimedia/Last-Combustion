@@ -62,7 +62,7 @@ export interface AppliedChange {
 
 /**
  * Applies every world change planned for this year or earlier that has not happened yet: people from
- * the region move to the new flag (taken from their hometown, or a garage's base), and the flag
+ * the region move to the new flag (taken from their hometown, or a garage's headquarters), and the flag
  * names are recorded. Called when a season starts. Old results keep the flag they were won under.
  */
 export function applyWorldChanges(db: Database, year: number): AppliedChange[] {
@@ -82,7 +82,7 @@ export function applyWorldChanges(db: Database, year: number): AppliedChange[] {
       ...regions,
     ]);
     const drivers = db.getRowsModified();
-    db.run(`UPDATE garage SET flag = ? WHERE flag = ? AND base_place_id IN (${regionIds})`, [
+    db.run(`UPDATE garage SET flag = ? WHERE flag = ? AND hq_place_id IN (${regionIds})`, [
       to,
       from,
       ...regions,

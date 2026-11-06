@@ -303,6 +303,7 @@ function GaragePage({ p }: { p: GarageProfile }) {
         items={[
           [t('ledger.nation'), flagName(p.flag)],
           [t('ledger.base'), p.base],
+          [t('ledger.headquarters'), p.headquarters],
           [t('ledger.founded'), p.foundedYear],
           [t('ledger.prestige'), p.prestige],
           [t('ledger.fans'), p.fans.toLocaleString('en')],

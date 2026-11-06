@@ -67,7 +67,10 @@ export interface Garage {
   id: number;
   name: string;
   flag: string;
+  /** Where the garage works and races from: always an Australian place. */
   basePlaceId: string;
+  /** Where its main factory, founder, owner or executive office is, which its flag stands for. */
+  hqPlaceId: string;
   homeState: string;
   primaryColour: string;
   secondaryColour: string;

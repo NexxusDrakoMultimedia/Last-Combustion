@@ -3,7 +3,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { t } from '../i18n';
 import type { OwnerSetup } from '../db/player';
-import { flagNames } from '../sim/worldgen/data';
+import { plateStateOfRegion, plateStyles } from '../sim/plates';
+import { AUSTRALIAN_STATES, flagNames } from '../sim/worldgen/data';
 import { useCareerStore } from '../state/career.store';
 import { button, field, panel, quiet } from './styles';
 
@@ -18,6 +19,7 @@ export function NewCareer() {
     birthDate: '1990-06-15',
     garageName: '',
     flag: 'AU',
+    baseState: AUSTRALIAN_STATES[0],
     primaryColour: '#b91c1c',
     secondaryColour: '#fbbf24',
   });
@@ -102,6 +104,24 @@ export function NewCareer() {
                 {names.short}
               </option>
             ))}
+          </select>
+        </label>
+        <label className="space-y-1 text-sm" htmlFor="garage-state">
+          {t('newCareer.baseState')}
+          <select
+            id="garage-state"
+            className={field}
+            value={setup.baseState}
+            onChange={(e) => set('baseState', e.target.value)}
+          >
+            {AUSTRALIAN_STATES.map((region) => {
+              const state = plateStateOfRegion(region);
+              return (
+                <option key={region} value={region}>
+                  {state ? plateStyles[state].name : region}
+                </option>
+              );
+            })}
           </select>
         </label>
         <div className="flex gap-4">
