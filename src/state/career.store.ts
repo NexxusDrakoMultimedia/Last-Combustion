@@ -90,7 +90,7 @@ import {
   type Executive,
   type ExecutiveOutcome,
 } from '../db/executives';
-import { ledgerPage, type LedgerPage, type LedgerTarget } from '../db/ledger';
+import { registryPage, type RegistryPage, type RegistryTarget } from '../db/registry';
 import { recordBook, type RecordBook } from '../db/records';
 import {
   fullStandings,
@@ -238,9 +238,9 @@ interface CareerState {
   recordBook: RecordBook | undefined;
   /** The seasons in the save, and the full tables and round classification last asked for (read when the Season panel needs them). */
   years: number[];
-  /** The Ledger: where the player has been (newest last) and the page now showing. */
-  ledgerTrail: LedgerTarget[];
-  ledgerPage: LedgerPage | undefined;
+  /** The Registry: where the player has been (newest last) and the page now showing. */
+  registryTrail: RegistryTarget[];
+  registryPage: RegistryPage | undefined;
   standingsView: FullStandings | undefined;
   classificationView: RoundClassification | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
@@ -281,9 +281,9 @@ interface CareerState {
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
   loadRecords(): void;
-  openLedger(target: LedgerTarget): void;
-  ledgerBack(): void;
-  closeLedger(): void;
+  openRegistry(target: RegistryTarget): void;
+  registryBack(): void;
+  closeRegistry(): void;
   loadStandings(year: number): void;
   loadClassification(year: number, round: number): void;
   dismissExecutive(executiveId: number): Promise<void>;
@@ -423,8 +423,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     recordBook: undefined,
     years: [],
     standingsView: undefined,
-    ledgerTrail: [],
-    ledgerPage: undefined,
+    registryTrail: [],
+    registryPage: undefined,
     classificationView: undefined,
     staff: [],
     staffOffers: [],
@@ -772,16 +772,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       if (openDb) set({ classificationView: roundClassification(openDb, year, round) });
     },
 
-    openLedger: (target) => {
+    openRegistry: (target) => {
       if (!openDb) return;
       try {
-        const page = ledgerPage(openDb, target);
-        trackDesign(undefined, 'Ledger', 'Open', target.kind);
-        const trail = get().ledgerTrail;
+        const page = registryPage(openDb, target);
+        trackDesign(undefined, 'Registry', 'Open', target.kind);
+        const trail = get().registryTrail;
         const top = trail[trail.length - 1];
         set({
-          ledgerPage: page,
-          ledgerTrail:
+          registryPage: page,
+          registryTrail:
             top && JSON.stringify(top) === JSON.stringify(target) ? trail : [...trail, target],
         });
       } catch (error) {
@@ -789,17 +789,17 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       }
     },
 
-    ledgerBack: () => {
-      const trail = get().ledgerTrail.slice(0, -1);
+    registryBack: () => {
+      const trail = get().registryTrail.slice(0, -1);
       const previous = trail[trail.length - 1];
       if (!openDb || !previous) {
-        set({ ledgerTrail: [], ledgerPage: undefined });
+        set({ registryTrail: [], registryPage: undefined });
         return;
       }
-      set({ ledgerTrail: trail, ledgerPage: ledgerPage(openDb, previous) });
+      set({ registryTrail: trail, registryPage: registryPage(openDb, previous) });
     },
 
-    closeLedger: () => set({ ledgerTrail: [], ledgerPage: undefined }),
+    closeRegistry: () => set({ registryTrail: [], registryPage: undefined }),
 
     loadRecords: () => {
       if (openDb) set({ recordBook: recordBook(openDb) });

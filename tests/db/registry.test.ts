@@ -10,9 +10,9 @@ import {
   decalsOf,
   driverProfile,
   garageProfile,
-  ledgerIndex,
+  registryIndex,
   roundProfile,
-} from '../../src/db/ledger';
+} from '../../src/db/registry';
 import { playPrelims } from '../../src/db/prelims';
 import { startNextSeason } from '../../src/db/rollover';
 import { endSeason } from '../../src/db/season';
@@ -34,7 +34,7 @@ function playSeason(db: Database): void {
   }
 }
 
-describe('the ledger over two seasons', () => {
+describe('the registry over two seasons', () => {
   let db: Database;
   let championId: number;
   let championCarId: number;
@@ -144,7 +144,7 @@ describe('the ledger over two seasons', () => {
   });
 
   it('indexes everything to browse and search', () => {
-    const index = ledgerIndex(db);
+    const index = registryIndex(db);
     expect(index.drivers.length).toBeGreaterThan(313);
     expect(index.cars.length).toBeGreaterThan(300);
     expect(index.garages.length).toBeGreaterThan(50);
