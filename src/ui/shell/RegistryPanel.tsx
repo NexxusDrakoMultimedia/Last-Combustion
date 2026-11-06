@@ -16,7 +16,7 @@ import { DecalRow } from '../Decals';
 import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
-import { field, quiet } from '../styles';
+import { dataTable, field, quiet } from '../styles';
 
 const flagName = (code: string): string => flagNames[code]?.short ?? code;
 const place = (rank: number | null): string => (rank === null ? t('registry.none') : String(rank));
@@ -121,7 +121,7 @@ function DriverPage({ p }: { p: DriverProfile }) {
         {p.seasons.length === 0 ? (
           <p className="text-lc-dim">{t('registry.noSeasons')}</p>
         ) : (
-          <table className="w-full text-left">
+          <table className={dataTable}>
             <thead className={th}>
               <tr>
                 <th scope="col">{t('registry.year')}</th>
@@ -219,7 +219,7 @@ function CarPage({ p }: { p: CarProfile }) {
         {p.seasons.length === 0 ? (
           <p className="text-lc-dim">{t('registry.noSeasons')}</p>
         ) : (
-          <table className="w-full text-left">
+          <table className={dataTable}>
             <thead className={th}>
               <tr>
                 <th scope="col">{t('registry.year')}</th>
@@ -351,7 +351,7 @@ function GaragePage({ p }: { p: GarageProfile }) {
         )}
       </Section>
       <Section title={t('registry.seasons')}>
-        <table className="w-full text-left">
+        <table className={dataTable}>
           <thead className={th}>
             <tr>
               <th scope="col">{t('registry.year')}</th>
@@ -492,7 +492,7 @@ function RoundPage({ p }: { p: RoundProfile }) {
           <p className="text-lc-dim">{t('tables.notRun')}</p>
         ) : (
           <div className="max-h-[50vh] overflow-auto">
-            <table className="w-full text-left">
+            <table className={dataTable}>
               <thead className={`${th} sticky top-0 bg-lc-panel`}>
                 <tr>
                   <th scope="col">{t('tables.pos')}</th>

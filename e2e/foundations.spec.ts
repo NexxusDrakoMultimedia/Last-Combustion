@@ -51,7 +51,11 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await page.getByRole('button', { name: messages['rail.garage'] }).click();
   await expect(page.getByRole('heading', { name: messages['entries.title'] })).toBeVisible();
   // Each car offers a full restoration, with its price.
-  await expect(page.getByRole('button', { name: /^Fully restore/ }).first()).toBeVisible();
+  const restore = page.getByRole('button', { name: /^Fully restore/ }).first();
+  await expect(restore).toBeVisible();
+  // It costs as much as a new car, so the first click only asks for a second.
+  await restore.click();
+  await expect(page.getByRole('button', { name: /^Click again to pay/ })).toBeVisible();
   await page.keyboard.press('Escape');
 
   await page.getByRole('button', { name: messages['rail.upgrades'] }).click();

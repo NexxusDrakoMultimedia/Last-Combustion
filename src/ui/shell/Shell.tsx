@@ -15,6 +15,9 @@ import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { About } from '../About';
+import { Plate } from '../Plate';
+import { RaceNumber } from '../RaceNumber';
+import { RegistryLink } from '../RegistryLink';
 import { AlmanacPanel } from './AlmanacPanel';
 import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
@@ -33,7 +36,7 @@ type PanelId =
   | 'operations'
   | 'sponsors'
   | 'almanac'
-  | 'ledger'
+  | 'registry'
   | 'money'
   | 'menu';
 
@@ -47,7 +50,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'operations', label: 'rail.operations' },
   { id: 'sponsors', label: 'rail.sponsors' },
   { id: 'almanac', label: 'rail.almanac' },
-  { id: 'ledger', label: 'rail.registry' },
+  { id: 'registry', label: 'rail.registry' },
   { id: 'money', label: 'rail.money' },
 ];
 
@@ -68,7 +71,7 @@ export function Shell() {
   } = s;
   const [openPanel, setPanel] = useState<PanelId | null>(null);
   // A profile opened from anywhere (a plate, a name, a number) shows the Registry over whatever is open.
-  const open = s.registryPage ? 'ledger' : openPanel;
+  const open = s.registryPage ? 'registry' : openPanel;
   const [seasonTab, setSeason] = useState('calendar');
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
@@ -76,7 +79,7 @@ export function Shell() {
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
     if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
-    if (id === 'ledger') {
+    if (id === 'registry') {
       s.openRegistry({ kind: 'index' });
       return;
     }
@@ -206,12 +209,29 @@ export function Shell() {
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {player?.entries.map((e) => {
               const car = s.cars.find((c) => c.inEntry === e.raceNumber);
+              const entry = s.entries.find((x) => x.raceNumber === e.raceNumber);
               return (
                 <li key={e.raceNumber} className="border border-lc-line bg-lc-panel p-3">
-                  <p className="lc-display text-3xl text-lc-accent-ink">
-                    {t('shell.number', { number: e.raceNumber })}
-                  </p>
-                  <p className="text-sm font-medium">{e.driver}</p>
+                  {entry ? (
+                    <>
+                      <p className="flex items-center gap-3">
+                        <RaceNumber number={e.raceNumber} badge={entry.badge} size="large" />
+                        <Plate plate={entry.plate} state={entry.plateState} carId={entry.carId} />
+                      </p>
+                      <p className="pt-1 text-sm font-medium">
+                        <RegistryLink to={{ kind: 'driver', id: entry.driverId }}>
+                          {e.driver}
+                        </RegistryLink>
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="lc-display text-3xl text-lc-accent-ink">
+                        {t('shell.number', { number: e.raceNumber })}
+                      </p>
+                      <p className="text-sm font-medium">{e.driver}</p>
+                    </>
+                  )}
                   <p className="text-sm text-lc-dim">{e.car}</p>
                   {car && <ConditionBar wear={car.wear} />}
                 </li>
@@ -221,7 +241,19 @@ export function Shell() {
           <section aria-label={t('shell.news')} className="space-y-1 border-t border-lc-line pt-3">
             <h2 className="lc-display text-sm text-lc-dim">{t('shell.news')}</h2>
             <ul className="space-y-1 text-sm" aria-live="polite">
-              {news.length === 0 && <li className="text-lc-dim">{t('shell.noNews')}</li>}
+              {news.length === 0 && !hub.rounds.some((r) => r.status !== 'scheduled') && (
+                <>
+                  <li className="text-lc-dim">{t('shell.gettingStarted')}</li>
+                  {(['sponsor', 'staff', 'drivers', 'run'] as const).map((step) => (
+                    <li key={step} className="list-inside list-disc pl-2">
+                      {t(`shell.start.${step}` as never)}
+                    </li>
+                  ))}
+                </>
+              )}
+              {news.length === 0 && hub.rounds.some((r) => r.status !== 'scheduled') && (
+                <li className="text-lc-dim">{t('shell.noNews')}</li>
+              )}
               {news.map((n) => (
                 <li key={n}>{n}</li>
               ))}
@@ -230,7 +262,7 @@ export function Shell() {
         </main>
         <nav
           aria-label={t('shell.rail')}
-          className="flex w-24 flex-col border-l border-lc-line bg-lc-panel"
+          className="flex w-28 flex-col border-l border-lc-line bg-lc-panel"
         >
           {RAIL.map((r) => (
             <button
@@ -363,7 +395,7 @@ export function Shell() {
           <AlmanacPanel tab={almanacTab} />
         </Panel>
       )}
-      {!locked && open === 'ledger' && (
+      {!locked && open === 'registry' && (
         <Panel title={t('rail.registry')} subtitle={t('registry.intro')} onClose={s.closeRegistry}>
           <RegistryPanel />
         </Panel>

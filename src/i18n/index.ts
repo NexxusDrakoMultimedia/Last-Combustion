@@ -51,16 +51,25 @@ export function formatDate(iso: string): string {
   );
 }
 
-/** Formats a lap time in milliseconds as minutes, seconds and thousandths. */
+/**
+ * Formats a time in milliseconds as minutes, seconds and thousandths (`58:27.123`), or with hours
+ * once it passes an hour (`4:42:46.780`), since a final can take that long.
+ */
 export function formatLapTime(ms: number): string {
-  const minutes = Math.floor(ms / 60000);
-  const seconds = (ms % 60000) / 1000;
-  return `${minutes}:${seconds.toFixed(3).padStart(6, '0')}`;
+  const total = Math.round(ms);
+  const hours = Math.floor(total / 3_600_000);
+  const minutes = Math.floor((total % 3_600_000) / 60_000);
+  const seconds = (total % 60_000) / 1000;
+  const secs = seconds.toFixed(3).padStart(6, '0');
+  return hours > 0 ? `${hours}:${String(minutes).padStart(2, '0')}:${secs}` : `${minutes}:${secs}`;
 }
 
-/** Formats a gap to the leader in milliseconds, such as `+1.234` (seconds). */
+/**
+ * Formats a gap to the leader in milliseconds, such as `+1.234` seconds, or `+1:08.159` once it is
+ * over a minute.
+ */
 export function formatGap(ms: number): string {
-  return `+${(ms / 1000).toFixed(3)}`;
+  return `+${ms >= 60_000 ? formatLapTime(ms) : (ms / 1000).toFixed(3)}`;
 }
 
 /** Formats an amount in Australian dollars. */
