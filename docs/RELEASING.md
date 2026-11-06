@@ -18,7 +18,7 @@ M0 to M4 were built before there were players and have no release. Before 1.0.0 
 
 ## Scope freeze and the 0.1.x series
 
-**From now until 0.1.0 is out, scope is frozen.** Only these go in: fixes for bugs found in play, corrections to text and documentation, and the release work itself (the version, the changelog, the branding and the notices). Anything new is written down and waits.
+**Scope was frozen until 0.1.0 came out (2026-11-06).** That freeze is over: new work for M6 (0.2.0) is built on `feature/0.2.x`, in the order set out in the [M6 plan](M6_PLAN.md). The rules below still bind `main` and `hotfix/0.1.x`, which only take fixes and the release work itself (the version, the changelog, the branding and the notices). Anything new that is not a patch goes to the milestone branch, or is written down and waits.
 
 **After 0.1.0, patch releases keep the first version healthy** while the next milestone is built on its own branch. A patch release (0.1.1, 0.1.2 and so on) is made on `hotfix/0.1.x`, branched from the `v0.1.0` tag, and is merged back into `main` and into the milestone branch in progress. It may contain:
 
@@ -35,6 +35,7 @@ It may not contain new features, new screens, new rules, schema changes or anyth
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | M6 (0.2.0)  | Scouting and fog of war: scouts, the Head of Scouting, descriptions and ranges that tighten into exact values ("Scouting and fog of war")                                                                    |
 | M6 (0.2.0)  | The five-tier ladder for sponsors and suppliers (local, regional, national, continental, global)                                                                                                             |
+| M6 (0.2.0)  | Fan and prestige rankings for drivers, cars, garages and nations, and the logo as the start-page header (issues 80 and 85)                                                                                   |
 | M6 (0.2.0)  | The financial ledger, ownership and the cap table, facilities and the people layer                                                                                                                           |
 | M7 (0.3.0)  | The Junior Series, the 2036 expansion and the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior)                                                                                        |
 | Later       | The thematic type (Orbitron and Exo 2) for the logo and special screens, the story, press and social layers that use the slab, serif and flexible fonts, and a way to give feedback without a GitHub account |
