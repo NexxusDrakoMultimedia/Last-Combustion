@@ -4,14 +4,15 @@ This is how Last Combustion is released to players. The [Game Design Document](G
 
 ## Versions
 
-Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each milestone from M5 on ends in a release (proposed numbers, to be confirmed at each milestone):
+Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each milestone from M5 on ends in a release (proposed numbers, to be confirmed at each milestone). **1.0.0 is not tied to any milestone**: the project owner declares it when the game is feature complete, so milestones after M8, or more releases between, are possible.
 
 | Milestone                | Release   | What players get                                                                                                                                  |
 | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M5 First playable season | **0.1.0** | The first release: start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season and begin 2032 with every record kept |
 | M6 Depth                 | 0.2.0     | Ownership, the people layer, supply outages, facilities and the rest of the depth work                                                            |
 | M7 Junior and expansion  | 0.3.0     | The Junior Series, promotion and the 2036 expansion                                                                                               |
-| M8 Modes and release     | **1.0.0** | All career modes, polish, mods, desktop builds                                                                                                    |
+| M8 Modes and release     | 0.4.0     | All career modes, polish, mods, desktop builds, listing on the exchange                                                                           |
+| Feature complete         | **1.0.0** | Not a milestone: the project owner declares 1.0.0 when the game is feature complete, whenever that is                                             |
 
 M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load: schema changes are new numbered migrations and a released migration is never edited.
 
