@@ -51,6 +51,32 @@ describe('the starter choice', () => {
     expect(a.cars.map((c) => c.modelName)).toEqual(b.cars.map((c) => c.modelName));
   });
 
+  it('offers brand-new Starter-class cars and prospects below the field average', () => {
+    let pace = 0;
+    let count = 0;
+    for (const seed of ['starter', 'a', 'b', 'c']) {
+      const db = fresh(seed);
+      const offers = starterOffers(db)!;
+      for (const c of offers.cars) {
+        expect(c.modelYear).toBe(2031);
+        expect(c.roadKm).toBe(0);
+        expect(c.wear).toBe(0);
+        expect(
+          scalar(
+            db,
+            `SELECT m.tier FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ${c.carId}`,
+          ),
+        ).toBe('starter');
+      }
+      for (const d of offers.drivers) {
+        pace += d.pace;
+        count += 1;
+      }
+    }
+    // The field's mean pace is 45; the prospects are rookies drawn lower.
+    expect(pace / count).toBeLessThan(40);
+  });
+
   it('puts the chosen car and driver in the entry and sends the rest to market and free agency', () => {
     const db = fresh();
     const offers = starterOffers(db)!;

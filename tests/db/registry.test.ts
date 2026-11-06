@@ -10,6 +10,7 @@ import {
   decalsOf,
   driverProfile,
   garageProfile,
+  dragonDriverIds,
   registryIndex,
   roundProfile,
 } from '../../src/db/registry';
@@ -62,6 +63,16 @@ describe('the registry over two seasons', () => {
     startNextSeason(db);
     playSeason(db);
   }, 240_000);
+
+  it('gives every driver who raced the main colour of their garage for the number plate', () => {
+    const in2032 = badgesFor(db, 2032);
+    const row = db.exec(
+      `SELECT e.driver_id, g.primary_colour FROM entry e JOIN garage g ON g.id = e.garage_id
+        WHERE e.series = 'main' AND e.season_id = (SELECT id FROM season WHERE year = 2032) LIMIT 1`,
+    )[0]!.values[0] as [number, string];
+    expect(in2032.get(row[0])!.colour).toBe(row[1]);
+    expect(in2032.get(championId)!.colour).not.toBeNull();
+  });
 
   it('puts a black box on last season’s champion and a gold border on everyone who reached a final', () => {
     const in2031 = badgesFor(db, 2031);
@@ -155,6 +166,41 @@ describe('the registry over two seasons', () => {
     expect(index.rounds).toHaveLength(12);
     expect(index.rounds[0]).toMatchObject({ year: 2032, round: 1 });
     expect(index.drivers.find((d) => d.id === championId)!.badge.gold).toBe(true);
+  });
+
+  it('says when a driver debuted and in which seasons they scored, and the same for a garage', () => {
+    const scorer = Number(
+      db.exec(
+        `SELECT e.driver_id FROM result r JOIN entry e ON e.id = r.entry_id WHERE r.points > 0 AND e.series = 'main' GROUP BY e.driver_id HAVING COUNT(DISTINCT r.round_id) > 1 LIMIT 1`,
+      )[0]!.values[0]![0],
+    );
+    const p = driverProfile(db, scorer);
+    const scoringYears = p.seasons.filter((s) => s.points > 0).map((s) => s.year);
+    expect(p.debutYear).toBe(p.seasons[0]!.year);
+    expect(p.career.scoring).toEqual({
+      seasons: scoringYears.length,
+      firstYear: Math.min(...scoringYears),
+      lastYear: Math.max(...scoringYears),
+    });
+    const idle = Number(
+      db.exec(
+        `SELECT id FROM driver WHERE id NOT IN (SELECT e.driver_id FROM result r JOIN entry e ON e.id = r.entry_id WHERE r.points > 0) LIMIT 1`,
+      )[0]!.values[0]![0],
+    );
+    expect(driverProfile(db, idle).career.scoring).toEqual({
+      seasons: 0,
+      firstYear: null,
+      lastYear: null,
+    });
+    const g = garageProfile(db, championGarageId);
+    expect(g.scoring.seasons).toBeGreaterThan(0);
+    expect(g.scoring.firstYear).toBeLessThanOrEqual(g.scoring.lastYear!);
+  });
+
+  it('knows the twelve dragon-blooded drivers', () => {
+    const ids = dragonDriverIds(db);
+    expect(ids.size).toBe(12);
+    expect(db.exec('SELECT COUNT(*) FROM driver WHERE easter_egg = 1')[0]!.values[0]![0]).toBe(12);
   });
 
   it('lists numbered drivers first by number, then the rest alphabetically', () => {

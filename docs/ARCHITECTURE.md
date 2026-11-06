@@ -17,7 +17,7 @@ Most features come in pairs. A pure module in `src/sim` holds the rules and read
 
 ## Data and saves
 
-- **Schema versions.** The schema version is SQLite's `PRAGMA user_version`. `src/db/migrate.ts` applies the numbered migrations in `src/db/migrations/` (0001 to 0035 so far) in order, each in its own transaction, and refuses a database from a newer game version. Never edit a released migration; add a new one. Some migrations rebuild a table (the negotiation tables, for example) to widen a `CHECK` constraint.
+- **Schema versions.** The schema version is SQLite's `PRAGMA user_version`. `src/db/migrate.ts` applies the numbered migrations in `src/db/migrations/` (0001 to 0036 so far) in order, each in its own transaction, and refuses a database from a newer game version. Never edit a released migration; add a new one. Some migrations rebuild a table (the negotiation tables, for example) to widen a `CHECK` constraint.
 - **`.lcsave` file.** One file per career: a small header (format version, schema version, game version, mods, preview, SHA-256 of the database) followed by the SQLite bytes. See `src/db/save-file.ts`.
 - **Slots.** `slot1`, `slot2`, `slot3` and `autosave`, kept in IndexedDB by the web platform (`src/db/storage.ts`).
 - **Opening the database.** `src/db/browser.ts` loads SQL.js with the bundled `.wasm` file. Tests use `loadSql()` directly. `src/db/session.ts` holds the open career and the game version (`APP_VERSION`).
@@ -45,7 +45,7 @@ Most features come in pairs. A pure module in `src/sim` holds the rules and read
 ## The season
 
 - **End of season.** `endSeason` in `src/db/season.ts` pays the champion's prize and the bonuses, sets gold borders and takes the final snapshots (migration 0014). It then calls `awardSeason` in `src/db/awards.ts` with the final tables.
-- **Awards and records.** `src/sim/awards.ts` (with `data/awards.json`) picks the winners, `src/db/awards.ts` stores and reads them (migration 0031), and `src/db/records.ts` builds the record book when the Almanac opens. `src/db/almanac.ts` keeps the almanac of everyone who ever scored (migration 0015).
+- **Awards and records.** `src/sim/awards.ts` (with `data/awards.json`) picks the winners, `src/db/awards.ts` stores and reads them (migration 0031), and `src/db/records.ts` builds the record book when the Almanac opens. Each person's career is on their Registry profile (the older per-person almanac module is gone; migration 0015 added `garage.closed_year`).
 - **Next season.** `startNextSeason` calls `src/db/rollover.ts` (retirements, rookies, contracts, numbers, calendar, entries, using `src/sim/rollover.ts`), `src/db/garages.ts` (computer garages get their sponsorship, garages broke two seasons running fold, new ones open; migration 0024), the fans growth, training and driver moves.
 
 ## Cars, parts and the market
@@ -69,7 +69,7 @@ Most features come in pairs. A pure module in `src/sim` holds the rules and read
 
 ## The Registry
 
-`src/db/registry.ts` has `driverProfile`, `carProfile`, `garageProfile`, `roundProfile` (prelim or race), `registryIndex`, `registryPage` and `decalsOf` (the trophies and shields). `src/db/badges.ts` has `badgesFor` (gold and silver borders and the black box, by season). The UI is `RegistryPanel.tsx` in `src/ui/shell`, plus `RegistryLink`, `RaceNumber` and `Decals` in `src/ui`. The store keeps the trail of pages (`openRegistry`, `registryBack`, `closeRegistry`) and the Shell shows the Registry over whatever panel is open. A planned financial ledger (yearly summaries, assets) is design only; see the GDD.
+`src/db/registry.ts` has `driverProfile`, `carProfile`, `garageProfile`, `roundProfile` (prelim or race), `registryIndex`, `registryPage` and `decalsOf` (the trophies and shields). `src/db/status.ts` has `registryStatuses` (champion, race winner, active, retired or obscure for every driver, car and garage) and `greylinkedKeys`, which the index sections and the grey links use. `src/db/carage.ts` has `retireOldCars`, called by the rollover (migration 0036). `src/db/badges.ts` has `badgesFor` (gold and silver borders and the black box, by season). The UI is `RegistryPanel.tsx` in `src/ui/shell`, plus `RegistryLink`, `RaceNumber` and `Decals` in `src/ui`. The store keeps the trail of pages (`openRegistry`, `registryBack`, `closeRegistry`) and the Shell shows the Registry over whatever panel is open. A planned financial ledger (yearly summaries, assets) is design only; see the GDD.
 
 ## State, platform and UI
 

@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { restorationFloor } from '../sim/wear';
+import { registryStatuses, type RegistryStatus } from './status';
 import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
 import { readCareer } from './career';
@@ -60,6 +61,22 @@ export interface CarRef {
   plate: string;
   plateState: string;
   model: string;
+}
+
+/** The seasons in which someone scored, and the first and last of them. */
+export interface ScoringSpan {
+  seasons: number;
+  firstYear: number | null;
+  lastYear: number | null;
+}
+
+function scoringSpan(lines: { year: number; points: number }[]): ScoringSpan {
+  const years = lines.filter((l) => l.points > 0).map((l) => l.year);
+  return {
+    seasons: years.length,
+    firstYear: years.length > 0 ? Math.min(...years) : null,
+    lastYear: years.length > 0 ? Math.max(...years) : null,
+  };
 }
 
 export interface SeasonLine {
@@ -124,7 +141,11 @@ export interface DriverProfile {
     finals: number;
     poles: number;
     championships: number;
+    /** The seasons with at least a point, and the first and last of them. */
+    scoring: ScoringSpan;
   };
+  /** The first season they entered, or null if they never have. */
+  debutYear: number | null;
   garage: Ref | null;
   seasons: DriverSeason[];
   contracts: { garage: Ref; startYear: number; endYear: number; salary: number }[];
@@ -225,7 +246,9 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
       championships: Number(
         all(db, 'SELECT COUNT(*) AS n FROM season WHERE champion_driver_id = ?', [driverId])[0]!.n,
       ),
+      scoring: scoringSpan(seasons),
     },
+    debutYear: seasons[0]?.year ?? null,
     garage: last ? last.garage : null,
     seasons,
     contracts: all(
@@ -263,7 +286,9 @@ export interface CarProfile {
   wearFloor: number;
   kerbKg: number;
   tyreWidthMm: number;
-  /** The garage that has it now, or null while it is for sale. */
+  /** The season it retired after, if it did (too old, never scored). */
+  retiredYear: number | null;
+  /** The garage that has it now, or null while it is for sale or once it has retired. */
   garage: Ref | null;
   owners: {
     garage: Ref;
@@ -327,6 +352,7 @@ export function carProfile(db: Database, carId: number): CarProfile {
     wearFloor: restorationFloor(c.restorations as number),
     kerbKg: c.kerb_kg_current as number,
     tyreWidthMm: c.tyre_width_mm as number,
+    retiredYear: (c.retired_year as number | null) ?? null,
     garage:
       c.garage_kind === 'market'
         ? null
@@ -396,6 +422,8 @@ export interface GarageProfile {
   cars: CarRef[];
   seasons: (SeasonLine & { entries: number })[];
   championships: number[];
+  /** The seasons with at least a point, and the first and last of them. */
+  scoring: ScoringSpan;
   drivers: (Ref & { years: string })[];
 }
 
@@ -477,6 +505,9 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     championships: all(db, 'SELECT year FROM season WHERE champion_garage_id = ? ORDER BY year', [
       garageId,
     ]).map((s) => s.year as number),
+    scoring: scoringSpan(
+      seasonRows.map((s) => ({ year: s.year as number, points: Number(s.points) })),
+    ),
     drivers: all(
       db,
       `SELECT e.driver_id AS id, d.name, MIN(s.year) AS first, MAX(s.year) AS last FROM entry e
@@ -560,6 +591,14 @@ export function roundProfile(
   };
 }
 
+/** The keys (`driver:12`, `car:7`, `garage:3`) of everything greylinked: retired or folded without ever scoring. */
+export { greylinkedKeys } from './status';
+
+/** The dragon-blooded drivers: the twelve canonical characters, who carry the dragon mark. */
+export function dragonDriverIds(db: Database): Set<number> {
+  return new Set(all(db, 'SELECT id FROM driver WHERE easter_egg = 1').map((d) => d.id as number));
+}
+
 /**
  * Everything in the Registry, as short lines to browse and search. Drivers with a number this
  * season come first, in number order; the rest (retirees, free agents) follow alphabetically.
@@ -571,15 +610,17 @@ export interface RegistryIndex {
     number: number | null;
     garage: string | null;
     badge: NumberBadge;
+    status: RegistryStatus;
   }[];
-  cars: CarRef[];
-  garages: Ref[];
+  cars: (CarRef & { status: RegistryStatus })[];
+  garages: (Ref & { status: RegistryStatus })[];
   rounds: { year: number; round: number; course: string; status: string }[];
 }
 
 export function registryIndex(db: Database): RegistryIndex {
   const year = latestYear(db);
   const badges = badgesFor(db, year);
+  const status = registryStatuses(db);
   return {
     drivers: all(
       db,
@@ -594,6 +635,7 @@ export function registryIndex(db: Database): RegistryIndex {
       number: (d.race_number as number | null) ?? null,
       garage: (d.garage as string | null) ?? null,
       badge: badges.get(d.id as number) ?? NO_BADGE,
+      status: status.driver.get(d.id as number) ?? 'active',
     })),
     cars: all(
       db,
@@ -604,11 +646,13 @@ export function registryIndex(db: Database): RegistryIndex {
       plate: String(c.plate ?? ''),
       plateState: String(c.plate_state ?? ''),
       model: c.model as string,
+      status: status.car.get(c.id as number) ?? 'active',
     })),
     garages: all(db, "SELECT id, name FROM garage WHERE kind = 'racing' ORDER BY name").map(
       (g) => ({
         id: g.id as number,
         name: g.name as string,
+        status: status.garage.get(g.id as number) ?? 'active',
       }),
     ),
     rounds: all(

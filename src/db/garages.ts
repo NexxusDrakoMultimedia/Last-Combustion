@@ -91,6 +91,12 @@ export interface OpeningOptions {
   rookieRng: RandomStream;
   /** Rolls a new driver's identity (the same non-binary share as other newcomers). */
   identityOf: (rolled: Identity) => Identity;
+  /**
+   * Dragon-blooded drivers who retired this rollover. Each founds a garage in their home nation
+   * (its flag, and a headquarters at their hometown), on top of the year's usual openings and
+   * whether or not the season has room.
+   */
+  founders?: { flag: string; hqPlaceId: string }[];
 }
 
 /**
@@ -99,7 +105,9 @@ export interface OpeningOptions {
  * rookie. Returns how many opened.
  */
 export function openNewGarages(db: Database, o: OpeningOptions): number {
-  const count = Math.min(o.rng.int(cfg().newPerYearMin, cfg().newPerYearMax), o.room);
+  const founders = o.founders ?? [];
+  const usual = Math.min(o.rng.int(cfg().newPerYearMin, cfg().newPerYearMax), o.room);
+  const count = Math.max(0, usual) + founders.length;
   if (count <= 0) return 0;
   const names = new Set(all(db, 'SELECT name FROM garage').map((g) => String(g.name)));
   const placeIds = placeIdMap(db);
@@ -108,7 +116,7 @@ export function openNewGarages(db: Database, o: OpeningOptions): number {
   let driverId = Number(all(db, 'SELECT MAX(id) AS n FROM driver')[0]!.n) + 1;
   const taken = new Set<number>();
   for (let i = 0; i < count; i++) {
-    const garage = makeNewGarage(o.rng, garageId, o.year, names);
+    const garage = makeNewGarage(o.rng, garageId, o.year, names, founders[i]);
     names.add(garage.name);
     db.run(
       `INSERT INTO garage (id, name, flag, base_place_id, hq_place_id, home_state, primary_colour, secondary_colour,

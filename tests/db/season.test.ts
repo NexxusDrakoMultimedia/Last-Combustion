@@ -75,6 +75,7 @@ describe('standings through a season', () => {
     expect(Number(scalar(db, 'SELECT SUM(cash) FROM garage'))).toBe(
       cashBefore +
         10_000_000 +
+        10_000_000 +
         bonuses +
         Number(scalar(db, "SELECT SUM(amount) FROM ledger WHERE category = 'merchandise'")) -
         (Number(scalar(db, 'SELECT SUM(earnings) FROM driver')) - earningsBefore),
@@ -174,18 +175,14 @@ describe('the garage champion and the garage of the drivers’ champion', () => 
     ).toBe(end.championDriverGarageId);
   });
 
-  it('pays the champion’s prize to the drivers’ champion’s garage', () => {
-    expect(
+  it('pays $10,000,000 to the drivers’ champion’s garage and $10,000,000 to the Garage Championship winner', () => {
+    const paid = (garageId: number, note: string) =>
       scalar(
         db,
-        `SELECT COUNT(*) FROM ledger WHERE category = 'championship_prize' AND garage_id = ${end.championDriverGarageId}`,
-      ),
-    ).toBe(1);
-    expect(
-      scalar(
-        db,
-        `SELECT COUNT(*) FROM ledger WHERE category = 'championship_prize' AND garage_id = ${end.championGarageId}`,
-      ),
-    ).toBe(0);
+        `SELECT COALESCE(SUM(amount), 0) FROM ledger WHERE category = 'championship_prize' AND garage_id = ${garageId} AND note LIKE '%${note.replace(/'/g, "''")}'`,
+      );
+    // The garage of the drivers' champion gets its share of the driver's prize (by contract).
+    expect(Number(paid(end.championDriverGarageId, "Drivers' Championship"))).toBeGreaterThan(0);
+    expect(paid(end.championGarageId, 'Garage Championship')).toBe(10_000_000);
   });
 });

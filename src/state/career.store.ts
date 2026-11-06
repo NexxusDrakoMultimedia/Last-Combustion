@@ -90,7 +90,13 @@ import {
   type Executive,
   type ExecutiveOutcome,
 } from '../db/executives';
-import { registryPage, type RegistryPage, type RegistryTarget } from '../db/registry';
+import {
+  dragonDriverIds,
+  greylinkedKeys,
+  registryPage,
+  type RegistryPage,
+  type RegistryTarget,
+} from '../db/registry';
 import { recordBook, type RecordBook } from '../db/records';
 import {
   fullStandings,
@@ -241,6 +247,10 @@ interface CareerState {
   /** The Registry: where the player has been (newest last) and the page now showing. */
   registryTrail: RegistryTarget[];
   registryPage: RegistryPage | undefined;
+  /** The dragon-blooded drivers, who carry the dragon mark wherever their name is a link. */
+  dragonDrivers: ReadonlySet<number>;
+  /** Everything greylinked (`driver:12`, `car:7`, `garage:3`): listed apart, with grey links. */
+  greylinked: ReadonlySet<string>;
   standingsView: FullStandings | undefined;
   classificationView: RoundClassification | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
@@ -324,6 +334,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       nextRound: nextRoundNumber(db),
       nextFinal: nextFinalRound(db),
       hub: hubView(db),
+      dragonDrivers: dragonDriverIds(db),
+      greylinked: greylinkedKeys(db),
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
       listings: openListings(db),
@@ -424,6 +436,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     years: [],
     standingsView: undefined,
     registryTrail: [],
+    dragonDrivers: new Set<number>(),
+    greylinked: new Set<string>(),
     registryPage: undefined,
     classificationView: undefined,
     staff: [],

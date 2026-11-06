@@ -63,7 +63,7 @@ export function createStarterOffers(db: Database): void {
       const { carId } = createUsedCar(db, carRng, market, career.gameDate, {
         tier: 'starter',
         excludeModelIds: used,
-        minAgeShare: economyBalance.starter.carMinAgeShare,
+        age: economyBalance.starter.carAgeYears,
       });
       used.push(Number(all(db, 'SELECT car_model_id AS m FROM car WHERE id = ?', [carId])[0]!.m));
       db.run("INSERT INTO starter_offer (kind, subject_id) VALUES ('car', ?)", [carId]);

@@ -3,7 +3,7 @@
 
 import type { Migration } from '../migrate';
 
-/** Marks the hidden characters (shown with a dragon emoji). */
+/** Marks the dragon-blooded characters (shown with a dragon emoji). */
 export const migration0020: Migration = {
   version: 20,
   name: 'easter_egg',

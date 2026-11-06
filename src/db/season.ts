@@ -133,6 +133,14 @@ export function endSeason(db: Database): SeasonEnd {
       `${year} Drivers' Championship`,
     );
 
+    // The Garage Championship has its own prize, which belongs to the winning garage in full.
+    pay(
+      championGarageId,
+      'championship_prize',
+      seasonBalance.garageChampionPrize,
+      `${year} Garage Championship`,
+    );
+
     let bonusesPaid = 0;
     for (const b of all(
       db,

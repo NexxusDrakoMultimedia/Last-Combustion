@@ -1,5 +1,7 @@
 # Last Combustion
 
+_The full name is **The Last Combustion of the Petrol Engine**._
+
 _Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft._
 
 Petrol is the rarest thing in the world, and a handful of people still race combustion cars on it. In 2031 they meet on closed Australian public roads for a new championship, six rounds a season, in ordinary road-legal cars. You run a garage. You buy and upgrade the cars, sign the drivers, keep the money coming in, and try to build a name that lasts through the seasons. Every driver, car, garage and race is remembered.
@@ -80,4 +82,4 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versionin
 
 Copyright (C) Nexxus Drako Multimedia. GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE).
 
-The name "Last Combustion", its logo, the character Pyra Drake, the four commentators and the hidden driver characters are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).
+The name "Last Combustion", its logo, the character Pyra Drake, the two series administrators, the four commentators and the dragon-blooded driver characters are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).

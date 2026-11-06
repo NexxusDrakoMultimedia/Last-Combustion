@@ -78,8 +78,8 @@ describe('applying world changes', () => {
   });
 });
 
-describe('the hidden drivers and Vyktory', () => {
-  it('seats twelve hidden drivers with maximum potential, and moves them to the Vyktory flag with the rename', () => {
+describe('the dragon-blooded drivers and Vyktory', () => {
+  it('seats twelve dragon-blooded drivers with maximum potential, and moves them to the Vyktory flag with the rename', () => {
     const db = career('hidden');
     expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE easter_egg = 1')).toBe(12);
     expect(scalar(db, 'SELECT MIN(potential) FROM driver WHERE easter_egg = 1')).toBe(99);
