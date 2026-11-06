@@ -2,15 +2,12 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../i18n';
 import type { NumberBadge } from '../db/registry';
-import { contrastRatio, readableOn } from '../sim/colour';
+import { readableOn } from '../sim/colour';
 
 const GOLD = '#d4af37';
 const SILVER = '#c0c0c8';
 /** The plate used when a number has no garage colour to sit on. */
 const NEUTRAL = '#f1f3f5';
-
-/** Below this contrast, a border gets lost against the plate and is set off with a ring of its own. */
-const MIN_BORDER_CONTRAST = 3;
 
 /** The text-shadow offsets of a ring `r` pixels out from the glyphs, with the corners of the wider rings cut so they look round. */
 function ringOffsets(r: number): [number, number][] {
@@ -37,10 +34,12 @@ function rings(list: [colour: string, upTo: number][]): string {
 
 /**
  * A race number as it appears on the car. The plate is the garage's main colour with white or black
- * digits, whichever reads better. The border belongs to the number itself: a gold outline round the
- * digits for anyone who has reached a final, a silver one for a Junior Series points scorer, and for
- * the reigning champion the number also sits in a black box. These colours are race content and stay
- * the same in every theme. A number has at most 3 digits, so every number is drawn the same width.
+ * digits, whichever reads better. The border belongs to the number itself: a gold ring right round
+ * the digits for anyone who has reached a final, a silver one for a Junior Series points scorer, and
+ * a thin black ring outside it so the border stands out on any plate colour. The reigning champion's
+ * number sits in a black box with black digits inside the gold ring, which is all the border it
+ * needs. These colours are race content and stay the same in every theme. A number has at most 3
+ * digits, so every number is drawn the same width.
  */
 export function RaceNumber({
   number,
@@ -56,8 +55,9 @@ export function RaceNumber({
   const black = badge?.blackBox === true;
   const plate = badge?.colour ?? NEUTRAL;
   const border = gold ? GOLD : silver ? SILVER : null;
-  // Digits are white in the black box, otherwise whichever of black or white reads better on the plate.
-  const digits = black ? '#ffffff' : readableOn(plate);
+  // Digits are black on the gold ring of the black box, otherwise whichever of black or white reads
+  // better on the plate.
+  const digits = black ? '#000000' : readableOn(plate);
   const label = [
     t('number.label', { number }),
     gold ? t('number.gold') : silver ? t('number.silver') : '',
@@ -66,21 +66,16 @@ export function RaceNumber({
     .filter(Boolean)
     .join(', ');
   const large = size === 'large';
-  // A gold or silver border that blends into the plate gets a ring of black or white (opposite to
-  // the digits) between it and the number, so the digits and the border both stay readable.
-  const offset = border !== null && contrastRatio(plate, border) < MIN_BORDER_CONTRAST;
-  const offsetColour = digits === '#ffffff' ? '#000000' : '#ffffff';
   const borderWidth = large ? 2 : 1;
-  const offsetWidth = large ? 2 : 1;
   const shadow =
     border === null
       ? undefined
-      : offset
-        ? rings([
-            [offsetColour, offsetWidth],
-            [border, offsetWidth + borderWidth],
-          ])
-        : rings([[border, borderWidth]]);
+      : black
+        ? rings([[border, borderWidth]])
+        : rings([
+            [border, borderWidth],
+            ['#000000', borderWidth + (large ? 2 : 1)],
+          ]);
   return (
     <span
       role="img"

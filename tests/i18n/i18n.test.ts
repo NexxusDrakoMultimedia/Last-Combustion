@@ -7,6 +7,7 @@ import {
   formatGap,
   formatLapTime,
   formatMoney,
+  formatPoints,
   hasText,
   t,
   type MessageKey,
@@ -39,6 +40,9 @@ describe('i18n', () => {
   it('formats dates and money for Australia', () => {
     expect(formatDate('2031-03-31')).toBe('31 March 2031');
     expect(formatMoney(1500000)).toMatch(/1,500,000/);
+    expect(formatPoints(145)).toBe('145.0');
+    expect(formatPoints(98.5)).toBe('98.5');
+    expect(formatPoints(0)).toBe('0.0');
   });
 
   it('formats lap times', () => {
