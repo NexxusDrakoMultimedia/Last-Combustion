@@ -93,7 +93,7 @@ export interface Driver {
   gender: 'male' | 'female';
   /** How the driver presents: masculine, feminine or non-binary (pronouns and the male, female or combined sign). */
   identity: Identity;
-  /** One of the hidden characters (a dragon emoji marks them in the game). */
+  /** One of the dragon-blooded characters (a dragon emoji marks them in the game). */
   easterEgg: boolean;
   birthDate: string;
   nationality: string;

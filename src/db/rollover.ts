@@ -72,6 +72,7 @@ export function startNextSeason(db: Database): Rollover {
 
     // Retirements: a retiring driver's seat goes to a rookie, who is signed on the same terms but a smaller salary.
     const replaced = new Map<number, number>();
+    const founders: { flag: string; hqPlaceId: string }[] = [];
     let nextDriverId = Number(db.exec('SELECT MAX(id) FROM driver')[0]!.values[0]![0]) + 1;
     const placeIds = placeIdMap(db);
     for (const e of entries) {
@@ -79,6 +80,19 @@ export function startNextSeason(db: Database): Rollover {
       if (e.retired_year !== null || e.is_player === 1 || !retires(retireRng, age)) continue;
       const driverId = e.driver_id as number;
       db.run('UPDATE driver SET retired_year = ? WHERE id = ?', [year - 1, driverId]);
+      // A dragon-blooded driver who retires founds a garage in their home nation.
+      const dragon = all(
+        db,
+        `SELECT d.nationality, p.stable_id FROM driver d JOIN place p ON p.id = d.hometown_place_id
+          WHERE d.id = ? AND d.easter_egg = 1`,
+        [driverId],
+      )[0];
+      if (dragon) {
+        founders.push({
+          flag: dragon.nationality as string,
+          hqPlaceId: dragon.stable_id as string,
+        });
+      }
       const rookie = makeRookie(rookieRng, nextDriverId, year, {
         ageMin: seasonBalance.rookieAgeMin,
         ageMax: seasonBalance.rookieAgeMax,
@@ -266,6 +280,7 @@ export function startNextSeason(db: Database): Rollover {
       year,
       room: Math.max(0, seasonBalance.garages.maxEntries - entries.length),
       takeNumber: free,
+      founders,
       rng: rng.stream(`rollover:${year}:garages`),
       rookieRng: rng.stream(`rollover:${year}:garage-drivers`),
       identityOf: (rolled) =>

@@ -7,7 +7,7 @@ Guidance for AI coding agents (and a quick reference for people) working on **La
 - A single-player management game: TypeScript, React 19, Tailwind 4, Zustand, SQLite in the browser (SQL.js), built with Vite. Electron desktop builds come later.
 - The design is in `docs/GAME_DESIGN_DOCUMENT.md`. It is the source of truth for rules and numbers. Change it in the same pull request as any code that changes behaviour.
 - Work is staged in milestones M0 to M8 (see "Scope and build order" in the GDD), released as 0.1.0 at the end of M5 and in later 0.x versions after (1.0.0 is declared by the project owner when the game is feature complete, not at a milestone; see `docs/RELEASING.md`). M0 to M4 (foundations, world generation, prelims, final race, garage and economy) are built as simulation and database code, and M5 (the first playable season) is in progress, with the first screens in place. The GDD says what is built.
-- Licence: GPL-3.0-or-later. The name, logo, Pyra Drake, the four commentators and the hidden driver characters are reserved; no other character is claimed (see `TRADEMARKS.md`).
+- Licence: GPL-3.0-or-later. The name, logo, Pyra Drake, the two series administrators, the four commentators and the dragon-blooded driver characters are reserved; no other character is claimed (see `TRADEMARKS.md`).
 
 ## Setup and commands
 
@@ -51,7 +51,7 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 - **Data, not code, for numbers.** Balance values live in `data/balance.json`; reference data lives in `data/`. Mods use the same files, so keep schemas stable.
 - **Licences.** Only add dependencies and assets with GPL-compatible licences, and record third-party assets in `CREDITS.md`. `pnpm run licenses` must pass.
 - **File headers.** New source files start with `SPDX-License-Identifier: GPL-3.0-or-later` and `SPDX-FileCopyrightText: Nexxus Drako Multimedia`.
-- **Hidden drivers.** Twelve hidden driver characters live in `data/easter_drivers.json`. In the game they show only a dragon mark with a cryptic hint; do not explain them in player-facing text, and do not copy their names into other code, tests or docs apart from the GDD.
+- **Dragon-blooded drivers.** Twelve dragon-blooded driver characters live in `data/easter_drivers.json`. In the game they show a dragon mark (🐉) with a cryptic hint; do not explain them in player-facing text, and do not copy their names into other code, tests or docs apart from the GDD.
 - **Easter egg.** Do not write the Founder's career unlock details into code, comments, tests or logs in plain text, and do not mention it in player-facing text (see the GDD).
 - **Real brands.** Cars, manufacturers and people in the shipped data are fictional. Real counterparts belong only in the GDD and the optional mod mapping, never in `data/`.
 - **Writing style.** Plain, direct, human prose. No em dashes (use a comma, colon, full stop or brackets), and an en dash only in a number range; `pnpm docs:style` checks the Markdown, `locales/` and `data/`. Every release gets a full documentation pass first (see `docs/RELEASING.md`).

@@ -209,13 +209,17 @@ export function makeNewGarage(
   id: number,
   year: number,
   usedNames: Set<string>,
+  /** A garage founded by a retiring dragon-blooded driver: their home nation and where its headquarters is. */
+  founder?: { flag: string; hqPlaceId: string },
 ): Garage {
   const cfg = balance;
-  const flag = rng.chance(cfg.garage.australianFlagShare) ? HOST_COUNTRY : pickNationality(rng);
+  const flag =
+    founder?.flag ??
+    (rng.chance(cfg.garage.australianFlagShare) ? HOST_COUNTRY : pickNationality(rng));
   const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
   // The flag is where the garage's main factory, founder, owner or executive office is. To race in
   // the series the garage must be based in an Australian state or territory.
-  const hqPlaceId = placeIn(rng, flag);
+  const hqPlaceId = founder?.hqPlaceId ?? placeIn(rng, flag);
   const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(rng, HOST_COUNTRY);
   const [primary, secondary] = rng.pick(COLOUR_PAIRS);
   const prestige = seasonBalance.garages.newPrestige;
@@ -298,7 +302,7 @@ export function generateWorld(seed: string | number): World {
   // --- drivers ---
   const dRng = rng.stream('worldgen:drivers');
   const drivers: Driver[] = Array.from({ length: cfg.entries }, (_, i) => makeDriver(dRng, i + 1));
-  // The hidden characters take twelve seats in every field, with maximum potential.
+  // The dragon-blooded characters take twelve seats in every field, with maximum potential.
   const easterRng = rng.stream('worldgen:easter');
   const seats = easterRng.shuffle(drivers.map((_, i) => i)).slice(0, easterDrivers.length);
   easterDrivers.forEach((e, n) => {

@@ -90,7 +90,12 @@ import {
   type Executive,
   type ExecutiveOutcome,
 } from '../db/executives';
-import { registryPage, type RegistryPage, type RegistryTarget } from '../db/registry';
+import {
+  dragonDriverIds,
+  registryPage,
+  type RegistryPage,
+  type RegistryTarget,
+} from '../db/registry';
 import { recordBook, type RecordBook } from '../db/records';
 import {
   fullStandings,
@@ -241,6 +246,8 @@ interface CareerState {
   /** The Registry: where the player has been (newest last) and the page now showing. */
   registryTrail: RegistryTarget[];
   registryPage: RegistryPage | undefined;
+  /** The dragon-blooded drivers, who carry the dragon mark wherever their name is a link. */
+  dragonDrivers: ReadonlySet<number>;
   standingsView: FullStandings | undefined;
   classificationView: RoundClassification | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
@@ -324,6 +331,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       nextRound: nextRoundNumber(db),
       nextFinal: nextFinalRound(db),
       hub: hubView(db),
+      dragonDrivers: dragonDriverIds(db),
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
       listings: openListings(db),
@@ -424,6 +432,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     years: [],
     standingsView: undefined,
     registryTrail: [],
+    dragonDrivers: new Set<number>(),
     registryPage: undefined,
     classificationView: undefined,
     staff: [],

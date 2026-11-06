@@ -477,6 +477,8 @@
   },
   "season": {
     "championPrize": 10000000,
+    "garageChampionPrize": 10000000,
+    "garageChampionPrizeFrom2036": { "super": 15000000, "junior": 10000000 },
     "bestResultsPerRound": 2,
     "rounds": 6,
     "retirementStartAge": 36,

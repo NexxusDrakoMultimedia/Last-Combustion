@@ -58,7 +58,7 @@ Documents and player text are plain, direct and human. No em dashes (use a comma
 
 ## Characters and names
 
-The game's names, places and cars are fictional or original. Do not add real people's surnames or personal details, or real brands. The name, the logo, Pyra Drake, the four commentators and the hidden driver characters belong to Nexxus Drako Multimedia and are reserved, so mods and forks may not use them (see [TRADEMARKS.md](TRADEMARKS.md)).
+The game's names, places and cars are fictional or original. Do not add real people's surnames or personal details, or real brands. The name, the logo, Pyra Drake, the two series administrators, the four commentators and the dragon-blooded driver characters belong to Nexxus Drako Multimedia and are reserved, so mods and forks may not use them (see [TRADEMARKS.md](TRADEMARKS.md)).
 
 ## Reporting problems and ideas
 

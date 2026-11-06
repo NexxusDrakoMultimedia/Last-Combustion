@@ -10,6 +10,7 @@ import {
   decalsOf,
   driverProfile,
   garageProfile,
+  dragonDriverIds,
   registryIndex,
   roundProfile,
 } from '../../src/db/registry';
@@ -155,6 +156,12 @@ describe('the registry over two seasons', () => {
     expect(index.rounds).toHaveLength(12);
     expect(index.rounds[0]).toMatchObject({ year: 2032, round: 1 });
     expect(index.drivers.find((d) => d.id === championId)!.badge.gold).toBe(true);
+  });
+
+  it('knows the twelve dragon-blooded drivers', () => {
+    const ids = dragonDriverIds(db);
+    expect(ids.size).toBe(12);
+    expect(db.exec('SELECT COUNT(*) FROM driver WHERE easter_egg = 1')[0]!.values[0]![0]).toBe(12);
   });
 
   it('lists numbered drivers first by number, then the rest alphabetically', () => {

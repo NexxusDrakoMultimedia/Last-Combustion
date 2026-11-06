@@ -201,6 +201,35 @@ describe('starting the next season', () => {
   });
 });
 
+describe('a dragon-blooded driver who retires', () => {
+  it('founds a garage in their home nation, with a name from it', () => {
+    const db = playedSeason('dragon-founder');
+    const [driverId, nationality, name] = db.exec(
+      `SELECT d.id, d.nationality, d.name FROM driver d JOIN entry e ON e.driver_id = d.id
+        WHERE d.easter_egg = 1 AND d.nationality != 'AU'
+          AND e.season_id = (SELECT MAX(id) FROM season) LIMIT 1`,
+    )[0]!.values[0] as [number, string, string];
+    // Past the forced retirement age, so they retire at this rollover.
+    db.run("UPDATE driver SET birth_date = '1960-01-01' WHERE id = ?", [driverId]);
+    const before = Number(scalar(db, 'SELECT COUNT(*) FROM garage'));
+    startNextSeason(db);
+    expect(Number(scalar(db, `SELECT retired_year FROM driver WHERE id = ${driverId}`))).toBe(2031);
+    const founded = db.exec(
+      `SELECT g.name, g.flag, hq.country, base.country, g.founded_year FROM garage g
+         JOIN place hq ON hq.id = g.hq_place_id JOIN place base ON base.id = g.base_place_id
+        WHERE g.founded_year = 2032 AND g.flag = '${nationality}'
+          AND g.hq_place_id = (SELECT hometown_place_id FROM driver WHERE id = ${driverId})`,
+    )[0]!.values as [string, string, string, string, number][];
+    expect(Number(scalar(db, 'SELECT COUNT(*) FROM garage'))).toBeGreaterThan(before);
+    expect(founded.length).toBeGreaterThan(0);
+    const [garageName, flag, hqCountry, baseCountry] = founded[0]!;
+    expect(flag).toBe(nationality);
+    expect(hqCountry).toBe(nationality === 'GB' ? 'GB' : nationality);
+    expect(baseCountry).toBe('AU');
+    expect(garageName.length, name).toBeGreaterThan(0);
+  });
+});
+
 describe('determinism', () => {
   it('gives the same new season for the same seed', () => {
     const a = playedSeason('same');

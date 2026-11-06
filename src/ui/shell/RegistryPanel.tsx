@@ -13,7 +13,7 @@ import type { ResultRow } from '../../db/tables';
 import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { DecalRow } from '../Decals';
-import { RegistryLink } from '../RegistryLink';
+import { DragonMark, RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { dataTable, field, quiet } from '../styles';
@@ -46,11 +46,20 @@ function Facts({ items }: { items: [string, ReactNode][] }) {
 const th = 'lc-display text-xs text-lc-dim';
 
 function DriverPage({ p }: { p: DriverProfile }) {
+  const dragon = useCareerStore((s) => s.dragonDrivers.has(p.id));
   return (
     <div className="space-y-5 text-sm">
       <div className="flex flex-wrap items-center gap-3">
         {p.number !== null && <RaceNumber number={p.number} badge={p.badge} />}
-        <h2 className="lc-display text-lg">{p.name}</h2>
+        <h2 className="lc-display text-lg">
+          {p.name}
+          {dragon && (
+            <>
+              {' '}
+              <DragonMark />
+            </>
+          )}
+        </h2>
         {p.nickname && (
           <span className="text-lc-dim">{t('registry.nickname', { nickname: p.nickname })}</span>
         )}

@@ -560,6 +560,11 @@ export function roundProfile(
   };
 }
 
+/** The dragon-blooded drivers: the twelve canonical characters, who carry the dragon mark. */
+export function dragonDriverIds(db: Database): Set<number> {
+  return new Set(all(db, 'SELECT id FROM driver WHERE easter_egg = 1').map((d) => d.id as number));
+}
+
 /**
  * Everything in the Registry, as short lines to browse and search. Drivers with a number this
  * season come first, in number order; the rest (retirees, free agents) follow alphabetically.
