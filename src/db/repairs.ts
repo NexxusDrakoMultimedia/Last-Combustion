@@ -8,6 +8,7 @@ import {
   restoredWear,
   restorationCost,
   restorationFloor,
+  wornOutByRestoration,
   wearAdded,
   wearFromKm,
 } from '../sim/wear';
@@ -237,27 +238,31 @@ export interface RestorationQuote {
   floorAfter: number;
   /** Whether it would take enough wear away to be worth doing. */
   worthwhile: boolean;
+  /** Whether the new floor is past the point where the car retires at the next rollover. */
+  retiresAfter: boolean;
 }
 
 /** What a full restoration of a car would cost and leave. */
 export function restorationQuote(db: Database, carId: number): RestorationQuote {
   const car = all(
     db,
-    `SELECT c.wear, c.restorations, m.price_new FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ?`,
+    `SELECT c.wear, c.restorations, m.price_new, m.tier FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ?`,
     [carId],
   )[0];
   if (!car) throw new Error(`There is no car ${carId}.`);
   const restorations = car.restorations as number;
   const wear = car.wear as number;
+  const tier = car.tier as Tier;
   const wearAfter = Math.max(
-    restoredWear(wear, restorations + 1),
-    restorationFloor(restorations + 1),
+    restoredWear(wear, restorations + 1, tier),
+    restorationFloor(restorations + 1, tier),
   );
   return {
     restorations,
     cost: restorationCost(car.price_new as number, restorations),
     wearAfter,
-    floorAfter: restorationFloor(restorations + 1),
+    floorAfter: restorationFloor(restorations + 1, tier),
+    retiresAfter: wornOutByRestoration(restorations + 1, tier),
     worthwhile: wear - wearAfter >= repairBalance.restoration.minGain,
   };
 }

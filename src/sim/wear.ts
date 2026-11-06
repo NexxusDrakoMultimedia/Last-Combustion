@@ -28,12 +28,22 @@ export const PART_FAILURE_FROM = (): number => cfg().partFailureFrom;
 const restoration = () => repairBalance.restoration;
 
 /**
- * The least wear a chassis can have after some full restorations: 5 points for each one, up to 60.
- * A restoration takes most of the wear away, but the metal never quite comes back.
+ * The least wear a chassis can have after some full restorations: a step for each one, up to 60.
+ * The step depends on the tier, the way the oldest age does: the shorter a tier's life, the more
+ * each restoration costs the metal (Starter 5, Mid 6, Elite 8, Premium 10, Hyper 16). A restoration
+ * takes most of the wear away, but the metal never quite comes back.
  */
-export function restorationFloor(restorations: number): number {
+export function restorationFloor(restorations: number, tier: Tier): number {
   const { floorStep, floorCap } = restoration();
-  return Math.min(floorCap, floorStep * Math.max(0, restorations));
+  return Math.min(floorCap, floorStep[tier] * Math.max(0, restorations));
+}
+
+/**
+ * Whether the least wear a chassis can have is past the point where it retires (over 50). A car
+ * in that state retires at the next rollover, whether or not it ever scored.
+ */
+export function wornOutByRestoration(restorations: number, tier: Tier): boolean {
+  return restorationFloor(restorations, tier) > restoration().retireAbove;
 }
 
 /** What a full restoration costs: the car's new price, and a quarter more for each restoration it has had. */
@@ -45,8 +55,8 @@ export function restorationCost(priceNew: number, restorations: number): number 
  * The wear a restoration leaves: the new floor, plus a tenth of whatever wear was above it. So a
  * badly worn car comes back almost to its floor, and the floor itself is what each restoration costs.
  */
-export function restoredWear(wear: number, restorationsAfter: number): number {
-  const floor = restorationFloor(restorationsAfter);
+export function restoredWear(wear: number, restorationsAfter: number, tier: Tier): number {
+  const floor = restorationFloor(restorationsAfter, tier);
   return Math.round((floor + restoration().keepShare * Math.max(0, wear - floor)) * 100) / 100;
 }
 
@@ -61,5 +71,9 @@ export function chassisWear(
   wearOffset: number,
   restorations: number,
 ): number {
-  return Math.max(restorationFloor(restorations), wearFromKm(roadKm, raceKm, tier) - wearOffset, 0);
+  return Math.max(
+    restorationFloor(restorations, tier),
+    wearFromKm(roadKm, raceKm, tier) - wearOffset,
+    0,
+  );
 }

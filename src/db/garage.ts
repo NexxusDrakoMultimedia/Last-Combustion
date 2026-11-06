@@ -35,7 +35,7 @@ export function ownedCars(db: Database, garageId: number): OwnedCar[] {
               WHERE e.car_id = c.id AND e.series = 'main'
                 AND e.season_id = (SELECT MAX(id) FROM season)) AS race_number
        FROM car c JOIN car_model m ON m.id = c.car_model_id
-      WHERE c.garage_id = ? ORDER BY c.id`,
+      WHERE c.garage_id = ? ORDER BY c.plate_state, c.plate, c.id`,
     [garageId],
   ).map((r) => ({
     carId: r.id as number,

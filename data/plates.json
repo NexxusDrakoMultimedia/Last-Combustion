@@ -1,5 +1,5 @@
 {
-  "source": "Current and recent standard issue plate formats, from the Wikipedia article 'Vehicle registration plates of Australia'. In a format, l is any letter except I and O, d is any digit, f is a digit from 1 to 9, n is a digit from 2 to 9, [a,b,c] is a series prefix picked from the list (the last entry is the current series, and newer cars lean towards it), and anything else is written as it is. Letters the state's own rules fix (the Y of the ACT, the C of the Northern Territory and the S of South Australia) are written as they are.",
+  "source": "Standard issue plate formats, current and historical, from the Wikipedia article 'Vehicle registration plates of Australia'. In a format, l is any letter from A to Z, d is any digit from 0 to 9, [^C] is any letter except the ones listed (New South Wales plates never start with C, which is the Northern Territory's), and anything else is written as it is. A plate is not locked into a series: every letter and digit that is free in the real format is drawn at random. Only the letters a state's own rules fix (the Y of the ACT, the C of the Northern Territory and the S of South Australia) are written as they are.",
   "states": {
     "ACT": {
       "name": "Australian Capital Territory",
@@ -11,7 +11,7 @@
     },
     "NSW": {
       "name": "New South Wales",
-      "format": "[A,B,C,D]l·dd·ll",
+      "format": "[^C]l·dd·ll",
       "slogan": "NEW SOUTH WALES",
       "text": "#000000",
       "background": "#ffff66",
@@ -27,7 +27,7 @@
     },
     "QLD": {
       "name": "Queensland",
-      "format": "ddd·lln",
+      "format": "ddd·lld",
       "slogan": "QUEENSLAND, SUNSHINE STATE",
       "text": "#660000",
       "background": "#ffffff",
@@ -35,7 +35,7 @@
     },
     "SA": {
       "name": "South Australia",
-      "format": "Sddd·[A,B,C,D]ll",
+      "format": "Sddd·lll",
       "slogan": "SOUTH AUSTRALIA",
       "text": "#000000",
       "background": "#ffffff",
@@ -43,7 +43,7 @@
     },
     "TAS": {
       "name": "Tasmania",
-      "format": "[A,B,C,D,E,F,G,H,J,K,L,M,N] dd ll",
+      "format": "l·dd·ll",
       "slogan": "Tasmania, Explore the possibilities.",
       "text": "#0066cc",
       "background": "#ffffff",
@@ -51,7 +51,7 @@
     },
     "VIC": {
       "name": "Victoria",
-      "format": "[1X,1Y,1Z,2A,2B,2C,2D,2E,2F,2G]l·fll",
+      "format": "dll·dll",
       "slogan": "VICTORIA, THE EDUCATION STATE",
       "text": "#0066cc",
       "background": "#ffffff",
@@ -59,7 +59,7 @@
     },
     "WA": {
       "name": "Western Australia",
-      "format": "1[A,B,C,D,E,F,G,H,J]ll·fdd",
+      "format": "dlll·ddd",
       "slogan": "WESTERN AUSTRALIA",
       "text": "#0066cc",
       "background": "#ffffff",

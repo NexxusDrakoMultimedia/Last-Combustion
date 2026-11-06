@@ -5,7 +5,6 @@ import { equalizerMm } from '../equalizer';
 import {
   customPlates,
   makePlate,
-  newnessOf,
   plateKey,
   plateStateOfRegion,
   randomPlateState,
@@ -411,13 +410,10 @@ export function generateWorld(seed: string | number): World {
   const usedPlates = new Set<string>(
     Object.values(customPlates).map((c) => plateKey(c.state, c.plate)),
   );
-  const plateFor = (
-    garage: Garage,
-    modelYear: number,
-  ): { plate: string; plateState: PlateState } => {
+  const plateFor = (garage: Garage): { plate: string; plateState: PlateState } => {
     const plateState = plateStateOfRegion(garage.homeState) ?? randomPlateState(pRng);
     return {
-      plate: makePlate(pRng, plateState, usedPlates, newnessOf(modelYear, SEASON_YEAR)),
+      plate: makePlate(pRng, plateState, usedPlates),
       plateState,
     };
   };
@@ -447,7 +443,7 @@ export function generateWorld(seed: string | number): World {
       id: cars.length + 1,
       modelId: model.id,
       chassisNo: `LC-${model.id.split('-')[0]?.slice(0, 3).toUpperCase()}-${String(cars.length + 1).padStart(5, '0')}`,
-      ...plateFor(garage, SEASON_YEAR - age),
+      ...plateFor(garage),
       flag: (makerById.get(model.manufacturerId) as { homeCountry: string }).homeCountry,
       fans: 0,
       garageId: garage.id,
@@ -466,7 +462,7 @@ export function generateWorld(seed: string | number): World {
   const custom = customPlates[spirit.id];
   const spiritPlate = custom
     ? { plate: custom.plate, plateState: custom.state }
-    : plateFor(garages[drakeIndex] as Garage, 2022);
+    : plateFor(garages[drakeIndex] as Garage);
   cars.push({
     id: cars.length + 1,
     modelId: spirit.id,

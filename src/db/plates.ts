@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
-import {
-  makePlate,
-  newnessOf,
-  plateKey,
-  plateStateOfRegion,
-  randomPlateState,
-} from '../sim/plates';
+import { makePlate, plateKey, plateStateOfRegion, randomPlateState } from '../sim/plates';
 import { createRng } from '../sim/rng';
 import { readCareer } from './career';
 import { all } from './entries';
@@ -37,12 +31,7 @@ export function registerCar(db: Database, carId: number): string {
       plateKey(r.plate_state as string, r.plate as string),
     ),
   );
-  const plate = makePlate(
-    rng,
-    state,
-    used,
-    newnessOf(row.model_year as number, Number(career.gameDate.slice(0, 4))),
-  );
+  const plate = makePlate(rng, state, used);
   db.run('UPDATE car SET plate = ?, plate_state = ? WHERE id = ?', [plate, state, carId]);
   return plate;
 }

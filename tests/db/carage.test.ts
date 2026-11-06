@@ -103,6 +103,42 @@ describe('cars past the oldest age', () => {
     ).toBe(0);
   });
 
+  it('also retire once restorations leave their least wear past 50, even after scoring', () => {
+    const db = playedSeason('car-wear');
+    const tier = (carId: number) =>
+      String(
+        scalar(
+          db,
+          `SELECT m.tier FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ${carId}`,
+        ),
+      );
+    const rows = db
+      .exec(
+        `SELECT e.car_id FROM entry e WHERE e.season_id = (SELECT MAX(id) FROM season)
+           AND EXISTS (SELECT 1 FROM result r JOIN entry x ON x.id = r.entry_id WHERE x.car_id = e.car_id AND r.points > 0)
+           AND e.garage_id IN (SELECT id FROM garage WHERE is_player = 0) LIMIT 2`,
+      )[0]!
+      .values.map((v) => Number(v[0]));
+    const [worn, fine] = rows as [number, number];
+    // Just past 50 for the first car's tier, just short of it for the second.
+    const steps: Record<string, number> = {
+      starter: 5,
+      mid: 6,
+      premium: 10,
+      elite: 8,
+      hyper: 16,
+      unique: 8,
+    };
+    const pastFifty = (t: string) => Math.floor(50 / steps[t]!) + 1;
+    db.run('UPDATE car SET restorations = ? WHERE id = ?', [pastFifty(tier(worn)), worn]);
+    db.run('UPDATE car SET restorations = ? WHERE id = ?', [pastFifty(tier(fine)) - 1, fine]);
+    startNextSeason(db);
+    expect(Number(scalar(db, `SELECT retired_year FROM car WHERE id = ${worn}`))).toBe(2031);
+    expect(scalar(db, `SELECT retired_year FROM car WHERE id = ${fine}`)).toBeNull();
+    // It scored, so it is Retired in the Registry, not Obscure.
+    expect(registryStatuses(db).car.get(worn)).toBe('retired');
+  });
+
   it('are greylinked, in the Obscure section of the Registry', () => {
     const db = playedSeason('car-age-grey');
     refreshUsedMarket(db);

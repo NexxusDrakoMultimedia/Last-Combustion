@@ -23,7 +23,7 @@ import { createNewDatabase, packDatabase, unpackDatabase } from '../../src/db/se
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { fitPart } from '../../src/db/upgrades';
 import { persistWorld } from '../../src/db/world';
-import { chassisWear, wearFromKm } from '../../src/sim/wear';
+import { chassisWear, restorationFloor, wearFromKm } from '../../src/sim/wear';
 import { generateWorld } from '../../src/sim/worldgen';
 import type { Tier } from '../../src/sim/worldgen/types';
 
@@ -152,8 +152,15 @@ describe('fully restoring the chassis', () => {
     const done = restoreChassis(db, garage, carId);
     expect(done.cost).toBe(priceNew(db, carId));
     expect(done.wearBefore).toBeCloseTo(wear, 1);
-    // 5 points of floor, and a tenth of the wear above it.
-    const expected = 5 + 0.1 * (wear - 5);
+    // The tier's first step of floor, and a tenth of the wear above it.
+    const tier = String(
+      scalar(
+        db,
+        `SELECT m.tier FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ${carId}`,
+      ),
+    ) as Tier;
+    const floor = restorationFloor(1, tier);
+    const expected = floor + 0.1 * (wear - floor);
     expect(Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`))).toBeCloseTo(expected, 1);
     expect(Number(scalar(db, `SELECT restorations FROM car WHERE id = ${carId}`))).toBe(1);
     expect(garageFinance(db, garage).byCategory.restoration).toBe(-done.cost);
@@ -208,7 +215,7 @@ describe('fully restoring the chassis', () => {
     expect(Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`))).toBeGreaterThanOrEqual(
       5,
     );
-    expect(chassisWear(0, 0, 'mid', 0, 3)).toBe(15);
+    expect(chassisWear(0, 0, 'mid', 0, 3)).toBe(18);
     expect(chassisWear(0, 0, 'mid', 0, 99)).toBe(60);
   });
 

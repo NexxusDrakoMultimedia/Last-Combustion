@@ -10,6 +10,7 @@ import {
   decalsOf,
   driverProfile,
   garageProfile,
+  activeYearsOf,
   dragonDriverIds,
   registryIndex,
   roundProfile,
@@ -195,6 +196,28 @@ describe('the registry over two seasons', () => {
     const g = garageProfile(db, championGarageId);
     expect(g.scoring.seasons).toBeGreaterThan(0);
     expect(g.scoring.firstYear).toBeLessThanOrEqual(g.scoring.lastYear!);
+  });
+
+  it('knows the years each driver, garage and car was active', () => {
+    const years = activeYearsOf(db);
+    // Everyone who raced in 2031 starts then, and the active ones have no end.
+    expect(years.get(`driver:${championId}`)).toEqual([2031, null]);
+    expect(years.get(`garage:${championGarageId}`)).toEqual([2031, null]);
+    expect(years.get(`car:${championCarId}`)).toEqual([2031, null]);
+    // A driver who retired ends the season they retired; a garage that closed, the season it closed.
+    db.run('UPDATE driver SET retired_year = 2032 WHERE id = ?', [championId]);
+    db.run('UPDATE garage SET closed_year = 2032 WHERE id = ?', [championGarageId]);
+    db.run('UPDATE car SET retired_year = 2033 WHERE id = ?', [championCarId]);
+    const after = activeYearsOf(db);
+    expect(after.get(`driver:${championId}`)).toEqual([2031, 2032]);
+    expect(after.get(`garage:${championGarageId}`)).toEqual([2031, 2032]);
+    expect(after.get(`car:${championCarId}`)).toEqual([2031, 2033]);
+    // A driver who never raced has no years to show.
+    const idle = Number(
+      db.exec('SELECT id FROM driver WHERE id NOT IN (SELECT driver_id FROM entry) LIMIT 1')[0]
+        ?.values[0]?.[0] ?? -1,
+    );
+    if (idle > 0) expect(after.has(`driver:${idle}`)).toBe(false);
   });
 
   it('knows the twelve dragon-blooded drivers', () => {

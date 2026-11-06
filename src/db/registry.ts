@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { restorationFloor } from '../sim/wear';
+import type { Tier } from '../sim/worldgen/types';
 import { registryStatuses, type RegistryStatus } from './status';
 import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
@@ -349,7 +350,7 @@ export function carProfile(db: Database, carId: number): CarProfile {
     raceKm: c.race_km as number,
     wear: Math.round(Number(c.wear) * 10) / 10,
     restorations: c.restorations as number,
-    wearFloor: restorationFloor(c.restorations as number),
+    wearFloor: restorationFloor(c.restorations as number, c.tier as Tier),
     kerbKg: c.kerb_kg_current as number,
     tyreWidthMm: c.tyre_width_mm as number,
     retiredYear: (c.retired_year as number | null) ?? null,
@@ -487,7 +488,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     cars: all(
       db,
       `SELECT c.id, c.plate, c.plate_state, m.name AS model FROM car c JOIN car_model m ON m.id = c.car_model_id
-        WHERE c.garage_id = ? ORDER BY c.id`,
+        WHERE c.garage_id = ? ORDER BY c.plate_state, c.plate, c.id`,
       [garageId],
     ).map((c) => ({
       id: c.id as number,
@@ -593,6 +594,53 @@ export function roundProfile(
 
 /** The keys (`driver:12`, `car:7`, `garage:3`) of everything greylinked: retired or folded without ever scoring. */
 export { greylinkedKeys } from './status';
+
+/** The seasons someone was around: their first season and their last, or null while still active. */
+export type ActiveYears = readonly [start: number, end: number | null];
+
+/**
+ * The years each driver, garage and car has been active, keyed `driver:12`, `garage:3` and `car:7`.
+ * A driver or garage starts with its first entry (a garage founded earlier counts from its founding
+ * only if it never entered) and ends the season it retired or closed. A car starts with its first
+ * entry (or, if it never raced, its first owner) and ends the season it retired.
+ */
+export function activeYearsOf(db: Database): Map<string, ActiveYears> {
+  const out = new Map<string, ActiveYears>();
+  const firstEntry = (col: 'driver_id' | 'garage_id' | 'car_id') =>
+    new Map(
+      all(
+        db,
+        `SELECT e.${col} AS id, MIN(s.year) AS start FROM entry e JOIN season s ON s.id = e.season_id GROUP BY e.${col}`,
+      ).map((r) => [r.id as number, r.start as number]),
+    );
+  const driverStart = firstEntry('driver_id');
+  for (const d of all(db, 'SELECT id, retired_year FROM driver')) {
+    const start = driverStart.get(d.id as number);
+    if (start !== undefined)
+      out.set(`driver:${d.id as number}`, [start, (d.retired_year as number | null) ?? null]);
+  }
+  const garageStart = firstEntry('garage_id');
+  for (const g of all(
+    db,
+    "SELECT id, founded_year, closed_year FROM garage WHERE kind = 'racing'",
+  )) {
+    const start = garageStart.get(g.id as number) ?? (g.founded_year as number);
+    out.set(`garage:${g.id as number}`, [start, (g.closed_year as number | null) ?? null]);
+  }
+  const carStart = firstEntry('car_id');
+  for (const c of all(
+    db,
+    `SELECT c.id, c.model_year, c.retired_year,
+            (SELECT MIN(CAST(substr(o.from_date, 1, 4) AS INTEGER)) FROM car_ownership o WHERE o.car_id = c.id) AS owned
+       FROM car c`,
+  )) {
+    out.set(`car:${c.id as number}`, [
+      carStart.get(c.id as number) ?? (c.owned as number | null) ?? (c.model_year as number),
+      (c.retired_year as number | null) ?? null,
+    ]);
+  }
+  return out;
+}
 
 /** The dragon-blooded drivers: the twelve canonical characters, who carry the dragon mark. */
 export function dragonDriverIds(db: Database): Set<number> {
