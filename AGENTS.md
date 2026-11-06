@@ -21,7 +21,7 @@ pnpm lint                        # ESLint
 pnpm typecheck                   # TypeScript
 pnpm format:check                # Prettier (use `pnpm format` to fix)
 pnpm build && pnpm test:e2e      # build, then browser tests (Playwright)
-pnpm licenses                    # production dependency licences
+pnpm run licenses                  # production dependency licences
 pnpm docs:lint                   # Markdown lint
 pnpm docs:style                  # no em dashes in the docs, text and data
 reuse lint                       # REUSE licence compliance (pip install reuse)
@@ -49,7 +49,7 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 - **Database.** SQLite is the single source of truth. Schema changes are new numbered migrations in `src/db/migrations`; never edit a migration that is already on `main`. Keep `CHECK` constraints for rules (the Equalizer, loop courses of 10 to 80 km).
 - **No hard-coded text.** UI text goes in `locales/en.json` and is read with `t()`. ESLint rejects literal text in UI components.
 - **Data, not code, for numbers.** Balance values live in `data/balance.json`; reference data lives in `data/`. Mods use the same files, so keep schemas stable.
-- **Licences.** Only add dependencies and assets with GPL-compatible licences, and record third-party assets in `CREDITS.md`. `pnpm licenses` must pass.
+- **Licences.** Only add dependencies and assets with GPL-compatible licences, and record third-party assets in `CREDITS.md`. `pnpm run licenses` must pass.
 - **File headers.** New source files start with `SPDX-License-Identifier: GPL-3.0-or-later` and `SPDX-FileCopyrightText: Nexxus Drako Multimedia`.
 - **Hidden drivers.** Twelve hidden driver characters live in `data/easter_drivers.json`. In the game they show only a dragon mark with a cryptic hint; do not explain them in player-facing text, and do not copy their names into other code, tests or docs apart from the GDD.
 - **Easter egg.** Do not write the Founder's career unlock details into code, comments, tests or logs in plain text, and do not mention it in player-facing text (see the GDD).

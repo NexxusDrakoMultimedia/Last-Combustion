@@ -1,0 +1,77 @@
+# Data files
+
+Last Combustion keeps its numbers and reference data in `data/`, not in code. The simulation reads these files when the game starts, so a change to a file changes the game with no code change. This is also how mods work: a mod is a set of data files in the same shapes (see "Modding" in the [Game Design Document](GAME_DESIGN_DOCUMENT.md)).
+
+Rules for editing data:
+
+- Keep the shape of a file. Code reads it by name, and the type checker reads it too, so a renamed key fails the build.
+- All the files are fictional or original. Real people, real brands and real cars never go in `data/` (see `AGENTS.md`).
+- Text a player reads belongs in `locales/en.json`, not here. Names in data (a supplier, a sponsor, a course) are proper names and stay.
+- Anything random in the simulation draws from a named stream, so changing a number never changes which random numbers come up, only what they mean.
+- Run `pnpm test` after a change. The balance tests (`tests/sim/prelim.test.ts`) check that driver skill still matters more than car quality.
+
+## The files
+
+| File                         | What it holds                                                                                                                                      | Read by                                                                       |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `data/balance.json`          | Every tunable number, in sections (see below)                                                                                                      | `src/sim/worldgen/data.ts`, which hands each section to the code that uses it |
+| `data/awards.json`           | The season awards (Fan Favourite, Rookie of the Year, Hard Charger and the rest), who each goes to, and the least value that earns it              | `src/sim/awards.ts`                                                           |
+| `data/car_models.json`       | The 96 fictional car models: maker, name, class, weight, widest tyre, power, layout, years on sale, new price                                      | `src/sim/worldgen/data.ts`                                                    |
+| `data/commentators.json`     | The four commentators: name, flag, hometown, background, role and voice                                                                            | `src/sim/worldgen/data.ts`                                                    |
+| `data/courses.json`          | The six courses: name, state, lap length, final laps, road type, altitude, climate, base temperature                                               | `src/sim/worldgen/data.ts`                                                    |
+| `data/courses/outlines.json` | The map outline of each course (a simplified path with distances), derived from OpenStreetMap data                                                 | `src/sim/courses/sectors.ts`                                                  |
+| `data/easter_drivers.json`   | The hidden driver characters. They show only a dragon mark in the game; see the Game Design Document                                               | `src/sim/worldgen/index.ts`                                                   |
+| `data/executives.json`       | The eight executive roles: what each does at full skill, pay, contract lengths and the prestige needed for each slot                               | `src/sim/worldgen/data.ts`                                                    |
+| `data/flags.json`            | The flags (names, fan populations), the UK and Spanish flag-change events, regions and the rare rename                                             | `src/sim/worldgen/data.ts`, `src/sim/worldchanges.ts`                         |
+| `data/gear.json`             | Driver gear: the four suppliers, 28 items, set bonuses, the stat cap and the gear budgets                                                          | `src/sim/gear.ts`                                                             |
+| `data/links.json`            | The maker's website and accounts and the source repository, shown on the About screen                                                              | `src/sim/worldgen/data.ts`                                                    |
+| `data/manufacturers.json`    | The 31 fictional car makers: name, home country, type and character                                                                                | `src/sim/worldgen/data.ts`                                                    |
+| `data/names.json`            | First and family names by nationality, name weights, and names never to generate                                                                   | `src/sim/worldgen/data.ts`                                                    |
+| `data/names/cars.json`       | The word lists car names are built from, by category                                                                                               | `src/sim/worldgen/data.ts`                                                    |
+| `data/names/garages.json`    | The themed patterns garage names are built from                                                                                                    | `src/sim/worldgen/data.ts`                                                    |
+| `data/names/nicknames.json`  | The themed patterns driver nicknames are built from                                                                                                | `src/sim/worldgen/data.ts`                                                    |
+| `data/parts.json`            | Upgrade parts: the six part makers and 30 parts in ten categories, each with its effects and price                                                 | `src/sim/upgrades.ts`                                                         |
+| `data/places.json`           | The places drivers and garages come from: name, region, country, latitude and longitude                                                            | `src/sim/worldgen/data.ts`                                                    |
+| `data/plates.json`           | Licence plate formats for the eight Australian states and territories, their colours and slogans, and the custom plates                            | `src/sim/plates.ts`                                                           |
+| `data/points.json`           | Championship points by finishing position, for the original era and from 2036                                                                      | `src/sim/worldgen/data.ts`                                                    |
+| `data/prizes.json`           | Race prize money by finishing position, for the original era and from 2036                                                                         | `src/sim/worldgen/data.ts`                                                    |
+| `data/sponsors.json`         | The fictional title sponsors, in four tiers, with the prestige each needs                                                                          | `src/sim/sponsors.ts`                                                         |
+| `data/suppliers.json`        | The operating suppliers (electricity, water, race fuel, travel fuel, logistics), their tiers, price indexes and regions, and how each market moves | `src/sim/worldgen/data.ts`, `src/sim/supply.ts`                               |
+| `data/titles.json`           | The driver titles a driver can earn and equip, and what earns each                                                                                 | `src/sim/titles.ts`                                                           |
+
+## `data/balance.json`
+
+The one file of tunable numbers. Each top-level section belongs to one part of the game.
+
+| Section       | What it tunes                                                                                                                                                                     |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `worldgen`    | The starting world: garage and entry counts, garage sizes, driver and car generation, origins, fans, contracts, lineups, number pool                                              |
+| `wear`        | Chassis wear per kilometre (road and race), the tier factors and where parts start to fail                                                                                        |
+| `sim`         | The lap-time model: grip, power, altitude, temperature, driver weights, noise, incidents, practice (including how much of it counts as race distance), prelims and the pole bonus |
+| `junior`      | The Junior Series rules: power cap, age limit                                                                                                                                     |
+| `final`       | The final race: gaps, overtaking, calls, tyres, mechanical failures, weather, drones and the overtake bonus                                                                       |
+| `daily`       | Daily life: delivery pay, daily distance, the days before round 1, moving cost, road training, and the local-area pay factors by state                                            |
+| `economy`     | Used car prices, provenance, tier upkeep, the round costs (entry fee, tyres, servicing, fuel, utilities, travel), venue positions, the used market and the auction house          |
+| `upgrades`    | The road-legality budget, the part categories, tyre width limits                                                                                                                  |
+| `fans`        | Fan gains by result, how fans are shared, the cap, losses, and merchandise income                                                                                                 |
+| `staff`       | Mechanics: wages, skill, candidates, the crew's savings on wear and repairs                                                                                                       |
+| `negotiation` | The deal-making rules: counters, patience, leverage, relationship and rival effects                                                                                               |
+| `sponsors`    | The title sponsor fee formula                                                                                                                                                     |
+| `deals`       | Part supplier and manufacturer discounts                                                                                                                                          |
+| `repairs`     | Part and gear wear, servicing, crash repairs and full chassis restorations                                                                                                        |
+| `season`      | The season: champion's prize, retirements, rookies, garage openings and closings, driver progression and training                                                                 |
+
+## Adding or changing a file
+
+1. Change the file and, if it is a new file, import it in `src/sim/worldgen/data.ts` (or next to the code that uses it).
+2. Add it to the table above. `pnpm docs:check` fails if a data file is not described here.
+3. Write or update a test with a fixed seed.
+4. If it changes how the game plays, change the Game Design Document in the same pull request.
+
+## The tools that make data
+
+Some data is generated, and the generators are in `tools/`:
+
+- `tools/data/build_cars.py` builds `data/manufacturers.json` and `data/car_models.json` from the tables in the Game Design Document ("Fictional manufacturers and cars"). Keep those tables in their current shape.
+- `tools/routes/measure_routes.py` measures each course route with OpenStreetMap services and saves `data/courses/outlines.json`. It needs network access to the public mapping services, and the outlines carry an attribution (see `CREDITS.md`).
+- `tools/balance/prelim_check.py` is a quick Python check of the balance formulas. The real balance tests are in TypeScript.

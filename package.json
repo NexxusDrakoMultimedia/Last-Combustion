@@ -23,6 +23,7 @@
     "licenses": "node scripts/check-licenses.mjs",
     "docs:lint": "markdownlint-cli2",
     "docs:style": "node scripts/check-style.mjs",
+    "docs:check": "node scripts/check-docs.mjs",
     "prepare": "husky"
   },
   "dependencies": {
