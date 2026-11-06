@@ -45,3 +45,20 @@ export function RegistryLink({ to, children }: { to: RegistryTarget; children: R
     </button>
   );
 }
+
+/**
+ * The years a driver, garage or car has been active, as "(2031-present)" or "(2031-2033)", for the
+ * end of a line that names them. Nothing shows for one that has never raced.
+ */
+export function YearsActive({ kind, id }: { kind: 'driver' | 'garage' | 'car'; id: number }) {
+  const years = useCareerStore((s) => s.activeYears.get(`${kind}:${id}`));
+  if (!years) return null;
+  const [start, end] = years;
+  const text =
+    end === null
+      ? t('registry.years', { start, end: t('registry.present') })
+      : end === start
+        ? t('registry.yearsOne', { year: start })
+        : t('registry.years', { start, end });
+  return <span className="lc-num text-lc-dim">{text}</span>;
+}

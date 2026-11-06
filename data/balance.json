@@ -468,8 +468,9 @@
     "servicingShare": 0.25,
     "restoration": {
       "costStep": 0.25,
-      "floorStep": 5,
+      "floorStep": { "starter": 5, "mid": 6, "premium": 10, "elite": 8, "hyper": 16, "unique": 8 },
       "floorCap": 60,
+      "retireAbove": 50,
       "keepShare": 0.1,
       "minGain": 1
     },

@@ -91,6 +91,7 @@ import {
   type ExecutiveOutcome,
 } from '../db/executives';
 import {
+  activeYearsOf,
   dragonDriverIds,
   greylinkedKeys,
   registryPage,
@@ -251,6 +252,8 @@ interface CareerState {
   dragonDrivers: ReadonlySet<number>;
   /** Everything greylinked (`driver:12`, `car:7`, `garage:3`): listed apart, with grey links. */
   greylinked: ReadonlySet<string>;
+  /** When each driver, garage and car was active (`driver:12`): first season and last, or null while active. */
+  activeYears: ReadonlyMap<string, readonly [number, number | null]>;
   standingsView: FullStandings | undefined;
   classificationView: RoundClassification | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
@@ -336,6 +339,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       hub: hubView(db),
       dragonDrivers: dragonDriverIds(db),
       greylinked: greylinkedKeys(db),
+      activeYears: activeYearsOf(db),
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
       listings: openListings(db),
@@ -438,6 +442,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     registryTrail: [],
     dragonDrivers: new Set<number>(),
     greylinked: new Set<string>(),
+    activeYears: new Map(),
     registryPage: undefined,
     classificationView: undefined,
     staff: [],

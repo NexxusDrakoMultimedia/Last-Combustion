@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState } from 'react';
 import { formatDate, formatMoney, t } from '../../i18n';
+import { repairBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
 import { RegistryLink } from '../RegistryLink';
@@ -102,6 +103,8 @@ export function OwnedCars({ locked }: { locked: boolean }) {
                 to: Math.round(c.restoration.wearAfter),
                 floor: c.restoration.floorAfter,
               })}
+              {c.restoration.retiresAfter &&
+                ` ${t('market.restoreRetires', { limit: repairBalance.restoration.retireAbove })}`}
             </span>
           </span>
           <ConditionBar wear={c.wear} />

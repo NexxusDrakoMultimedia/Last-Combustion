@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 import {
   customPlates,
   isRude,
-  newnessOf,
   makePlate,
   PLATE_STATES,
   plateKey,
@@ -17,27 +16,26 @@ import {
 } from '../../src/sim/plates';
 import { createRng } from '../../src/sim/rng';
 
-/** The shape each state's current standard plates must have (from the Wikipedia article). */
+/** The shape each state's standard plates must have: free letters and digits, and the letters a state fixes. */
 const SHAPES: Record<PlateState, RegExp> = {
   ACT: /^Y[A-Z]{2}·\d{2}[A-Z]$/,
-  NSW: /^[A-D][A-Z]·\d{2}·[A-Z]{2}$/,
+  NSW: /^[A-BD-Z][A-Z]·\d{2}·[A-Z]{2}$/,
   NT: /^C[A-Z]·\d{2}·[A-Z]{2}$/,
-  QLD: /^\d{3}·[A-Z]{2}[2-9]$/,
-  SA: /^S\d{3}·[A-D][A-Z]{2}$/,
-  TAS: /^[A-HJ-N] \d{2} [A-Z]{2}$/,
-  VIC: /^(1[X-Z]|2[A-G])[A-Z]·[1-9][A-Z]{2}$/,
-  WA: /^1[A-HJ][A-Z]{2}·[1-9]\d{2}$/,
+  QLD: /^\d{3}·[A-Z]{2}\d$/,
+  SA: /^S\d{3}·[A-Z]{3}$/,
+  TAS: /^[A-Z]·\d{2}·[A-Z]{2}$/,
+  VIC: /^\d[A-Z]{2}·\d[A-Z]{2}$/,
+  WA: /^\d[A-Z]{3}·\d{3}$/,
 };
 
 describe('Australian licence plates', () => {
-  it('make a plate in each state’s current format, with no I or O', () => {
+  it('make a plate in each state’s format, with any letter and any digit where the format has one', () => {
     const rng = createRng('plates').stream('x');
     const used = new Set<string>();
     for (const state of PLATE_STATES) {
       for (let i = 0; i < 200; i++) {
         const plate = makePlate(rng, state, used);
         expect(plate, state).toMatch(SHAPES[state]);
-        expect(plate.replace(/[^A-Z]/g, '')).not.toMatch(/[IO]/);
         expect(statesOfPlate(plate)).toContain(state);
       }
     }
@@ -62,27 +60,25 @@ describe('Australian licence plates', () => {
     );
   });
 
-  it('vary in their series letters, with newer cars leaning to the current series', () => {
-    const rng = createRng('series').stream('p');
+  it('draw every free letter and digit freely, with no series', () => {
+    const rng = createRng('free').stream('p');
     const used = new Set<string>();
-    /** The part of a plate that names its series. */
-    const series: Record<string, (p: string) => string> = {
-      NSW: (p) => p[0]!,
-      SA: (p) => p[5]!,
-      TAS: (p) => p[0]!,
-      VIC: (p) => p.slice(0, 2),
-      WA: (p) => p[1]!,
-    };
-    const seen = (state: PlateState, newness: number, n = 300) =>
-      Array.from({ length: n }, () => series[state]!(makePlate(rng, state, used, newness)));
-    for (const state of Object.keys(series) as PlateState[]) {
-      expect(new Set(seen(state, 1)).size, state).toBeGreaterThan(1);
-      expect(new Set(seen(state, 0)).size, state).toBeGreaterThan(1);
+    const plates = (state: PlateState, n = 4000) =>
+      Array.from({ length: n }, () => makePlate(rng, state, used));
+    for (const state of PLATE_STATES) {
+      const list = plates(state);
+      // Every position that is free takes many values, not the few of a series.
+      const positions = [...list[0]!].map((_, i) => new Set(list.map((p) => p[i])));
+      for (const set of positions.filter((s) => s.size > 1))
+        expect(set.size, state).toBeGreaterThan(8);
     }
-    // New South Wales: a new car is mostly D, an old one mostly A.
-    const count = (list: string[], ch: string) => list.filter((c) => c === ch).length;
-    expect(count(seen('NSW', 1), 'D')).toBeGreaterThan(count(seen('NSW', 0), 'D'));
-    expect(count(seen('NSW', 0), 'A')).toBeGreaterThan(count(seen('NSW', 1), 'A'));
+    // Letters can be any of A to Z, including I and O, and digits can be 0 or 1 anywhere.
+    const nsw = plates('NSW').join('');
+    expect(nsw).toMatch(/I/);
+    expect(nsw).toMatch(/O/);
+    const wa = plates('WA');
+    expect(wa.some((p) => p[0] === '0')).toBe(true);
+    expect(wa.some((p) => p[5] === '0')).toBe(true);
     // The letters a state's own rules fix stay fixed.
     for (let i = 0; i < 50; i++) {
       expect(makePlate(rng, 'ACT', used)[0]).toBe('Y');
@@ -91,12 +87,31 @@ describe('Australian licence plates', () => {
     }
   });
 
-  it('is newer the later the model year', () => {
-    expect(newnessOf(2031, 2031)).toBe(1);
-    expect(newnessOf(2016, 2031)).toBe(0);
-    expect(newnessOf(1990, 2031)).toBe(0);
-    expect(newnessOf(2036, 2031)).toBe(1);
-    expect(newnessOf(2024, 2031)).toBeGreaterThan(newnessOf(2020, 2031));
+  it('never start a New South Wales plate with C, which is the Northern Territory’s letter', () => {
+    const rng = createRng('nsw-c').stream('p');
+    const used = new Set<string>();
+    for (let i = 0; i < 3000; i++) expect(makePlate(rng, 'NSW', used)[0]).not.toBe('C');
+    expect(statesOfPlate('CA·12·AB')).toContain('NT');
+    expect(statesOfPlate('CA·12·AB')).not.toContain('NSW');
+    expect(statesOfPlate('DA·12·AB')).toContain('NSW');
+  });
+
+  it('never fit the format of two states, so a plate always says which state issued it', () => {
+    const rng = createRng('collide').stream('p');
+    const used = new Set<string>();
+    for (const state of PLATE_STATES) {
+      for (let i = 0; i < 1500; i++) {
+        expect(statesOfPlate(makePlate(rng, state, used)), state).toEqual([state]);
+      }
+    }
+  });
+
+  it('still recognise plates made under the older series formats', () => {
+    expect(statesOfPlate('DT·42·HW')).toContain('NSW');
+    expect(statesOfPlate('S123·BCD')).toContain('SA');
+    expect(statesOfPlate('2GJ·1AA')).toContain('VIC');
+    expect(statesOfPlate('1JEB·000')).toContain('WA');
+    expect(statesOfPlate('N·42·QD')).toContain('TAS');
   });
 
   it('are unique within a state, though a personalised plate may repeat in another state', () => {

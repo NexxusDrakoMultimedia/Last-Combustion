@@ -15,7 +15,7 @@ import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { DecalRow } from '../Decals';
 import { STATUS_ORDER, type RegistryStatus } from '../../db/status';
-import { DragonMark, RegistryLink } from '../RegistryLink';
+import { DragonMark, RegistryLink, YearsActive } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { dataTable, field, quiet } from '../styles';
@@ -637,6 +637,7 @@ function IndexPage({ data }: { data: RegistryIndex }) {
               <li key={d.id} className="flex items-center gap-2">
                 {d.number !== null && <RaceNumber number={d.number} badge={d.badge} />}
                 <RegistryLink to={{ kind: 'driver', id: d.id }}>{d.name}</RegistryLink>
+                <YearsActive kind="driver" id={d.id} />
                 {d.garage && <span className="text-lc-dim">{d.garage}</span>}
               </li>
             )}
@@ -649,6 +650,7 @@ function IndexPage({ data }: { data: RegistryIndex }) {
               <li key={c.id} className="flex items-center gap-2">
                 <Plate plate={c.plate} state={c.plateState} carId={c.id} />
                 <span className="text-lc-dim">{c.model}</span>
+                <YearsActive kind="car" id={c.id} />
               </li>
             )}
           />
@@ -658,7 +660,8 @@ function IndexPage({ data }: { data: RegistryIndex }) {
             items={garages}
             render={(g) => (
               <li key={g.id}>
-                <RegistryLink to={{ kind: 'garage', id: g.id }}>{g.name}</RegistryLink>
+                <RegistryLink to={{ kind: 'garage', id: g.id }}>{g.name}</RegistryLink>{' '}
+                <YearsActive kind="garage" id={g.id} />
               </li>
             )}
           />

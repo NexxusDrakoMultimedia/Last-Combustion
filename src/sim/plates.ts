@@ -27,7 +27,7 @@ export const customPlates = platesJson.custom as Record<
   string,
   { plate: string; state: PlateState }
 >;
-const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 /** The plate state of a place in Australia (by its region code), or undefined for anywhere else. */
 export function plateStateOfRegion(region: string | undefined): PlateState | undefined {
@@ -46,42 +46,38 @@ type Token =
   | { kind: 'lit'; text: string }
   | { kind: 'l' }
   | { kind: 'd' }
-  | { kind: 'f' }
-  | { kind: 'n' }
-  | { kind: 'series'; options: string[] };
+  /** Any letter except these (`[^C]`). */
+  | { kind: 'except'; letters: string };
 
 /** Splits a plate format (see `data/plates.json`) into tokens. */
 function parse(format: string): Token[] {
   const tokens: Token[] = [];
   for (let i = 0; i < format.length; i++) {
     const ch = format[i]!;
-    if (ch === '[') {
+    if (ch === '[' && format[i + 1] === '^') {
       const end = format.indexOf(']', i);
-      tokens.push({ kind: 'series', options: format.slice(i + 1, end).split(',') });
+      tokens.push({ kind: 'except', letters: format.slice(i + 2, end) });
       i = end;
-    } else if (ch === 'l' || ch === 'd' || ch === 'f' || ch === 'n') tokens.push({ kind: ch });
+    } else if (ch === 'l' || ch === 'd') tokens.push({ kind: ch });
     else tokens.push({ kind: 'lit', text: ch });
   }
   return tokens;
 }
 
 /**
- * Fills in a plate format from a stream. A series prefix is picked from its list: a new car
- * (`newness` 1) leans towards the last, current entry, and an old one (0) towards the first.
+ * Fills in a plate format from a stream: any letter where the format has a letter and any digit
+ * where it has a digit. Nothing is locked into a series; only the letters a state's own rules fix
+ * are written into its format.
  */
-function fill(format: string, rng: RandomStream, newness: number): string {
+function fill(format: string, rng: RandomStream): string {
   let out = '';
   for (const t of parse(format)) {
     if (t.kind === 'lit') out += t.text;
     else if (t.kind === 'l') out += LETTERS[rng.int(0, LETTERS.length - 1)];
-    else if (t.kind === 'd') out += String(rng.int(0, 9));
-    else if (t.kind === 'f') out += String(rng.int(1, 9));
-    else if (t.kind === 'n') out += String(rng.int(2, 9));
-    else {
-      const last = t.options.length - 1;
-      const index = Math.min(last, Math.max(0, Math.round(last * newness + rng.normal(0, 1))));
-      out += t.options[index];
-    }
+    else if (t.kind === 'except') {
+      const allowed = [...LETTERS].filter((c) => !t.letters.includes(c));
+      out += allowed[rng.int(0, allowed.length - 1)];
+    } else out += String(rng.int(0, 9));
   }
   return out;
 }
@@ -102,19 +98,13 @@ export function isRude(plate: string): boolean {
 
 /**
  * A new plate in a state's standard format, such as `DT·42·HW` in New South Wales or `2GJ·1AA` in
- * Victoria. Newer cars (`newness` near 1) carry the current series, older ones earlier series. It
- * never repeats a plate of the same state in `used` (see `plateKey`), which is added to, and never
- * spells a word from the deny list.
+ * Victoria, with every free letter and digit drawn at random. It never repeats a plate of the same
+ * state in `used` (see `plateKey`), which is added to, and never spells a word from the deny list.
  */
-export function makePlate(
-  rng: RandomStream,
-  state: PlateState,
-  used: Set<string>,
-  newness = 1,
-): string {
+export function makePlate(rng: RandomStream, state: PlateState, used: Set<string>): string {
   const format = plateStyles[state].format;
   for (let attempt = 0; attempt < 1000; attempt++) {
-    const plate = fill(format, rng, newness);
+    const plate = fill(format, rng);
     if (used.has(plateKey(state, plate)) || isRude(plate)) continue;
     used.add(plateKey(state, plate));
     return plate;
@@ -122,14 +112,10 @@ export function makePlate(
   throw new Error(`No free ${state} plate was found.`);
 }
 
-/** How new a car is for choosing its plate series: 1 for this year's, falling to 0 at fifteen years old. */
-export function newnessOf(modelYear: number, year: number): number {
-  return Math.min(1, Math.max(0, 1 - (year - modelYear) / 15));
-}
-
 /**
- * The states whose formats a plate fits. The formats overlap a little (a New South Wales series can
- * start with the Northern Territory's C), so a car stores the state it was registered in.
+ * The states whose formats a plate fits. A few formats still overlap (New South Wales and the
+ * Northern Territory share a shape, told apart by the NT's fixed C), so a car stores the state it
+ * was registered in.
  */
 export function statesOfPlate(plate: string): PlateState[] {
   return PLATE_STATES.filter((s) => matches(plateStyles[s].format, plate));
@@ -137,24 +123,15 @@ export function statesOfPlate(plate: string): PlateState[] {
 
 function matches(format: string, plate: string): boolean {
   const tokens = parse(format);
-  const go = (t: number, at: number): boolean => {
-    if (t === tokens.length) return at === plate.length;
-    const token = tokens[t]!;
-    if (token.kind === 'series')
-      return token.options.some((o) => plate.startsWith(o, at) && go(t + 1, at + o.length));
-    const p = plate[at];
-    if (p === undefined) return false;
-    const ok =
-      token.kind === 'lit'
-        ? token.text === p
-        : token.kind === 'l'
-          ? LETTERS.includes(p)
-          : token.kind === 'd'
-            ? /[0-9]/.test(p)
-            : token.kind === 'f'
-              ? /[1-9]/.test(p)
-              : /[2-9]/.test(p);
-    return ok && go(t + 1, at + 1);
-  };
-  return go(0, 0);
+  if (tokens.length !== plate.length) return false;
+  return tokens.every((token, i) => {
+    const p = plate[i]!;
+    return token.kind === 'lit'
+      ? token.text === p
+      : token.kind === 'l'
+        ? LETTERS.includes(p)
+        : token.kind === 'except'
+          ? LETTERS.includes(p) && !token.letters.includes(p)
+          : /[0-9]/.test(p);
+  });
 }

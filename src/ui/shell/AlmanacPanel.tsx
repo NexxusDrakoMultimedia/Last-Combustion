@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
-import { RegistryLink } from '../RegistryLink';
+import { RegistryLink, YearsActive } from '../RegistryLink';
 
 const recordValue = (r: { value: number; year?: number }) =>
   r.year === undefined
@@ -41,7 +41,8 @@ export function AlmanacPanel({ tab }: { tab: string }) {
                       <span className="lc-num inline-block w-8 text-lc-dim">{i + 1}</span>
                       <RegistryLink to={{ kind: row.subjectType, id: row.subjectId }}>
                         {row.name}
-                      </RegistryLink>
+                      </RegistryLink>{' '}
+                      <YearsActive kind={row.subjectType} id={row.subjectId} />
                     </span>
                     <span className="lc-num">{recordValue(row)}</span>
                   </li>
