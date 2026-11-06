@@ -50,7 +50,6 @@ const slug = (heading) =>
   heading
     .toLowerCase()
     .replace(/[`*_~]/g, '')
-    .replace(/<[^>]+>/g, '')
     .replace(/[^\p{L}\p{N}\s-]/gu, '')
     .trim()
     .replace(/\s/g, '-');
