@@ -14,6 +14,7 @@ import { readCareer } from './career';
 import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
+import { applyMoves } from './daily';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
@@ -274,6 +275,8 @@ export function startNextSeason(db: Database): Rollover {
     expireExecutives(db, year);
     refreshPlayerPrestige(db);
     const worldChanges = applyWorldChanges(db, year);
+    // Drivers who booked a move in the off-season now live in their new homes.
+    applyMoves(db);
     db.run('UPDATE career SET game_date = ? WHERE id = 1', [`${year}-02-01`]);
     db.exec('COMMIT');
     return {

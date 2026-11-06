@@ -60,6 +60,7 @@ import {
   type AuctionView,
 } from '../db/auction';
 import { startNextSeason, type Rollover } from '../db/rollover';
+import { dailyLifeView, moveDriver, type DailyLifeView } from '../db/daily';
 import { setTraining as dbSetTraining, trainedDrivers, type TrainedDriver } from '../db/training';
 import { garageFinance, type GarageFinance } from '../db/finance';
 import {
@@ -215,6 +216,8 @@ interface CareerState {
   upgrades: UpgradeView[];
   gear: GearCondition[];
   trained: TrainedDriver[];
+  /** Where the garage's drivers live and what daily life is doing for them. */
+  daily: DailyLifeView | undefined;
   entries: GarageEntry[];
   sponsors: SponsorsView | undefined;
   money: GarageFinance | undefined;
@@ -267,6 +270,7 @@ interface CareerState {
   serviceParts(carId: number): Promise<void>;
   renewGear(driverId: number, itemId: string): Promise<void>;
   setTraining(driverId: number, level: number): Promise<void>;
+  moveDriverHome(driverId: number, place: string): Promise<void>;
   raceCar(carId: number): Promise<void>;
   negotiateExecutive(role: ExecutiveRole, offer: number): Promise<void>;
   offerExecutive(salary: number, years: number): Promise<void>;
@@ -324,6 +328,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
       gear: playerGarageId(db) === null ? [] : garageGear(db, playerGarageId(db)!),
       trained: playerGarageId(db) === null ? [] : trainedDrivers(db, playerGarageId(db)!),
+      daily: playerGarageId(db) === null ? undefined : dailyLifeView(db, playerGarageId(db)!),
       entries: playerGarageId(db) === null ? [] : garageEntries(db, playerGarageId(db)!),
       sponsors:
         playerGarageId(db) === null
@@ -403,6 +408,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     upgrades: [],
     gear: [],
     trained: [],
+    daily: undefined,
     entries: [],
     sponsors: undefined,
     money: undefined,
@@ -622,6 +628,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'SetTraining'),
+
+    moveDriverHome: (driverId, place) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        moveDriver(openDb, garageId, driverId, place);
+        refresh(openDb);
+        return undefined;
+      }, 'MoveDriver'),
 
     raceCar: (carId) =>
       run(async () => {

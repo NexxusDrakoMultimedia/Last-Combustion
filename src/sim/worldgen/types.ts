@@ -18,6 +18,8 @@ export interface PlaceData {
   country: string;
   lat: number;
   lon: number;
+  /** The kind of road around the place; left out, it is worked out from the place's id. */
+  roadType?: RoadType;
 }
 export interface ManufacturerData {
   id: string;

@@ -35,6 +35,7 @@ export const repairBalance = balanceJson.repairs;
 export const seasonBalance = balanceJson.season;
 export const fanBalance = balanceJson.fans;
 export const staffBalance = balanceJson.staff;
+export const dailyBalance = balanceJson.daily;
 export const executiveData = executivesJson;
 export const supplyData = suppliersJson;
 export const populations = flagsJson.populations as Record<string, number>;

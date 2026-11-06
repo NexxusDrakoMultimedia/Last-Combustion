@@ -33,9 +33,9 @@ describe('persisting a world', () => {
     expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE preferred_number IS NULL')).toBe(0);
   });
 
-  it('writes every table and the migrated schema is at version 32', () => {
+  it('writes every table and the migrated schema is at version 33', () => {
     const db = freshWorld();
-    expect(getSchemaVersion(db)).toBe(32);
+    expect(getSchemaVersion(db)).toBe(33);
     expect(readWorldSummary(db)).toEqual({
       garages: 96,
       drivers: 313,
