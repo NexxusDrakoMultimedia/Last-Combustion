@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { economyBalance } from './worldgen/data';
+import { BASE_RATES, type SupplyRates } from './supply';
 import type { Tier } from './worldgen/types';
 
 const cfg = () => economyBalance as typeof economyBalance & { tierUpkeep: Record<Tier, number> };
@@ -75,13 +76,19 @@ export interface RoundCostInput {
   upkeep: number[];
   /** Distance from the garage's base to the venue, in kilometres. */
   distanceKm: number;
+  /** What the garage's suppliers charge against the base prices (1 for every category if left out). */
+  rates?: SupplyRates;
 }
 
 export interface RoundCosts {
   entryFees: number;
   tyres: number;
   servicing: number;
+  /** Fuel for the road plus logistics. */
   travel: number;
+  electricity: number;
+  water: number;
+  raceFuel: number;
   total: number;
 }
 
@@ -93,13 +100,27 @@ export function roundCosts(input: RoundCostInput): RoundCosts {
   const tyres = paying * (c.raceTyres + c.practiceTyres);
   const practiceOnly = input.top31 * c.practiceTyres;
   const servicing = Math.round(input.upkeep.reduce((sum, u) => sum + c.servicing * u, 0));
+  const rates = input.rates ?? BASE_RATES;
+  // Travel is road fuel (by distance) plus logistics (the base trip and each extra entry).
   const travel = Math.round(
-    c.travelBase +
-      c.travelPerKm * input.distanceKm +
-      c.travelPerExtraEntry * Math.max(0, input.entries - 1),
+    c.travelPerKm * input.distanceKm * rates.travel_fuel +
+      (c.travelBase + c.travelPerExtraEntry * Math.max(0, input.entries - 1)) * rates.logistics,
   );
-  const total = entryFees + tyres + practiceOnly + servicing + travel;
-  return { entryFees, tyres: tyres + practiceOnly, servicing, travel, total };
+  const electricity = Math.round(c.electricity * input.entries * rates.electricity);
+  const water = Math.round(c.water * input.entries * rates.water);
+  const raceFuel = Math.round(c.raceFuel * input.entries * rates.race_fuel);
+  const total =
+    entryFees + tyres + practiceOnly + servicing + travel + electricity + water + raceFuel;
+  return {
+    entryFees,
+    tyres: tyres + practiceOnly,
+    servicing,
+    travel,
+    electricity,
+    water,
+    raceFuel,
+    total,
+  };
 }
 
 /** What a dealer pays for a car: a share of its value. */

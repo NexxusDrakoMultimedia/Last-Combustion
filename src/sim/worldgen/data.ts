@@ -14,6 +14,7 @@ import nicknameThemesJson from '../../../data/names/nicknames.json';
 import placesJson from '../../../data/places.json';
 import pointsJson from '../../../data/points.json';
 import prizesJson from '../../../data/prizes.json';
+import suppliersJson from '../../../data/suppliers.json';
 import type { CarModelData, Commentator, CourseData, ManufacturerData, PlaceData } from './types';
 
 export const places = placesJson as PlaceData[];
@@ -35,6 +36,7 @@ export const seasonBalance = balanceJson.season;
 export const fanBalance = balanceJson.fans;
 export const staffBalance = balanceJson.staff;
 export const executiveData = executivesJson;
+export const supplyData = suppliersJson;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
 export interface FlagRegion {

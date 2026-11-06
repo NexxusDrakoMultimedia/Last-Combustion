@@ -13,6 +13,7 @@ import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
+import { SupplyPanel } from './SupplyPanel';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
@@ -26,7 +27,16 @@ import {
 } from './panels';
 
 type PanelId =
-  'season' | 'garage' | 'market' | 'upgrades' | 'drivers' | 'staff' | 'sponsors' | 'money' | 'menu';
+  | 'season'
+  | 'garage'
+  | 'market'
+  | 'upgrades'
+  | 'drivers'
+  | 'staff'
+  | 'operations'
+  | 'sponsors'
+  | 'money'
+  | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'season', label: 'rail.season' },
@@ -35,6 +45,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'upgrades', label: 'rail.upgrades' },
   { id: 'drivers', label: 'rail.drivers' },
   { id: 'staff', label: 'rail.staff' },
+  { id: 'operations', label: 'rail.operations' },
   { id: 'sponsors', label: 'rail.sponsors' },
   { id: 'money', label: 'rail.money' },
 ];
@@ -313,6 +324,15 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           {staffTab === 'mechanics' ? <StaffPanel /> : <ExecutivesSection />}
+        </Panel>
+      )}
+      {!locked && open === 'operations' && (
+        <Panel
+          title={t('rail.operations')}
+          subtitle={t('supply.intro')}
+          onClose={() => setOpen(null)}
+        >
+          <SupplyPanel />
         </Panel>
       )}
       {!locked && open === 'sponsors' && (

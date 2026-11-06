@@ -83,6 +83,7 @@ describe('migrate', () => {
       'plates',
       'staff',
       'executives',
+      'supply',
     ]);
   });
 
