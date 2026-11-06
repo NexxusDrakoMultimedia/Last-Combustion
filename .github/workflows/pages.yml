@@ -37,6 +37,12 @@ jobs:
           # The web build includes the Google tag; other builds do not. The ID is a secret
           # (a repository or `github-pages` environment secret named GTAG_ID).
           VITE_GTAG_ID: ${{ secrets.GTAG_ID }}
+          # GameAnalytics is the primary telemetry tool. Its game and secret keys are
+          # `github-pages` environment secrets (or variables) named GA_GAME_KEY and
+          # GA_SECRET_KEY; they are never committed. The SDK runs in the browser, so these
+          # keys end up in the built page, which is how GameAnalytics works for web games.
+          VITE_GA_GAME_KEY: ${{ secrets.GA_GAME_KEY || vars.GA_GAME_KEY }}
+          VITE_GA_SECRET_KEY: ${{ secrets.GA_SECRET_KEY || vars.GA_SECRET_KEY }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist

@@ -1014,7 +1014,7 @@ The project follows common industry practice from the first commit (milestone M0
 - Node version pinned in `.nvmrc`, pnpm with a committed lockfile.
 - Vitest for unit tests (simulation coverage target 90%), fast-check for property tests, React Testing Library for components, Playwright for end-to-end tests, and axe for accessibility checks.
 - Accessibility target: WCAG 2.1 AA. Performance budgets: a prelim day of 300+ entries simulates in under 2 seconds in the worker, and the web bundle stays under an agreed size.
-- No in-game telemetry and no network calls other than optional mod downloads. The one exception is the Google tag on the web build hosted on GitHub Pages (`lc.nexxusdrako.au`), which is only built in when the `GTAG_ID` secret is set (the ID is kept in GitHub secrets, not in the repository) and is loaded only after the visitor accepts a cookie prompt (declining stops it and removes its cookies, and a "Cookie settings" button reopens the choice), so local, test and desktop (Electron and Steam) builds carry no analytics.
+- No accounts, no server of our own and no network calls other than optional mod downloads and the web build's telemetry (see "Telemetry"). Telemetry exists only on the web build hosted on GitHub Pages (`lc.nexxusdrako.au`): **GameAnalytics** is the primary tool and the **Google tag** (Google Analytics) the secondary one. Each is built in only when its keys are set (GitHub `github-pages` environment secrets `GA_GAME_KEY` and `GA_SECRET_KEY` for GameAnalytics and `GTAG_ID` for Google, never kept in the repository) and is loaded only after the visitor accepts the privacy prompt (declining stops both, removes the Google cookies, and a "Privacy settings" button reopens the choice). Local, test and desktop (Electron and Steam) builds carry no telemetry.
 
 **GitHub Actions workflows**
 
@@ -1038,6 +1038,25 @@ Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with 
 - TypeDoc API documentation for the simulation layer. User-facing text lives in `/locales`.
 
 **Definition of done:** the change has tests, passes every required check, updates the docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
+
+## Telemetry
+
+The web build can count how the game is used, to balance it and to find what breaks. It is anonymous, optional and off everywhere else.
+
+- **Tools.** **GameAnalytics** is the primary telemetry tool, through its open-source JavaScript SDK (MIT, loaded as a separate chunk only after consent). The **Google tag** (Google Analytics) is the secondary tool and gets the same events in a simpler shape. Both sit behind one `track()` function (`src/platform/telemetry.ts`) and one list of sinks, so a third tool, or dropping one, is a small change.
+- **Consent and builds.** A privacy prompt appears on the hosted web build when it has at least one tool's keys. Nothing is loaded, stored or sent before the visitor accepts; declining stops both tools (GameAnalytics event submission is switched off and the Google cookies are removed), and a "Privacy settings" button reopens the choice. The keys are build-time values taken from GitHub `github-pages` environment secrets or variables: `GA_GAME_KEY` and `GA_SECRET_KEY` (GameAnalytics, passed to the build as `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY`) and `GTAG_ID` (Google, `VITE_GTAG_ID`). They are never committed. A browser SDK has to ship its keys in the page, which is how GameAnalytics web games work, so the secret key identifies the game and is not a password. Local, test and desktop builds have none.
+- **What is sent.** Categories, counts and amounts only: which panels and tabs are opened, which actions are taken (and how an offer ended), when a career, season or round starts and completes, how money moves, and errors the game raised. **Never** sent: owner, garage, driver or sponsor names, anything typed by the player, save contents, or the career seed. GameAnalytics assigns its own anonymous user id; the game does not set one.
+- **Events.**
+
+| Kind | GameAnalytics | Google tag | What it reports |
+| --- | --- | --- | --- |
+| Design | design event, id of up to five `:` parts of at most 32 characters | `lc_design` (`event_id`, `value`) | `Panel:Open:<panel>`, `Panel:Tab:<panel>:<tab>`, `Action:<action>` for every store action, and `Driver:Offer:<outcome>` and `Sponsor:Offer:<outcome>` with the amount asked |
+| Progression | progression event | `lc_progression` (`status`, `path`) | `Career`, then `Season/Y<year>` and `Season/Y<year>/R<round>` with Start and Complete |
+| Money | resource event: currency `Dollars`, item type one of the ledger categories (letters only, 17 of the 20 allowed) | `lc_resource` (`flow`, `item_type`, `value`) | a source or sink per ledger category whenever the player's garage gains or spends money |
+| Error | error event | `lc_error` (`severity`, `message`) | the message of an error the game showed, on one line, at most 100 characters, long numbers hidden |
+
+- **Rules for new events.** Report an action with `trackDesign` or `track` in the store (the store is where every game action passes), never with a name or free text in the id or value, and keep the set of ids small (GameAnalytics blocks games that send too many different ones, and Google limits distinct event names, which is why the Google tag uses four). Item types and currencies are listed up front in `src/platform/telemetry.ts`.
+- **Not built yet.** Custom dimensions (for example difficulty or mode), remote configuration and A/B tests, and telemetry in the desktop and Steam builds (which, if ever added, would be a separate decision).
 
 ## Course outlines
 
@@ -1577,7 +1596,7 @@ Branding and social media are planned work for after the first playable season (
 - **Name and tagline.** The game is **Last Combustion**, and the tagline is above ("Overview"). The tagline is used exactly as written, with no variations.
 - **Owner and identity.** The game, its logo and its characters belong to Nexxus Drako Multimedia (NDM) and sit under the NDM identity: maroon and gold, flat colour, no gradients or drop shadows, Orbitron and Exo 2 for web type (see "Themes" and the `design-system` repository). The game's own logo and key art are separate from the NDM logos and follow the same rules.
 - **Voice.** Warm, direct and identity-forward, in Australian English, with display lines in uppercase and running text in sentence case, and no emoji used as decoration. Every public-facing page carries the Acknowledgement of Country and NDM's statements, with the Intersex-Inclusive Progress Pride flag as the only pride flag, exactly as the design system requires.
-- **Web home.** The playable web build is at `lc.nexxusdrako.au`, and the Google tag there is loaded only after the visitor accepts cookies.
+- **Web home.** The playable web build is at `lc.nexxusdrako.au`, and its telemetry (GameAnalytics and the Google tag) is loaded only after the visitor accepts the privacy prompt.
 - **Mods and forks** may say they are made "for" or "compatible with" Last Combustion, but not use the logo or Pyra Drake (see `TRADEMARKS.md`).
 
 **To do, in order**

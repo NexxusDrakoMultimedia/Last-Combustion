@@ -60,6 +60,7 @@ import {
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
+import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
 import { getServices } from './services';
 
 /**
@@ -68,6 +69,22 @@ import { getServices } from './services';
  * "Technical architecture").
  */
 let openDb: Database | undefined;
+
+/** The player's ledger totals when telemetry last looked, so only new money movements are reported. */
+let ledgerSeen: { db: Database; totals: Record<string, number> } | undefined;
+
+/** Reports the money that has moved in the player's garage since the last look (a source or a sink per category). */
+function trackMoney(db: Database): void {
+  const garageId = playerGarageId(db);
+  if (garageId === null) {
+    ledgerSeen = undefined;
+    return;
+  }
+  const totals = garageFinance(db, garageId).byCategory;
+  if (ledgerSeen?.db === db)
+    for (const event of ledgerDeltas(ledgerSeen.totals, totals)) track(event);
+  ledgerSeen = { db, totals };
+}
 
 /** The player's garage id, or null before one exists. */
 function playerGarageId(db: Database): number | null {
@@ -169,7 +186,8 @@ function describeError(error: unknown): Notice {
 
 export const useCareerStore = create<CareerState>()((set, get) => {
   /** Refreshes the read-model from the open database. */
-  const refresh = (db: Database) =>
+  const refresh = (db: Database) => {
+    trackMoney(db);
     set({
       status: 'ready',
       schemaVersion: getSchemaVersion(db),
@@ -204,15 +222,22 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               upgradeView(db, playerGarageId(db)!, c.carId),
             ),
     });
+  };
 
-  const run = async (action: () => Promise<Notice | undefined>) => {
+  const run = async (action: () => Promise<Notice | undefined>, name?: string) => {
     const before = get().status;
     set({ status: 'busy' });
     try {
       const notice = await action();
+      if (name) trackDesign(undefined, 'Action', name);
       set({ status: openDb ? 'ready' : before, notice });
       await get().refreshSlots();
     } catch (error) {
+      track({
+        kind: 'error',
+        severity: 'Error',
+        message: safeMessage(error instanceof Error ? error.message : String(error)),
+      });
       set({ status: openDb ? 'ready' : before, notice: describeError(error) });
     }
   };
@@ -270,8 +295,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           rollover: undefined,
         });
         refresh(db);
+        track({ kind: 'progression', status: 'Start', path: ['Career'] });
         return undefined;
-      }),
+      }, 'StartCareer'),
 
     chooseStarter: (carId, driverId) =>
       run(async () => {
@@ -279,7 +305,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         chooseStarter(openDb, carId, driverId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'ChooseStarter'),
 
     buyListing: (listingId) =>
       run(async () => {
@@ -289,7 +315,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         buyUsedCar(openDb, garageId, listingId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'BuyUsedCar'),
 
     negotiate: (driverId) =>
       run(async () => {
@@ -308,7 +334,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           },
         });
         return undefined;
-      }),
+      }, 'DriverNegotiate'),
 
     offerContract: (salary, years, garageShare) =>
       run(async () => {
@@ -320,6 +346,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           garageShare,
         });
         refresh(openDb);
+        trackDesign(Math.round(salary), 'Driver', 'Offer', outcome.kind);
         set({
           negotiation: {
             ...current,
@@ -328,7 +355,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           },
         });
         return undefined;
-      }),
+      }, 'DriverOffer'),
 
     endNegotiation: () => set({ negotiation: undefined }),
 
@@ -349,7 +376,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           },
         });
         return undefined;
-      }),
+      }, 'SponsorNegotiate'),
 
     offerSponsor: (fee, years) =>
       run(async () => {
@@ -357,6 +384,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (!openDb || !current) return undefined;
         const outcome = offerSponsorDeal(openDb, current.id, { fee, years });
         refresh(openDb);
+        trackDesign(Math.round(fee), 'Sponsor', 'Offer', outcome.kind);
         set({
           sponsorNegotiation: {
             ...current,
@@ -365,7 +393,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           },
         });
         return undefined;
-      }),
+      }, 'SponsorOffer'),
 
     endSponsorNegotiation: () => set({ sponsorNegotiation: undefined }),
 
@@ -381,7 +409,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         setEntryDriver(openDb, garageId, seat, driverId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'SeatDriver'),
 
     fitPart: (carId, partId) =>
       run(async () => {
@@ -391,7 +419,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         dbFitPart(openDb, garageId, carId, partId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'FitPart'),
 
     removePart: (carId, category) =>
       run(async () => {
@@ -401,7 +429,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         dbRemovePart(openDb, garageId, carId, category);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'RemovePart'),
 
     serviceParts: (carId) =>
       run(async () => {
@@ -411,7 +439,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         dbServiceParts(openDb, garageId, carId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'ServiceParts'),
 
     renewGear: (driverId, itemId) =>
       run(async () => {
@@ -421,7 +449,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         dbRenewGear(openDb, garageId, driverId, itemId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'RenewGear'),
 
     setTraining: (driverId, level) =>
       run(async () => {
@@ -431,7 +459,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         dbSetTraining(openDb, garageId, driverId, level);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'SetTraining'),
 
     raceCar: (carId) =>
       run(async () => {
@@ -445,7 +473,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         setEntryCar(openDb, garageId, entry, carId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'RaceCar'),
 
     addEntry: (carId, driverId) =>
       run(async () => {
@@ -455,7 +483,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         dbAddEntry(openDb, garageId, carId, driverId);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'AddEntry'),
 
     removeEntry: (raceNumber) =>
       run(async () => {
@@ -465,22 +493,28 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         dbRemoveEntry(openDb, garageId, raceNumber);
         refresh(openDb);
         return undefined;
-      }),
+      }, 'RemoveEntry'),
 
     finishSeason: () =>
       run(async () => {
         if (!openDb) return undefined;
         const seasonEnd = endSeason(openDb);
         refresh(openDb);
+        track({
+          kind: 'progression',
+          status: 'Complete',
+          path: ['Season', `Y${seasonEnd.year}`],
+        });
         set({ seasonEnd });
         return undefined;
-      }),
+      }, 'FinishSeason'),
 
     newSeason: () =>
       run(async () => {
         if (!openDb) return undefined;
         const rollover = startNextSeason(openDb);
         refresh(openDb);
+        track({ kind: 'progression', status: 'Start', path: ['Season', `Y${rollover.year}`] });
         set({
           rollover,
           prelims: undefined,
@@ -489,7 +523,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           seasonEnd: undefined,
         });
         return undefined;
-      }),
+      }, 'NewSeason'),
 
     createTestCareer: () =>
       run(async () => {
@@ -515,9 +549,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (round === null) return undefined;
         const summary = playPrelims(openDb, round);
         refresh(openDb);
+        track({
+          kind: 'progression',
+          status: 'Start',
+          path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+        });
         set({ prelims: summary });
         return undefined;
-      }),
+      }, 'RunPrelims'),
 
     runNextFinal: () =>
       run(async () => {
@@ -527,16 +566,21 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const summary = playFinal(openDb, round);
         const settlement = settleRound(openDb, round);
         refresh(openDb);
+        track({
+          kind: 'progression',
+          status: 'Complete',
+          path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+        });
         set({ final: summary, settlement });
         return undefined;
-      }),
+      }, 'RunFinal'),
 
     saveSlot1: () =>
       run(async () => {
         if (!openDb) return undefined;
         await saveToSlot(openDb, getServices().platform.saves, 'slot1', 'Slot 1');
         return { key: 'debug.saved' };
-      }),
+      }, 'Save'),
 
     loadSlot1: () =>
       run(async () => {
@@ -547,7 +591,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         openDb = loaded.db;
         refresh(openDb);
         return { key: 'debug.loaded' };
-      }),
+      }, 'Load'),
 
     exportFile: () =>
       run(async () => {
@@ -555,7 +599,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const bytes = await packDatabase(openDb, 'Export');
         await getServices().platform.files.exportFile('career.lcsave', bytes);
         return undefined;
-      }),
+      }, 'Export'),
 
     refreshSlots: async () => {
       const used = await getServices().platform.saves.occupied();
