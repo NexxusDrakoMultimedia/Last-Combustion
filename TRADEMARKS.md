@@ -6,7 +6,7 @@
 
 The following are trademarks and intellectual property of **Nexxus Drako Multimedia**:
 
-- the game name **Last Combustion** (and the full series names, such as _The Last Combustion of the Petrol Engine World Motorsports Championship_)
+- the game name **Last Combustion** and its full name **The Last Combustion of the Petrol Engine** (and the full series names, such as _The Last Combustion of the Petrol Engine World Motorsports Championship_)
 - the Last Combustion **logo**
 - the character **Pyra Drake**
 - the four **commentators**: Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera (their names, voices, backgrounds and likenesses)

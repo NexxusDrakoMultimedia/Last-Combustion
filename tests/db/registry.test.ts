@@ -168,6 +168,35 @@ describe('the registry over two seasons', () => {
     expect(index.drivers.find((d) => d.id === championId)!.badge.gold).toBe(true);
   });
 
+  it('says when a driver debuted and in which seasons they scored, and the same for a garage', () => {
+    const scorer = Number(
+      db.exec(
+        `SELECT e.driver_id FROM result r JOIN entry e ON e.id = r.entry_id WHERE r.points > 0 AND e.series = 'main' GROUP BY e.driver_id HAVING COUNT(DISTINCT r.round_id) > 1 LIMIT 1`,
+      )[0]!.values[0]![0],
+    );
+    const p = driverProfile(db, scorer);
+    const scoringYears = p.seasons.filter((s) => s.points > 0).map((s) => s.year);
+    expect(p.debutYear).toBe(p.seasons[0]!.year);
+    expect(p.career.scoring).toEqual({
+      seasons: scoringYears.length,
+      firstYear: Math.min(...scoringYears),
+      lastYear: Math.max(...scoringYears),
+    });
+    const idle = Number(
+      db.exec(
+        `SELECT id FROM driver WHERE id NOT IN (SELECT e.driver_id FROM result r JOIN entry e ON e.id = r.entry_id WHERE r.points > 0) LIMIT 1`,
+      )[0]!.values[0]![0],
+    );
+    expect(driverProfile(db, idle).career.scoring).toEqual({
+      seasons: 0,
+      firstYear: null,
+      lastYear: null,
+    });
+    const g = garageProfile(db, championGarageId);
+    expect(g.scoring.seasons).toBeGreaterThan(0);
+    expect(g.scoring.firstYear).toBeLessThanOrEqual(g.scoring.lastYear!);
+  });
+
   it('knows the twelve dragon-blooded drivers', () => {
     const ids = dragonDriverIds(db);
     expect(ids.size).toBe(12);

@@ -63,6 +63,22 @@ export interface CarRef {
   model: string;
 }
 
+/** The seasons in which someone scored, and the first and last of them. */
+export interface ScoringSpan {
+  seasons: number;
+  firstYear: number | null;
+  lastYear: number | null;
+}
+
+function scoringSpan(lines: { year: number; points: number }[]): ScoringSpan {
+  const years = lines.filter((l) => l.points > 0).map((l) => l.year);
+  return {
+    seasons: years.length,
+    firstYear: years.length > 0 ? Math.min(...years) : null,
+    lastYear: years.length > 0 ? Math.max(...years) : null,
+  };
+}
+
 export interface SeasonLine {
   year: number;
   rank: number | null;
@@ -125,7 +141,11 @@ export interface DriverProfile {
     finals: number;
     poles: number;
     championships: number;
+    /** The seasons with at least a point, and the first and last of them. */
+    scoring: ScoringSpan;
   };
+  /** The first season they entered, or null if they never have. */
+  debutYear: number | null;
   garage: Ref | null;
   seasons: DriverSeason[];
   contracts: { garage: Ref; startYear: number; endYear: number; salary: number }[];
@@ -226,7 +246,9 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
       championships: Number(
         all(db, 'SELECT COUNT(*) AS n FROM season WHERE champion_driver_id = ?', [driverId])[0]!.n,
       ),
+      scoring: scoringSpan(seasons),
     },
+    debutYear: seasons[0]?.year ?? null,
     garage: last ? last.garage : null,
     seasons,
     contracts: all(
@@ -400,6 +422,8 @@ export interface GarageProfile {
   cars: CarRef[];
   seasons: (SeasonLine & { entries: number })[];
   championships: number[];
+  /** The seasons with at least a point, and the first and last of them. */
+  scoring: ScoringSpan;
   drivers: (Ref & { years: string })[];
 }
 
@@ -481,6 +505,9 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     championships: all(db, 'SELECT year FROM season WHERE champion_garage_id = ? ORDER BY year', [
       garageId,
     ]).map((s) => s.year as number),
+    scoring: scoringSpan(
+      seasonRows.map((s) => ({ year: s.year as number, points: Number(s.points) })),
+    ),
     drivers: all(
       db,
       `SELECT e.driver_id AS id, d.name, MIN(s.year) AS first, MAX(s.year) AS last FROM entry e

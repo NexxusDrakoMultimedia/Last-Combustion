@@ -45,7 +45,7 @@ Most features come in pairs. A pure module in `src/sim` holds the rules and read
 ## The season
 
 - **End of season.** `endSeason` in `src/db/season.ts` pays the champion's prize and the bonuses, sets gold borders and takes the final snapshots (migration 0014). It then calls `awardSeason` in `src/db/awards.ts` with the final tables.
-- **Awards and records.** `src/sim/awards.ts` (with `data/awards.json`) picks the winners, `src/db/awards.ts` stores and reads them (migration 0031), and `src/db/records.ts` builds the record book when the Almanac opens. `src/db/almanac.ts` keeps the almanac of everyone who ever scored (migration 0015).
+- **Awards and records.** `src/sim/awards.ts` (with `data/awards.json`) picks the winners, `src/db/awards.ts` stores and reads them (migration 0031), and `src/db/records.ts` builds the record book when the Almanac opens. Each person's career is on their Registry profile (the older per-person almanac module is gone; migration 0015 added `garage.closed_year`).
 - **Next season.** `startNextSeason` calls `src/db/rollover.ts` (retirements, rookies, contracts, numbers, calendar, entries, using `src/sim/rollover.ts`), `src/db/garages.ts` (computer garages get their sponsorship, garages broke two seasons running fold, new ones open; migration 0024), the fans growth, training and driver moves.
 
 ## Cars, parts and the market

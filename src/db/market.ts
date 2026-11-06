@@ -387,7 +387,7 @@ export function createUsedCar(
   rng: ReturnType<ReturnType<typeof createRng>['stream']>,
   ownerGarageId: number,
   date: string,
-  only?: { tier: Tier; excludeModelIds: readonly number[]; minAgeShare?: number },
+  only?: { tier: Tier; excludeModelIds: readonly number[]; age?: number },
 ): { carId: number; value: number } {
   const year = Number(date.slice(0, 4));
   const models = all(
@@ -406,15 +406,18 @@ export function createUsedCar(
     pool.map((m) => (only ? 1 : (weights[m.tier as string] ?? 0))),
   );
   const tier = model.tier as keyof typeof cars.maxAgeYears;
-  // A newcomer's starter cars are drawn from the older end of the range (minAgeShare of the oldest age).
-  const oldest = cars.maxAgeYears[tier];
-  const age = rng.int(Math.max(1, Math.ceil(oldest * (only?.minAgeShare ?? 0))), oldest);
+  // A fixed age (a brand-new starter car is age 0) skips the draw; a brand-new car has no kilometres.
+  const age = only?.age ?? rng.int(1, cars.maxAgeYears[tier]);
   const roadKm =
-    Math.round(
-      (age * rng.float(cars.roadKmPerYear[0]!, cars.roadKmPerYear[1]!) * cars.usageFactor[tier] +
-        rng.int(50, 500)) /
-        10,
-    ) * 10;
+    age === 0
+      ? 0
+      : Math.round(
+          (age *
+            rng.float(cars.roadKmPerYear[0]!, cars.roadKmPerYear[1]!) *
+            cars.usageFactor[tier] +
+            rng.int(50, 500)) /
+            10,
+        ) * 10;
   const wear = wearFromKm(roadKm, 0, model.tier as Tier);
   const id = Number(all(db, 'SELECT COALESCE(MAX(id), 0) + 1 AS n FROM car')[0]!.n);
   const prefix = String(model.name).split(' ')[0]!.slice(0, 3).toUpperCase();

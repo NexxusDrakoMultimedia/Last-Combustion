@@ -7,6 +7,7 @@ import type {
   DriverProfile,
   GarageProfile,
   RegistryIndex,
+  ScoringSpan,
   RoundProfile,
 } from '../../db/registry';
 import type { ResultRow } from '../../db/tables';
@@ -45,6 +46,13 @@ function Facts({ items }: { items: [string, ReactNode][] }) {
 }
 
 const th = 'lc-display text-xs text-lc-dim';
+
+/** "2031 to 2034", or "None" for someone who has not scored. */
+function scoringYears(s: ScoringSpan): string {
+  return s.firstYear === null || s.lastYear === null
+    ? t('registry.none')
+    : t('registry.yearsRange', { first: s.firstYear, last: s.lastYear });
+}
 
 function DriverPage({ p }: { p: DriverProfile }) {
   const dragon = useCareerStore((s) => s.dragonDrivers.has(p.id));
@@ -87,6 +95,7 @@ function DriverPage({ p }: { p: DriverProfile }) {
               ? t('registry.retired', { year: p.retiredYear })
               : t('registry.active'),
           ],
+          [t('registry.debut'), p.debutYear ?? t('registry.none')],
           [t('registry.fans'), p.fans.toLocaleString('en')],
         ]}
       />
@@ -99,6 +108,8 @@ function DriverPage({ p }: { p: DriverProfile }) {
             [t('registry.finals'), p.career.finals],
             [t('registry.poles'), p.career.poles],
             [t('registry.championships'), p.career.championships],
+            [t('registry.scoringSeasons'), p.career.scoring.seasons],
+            [t('registry.scoringYears'), scoringYears(p.career.scoring)],
           ]}
         />
       </Section>
@@ -342,6 +353,8 @@ function GaragePage({ p }: { p: GarageProfile }) {
             t('registry.championships'),
             p.championships.length > 0 ? p.championships.join(', ') : t('registry.none'),
           ],
+          [t('registry.scoringSeasons'), p.scoring.seasons],
+          [t('registry.scoringYears'), scoringYears(p.scoring)],
         ]}
       />
       <Section title={t('registry.entries')}>

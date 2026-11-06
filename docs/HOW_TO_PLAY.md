@@ -16,7 +16,7 @@ On the title screen fill in:
 - **Garage base.** Every garage in the series is based in an Australian state or territory. Your base decides your licence plates, which suppliers serve you and how far you travel to each round.
 - **Two livery colours.**
 
-Press **Start career**. You then choose a **starter car** from three used cars and a **starter driver** from five unknown drivers. Look at each car's wear and each driver's stats. The cars and drivers you pass over go to the market and to the free agents, so you can still sign them later. Press **Confirm choice**.
+Press **Start career**. You then choose a **starter car** from three brand-new Starter-class cars and a **starter driver** from five unknown drivers. Look at each car's model and each driver's stats. The cars and drivers you pass over go to the market and to the free agents, so you can still sign them later. Press **Confirm choice**.
 
 ## The screen
 

@@ -322,7 +322,7 @@
     },
     "starter": {
       "driverPaceMean": 32,
-      "carMinAgeShare": 0.4
+      "carAgeYears": 0
     },
     "market": {
       "dealerBuyback": 0.8,
