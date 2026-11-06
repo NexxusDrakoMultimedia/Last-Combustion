@@ -9,9 +9,10 @@ The following are trademarks and intellectual property of **Nexxus Drako Multime
 - the game name **Last Combustion** (and the full series names, such as _The Last Combustion of the Petrol Engine World Motorsports Championship_)
 - the Last Combustion **logo**
 - the character **Pyra Drake**
+- the four **commentators**: Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera (their names, voices, backgrounds and likenesses; the names of the first two are placeholders that may change)
 - the hidden driver characters that appear in the game with a dragon mark
 
-Nexxus Drako Multimedia claims no copyright or trademark in any other character. Declan Marsh, Ingrid Halloran, Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera are fictional in-game characters, and their names are not reserved (the first four are placeholders that may change).
+Nexxus Drako Multimedia claims no copyright or trademark in any other character. Declan Marsh and Ingrid Halloran, who run the series, are fictional in-game characters whose names are not reserved (they are placeholders that may change).
 
 The GNU General Public License (version 3 or later) covers the software and the content released under it. It does not give you the right to use these names, the logo or the characters. This is the additional term allowed by section 7(e) of the GPLv3.
 
@@ -25,7 +26,7 @@ The GNU General Public License (version 3 or later) covers the software and the 
 
 - Use the name, logo or Pyra Drake in the name or branding of a fork or other product.
 - Suggest that a fork, mod or product is made, approved or supported by Nexxus Drako Multimedia.
-- Use the logo, or depict or use Pyra Drake or the hidden driver characters, in a mod or fork.
+- Use the logo, or depict or use Pyra Drake, the commentators or the hidden driver characters, in a mod or fork.
 
 Forks must be renamed and must replace the logo.
 

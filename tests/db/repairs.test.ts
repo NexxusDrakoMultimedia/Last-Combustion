@@ -15,6 +15,7 @@ import {
   renewGear,
   wearGear,
   restoreChassis,
+  restorationQuote,
   serviceParts,
   wearParts,
 } from '../../src/db/repairs';
@@ -22,7 +23,9 @@ import { createNewDatabase, packDatabase, unpackDatabase } from '../../src/db/se
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { fitPart } from '../../src/db/upgrades';
 import { persistWorld } from '../../src/db/world';
+import { chassisWear, wearFromKm } from '../../src/sim/wear';
 import { generateWorld } from '../../src/sim/worldgen';
+import type { Tier } from '../../src/sim/worldgen/types';
 
 let SQL: SqlJsStatic;
 beforeAll(async () => {
@@ -117,33 +120,120 @@ describe('servicing parts', () => {
   });
 });
 
-describe('restoring the chassis', () => {
-  it('takes the wear away for 12% of the new price in proportion, and later driving wears from zero', () => {
-    const db = newCareer();
-    const [carId, garage] = entered(db);
-    db.run('UPDATE car SET wear = 50 WHERE id = ?', [carId]);
-    const priceNew = Number(
+describe('fully restoring the chassis', () => {
+  /** Gives a car a lot of road kilometres and the wear that goes with them. */
+  function wornCar(db: Database, carId: number, roadKm: number): number {
+    const tier = String(
+      scalar(
+        db,
+        `SELECT m.tier FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ${carId}`,
+      ),
+    ) as Tier;
+    const wear = wearFromKm(roadKm, 0, tier);
+    db.run(
+      'UPDATE car SET road_km = ?, race_km = 0, wear = ?, wear_offset = 0, restorations = 0 WHERE id = ?',
+      [roadKm, wear, carId],
+    );
+    return wear;
+  }
+  const priceNew = (db: Database, carId: number) =>
+    Number(
       scalar(
         db,
         `SELECT m.price_new FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ${carId}`,
       ),
     );
-    const cost = restoreChassis(db, garage, carId);
-    expect(cost).toBe(Math.round(priceNew * 0.12 * 0.5));
-    expect(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`)).toBe(0);
-    expect(scalar(db, `SELECT wear_offset FROM car WHERE id = ${carId}`)).toBe(50);
-    expect(garageFinance(db, garage).byCategory.restoration).toBe(-cost);
-  });
 
-  it('is not undone by the next round: wear is recomputed from kilometres less the offset', () => {
+  it('costs as much as a new car and takes most of the wear away, but not all', () => {
     const db = newCareer();
     const [carId, garage] = entered(db);
-    const before = Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`));
+    const wear = wornCar(db, carId, 150_000);
+    expect(wear).toBeGreaterThan(30);
+    const done = restoreChassis(db, garage, carId);
+    expect(done.cost).toBe(priceNew(db, carId));
+    expect(done.wearBefore).toBeCloseTo(wear, 1);
+    // 5 points of floor, and a tenth of the wear above it.
+    const expected = 5 + 0.1 * (wear - 5);
+    expect(Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`))).toBeCloseTo(expected, 1);
+    expect(Number(scalar(db, `SELECT restorations FROM car WHERE id = ${carId}`))).toBe(1);
+    expect(garageFinance(db, garage).byCategory.restoration).toBe(-done.cost);
+  });
+
+  it('keeps the car’s history: its kilometres, owners and decals stay', () => {
+    const db = newCareer();
+    const [carId, garage] = entered(db);
+    wornCar(db, carId, 120_000);
+    db.run(
+      "INSERT INTO trophy (owner_type, owner_id, kind, series, season_id, earned_on) VALUES ('car', ?, 'title', 'main', 1, '2031-11-11')",
+      [carId],
+    );
+    const owners = scalar(db, `SELECT COUNT(*) FROM car_ownership WHERE car_id = ${carId}`);
     restoreChassis(db, garage, carId);
+    expect(scalar(db, `SELECT road_km FROM car WHERE id = ${carId}`)).toBe(120_000);
+    expect(
+      scalar(db, `SELECT COUNT(*) FROM trophy WHERE owner_type = 'car' AND owner_id = ${carId}`),
+    ).toBe(1);
+    expect(scalar(db, `SELECT COUNT(*) FROM car_ownership WHERE car_id = ${carId}`)).toBe(owners);
+  });
+
+  it('costs a quarter more each time and leaves a higher minimum wear each time', () => {
+    const db = newCareer();
+    const [carId, garage] = entered(db);
+    const base = priceNew(db, carId);
+    wornCar(db, carId, 400_000);
+    const costs: number[] = [];
+    const floors: number[] = [];
+    for (let n = 1; n <= 4; n++) {
+      // Run the car right down again between restorations.
+      db.run('UPDATE car SET road_km = road_km + 400000 WHERE id = ?', [carId]);
+      db.run('UPDATE car SET wear = 95 WHERE id = ?', [carId]);
+      const quote = restorationQuote(db, carId);
+      costs.push(restoreChassis(db, garage, carId).cost);
+      expect(quote.cost).toBe(costs[n - 1]);
+      floors.push(Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`)));
+    }
+    expect(costs).toEqual([1, 1.25, 1.5, 1.75].map((m) => Math.round(base * m)));
+    for (let n = 1; n < floors.length; n++) expect(floors[n]!).toBeGreaterThan(floors[n - 1]!);
+    expect(floors[3]!).toBeGreaterThanOrEqual(20);
+  });
+
+  it('can never wear less than the floor, however little the car has done', () => {
+    const db = newCareer();
+    const [carId, garage] = entered(db);
+    wornCar(db, carId, 150_000);
+    restoreChassis(db, garage, carId);
+    // A car with hardly any kilometres but a restoration behind it still has the floor.
+    db.run('UPDATE car SET road_km = 0, race_km = 0, wear_offset = 0 WHERE id = ?', [carId]);
+    playPrelims(db, 1);
+    expect(Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`))).toBeGreaterThanOrEqual(
+      5,
+    );
+    expect(chassisWear(0, 0, 'mid', 0, 3)).toBe(15);
+    expect(chassisWear(0, 0, 'mid', 0, 99)).toBe(60);
+  });
+
+  it('is not undone by the next round: wear carries on from where the restoration left it', () => {
+    const db = newCareer();
+    const [carId, garage] = entered(db);
+    const worn = wornCar(db, carId, 150_000);
+    restoreChassis(db, garage, carId);
+    const restored = Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`));
     playPrelims(db, 1);
     const after = Number(scalar(db, `SELECT wear FROM car WHERE id = ${carId}`));
-    expect(after).toBeLessThan(before);
-    expect(after).toBeGreaterThanOrEqual(0);
+    // Racing adds wear to the restored chassis; it does not bring the old wear back.
+    expect(after).toBeGreaterThan(restored);
+    expect(after).toBeLessThan(worn / 2);
+  });
+
+  it('is refused for a chassis with too little wear to gain, or when the garage cannot pay', () => {
+    const db = newCareer();
+    const [carId, garage] = entered(db);
+    db.run('UPDATE car SET wear = 3 WHERE id = ?', [carId]);
+    expect(restorationQuote(db, carId).worthwhile).toBe(false);
+    expect(() => restoreChassis(db, garage, carId)).toThrow(/not worn enough/);
+    wornCar(db, carId, 150_000);
+    db.run('UPDATE garage SET cash = 10 WHERE id = ?', [garage]);
+    expect(() => restoreChassis(db, garage, carId)).toThrow(/cannot afford/);
   });
 });
 
@@ -176,11 +266,13 @@ describe('crash repairs', () => {
     const [carId, garage] = entered(db);
     fitPart(db, garage, carId, 'engine-sport');
     db.run('UPDATE car_part SET wear = 33 WHERE car_id = ?', [carId]);
-    db.run('UPDATE car SET wear = 20 WHERE id = ?', [carId]);
+    db.run('UPDATE car SET road_km = 150000, wear = 60 WHERE id = ?', [carId]);
     restoreChassis(db, garage, carId);
+    const offset = scalar(db, `SELECT wear_offset FROM car WHERE id = ${carId}`);
     const { db: loaded } = await unpackDatabase(SQL, await packDatabase(db, 'repairs'));
     expect(partConditions(loaded, carId)[0]!.wear).toBe(33);
-    expect(scalar(loaded, `SELECT wear_offset FROM car WHERE id = ${carId}`)).toBe(20);
+    expect(scalar(loaded, `SELECT wear_offset FROM car WHERE id = ${carId}`)).toBe(offset);
+    expect(scalar(loaded, `SELECT restorations FROM car WHERE id = ${carId}`)).toBe(1);
   });
 });
 

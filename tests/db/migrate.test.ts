@@ -87,6 +87,7 @@ describe('migrate', () => {
       'awards',
       'headquarters',
       'daily_life',
+      'restorations',
     ]);
   });
 

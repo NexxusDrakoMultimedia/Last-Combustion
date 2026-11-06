@@ -1,0 +1,12 @@
+{
+  "source": "Where to find Nexxus Drako Multimedia and the game. These are shown on the About screen and listed in the README.",
+  "repository": "https://github.com/NexxusDrakoMultimedia/Last-Combustion",
+  "webBuild": "https://lc.nexxusdrako.au",
+  "links": [
+    { "id": "website", "url": "https://nexxusdrako.au/" },
+    { "id": "kofi", "url": "https://ko-fi.com/nexxusdrako" },
+    { "id": "bluesky", "url": "https://bsky.app/profile/nexxusdrako.au" },
+    { "id": "discord", "url": "https://discord.gg/ek64RstbSX" },
+    { "id": "github", "url": "https://www.github.com/Nexxus-Drako" }
+  ]
+}

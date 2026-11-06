@@ -32,8 +32,9 @@ export interface LoadedEntry {
   tier: Tier;
   roadKm: number;
   raceKm: number;
-  /** Chassis wear taken off by restorations. */
+  /** Chassis wear taken off by restorations, and how many full restorations the chassis has had. */
   wearOffset: number;
+  restorations: number;
 }
 
 /** Loads every main-series entry of a season with its driver (gear applied) and car. */
@@ -80,7 +81,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
             d.name, d.gender, d.identity, d.easter_egg, d.birth_date, d.nationality, d.flag, d.hometown_place_id, d.residence_place_id,
             d.pace, d.consistency, d.racecraft, d.tyre_management, d.composure, d.wet_skill, d.potential,
             d.home_road_type, d.fans, d.fame, d.reputation, d.gold_border_year, d.nickname,
-            c.kerb_kg_current, c.tyre_width_mm, c.wear, c.wear_offset, c.road_km, c.race_km,
+            c.kerb_kg_current, c.tyre_width_mm, c.wear, c.wear_offset, c.restorations, c.road_km, c.race_km,
             m.base_ps, m.layout, m.tier
        FROM entry e
        JOIN driver d ON d.id = e.driver_id
@@ -147,6 +148,7 @@ export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
       roadKm: r.road_km as number,
       raceKm: r.race_km as number,
       wearOffset: r.wear_offset as number,
+      restorations: r.restorations as number,
     };
   });
 }
