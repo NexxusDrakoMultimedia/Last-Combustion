@@ -80,6 +80,7 @@ describe('migrate', () => {
       'garage_finances',
       'gear_wear',
       'training',
+      'plates',
     ]);
   });
 

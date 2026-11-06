@@ -2,6 +2,15 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import easterJson from '../../../data/easter_drivers.json';
 import { equalizerMm } from '../equalizer';
+import {
+  customPlates,
+  makePlate,
+  newnessOf,
+  plateKey,
+  plateStateOfRegion,
+  randomPlateState,
+  type PlateState,
+} from '../plates';
 import { createRng, type RandomStream } from '../rng';
 import { wearFromKm } from '../wear';
 import { buildCalendar } from './calendar';
@@ -385,6 +394,20 @@ export function generateWorld(seed: string | number): World {
   slots.slice(afterHyper).forEach(({ d }, i) => typeOfDriver.set(d.id, others[i] as CarType));
 
   const cars: Car[] = [];
+  const pRng = rng.stream('worldgen:plates');
+  const usedPlates = new Set<string>(
+    Object.values(customPlates).map((c) => plateKey(c.state, c.plate)),
+  );
+  const plateFor = (
+    garage: Garage,
+    modelYear: number,
+  ): { plate: string; plateState: PlateState } => {
+    const plateState = plateStateOfRegion(garage.homeState) ?? randomPlateState(pRng);
+    return {
+      plate: makePlate(pRng, plateState, usedPlates, newnessOf(modelYear, SEASON_YEAR)),
+      plateState,
+    };
+  };
   const entries: Entry[] = [];
   const driverCar = new Map<number, Car>();
   for (const d of drivers) {
@@ -411,6 +434,7 @@ export function generateWorld(seed: string | number): World {
       id: cars.length + 1,
       modelId: model.id,
       chassisNo: `LC-${model.id.split('-')[0]?.slice(0, 3).toUpperCase()}-${String(cars.length + 1).padStart(5, '0')}`,
+      ...plateFor(garage, SEASON_YEAR - age),
       flag: (makerById.get(model.manufacturerId) as { homeCountry: string }).homeCountry,
       fans: 0,
       garageId: garage.id,
@@ -426,10 +450,15 @@ export function generateWorld(seed: string | number): World {
   }
   // Drake Motorsports keeps its founder's car, which is not entered in the series.
   const spirit = modelById.get(SPIRIT_R7) as CarModelData;
+  const custom = customPlates[spirit.id];
+  const spiritPlate = custom
+    ? { plate: custom.plate, plateState: custom.state }
+    : plateFor(garages[drakeIndex] as Garage, 2022);
   cars.push({
     id: cars.length + 1,
     modelId: spirit.id,
     chassisNo: 'LC-HOM-R7-0313',
+    ...spiritPlate,
     flag: 'JP',
     fans: 0,
     garageId: (garages[drakeIndex] as Garage).id,

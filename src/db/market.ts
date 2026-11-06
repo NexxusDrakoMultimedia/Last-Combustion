@@ -11,10 +11,12 @@ import type { Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
 import { activeDiscount } from './deals';
 import { all } from './entries';
+import { registerCar } from './plates';
 
 export interface Purchase {
   carId: number;
   chassisNo: string;
+  plate: string;
   modelName: string;
   price: number;
 }
@@ -104,17 +106,18 @@ export function buyNewCar(
         equalizerMm(model.base_kerb_kg as number, model.layout as Layout),
       ],
     );
+    const plate = registerCar(db, next);
     db.run(
       "INSERT INTO car_ownership (car_id, garage_id, from_date, price, route) VALUES (?, ?, ?, ?, 'new')",
       [next, garageId, date, price],
     );
     db.run(
       'INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, ?, ?, ?)',
-      [garageId, date, 'car_purchase', -price, `${model.name as string} ${chassisNo}`],
+      [garageId, date, 'car_purchase', -price, `${model.name as string} ${plate}`],
     );
     db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [price, garageId]);
     db.exec('COMMIT');
-    return { carId: next, chassisNo, modelName: model.name as string, price };
+    return { carId: next, chassisNo, plate, modelName: model.name as string, price };
   } catch (error) {
     db.exec('ROLLBACK');
     throw error;
@@ -177,6 +180,8 @@ export function ensureMarketGarage(db: Database): number {
 export interface Listing {
   id: number;
   carId: number;
+  plate: string;
+  plateState: string;
   modelName: string;
   tier: string;
   modelYear: number;
@@ -189,7 +194,7 @@ export interface Listing {
 export function openListings(db: Database): Listing[] {
   return all(
     db,
-    `SELECT l.id, l.car_id, l.price, c.model_year, c.road_km, c.wear, m.name, m.tier
+    `SELECT l.id, l.car_id, l.price, c.plate, c.plate_state, c.model_year, c.road_km, c.wear, m.name, m.tier
        FROM market_listing l
        JOIN car c ON c.id = l.car_id
        JOIN car_model m ON m.id = c.car_model_id
@@ -197,6 +202,8 @@ export function openListings(db: Database): Listing[] {
   ).map((r) => ({
     id: r.id as number,
     carId: r.car_id as number,
+    plate: r.plate as string,
+    plateState: r.plate_state as string,
     modelName: r.name as string,
     tier: r.tier as string,
     modelYear: r.model_year as number,
@@ -302,7 +309,7 @@ export function buyUsedCar(db: Database, garageId: number, listingId: number): P
   const market = ensureMarketGarage(db);
   const info = all(
     db,
-    'SELECT c.chassis_no, m.name FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ?',
+    'SELECT c.chassis_no, c.plate, m.name FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ?',
     [carId],
   )[0]!;
 
@@ -316,14 +323,20 @@ export function buyUsedCar(db: Database, garageId: number, listingId: number): P
       date,
       'car_purchase',
       -price,
-      `${info.name as string} ${info.chassis_no as string}`,
+      `${info.name as string} ${info.plate as string}`,
     );
     db.run("UPDATE market_listing SET status = 'sold', sold_date = ? WHERE id = ?", [
       date,
       listingId,
     ]);
     db.exec('COMMIT');
-    return { carId, chassisNo: info.chassis_no as string, modelName: info.name as string, price };
+    return {
+      carId,
+      chassisNo: info.chassis_no as string,
+      plate: info.plate as string,
+      modelName: info.name as string,
+      price,
+    };
   } catch (error) {
     db.exec('ROLLBACK');
     throw error;
@@ -382,6 +395,7 @@ export function createUsedCar(
       equalizerMm(model.base_kerb_kg as number, model.layout as Layout),
     ],
   );
+  registerCar(db, id);
   db.run(
     "INSERT INTO car_ownership (car_id, garage_id, from_date, price, route) VALUES (?, ?, ?, 0, 'used')",
     [id, ownerGarageId, date],

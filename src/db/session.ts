@@ -3,6 +3,7 @@
 import type { Database, SqlJsStatic } from 'sql.js';
 import { readCareer } from './career';
 import { latestSchemaVersion, migrate } from './migrate';
+import { registerAllCars } from './plates';
 import { decodeSave, encodeSave, type SaveHeader } from './save-file';
 import { openDatabase } from './sql';
 import type { SaveSlot, SaveStorage } from './storage';
@@ -44,6 +45,8 @@ export async function unpackDatabase(
   const { header, payload } = await decodeSave(bytes);
   const db = openDatabase(SQL, payload);
   const result = migrate(db);
+  // Cars from saves made before plates existed are registered now.
+  if (result.applied.length > 0) registerAllCars(db);
   return { db, header, migrated: result.applied };
 }
 
