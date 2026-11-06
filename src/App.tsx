@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from './i18n';
 import { useCareerStore } from './state/career.store';
+import { About } from './ui/About';
 import { ConsentBanner } from './ui/ConsentBanner';
 import { Shell } from './ui/shell/Shell';
 import { NewCareer } from './ui/NewCareer';
@@ -19,6 +20,12 @@ export function App() {
             <p className="text-lc-dim">{t('app.tagline')}</p>
           </header>
           <NewCareer />
+          <details className="border border-lc-line bg-lc-panel p-3">
+            <summary className="lc-display cursor-pointer text-sm">{t('about.title')}</summary>
+            <div className="pt-3">
+              <About />
+            </div>
+          </details>
         </main>
       )}
       <ConsentBanner />

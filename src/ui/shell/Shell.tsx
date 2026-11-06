@@ -14,6 +14,7 @@ import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
+import { About } from '../About';
 import { AlmanacPanel } from './AlmanacPanel';
 import { LedgerPanel } from './LedgerPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
@@ -392,7 +393,10 @@ export function Shell() {
       )}
       {open === 'menu' && (
         <Panel title={t('shell.menu')} onClose={() => setOpen(null)}>
-          <MenuActions />
+          <div className="space-y-6">
+            <MenuActions />
+            <About />
+          </div>
         </Panel>
       )}
     </div>

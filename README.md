@@ -8,6 +8,16 @@ A racing driver-management and car-upgrading game about a 2031 racing series for
 
 The web build is at [lc.nexxusdrako.au](https://lc.nexxusdrako.au) and deploys from `main`.
 
+## Find us
+
+Made by Nexxus Drako Multimedia. The same links are on the game's About screen.
+
+- Website: [nexxusdrako.au](https://nexxusdrako.au/)
+- Support the game on Ko-fi: [ko-fi.com/nexxusdrako](https://ko-fi.com/nexxusdrako)
+- Bluesky: [@nexxusdrako.au](https://bsky.app/profile/nexxusdrako.au)
+- Discord: [join the server](https://discord.gg/ek64RstbSX)
+- GitHub: [Nexxus-Drako](https://www.github.com/Nexxus-Drako)
+
 ## Stack
 
 TypeScript, React, Tailwind CSS, Zustand and SQLite (SQL.js) in the browser, with Electron desktop builds.
@@ -39,4 +49,4 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versionin
 
 Copyright (C) Nexxus Drako Multimedia. GNU General Public License, version 3 or (at your option) any later version. See [LICENSE](LICENSE).
 
-The name "Last Combustion", its logo, the character Pyra Drake and the hidden driver characters are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).
+The name "Last Combustion", its logo, the character Pyra Drake, the four commentators and the hidden driver characters are trademarks and intellectual property of Nexxus Drako Multimedia and are not covered by the GPL grant. See [TRADEMARKS.md](TRADEMARKS.md).

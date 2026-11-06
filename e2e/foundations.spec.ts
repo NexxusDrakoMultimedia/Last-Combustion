@@ -7,6 +7,24 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1, name: messages['app.title'] })).toBeVisible();
 
+  // The About screen on the title screen links to the maker's website and accounts.
+  await page.locator('summary', { hasText: messages['about.title'] }).click();
+  await expect(page.getByText(messages['about.describe1'])).toBeVisible();
+  await expect(page.getByRole('link', { name: messages['about.link.kofi'] })).toHaveAttribute(
+    'href',
+    'https://ko-fi.com/nexxusdrako',
+  );
+  await expect(page.getByRole('link', { name: messages['about.link.website'] })).toHaveAttribute(
+    'href',
+    'https://nexxusdrako.au/',
+  );
+  // Credits and the changelog are tabs of the same screen.
+  await page.getByRole('tab', { name: messages['about.tab.credits'] }).click();
+  await expect(page.getByRole('link', { name: 'lipis/flag-icons' })).toBeVisible();
+  await page.getByRole('tab', { name: messages['about.tab.changelog'] }).click();
+  await expect(page.getByRole('heading', { name: 'Changelog' })).toBeVisible();
+  await page.getByRole('tab', { name: messages['about.tab.about'] }).click();
+
   await page.getByLabel(messages['newCareer.ownerName']).fill('Test Owner');
   await page.getByLabel(messages['newCareer.garageName']).fill('Test Garage Racing');
   await page
@@ -80,6 +98,11 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await page.screenshot({});
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: messages['shell.menu'] }).click();
+  // The in-game menu has it too.
+  await expect(page.getByRole('link', { name: messages['about.link.discord'] })).toHaveAttribute(
+    'href',
+    'https://discord.gg/ek64RstbSX',
+  );
 
   await page.getByRole('button', { name: messages['hub.save'] }).click();
   await page.keyboard.press('Escape');

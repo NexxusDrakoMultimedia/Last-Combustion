@@ -60,6 +60,8 @@ Sponsors: `src/sim/sponsors.ts` has the sponsor list (`data/sponsors.json`), eli
 
 Deals: `src/sim/deals.ts` has the fair supplier and manufacturer discounts, and `src/db/deals.ts` has `openDealNegotiation`, `offerDeal` and `activeDiscount`, which `fitPart` and `buyNewCar` use to price parts and new cars (migration 0012 adds `supplier_deal` and `manufacturer_deal` and rebuilds the negotiation tables again).
 
+About: `src/ui/About.tsx` has three tabs: About (the description, version, licence, source link and the maker's links from `data/links.json`), Credits (`CREDITS.md`) and Changelog (`CHANGELOG.md`), the last two imported as raw text and shown by the small Markdown reader in `src/ui/markdown.ts`. It is on the title screen and in the Menu panel.
+
 Daily life: `src/sim/daily.ts` has the pure rules (days before a round, delivery pay and local-area factors, road kilometres, affinity training, the road type of a place) from the `daily` block of `data/balance.json`; `src/db/daily.ts` has `settleDailyLife` (called from `settleRound` for the player's garage), `dailyLifeView`, `moveDriver` and `applyMoves` (called from `startNextSeason`); migration 0033 adds `driver_move`.
 
 Garage places: a garage has a `base_place_id` (always an Australian place, which sets its home state, plates, supply reach and travel distances) and an `hq_place_id` (where its main factory, founder, owner or executive office is, which its flag and its home-nation fans follow); worldgen draws them in `src/sim/worldgen/index.ts` and migration 0032 repaired older saves.
