@@ -2,11 +2,13 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { distanceKm, roundCosts, upkeepFactor } from '../sim/economy';
+import { repairFactor } from '../sim/staff';
 import { feePerRound } from '../sim/sponsors';
 import { economyBalance } from '../sim/worldgen/data';
 import type { Tier } from '../sim/worldgen/types';
 import { all } from './entries';
 import { crashRepairCost } from './repairs';
+import { garageCrewStrength, roundWages } from './staff';
 
 export interface RoundSettlement {
   roundNumber: number;
@@ -86,12 +88,21 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         ['travel', costs.travel],
       ];
       // A crash in the round (a prelim run or the final) costs a repair bill.
-      const repairs = entries
-        .filter((e) => e.dnf_reason === 'crash')
-        .reduce((sum, e) => sum + crashRepairCost(e.price_new as number), 0);
+      const repairs = Math.round(
+        entries
+          .filter((e) => e.dnf_reason === 'crash')
+          .reduce((sum, e) => sum + crashRepairCost(e.price_new as number), 0) *
+          repairFactor(garageCrewStrength(db, garageId)),
+      );
       if (repairs > 0) {
         lines.push(['repairs', repairs]);
         costs.total += repairs;
+      }
+      // The mechanics' wages for the round.
+      const wages = roundWages(db, garageId);
+      if (wages > 0) {
+        lines.push(['wages', wages]);
+        costs.total += wages;
       }
       for (const [category, amount] of lines) {
         db.run(

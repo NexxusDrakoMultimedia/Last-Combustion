@@ -8,7 +8,7 @@ Nov 2, 2026 · @Pyra Drake
 
 The series' full name is **The Last Combustion of the Petrol Engine World Motorsports Championship**, shortened to *Last Combustion* in everyday use.
 
-The player runs a garage: buying and tuning cars, signing drivers, chasing sponsors, and fighting through a 300+ driver preliminary field to reach the final.
+The player runs a garage: buying and tuning cars, signing drivers, chasing sponsors, and fighting through a 300+ driver preliminary field to reach the final. It is as much a garage simulation as a racing simulation and a driver manager: the player hires mechanics and executives, negotiates with the companies that supply power, water, fuel and freight, builds facilities, decides who owns shares in the garage, and deals with the people around it, from investors and journalists to their own family.
 
 **Tagline.** "Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft." It is the official tagline: it appears on the title screen, the store page, the repository and every public page (see "Branding and marketing").
 
@@ -18,6 +18,8 @@ The player runs a garage: buying and tuning cars, signing drivers, chasing spons
 - **Rise from nobody.** Every driver starts in a huge field; a gold border is earned, never bought.
 - **Every upgrade is a trade-off.** Parts and weight change your tyre-width limit, your costs and your door sponsors.
 - **The car tells the story.** Trophy decals, garage names and supplier logos make a car's history readable at a glance.
+- **A garage is a business.** Staff, suppliers, utilities, facilities and ownership matter as much as lap times: the player can win races and still lose the garage (see "Garage operations" and "Ownership and the cap table").
+- **People make the paddock.** Everyone is a character with moods, history and relationships, and a career runs from employee to owner to dynasty (see "People and relationships").
 
 ## Technical Stack & Architecture
 
@@ -608,6 +610,127 @@ Sponsors pay for exposure and suppliers pay for results, and both scale with a g
 - **Deal terms.** Length, payments, performance targets, and penalties for missing targets or dropping a supplier's part.
 - **Fame link.** Famous drivers and numbers bring better offers.
 
+## Garage operations
+
+Last Combustion is as much a garage simulation as a racing simulation and a driver manager. A garage is a business with premises, staff, suppliers and bills, and how well the player runs it matters as much as how well the cars lap. This section covers the people on the payroll, the buildings, and the companies that keep the lights on and the cars moving. Money, ownership and the people around the garage are covered in "Career and economy systems", "Ownership and the cap table" and "People and relationships". Everything here is data (`data/executives.json`, `data/suppliers.json`, `data/facilities.json`), so mods can change it. Numbers are proposed and tunable.
+
+**Mechanics (built).** A garage can employ mechanics, who look after its cars. Each has a skill from 0 to 100 and asks a weekly wage from their skill (`$300 + $4 × skill`, so $500 for a middling 50), paid a round at a time (a year's wages shared over the six rounds). Crew cover is the mechanics' skill added up as shares of an expert, per entry, and never more than 1: one expert per entry is a full crew. A full crew saves 25% of part wear and 20% of the bill for crash repairs. Offers come from the career seed, four at a time, and stay the same until someone is hired. Letting someone go costs a round's wages as notice, so hiring a crew for a race and dismissing it after is no cheaper than keeping it. A garage can employ up to twelve. The Staff panel lists the crew, what it saves and costs, and the people looking for work. A garage with no mechanics is looked after by the owner, which is the Owner-driver start.
+
+**Executives.** Above the workshop floor, a garage can appoint executives. Each is a named person (fictional, with a personality, traits and a hometown, like the drivers) with a role, a skill from 0 to 100 and a salary. A role holds one person, and the bonus is `skill ÷ 100 × the role's maximum`. Executives are hired through the contract negotiation (salary, length of one to three years, a bonus on results and, once the garage has shares to give, equity options: see "Ownership and the cap table"), can be poached by rivals, retire at 60 to 70 and are replaced from the same pools as other staff.
+
+| Role | What it does | Maximum at skill 100 |
+| --- | --- | --- |
+| Chief Executive | Runs the business. Lifts every other executive's bonus, and garage prestige rises faster. | +10% to the other bonuses, +25% prestige gains |
+| Commercial Director | Better sponsor offers and more sponsors willing to talk. | +20% title sponsor fee, sponsors' minimum prestige 10 points lower |
+| Contracts Director | Negotiation power in every deal the garage makes (drivers, sponsors, manufacturers, suppliers, executives): the garage's leverage rises. | +0.05 leverage (the limit is ±0.2), one more counter of patience from skill 80 |
+| Head of Marketing | Faster fan growth for the garage's drivers, cars and the garage, and more merchandise income. | +25% fans gained from results, +30% merchandise income |
+| Operations Director | Cheaper utilities, fuel and logistics, and shorter supply outages. | −15% on those bills, outages last 30% fewer rounds |
+| Finance Director | Cheaper money. Lower auction fees, earlier warning of trouble, and kinder terms when money runs short. | Buyer's premium 10% to 7%, seller's fee 5% to 3%, bailout interest halved |
+| Technical Director | Better cars. Parts cost less and wear more slowly (stacking with the crew), and scrutineering problems are flagged before they bite. | −10% part prices, −15% part wear |
+| Sporting Director | Better drivers. Training works harder, gear lasts longer and drivers settle in faster. | +25% training effect, −20% gear refurbishment cost |
+
+A garage's prestige sets how many executive roles it may fill: the first at prestige 10, then one more for every 10 points, so all eight at 80. An executive costs `$40,000 + $1,200 × skill` a year, about $100,000 for a middling 50. That makes them a real decision: an Operations Director saving 15% on utilities, fuel and logistics pays for themself only in a garage with several entries, while a Commercial Director pays for themself as soon as a title sponsor is in play. Executives have the same personality axes and traits as drivers (see "Personalities and traits"): an ambitious executive wants a bigger role and may leave for a rival, a loyal one stays through a bad season, and two executives with a bad history in the relationship table (see "People and relationships") work worse together.
+
+**Facilities.** A garage can build and upgrade its premises, much as a stable builds its yards. Each facility has levels from 1 to 5, a build cost, a running cost each round and an effect, and some need others first (the simulator needs the data room).
+
+| Facility | Effect per level | Notes |
+| --- | --- | --- |
+| Workshop bays | Entries the crew can look after at once; each bay lifts crew cover | The base site starts with two bays |
+| Dyno and data room | Better setup information in practice (a small bonus to the garage's shared prelim data) | Needs power from the grid or solar |
+| Driver simulator | Trains drivers between rounds, adding to training | Needs the data room |
+| Medical room | Injured drivers return sooner | |
+| Tyre and parts store | Part and tyre prices fall slightly, fewer parts out of stock | |
+| Hospitality suite | Sponsors are happier and more willing to talk; relationships recover faster | |
+| Solar array | Lowers electricity bills and softens outages | A hedge against the grid |
+| Water tanks | Lowers water bills and softens outages | |
+| Fuel store | Buffers race and travel fuel, so a shortage bites later | Needs a licence, rare in the post-petrol world |
+| Transporter fleet | Own transport: lower logistics bills, no late deliveries | Running costs rise with the fleet |
+
+**Utilities, fuel and logistics.** A garage buys the things it uses from suppliers, and each is a category with its own companies, prices and contracts. The post-petrol setting matters here: petrol is the rarest thing in the world, and the series runs on an allocation.
+
+| Category | What it is | Used for |
+| --- | --- | --- |
+| Electricity | Grid and green tariffs | The workshop, charging, the dyno and the simulator |
+| Water | Mains and bulk | Washing, cooling, the workshop |
+| Race fuel | Rationed competition petrol | Practice, prelims and finals, by the kilometre each entry runs |
+| Travel fuel | Diesel, petrol or biofuel for the road | Transporters and support vehicles on the way to a round |
+| Logistics | Freight, hauliers and shipping | Moving cars, parts and crew to a venue, by distance and entry |
+| Tyres | Racing and practice tyre supply | The tyre bill each round |
+| Insurance | Crash and liability cover | Lowers the bill for crash repairs, for a premium |
+| Hospitality | Catering and event hire | Sponsor days and the paddock |
+| Telecoms and data | Connectivity and cloud | The data room and the live feed |
+| Waste and recycling | Collection and treatment | Workshop waste, old tyres and fluids |
+
+Each supplier is a fictional company with a category, the states it serves (a garage can only buy from suppliers that reach its base and the venues), a tier (local, regional, national, global) that sets the minimum prestige it will deal with, a price index around the market rate (0.8 to 1.3), a reliability and, for energy, a green rating that some sponsors care about.
+
+*The spot market.* Without a contract, a garage pays the market rate for each category. The market rate moves through the year and from year to year, drawn from the career seed (`market:<category>:<year>`), with shocks that make headlines: a heatwave for electricity, a drought for water, a fuel crisis, a haulage strike. Race fuel trends upward over the years, as the world runs down its last petrol.
+
+*Supply contracts.* A garage can sign a supply contract with any supplier it qualifies for, through the negotiation system (`supply_contract`). The terms are the unit price against the market rate (a fixed rate or a discount), the length (one to three years), a volume commitment (the garage pays for at least 80% of its expected use whether it uses it or not), a reliability guarantee (compensation when the supplier fails to deliver), exclusivity (the supplier's name goes on the garage's trucks and doors, as a door supplier) and the payment terms (prepaying earns a discount). The supplier's hidden reservation value comes from the same formula as every other deal (`F × m`), with leverage from the garage's volume, prestige and fame against the supplier's size, and a Contracts Director adds to the garage's side. A contract fixes the price for its length, which protects against a spike and costs money when the market falls.
+
+*Outages.* A supplier with low reliability can fail: an electricity outage idles the crew for a round (crew cover down 20%), a fuel shortage cuts practice laps, a logistics delay brings a car in late and loses a practice day. Outages come from the career seed, are announced as event cards, and are shorter with an Operations Director and softer with the matching facility.
+
+*How it enters the economy.* The cost baseline is re-split rather than raised, so the economy keeps its balance at a market index of 1.0: race fuel and utilities come out of the entry fee and the servicing bill, and travel is split into fuel, logistics and accommodation (see "Cost baseline"). What changes is that each part now has a price the player can influence by shopping around, signing contracts and employing the right executives. Computer garages do not model each bill; their sponsorship income already covers their costs, and their efficiency stands in for the choices a player makes.
+
+*Screens.* The Staff panel has two tabs (mechanics and executives). A new Operations panel lists each category with the garage's spot and contract prices, the expected cost for the next round, the contract and its terms, and a Negotiate button; and the Money panel breaks the bills down by category with a forecast for the next round. Suppliers' and executives' names appear on the garage's trucks and doors.
+
+**Build order.** Mechanics are built (M5). Executives, supply contracts, the spot market, outages and facilities belong to M6 (depth), in that order, each as its own step.
+
+## Ownership and the cap table
+
+Every garage is a company, and who owns it matters. The player starts as the sole owner and decides how much of the garage to keep: selling shares raises money, brings in people with their own agendas, and can cost the player control of their own garage. The same cap table sits behind every computer garage, so the world has owners with motives of their own. All numbers are proposed and tunable, and the share rules are data (`data/equity.json`).
+
+**Shares.** A garage's capital is split into shares (1,000,000 at founding). Each share belongs to a class. *Ordinary* shares carry one vote and the right to a dividend. *Preferred* shares carry no vote, are paid before ordinary shares and are what investors usually ask for. Beside them there is an *option pool*: shares set aside (up to 10% of the garage) to promise to staff, executives and drivers, which vest over three years and are forfeited, if unvested, when the holder leaves. The **cap table** is the list of who holds what: holder, class, number of shares, share of the whole once everything is counted (fully diluted), the price paid and the date.
+
+**Who can hold shares.** The founder and owner; family (see "People and relationships"); individual investors (fictional business people with their own goals and personalities); sponsors and manufacturers taking a strategic stake (a sponsor with a stake pays a bigger fee, and a manufacturer with a stake gives deeper discounts and factory support); executives and drivers who take equity as part of their pay; other garages (cross-holdings); the bank, if it converts a bailout into shares; and, after a listing, the public.
+
+**Valuation.** A garage is worth `cash + the value of its cars + 4 × its average yearly profit over three years (never less than zero) + $20 × its fans + $2,000 × prestige² + $50,000 for each title in its trophy cabinet`. A new garage at prestige 1 with a starter car and 5 fans is worth little more than its cash and car; a champion's garage can be worth tens of millions. The valuation is shown on the garage's page and is where every negotiation about shares starts.
+
+**Raising money.** The player can issue new shares to raise cash in funding rounds (seed, A, B and so on, named by order). It is a negotiation like any other (see "Negotiations"): the player names the amount and how much of the garage to offer, and the investor answers on the *pre-money valuation* it will accept, with the other terms: the share class, a board seat, a liquidation preference (the investor gets its money back first if the garage is sold), a dividend, and a veto on a short list of *reserved matters*. New shares dilute everyone; holders have a right of first refusal on their share of a new issue, so a founder who can afford it can keep their percentage.
+
+**Control.** Votes follow ordinary shares. Over 50% of the votes is control; a block of 25% or more is a *blocking minority* that can veto the reserved matters (selling or merging the garage, issuing shares, taking on large debt, changing the owner, moving the base, selling the garage's founding car). The garage has a **board**: the owner, a director for each investor holding 10% or more and an independent chair. The board approves the budget, executive appointments and the sale of the garage, and sets the target for the season (a finish in the garage table, a number of finals). Meet the target and nothing happens; miss it for two seasons in a row, with the owner under 50%, and the board can call a **vote of no confidence**. If it carries, the owner is replaced as head of the garage and the player continues as an employee: an *employed manager* who runs the garage for the new board and can work, buy shares back and earn the garage again (the "road to owner" in reverse). With 50% or more the owner cannot be removed.
+
+**Dividends and buy-backs.** After the season the board proposes a dividend from profit that the player can raise or cut: shareholders like a regular payment (relationships improve), the owner is also paid, and a cash-strapped garage that pays out anyway risks bankruptcy. The garage can buy back its own shares at the current valuation, and the owner can buy them with personal cash (from their dividends, salary and sale of other holdings), which is how control is won back.
+
+**Employee and driver equity.** Contracts can include options from the pool in place of salary. A star driver or executive asks for equity more insistently as their fame and ambition rise; the cash-equivalent value of the options goes into the negotiation like any other term.
+
+**Holding other companies.** The player's own wealth (personal cash and holdings) is tracked beside the garage's. The player can buy stakes in other garages, in manufacturers and in suppliers when their holders will sell, hold them for dividends and influence, and build up to a **takeover**: a bid for a controlling stake that the target's board must support or fight. A successful takeover merges the target into the player's garage (its cars, staff and drivers move across, its entries count towards the eight-entry limit, its name and fans pass to the new owner and its record stays in the almanac under its old name). Manufacturers and suppliers owned by the player give the owner's garage the strategic benefits above.
+
+**Listing.** A garage with enough value and prestige can **list** on the Last Combustion Exchange (a fictional market): it sells a block of shares to the public, raising a large sum, and from then on its share price moves with results, news and the quarterly reports (one per round), analysts comment, and a public company has stricter disclosure and a harder time ignoring its shareholders. A listing can be reversed by a buy-out. Listing is a late-game decision.
+
+**Succession and failure.** When an owner dies or retires (see "Careers over time"), their shares pass by will to the surviving family, split as the owner arranged, and the successor the player takes over as may hold a minority. Each heir who inherits becomes a shareholder with their own personality and wishes, so a dynasty's garage can end up with a family dispute (relatives who want a dividend or a sale), which is a storyline. In a bankruptcy the shareholders lose their holdings, a bailout that the player accepts is paid for in shares for the bank (about 30%), and the bank's holding is sold on as the garage recovers.
+
+**Computer garages.** Every garage in the starting world has a cap table drawn from the seed: most (about 70%) belong to their founder and family, a fifth have an outside investor with a board seat, and a few are held by a sponsor or a manufacturer. A garage's cap table shapes its AI profile and behaviour (a family garage is loyal and cautious, an investor-backed one chases growth, a manufacturer-backed one runs that manufacturer's cars and a garage near a no-confidence vote may sack its driver), and the player can read it in the almanac, because ownership is part of the story.
+
+**Screens.** A Cap table panel (rail: Ownership) shows the holders, their percentages (current and fully diluted), the valuation and its history, the board and the pending matters. A funding-round screen sets the terms. A portfolio view shows the owner's other holdings and net worth.
+
+**Data.** Tables: `share_class`, `shareholding` (garage, holder type and id, class, shares, price per share, date and vesting), `share_event` (issues, transfers, buy-backs, dividends and listings), `valuation` (garage, date, value) and `board_member`. Negotiation kinds `equity_round`, `share_purchase` and `takeover` join the existing list. All telemetry about this stays categories and amounts (see "Telemetry").
+
+**Build order.** Ownership belongs to M6 (depth) after executives and supply contracts: first the cap table and valuation, then rounds and dividends, then control and the board, then holdings, takeovers and listing.
+
+## People and relationships
+
+A garage is run by people, and the player's dealings with them are a game of their own, in the spirit of the staff and social systems of management games such as Horse Racing Manager: a career that begins as an employee and ends as an owner, staff whose quality shows in the results, and a social life of contacts, friendships, rivalries and family that shapes contracts, reputation and the long run. In Last Combustion this runs through the existing relationship scores (see "Negotiations"), the personality axes and traits (see "Personalities and traits") and succession (see "Careers over time"). Everything here is data and proposed.
+
+**Everyone is a person.** Drivers, mechanics, executives, investors, sponsors' representatives, rivals, officials and journalists are all characters with a name, age, hometown, personality, traits and relationships, not rows in a table. They age, change jobs, retire and die by the same rules, so the paddock has a past.
+
+**Morale.** Staff, executives and drivers each have a morale from 0 to 100, moved by pay against the market, results against their hopes, workload (a mechanic covering three entries is stretched), the facilities, how the player treats them and who they work beside. High morale lifts performance by a few points, low morale makes people ask for more, work worse, talk to rivals and leave. Morale is read from the person's page, not hidden.
+
+**Relationships.** The score between two people (−100 to +100, kept now per pair) gains a *kind*: acquaintance, friend, mentor, partner, family, rival or enemy. A kind brings its own effects: friends give honest tips and cheaper deals, a mentor passes traits to a protégé, a rival works against the player in a negotiation, and a feud between two staff lowers both. Kinds form from shared moments (a win together, a crash, a dismissal, a favour) and the personality axes: a loyal person is slow to make an enemy and slow to forgive.
+
+**Contacts and social events.** Every person the player has worked with or met goes in a **contacts book**, with what they do and what they could do for the garage (an introduction to a driver, a tip about a free agent, a candidate executive, a possible investor). The calendar has social occasions: the season opening on 31 March, sponsor dinners, paddock parties, press days, the closing ceremony and the festival in Healesville from 11 November. At each, the player has a few *conversations* to spend (time is limited), choosing who to talk to and how (warm, direct, bold, discreet). Conversations move relationships, create introductions and sometimes cause trouble.
+
+**Journalists and the press.** A few fictional journalists, each with an outlet, a taste (technical, gossip, results, human interest) and a view of the garage, write the headlines. Their view comes from the player's relationship with them: a warm one leans stories the garage's way and helps fan growth, a cold one finds the scandal. In an interview the player can be bold, humble or silent, with a risk and a reward in each, and a controversy (a rumoured sale, a driver spat) is a storyline for the press to run with.
+
+**Owners, boards and sponsors as people.** The investors on the cap table, a sponsor's marketing head, a manufacturer's racing director: each is a person with a personality and a stake, so a negotiation is also a conversation with someone with moods and a history with the player. Their patience, their pride and what they want from the garage (profit, glory, a legacy, a return of favours) decide what they ask for.
+
+**Family and dynasty.** The owner and the people around them can have families. A character can form a *partnership* (and marry, if both wish) with another character, and have children, who appear in the game as characters from the age of 18 and are not shown before that. Children inherit a mix of their parents' traits and aptitudes, plus a share of upbringing (a mechanic's child grows up good with engines) and some chance, and can become drivers (their pace and potential follow the parents and the training they get), mechanics, executives, journalists or garage owners in their own right. The family name stays on the livery across generations; the almanac keeps a family tree and records dynasties ("third-generation champion"). When the owner dies or retires, an heir is the natural successor (see "Careers over time"), takes their shares (see "Ownership and the cap table") and inherits their relationships at a discount, and a family with several heirs may fight over the garage. Relationships can also end, and where they do, shares each partner holds stay with them.
+
+**Career paths.** The three modes (Garage owner, Owner-driver, Driver manager) are joined by a longer climb: a character can start as an employed *manager or executive* at a computer garage, earn reputation and contacts on a salary, take options, buy shares and eventually take the garage over (a management buy-out) or leave to found their own. The same road runs the other way for an owner who loses a vote of confidence. Whether this becomes a fourth starting mode is an open question (see "Decisions and open questions").
+
+**Screens.** A People panel lists the garage's staff and executives with morale, a Contacts panel holds the book and what each person can do, a Social screen runs the events and conversations, a Press screen shows the journalists and how they see the garage, and a Family page holds the tree. Each person's page shows their personality words, traits, morale, relationships and history.
+
+**Data and build order.** Tables `person` (a unified record linking to the character, driver, staff or executive rows), `relationship_kind`, `contact`, `social_event`, `conversation`, `journalist` and `family_link`; text and balance in `data/people.json`. This is M6 (depth) and M8 work, built after ownership: relationship kinds and morale first, then contacts and events, then the press, then family and dynasty.
+
 ## Negotiations
 
 Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each other, and the same system handles every deal. The player negotiates for their garage, or for their driver in Driver manager mode. AI parties negotiate between themselves with the same rules.
@@ -623,6 +746,10 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 | Driver and sponsor | Personal sponsorship pay and length (important in Driver manager mode) |
 | Driver and manufacturer | Factory-driver and brand-ambassador deals: pay and car use |
 | Manufacturer and supplier | AI-only partnerships that decide which suppliers a manufacturer's cars use and which door logos suit them |
+| Garage and executive | Salary, length, results bonus, equity options, role (see "Garage operations") |
+| Garage and operating supplier | Unit price against the market rate, length, volume commitment, reliability guarantee, exclusivity, payment terms (electricity, water, race fuel, travel fuel, logistics and more) |
+| Garage and investor | Amount, pre-money valuation, share class, board seat, liquidation preference, dividend, vetoes (see "Ownership and the cap table") |
+| Owner and rival board | A takeover bid: price per share, the board's recommendation, what the old owner and staff keep |
 
 **How a negotiation works**
 
@@ -852,7 +979,10 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
   - **Prestige.** Junior entries count toward a garage's prestige at half the weight of a Super Series entry.
   - **Standings.** Each series keeps separate standings (see "Standings"); team orders apply only within a series.
   - **Promotion.** A Junior driver who must move up can be kept by the same garage or released to another.
-  - **Extra crew.** Optional but beneficial. A garage can hire extra mechanics for the Junior block. Each one speeds repairs and car changeovers between the two events and lowers the chance of setup errors. Without them the garage still runs both series by splitting its crew.
+  - **Extra crew.** Optional but beneficial.
+- **A garage is a business.** Mechanics (built), executives, facilities, utility, fuel and logistics suppliers (with a spot market, contracts and outages), a cap table with shares, funding rounds, a board and takeovers, and a social and family layer all belong to the design (see "Garage operations", "Ownership and the cap table" and "People and relationships"). They are staged in M6 and M8.
+- **Family in the game.** Partners, marriage and children exist, and children appear as characters only from the age of 18.
+- **Telemetry stays anonymous.** Events about staff, suppliers, shares and people carry categories, counts and amounts only, never names (see "Telemetry"). A garage can hire extra mechanics for the Junior block. Each one speeds repairs and car changeovers between the two events and lowers the chance of setup errors. Without them the garage still runs both series by splitting its crew.
 
 ## Auction house and car trading
 
@@ -924,7 +1054,7 @@ The full design is large, so development is staged. Each milestone must be playa
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, mid-race incidents with pauses, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase (dealers, used market, auction house, private negotiation), upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
-| M6 Depth | Story and feedback | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map | |
+| M6 Depth | Story and feedback, and the garage as a business | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map; executives, supply contracts and the spot market, outages and facilities ("Garage operations"); the cap table, funding rounds, control and dividends ("Ownership and the cap table"); morale, relationship kinds, contacts, social events and the press ("People and relationships") | |
 | M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
 | M8 Modes and release | All three career modes, polish | Owner-driver, driver manager, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
 
@@ -1119,6 +1249,12 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `offer` | negotiation_id, round_no, from_side, terms (JSON), value, outcome |
 | `relationship` | party_a_type, party_a_id, party_b_type, party_b_id, score |
 | `ledger` | garage_id, date, category, amount, note |
+| `staff` | garage_id, role (`mechanic`), name, skill, wage_per_week, hired_on, left_on (built) |
+| `executive` | garage_id, person_id, role, skill, salary, start_year, end_year, bonus, options |
+| `supplier`, `supply_contract`, `market_price` | category, region, tier, reliability, price_index; garage_id, terms, start and end; category, season, round, index |
+| `facility` | garage_id, kind, level, built_on |
+| `share_class`, `shareholding`, `share_event`, `valuation`, `board_member` | garage_id, class, holder, shares, price; issues, transfers, dividends, listings; date, value; director and seat (see "Ownership and the cap table") |
+| `person`, `relationship_kind`, `contact`, `conversation`, `journalist`, `family_link` | the unified record of everyone in the paddock and the ties between them (see "People and relationships") |
 | `headline` | date, text, driver_id / garage_id (nullable) |
 
 Records described in "Records and history" are all derivable from these tables; nothing is deleted when a driver retires or a garage folds.
@@ -1128,7 +1264,7 @@ Records described in "Records and history" are all derivable from these tables; 
 | Item | Garage owner | Owner-driver | Driver manager |
 | --- | --- | --- | --- |
 | Cash | $250,000 | $200,000 | $60,000 |
-| Garage | 1 entry-capable garage, 2 mechanics | Just the player: no hired driver or staff, and the player does basic maintenance | None; contracted to a garage |
+| Garage | 1 entry-capable garage, 2 mechanics (built so far: no mechanics at the start, hired in the Staff panel) | Just the player: no hired driver or staff, and the player does basic maintenance | None; contracted to a garage |
 | Car | One cheap road car (player picks from 3 starters) | Exactly one car, the player's own starter | Same, owned personally |
 | Driver | One unknown driver (player picks from 5 offered) | The player's own driver, built at creation | The player's driver |
 | Prestige | 1 (of 100) | 1 | n/a |
@@ -1269,7 +1405,13 @@ The game is English-only at launch, but all text is externalised so translation 
 | Elite supercar, used | $400,000–$2,000,000 |
 | Hypercar | $2,000,000+ (see price tiers) |
 | Part price range | $400 (filter, pads) to $60,000 (turbo kit / engine build) |
-| Mechanic wage | $500 per week each |
+| Mechanic wage | $300 plus $4 a skill point per week (about $500 for a middling mechanic), paid a round at a time |
+| Executive salary | $40,000 plus $1,200 a skill point per year (about $100,000 for a middling executive) |
+| Electricity | About $300 per entry per round at the market rate (taken from the servicing bill) |
+| Water | About $120 per entry per round at the market rate (taken from the servicing bill) |
+| Race fuel | About $800 per entry per round at the market rate (taken from the entry fee, which falls to $2,200) |
+| Travel fuel | About 30% of the travel bill |
+| Logistics | About 55% of the travel bill; accommodation is the other 15% |
 | Travel and accommodation | $2,000 plus $1.00 per km from the garage's base to the venue (about $3,500 on average), plus $750 per extra entry |
 | Servicing | $1,200 per round per entry at Starter tier (see supercar upkeep) |
 | Driver salary, unknown | $0–$20,000 per season (often paid in sponsor product) |
@@ -1635,6 +1777,13 @@ Branding and social media are planned work for after the first playable season (
 | Hometown / residence | Where a driver grew up / where they live now |
 | Founder's career | The hidden Garage owner or Owner-driver start as Pyra Drake |
 | Arc numbers | The four numbers (31, 96, 313, 31396) behind a small group of achievements and rare touches |
+| Crew cover | How well a garage's mechanics cover its entries, from 0 to a full crew of 1 |
+| Executive | A senior staff member in one of eight roles, with a bonus that grows with their skill |
+| Supply contract | A negotiated deal with a supplier of electricity, water, fuel, freight or another service |
+| Spot market | The market price a garage pays for a supply it has no contract for |
+| Cap table | The list of who owns how much of a garage |
+| Blocking minority | A holding of 25% or more of the votes, enough to veto the reserved matters |
+| Contacts book | The people the player has met, and what each can do for the garage |
 
 ## Decisions and open questions
 
@@ -1685,4 +1834,8 @@ Branding and social media are planned work for after the first playable season (
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and the artwork of the Drake characters are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
+- [ ] Whether an employed-manager start (climb from executive to owner by buying shares) becomes a fourth career mode or only the way back from a lost vote of confidence.
+- [ ] How far the cap table is modelled for computer garages (a full table each, or only the main holders and a control flag).
+- [ ] Whether a listing on the Last Combustion Exchange is in the first release or later.
+- [ ] How much of the people layer (morale, relationship kinds, family) ships in M6 and how much in M8.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).
