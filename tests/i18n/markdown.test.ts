@@ -54,6 +54,15 @@ describe('documents', () => {
     expect(table.kind === 'table' && table.rows[0]![1]).toEqual([{ kind: 'strong', text: '2' }]);
   });
 
+  it('drops comments completely, even ones built from the pieces of another', () => {
+    const text = (src: string) => JSON.stringify(parseMarkdown(src));
+    expect(text('before\n\n<!-- gone -->\n\nafter')).not.toContain('gone');
+    expect(text('<!<!-- x -->-- hidden -->visible')).not.toContain('<!--');
+    expect(text('<!<!-- x -->-- hidden -->visible')).toContain('visible');
+    expect(text('kept <!-- never closed\nnext line')).toContain('next line');
+    expect(text('kept <!-- never closed\nnext line')).not.toContain('<!--');
+  });
+
   it('reads the real credits and changelog files', () => {
     const credits = parseMarkdown(readFileSync('CREDITS.md', 'utf8'));
     expect(credits[0]).toMatchObject({ kind: 'heading', level: 1 });

@@ -54,9 +54,21 @@ const cells = (line: string): string[] =>
 const isSeparator = (line: string): boolean =>
   /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(line.trim());
 
+/** Removes HTML comments, repeating until none are left (removing one can join the pieces around it into another). */
+function stripComments(source: string): string {
+  let text = source;
+  for (;;) {
+    const next = text.replace(/<!--[\s\S]*?-->/g, '');
+    if (next === text) break;
+    text = next;
+  }
+  // An opener that never closes hides the rest of the line, not the rest of the document.
+  return text.replace(/<!--.*$/gm, '');
+}
+
 /** Reads headings, paragraphs, bullet lists and tables from Markdown. Comments and anything else are skipped. */
 export function parseMarkdown(source: string): Block[] {
-  const lines = source.replace(/<!--[\s\S]*?-->/g, '').split('\n');
+  const lines = stripComments(source).split('\n');
   const blocks: Block[] = [];
   let i = 0;
   while (i < lines.length) {
