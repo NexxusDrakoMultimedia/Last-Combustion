@@ -6,7 +6,8 @@ import { RegistryLink } from './RegistryLink';
 
 /**
  * A car's Australian licence plate, in the colours of the state or territory that issued it, with
- * the state's short name on it so the plate says where the car is registered.
+ * the state's short name on it so the plate says where the car is registered. A plate has at most 8
+ * characters, so every plate is drawn the same width.
  */
 export function Plate({
   plate,
@@ -21,7 +22,7 @@ export function Plate({
   const style = plateStyles[state as PlateState];
   const face = (
     <span
-      className="inline-flex flex-col items-center rounded-sm border px-1.5 py-0.5 align-middle leading-tight"
+      className="inline-flex w-[5.25rem] shrink-0 flex-col items-center overflow-hidden rounded-sm border px-1.5 py-0.5 align-middle leading-tight"
       style={
         style
           ? { color: style.text, backgroundColor: style.background, borderColor: style.text }

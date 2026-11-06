@@ -68,7 +68,7 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 ## Commits and pull requests
 
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`; `!` for breaking changes), enforced by commitlint. Sign off commits (`git commit -s`).
-- Do not edit `CHANGELOG.md` in pull requests until 0.1.0 is released: it stays empty until then. 0.1.0 (the end of M5) is a simple list of the game's features, written at release time. From 0.1.0 on it follows Keep a Changelog, and each pull request adds a line under `[Unreleased]`. Versions follow Semantic Versioning.
+- `CHANGELOG.md` begins with 0.1.0 (the end of M5), a simple list of the game's features. From then on it follows Keep a Changelog, and each pull request adds a line under `[Unreleased]`. Versions follow Semantic Versioning.
 - **Releases and branches** (see `docs/RELEASING.md`). `main` is the latest release, and the web build deploys from it. Until 0.1.0, work goes to `main`. From M6 on, every milestone runs on its own `milestone/...` branch made from `main`: pull requests target that branch, and a release pull request merges it into `main`, which is then tagged. Never merge unreleased milestone work straight into `main` once releases have started.
 - Keep pull requests focused. Use the pull request template. Do not merge your own pull request unless asked.
 - Never skip or disable a test to get CI green, and never force-push to a branch someone else is using.

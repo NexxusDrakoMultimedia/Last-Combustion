@@ -47,7 +47,7 @@ It may not contain new features, new screens, new rules, schema changes or anyth
 - **Finishing a milestone.** When everything in the milestone is built and its game-design-document status is up to date, a release pull request merges the milestone branch into `main` with a merge commit (not a squash, so the milestone's history stays readable), titled `release: 0.2.0 (M6 depth)`. The release steps below run on it. Then `main` is tagged `v0.2.0` and a GitHub Release is published (publishing it also rebuilds the web build).
 - **The next milestone** branch is created from the new `main` once the release is out.
 - **Fixes to a released version** go on `hotfix/0.1.x` from the tag, are released as a patch (`0.1.1`), and are merged into `main` and into the milestone branch in progress, so nothing is lost. What a patch may and may not contain is in "Scope freeze and the 0.1.x series" above.
-- Until 0.1.0 is out, M5 finishes on `main` as before.
+- 0.1.0 came out of `main`, as M5 finished there. From M6 on, milestones run on their own branches.
 
 ## Release steps
 
@@ -75,7 +75,7 @@ Before every release, all of the documentation gets a thorough pass. It is slow 
 
 ## Changelog
 
-`CHANGELOG.md` begins at 0.1.0. Until then it stays empty and pull requests do not edit it.
+`CHANGELOG.md` begins at 0.1.0 (released 2026-11-06).
 
 - **0.1.0** is written as a simple list of the game's features, because nothing came before it.
 - **From then on** it follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): each pull request adds a line under `[Unreleased]` (Added, Changed, Fixed, Removed, Security) on the milestone branch, and the release pull request turns `[Unreleased]` into the dated version heading.

@@ -40,7 +40,7 @@ function rings(list: [colour: string, upTo: number][]): string {
  * digits, whichever reads better. The border belongs to the number itself: a gold outline round the
  * digits for anyone who has reached a final, a silver one for a Junior Series points scorer, and for
  * the reigning champion the number also sits in a black box. These colours are race content and stay
- * the same in every theme.
+ * the same in every theme. A number has at most 3 digits, so every number is drawn the same width.
  */
 export function RaceNumber({
   number,
@@ -86,8 +86,8 @@ export function RaceNumber({
       role="img"
       aria-label={label}
       title={label}
-      className={`inline-block rounded-sm text-center ${
-        large ? 'min-w-14 px-2 py-1' : 'min-w-9 px-1 py-0.5'
+      className={`inline-block shrink-0 rounded-sm text-center ${
+        large ? 'w-24 px-2 py-1' : 'w-12 px-1 py-0.5'
       }`}
       style={{ backgroundColor: plate, boxShadow: 'inset 0 0 0 1px rgba(0, 0, 0, 0.35)' }}
     >

@@ -220,6 +220,20 @@ describe('the registry over two seasons', () => {
     if (idle > 0) expect(after.has(`driver:${idle}`)).toBe(false);
   });
 
+  it('gives a garage a star for each Garage Championship it won, and none to the rest', () => {
+    const won = garageProfile(db, championGarageId);
+    expect(won.decals.length).toBe(won.championships.length);
+    expect(won.decals.length).toBeGreaterThan(0);
+    expect(won.decals.every((d) => d.kind === 'star' && d.series === 'main')).toBe(true);
+    expect(won.decals.map((d) => d.year)).toEqual(won.championships);
+    const idle = Number(
+      db.exec(
+        `SELECT id FROM garage WHERE kind = 'racing' AND id NOT IN (SELECT champion_garage_id FROM season WHERE champion_garage_id IS NOT NULL) LIMIT 1`,
+      )[0]!.values[0]![0],
+    );
+    expect(garageProfile(db, idle).decals).toEqual([]);
+  });
+
   it('knows the twelve dragon-blooded drivers', () => {
     const ids = dragonDriverIds(db);
     expect(ids.size).toBe(12);

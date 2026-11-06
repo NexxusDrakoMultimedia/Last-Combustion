@@ -12,14 +12,12 @@ import { dirname, join, normalize } from 'node:path';
 
 /** Paths the design describes but the repository does not have yet. */
 const PLANNED = new Set([
-  'assets/brand',
   'data/facilities.json',
   'data/people.json',
   'data/ledger.json',
   'data/scouting.json',
   'src/sim/scouting.ts',
   'data/themes.json',
-  'docs/PRESS.md',
   'docs/modding',
   'data/traits.json',
   'data/equity.json',

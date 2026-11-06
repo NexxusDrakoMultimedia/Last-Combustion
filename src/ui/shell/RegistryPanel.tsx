@@ -13,7 +13,7 @@ import type {
 import type { ResultRow } from '../../db/tables';
 import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
-import { DecalRow } from '../Decals';
+import { DecalRow, DecalStrip, StarRow } from '../Decals';
 import { STATUS_ORDER, type RegistryStatus } from '../../db/status';
 import { Flag } from '../Flag';
 import { DragonMark, RegistryLink, YearsActive } from '../RegistryLink';
@@ -73,6 +73,7 @@ function DriverPage({ p }: { p: DriverProfile }) {
         {p.nickname && (
           <span className="text-lc-dim">{t('registry.nickname', { nickname: p.nickname })}</span>
         )}
+        <DecalStrip decals={p.decals} />
       </div>
       <Facts
         items={[
@@ -207,6 +208,7 @@ function CarPage({ p }: { p: CarProfile }) {
         <h2 className="lc-display text-lg">
           {t('registry.carTitle', { year: p.modelYear, make: p.manufacturer, model: p.model })}
         </h2>
+        <DecalStrip decals={p.decals} />
       </div>
       <Facts
         items={[
@@ -334,6 +336,7 @@ function GaragePage({ p }: { p: GarageProfile }) {
         <h2 className="lc-display text-lg">
           <Flag code={p.flag} /> {p.name}
         </h2>
+        <DecalStrip decals={p.decals} />
       </div>
       <Facts
         items={[
@@ -360,6 +363,9 @@ function GaragePage({ p }: { p: GarageProfile }) {
           [t('registry.scoringYears'), scoringYears(p.scoring)],
         ]}
       />
+      <Section title={t('registry.garageStars')}>
+        <StarRow decals={p.decals} />
+      </Section>
       <Section title={t('registry.entries')}>
         {p.entries.length === 0 ? (
           <p className="text-lc-dim">{t('registry.noEntries')}</p>
