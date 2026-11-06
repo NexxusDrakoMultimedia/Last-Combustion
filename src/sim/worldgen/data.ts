@@ -77,6 +77,10 @@ export const nameLists = namesJson as NameLists;
 
 export const commentators = commentatorsJson as Commentator[];
 export const HOST_COUNTRY = 'AU';
+/** The Australian states and territories a garage can be based in, by region code, in the order of the place list. */
+export const AUSTRALIAN_STATES: string[] = [
+  ...new Set(places.filter((p) => p.country === HOST_COUNTRY).map((p) => p.region)),
+];
 
 /** Championship points by finishing position (index 0 is 1st), by era. */
 export const pointsTables = pointsJson as Record<string, number[]>;

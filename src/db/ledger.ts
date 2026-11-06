@@ -373,7 +373,10 @@ export interface GarageProfile {
   id: number;
   name: string;
   flag: string;
+  /** The Australian place the garage works and races from. */
   base: string;
+  /** Where its main factory, founder, owner or executive office is, which its flag stands for. */
+  headquarters: string;
   homeState: string;
   colours: [string, string];
   prestige: number;
@@ -394,7 +397,9 @@ export interface GarageProfile {
 export function garageProfile(db: Database, garageId: number): GarageProfile {
   const g = all(
     db,
-    `SELECT g.*, p.name AS base, p.region FROM garage g JOIN place p ON p.id = g.base_place_id
+    `SELECT g.*, p.name AS base, p.region, h.name AS hq_name, h.region AS hq_region
+       FROM garage g JOIN place p ON p.id = g.base_place_id
+       LEFT JOIN place h ON h.id = g.hq_place_id
       WHERE g.id = ? AND g.kind = 'racing'`,
     [garageId],
   )[0];
@@ -423,6 +428,9 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     name: g.name as string,
     flag: g.flag as string,
     base: `${g.base as string}, ${g.region as string}`,
+    headquarters: g.hq_name
+      ? `${g.hq_name as string}, ${g.hq_region as string}`
+      : `${g.base as string}, ${g.region as string}`,
     homeState: g.home_state as string,
     colours: [g.primary_colour as string, g.secondary_colour as string],
     prestige: g.prestige as number,

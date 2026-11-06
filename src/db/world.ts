@@ -102,12 +102,13 @@ export function persistWorld(db: Database, world: World): void {
       ]),
     );
     run(
-      'INSERT INTO garage (id, name, flag, base_place_id, home_state, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile, fans) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO garage (id, name, flag, base_place_id, hq_place_id, home_state, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile, fans) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       world.garages.map((g) => [
         g.id,
         g.name,
         g.flag,
         id(placeId, g.basePlaceId),
+        id(placeId, g.hqPlaceId),
         g.homeState,
         g.primaryColour,
         g.secondaryColour,

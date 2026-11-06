@@ -111,3 +111,48 @@ describe('a garage under a flag with no fan population', () => {
     expect(nations.length).toBeGreaterThan(1);
   });
 });
+
+describe('where the player’s garage is based', () => {
+  const placeOf = (db: Database, id: number) =>
+    db.exec(
+      `SELECT p.region, p.country, hq.country FROM garage g JOIN place p ON p.id = g.base_place_id
+         JOIN place hq ON hq.id = g.hq_place_id WHERE g.id = ${id}`,
+    )[0]!.values[0]!;
+
+  it('lets the player choose an Australian state, and the flag set the headquarters', () => {
+    const db = fresh();
+    const id = foundPlayerGarage(db, { ...setup, flag: 'JP', baseState: 'WA' });
+    const [region, country, hqCountry] = placeOf(db, id);
+    expect(region).toBe('WA');
+    expect(country).toBe('AU');
+    expect(hqCountry).toBe('JP');
+    expect(db.exec(`SELECT home_state FROM garage WHERE id = ${id}`)[0]!.values[0]![0]).toBe('WA');
+  });
+
+  it('keeps the base it starts with when no state is chosen, still in Australia', () => {
+    const db = fresh();
+    const id = foundPlayerGarage(db, setup);
+    expect(placeOf(db, id)[1]).toBe('AU');
+  });
+
+  it('refuses a base outside Australia', () => {
+    const db = fresh();
+    expect(() => foundPlayerGarage(db, { ...setup, baseState: 'England' })).toThrow(
+      /Australian state or territory/,
+    );
+  });
+});
+
+describe('Drake Motorsports', () => {
+  it('stays based and headquartered in Brisbane, Queensland, and is never the garage the player takes over', () => {
+    const db = fresh();
+    const id = foundPlayerGarage(db, { ...setup, flag: 'JP', baseState: 'WA' });
+    const drake = db.exec(
+      `SELECT g.id, g.is_player, g.home_state, b.name, h.name FROM garage g
+         JOIN place b ON b.id = g.base_place_id JOIN place h ON h.id = g.hq_place_id
+        WHERE g.name = 'Drake Motorsports'`,
+    )[0]!.values[0]!;
+    expect(drake[0]).not.toBe(id);
+    expect(drake.slice(1)).toEqual([0, 'Qld', 'Brisbane', 'Brisbane']);
+  });
+});

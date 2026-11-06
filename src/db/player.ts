@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import type { Identity } from '../sim/worldgen/types';
+import { AUSTRALIAN_STATES } from '../sim/worldgen/data';
 import { all } from './entries';
 
 export interface OwnerSetup {
@@ -10,7 +11,10 @@ export interface OwnerSetup {
   /** ISO date; the owner must be 18 to 50 at the start. */
   birthDate: string;
   garageName: string;
+  /** Where the garage's main factory, founder, owner or executive office is. */
   flag: string;
+  /** The Australian state or territory (a region code such as `SA` or `Vic`) the garage is based in; left out keeps the base it starts with. */
+  baseState?: string;
   primaryColour: string;
   secondaryColour: string;
 }
@@ -47,6 +51,17 @@ export function foundPlayerGarage(db: Database, setup: OwnerSetup): number {
   )[0];
   if (!pick) throw new Error('There is no garage to take over.');
   const id = pick.id as number;
+  // A garage must be based in an Australian state or territory; the flag says where its headquarters are.
+  if (setup.baseState !== undefined && !AUSTRALIAN_STATES.includes(setup.baseState))
+    throw new Error('A garage must be based in an Australian state or territory.');
+  const base = setup.baseState
+    ? all(
+        db,
+        "SELECT id, region FROM place WHERE country = 'AU' AND region = ? ORDER BY id LIMIT 1",
+        [setup.baseState],
+      )[0]
+    : undefined;
+  const hq = all(db, 'SELECT id FROM place WHERE country = ? ORDER BY id LIMIT 1', [setup.flag])[0];
   db.exec('BEGIN');
   try {
     db.run(
@@ -54,6 +69,16 @@ export function foundPlayerGarage(db: Database, setup: OwnerSetup): number {
                          prestige = 1, fans = 5, is_player = 1 WHERE id = ?`,
       [name, setup.flag, setup.primaryColour, setup.secondaryColour, OWNER_START_CASH, id],
     );
+    if (base)
+      db.run('UPDATE garage SET base_place_id = ?, home_state = ? WHERE id = ?', [
+        base.id as number,
+        base.region as string,
+        id,
+      ]);
+    db.run('UPDATE garage SET hq_place_id = COALESCE(?, hq_place_id, base_place_id) WHERE id = ?', [
+      (hq?.id as number | undefined) ?? null,
+      id,
+    ]);
     db.run('INSERT INTO owner (id, garage_id, name, identity, birth_date) VALUES (1, ?, ?, ?, ?)', [
       id,
       owner,
