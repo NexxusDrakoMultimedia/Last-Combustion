@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useEffect, useState } from 'react';
-import { formatGap, formatLapTime, formatMoney, t } from '../../i18n';
+import { formatGap, formatLapTime, formatMoney, formatPoints, t } from '../../i18n';
 import { TABLE_KINDS, type ResultRow, type TableKind } from '../../db/tables';
 import { useCareerStore } from '../../state/career.store';
 import { RegistryLink } from '../RegistryLink';
@@ -92,8 +92,12 @@ export function StandingsPanel() {
                 {(kind === 'drivers' || kind === 'manufacturers') && (
                   <th scope="col">{t(`tables.detail.${kind}` as never)}</th>
                 )}
-                <th scope="col">{t('hub.points')}</th>
-                <th scope="col">{t('hub.wins')}</th>
+                <th scope="col" className="text-right">
+                  {t('hub.points')}
+                </th>
+                <th scope="col" className="text-right">
+                  {t('hub.wins')}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -128,8 +132,8 @@ export function StandingsPanel() {
                       )}
                     </td>
                   )}
-                  <td className="lc-num">{r.points}</td>
-                  <td className="lc-num">{r.wins}</td>
+                  <td className="lc-num text-right">{formatPoints(r.points)}</td>
+                  <td className="lc-num text-right">{r.wins}</td>
                 </tr>
               ))}
             </tbody>
@@ -218,8 +222,14 @@ export function ResultsPanel() {
                 <th scope="col">{t('tables.car')}</th>
                 <th scope="col">{t('tables.time')}</th>
                 <th scope="col">{t('tables.gap')}</th>
-                <th scope="col">{t('hub.points')}</th>
-                {session === 'final' && <th scope="col">{t('tables.prize')}</th>}
+                <th scope="col" className="text-right">
+                  {t('hub.points')}
+                </th>
+                {session === 'final' && (
+                  <th scope="col" className="text-right">
+                    {t('tables.prize')}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -248,9 +258,11 @@ export function ResultsPanel() {
                   <td className="lc-num">
                     {r.gapMs !== null && r.gapMs > 0 ? formatGap(r.gapMs) : ''}
                   </td>
-                  <td className="lc-num">{r.points > 0 ? r.points : ''}</td>
+                  <td className="lc-num text-right">
+                    {r.points > 0 ? formatPoints(r.points) : ''}
+                  </td>
                   {session === 'final' && (
-                    <td className="lc-num">{r.prize > 0 ? formatMoney(r.prize) : ''}</td>
+                    <td className="lc-num text-right">{r.prize > 0 ? formatMoney(r.prize) : ''}</td>
                   )}
                 </tr>
               ))}

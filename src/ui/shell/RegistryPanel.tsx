@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState, type ReactNode } from 'react';
-import { formatDate, formatGap, formatLapTime, formatMoney, t } from '../../i18n';
+import { formatDate, formatGap, formatLapTime, formatMoney, formatPoints, t } from '../../i18n';
 import type {
   CarProfile,
   DriverProfile,
@@ -104,7 +104,7 @@ function DriverPage({ p }: { p: DriverProfile }) {
       <Section title={t('registry.career')}>
         <Facts
           items={[
-            [t('hub.points'), p.career.points],
+            [t('hub.points'), formatPoints(p.career.points)],
             [t('hub.wins'), p.career.wins],
             [t('registry.podiums'), p.career.podiums],
             [t('registry.finals'), p.career.finals],
@@ -151,8 +151,12 @@ function DriverPage({ p }: { p: DriverProfile }) {
                 <th scope="col">{t('registry.number')}</th>
                 <th scope="col">{t('tables.garage')}</th>
                 <th scope="col">{t('registry.plate')}</th>
-                <th scope="col">{t('hub.points')}</th>
-                <th scope="col">{t('hub.wins')}</th>
+                <th scope="col" className="text-right">
+                  {t('hub.points')}
+                </th>
+                <th scope="col" className="text-right">
+                  {t('hub.wins')}
+                </th>
                 <th scope="col">{t('hub.rank')}</th>
               </tr>
             </thead>
@@ -171,8 +175,8 @@ function DriverPage({ p }: { p: DriverProfile }) {
                   <td>
                     <Plate plate={s.car.plate} state={s.car.plateState} carId={s.car.id} />
                   </td>
-                  <td className="lc-num">{s.points}</td>
-                  <td className="lc-num">{s.wins}</td>
+                  <td className="lc-num text-right">{formatPoints(s.points)}</td>
+                  <td className="lc-num text-right">{s.wins}</td>
                   <td className="lc-num">{place(s.rank)}</td>
                 </tr>
               ))}
@@ -252,8 +256,12 @@ function CarPage({ p }: { p: CarProfile }) {
                 <th scope="col">{t('registry.number')}</th>
                 <th scope="col">{t('tables.driver')}</th>
                 <th scope="col">{t('tables.garage')}</th>
-                <th scope="col">{t('hub.points')}</th>
-                <th scope="col">{t('hub.wins')}</th>
+                <th scope="col" className="text-right">
+                  {t('hub.points')}
+                </th>
+                <th scope="col" className="text-right">
+                  {t('hub.wins')}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -273,8 +281,8 @@ function CarPage({ p }: { p: CarProfile }) {
                       {s.garage.name}
                     </RegistryLink>
                   </td>
-                  <td className="lc-num">{s.points}</td>
-                  <td className="lc-num">{s.wins}</td>
+                  <td className="lc-num text-right">{formatPoints(s.points)}</td>
+                  <td className="lc-num text-right">{s.wins}</td>
                 </tr>
               ))}
             </tbody>
@@ -390,8 +398,12 @@ function GaragePage({ p }: { p: GarageProfile }) {
             <tr>
               <th scope="col">{t('registry.year')}</th>
               <th scope="col">{t('registry.entriesCount')}</th>
-              <th scope="col">{t('hub.points')}</th>
-              <th scope="col">{t('hub.wins')}</th>
+              <th scope="col" className="text-right">
+                {t('hub.points')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('hub.wins')}
+              </th>
               <th scope="col">{t('hub.rank')}</th>
             </tr>
           </thead>
@@ -400,8 +412,8 @@ function GaragePage({ p }: { p: GarageProfile }) {
               <tr key={s.year} className="border-t border-lc-line">
                 <td className="lc-num py-1">{s.year}</td>
                 <td className="lc-num">{s.entries}</td>
-                <td className="lc-num">{s.points}</td>
-                <td className="lc-num">{s.wins}</td>
+                <td className="lc-num text-right">{formatPoints(s.points)}</td>
+                <td className="lc-num text-right">{s.wins}</td>
                 <td className="lc-num">{place(s.rank)}</td>
               </tr>
             ))}
@@ -457,8 +469,8 @@ function ClassificationRow({ r, race }: { r: ResultRow; race: boolean }) {
           : formatLapTime(r.timeMs)}
       </td>
       <td className="lc-num">{r.gapMs !== null && r.gapMs > 0 ? formatGap(r.gapMs) : ''}</td>
-      <td className="lc-num">{r.points > 0 ? r.points : ''}</td>
-      {race && <td className="lc-num">{r.prize > 0 ? formatMoney(r.prize) : ''}</td>}
+      <td className="lc-num text-right">{r.points > 0 ? formatPoints(r.points) : ''}</td>
+      {race && <td className="lc-num text-right">{r.prize > 0 ? formatMoney(r.prize) : ''}</td>}
     </tr>
   );
 }
@@ -536,8 +548,14 @@ function RoundPage({ p }: { p: RoundProfile }) {
                   <th scope="col">{t('registry.plate')}</th>
                   <th scope="col">{t('tables.time')}</th>
                   <th scope="col">{t('tables.gap')}</th>
-                  <th scope="col">{t('hub.points')}</th>
-                  {race && <th scope="col">{t('tables.prize')}</th>}
+                  <th scope="col" className="text-right">
+                    {t('hub.points')}
+                  </th>
+                  {race && (
+                    <th scope="col" className="text-right">
+                      {t('tables.prize')}
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
