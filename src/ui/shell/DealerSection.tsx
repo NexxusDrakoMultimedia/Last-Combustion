@@ -60,7 +60,7 @@ export function DealerSection({ locked }: { locked: boolean }) {
               className="flex flex-wrap items-center justify-between gap-2 border border-lc-line p-2"
             >
               <span>
-                <Plate plate={c.plate} state={c.plateState} />{' '}
+                <Plate plate={c.plate} state={c.plateState} carId={c.carId} />{' '}
                 <span className="font-medium">{c.modelName}</span>
               </span>
               <span className="flex items-center gap-2">

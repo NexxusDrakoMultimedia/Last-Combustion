@@ -3,6 +3,7 @@
 import { formatDate, formatMoney, t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
 import { button, quiet } from '../styles';
+import { LedgerLink } from '../LedgerLink';
 import { Plate } from '../Plate';
 
 /** A condition bar: 100 is new, 0 is worn out. */
@@ -44,7 +45,21 @@ export function SeasonCalendar() {
         {hub.rounds.map((r) => (
           <tr key={r.number} className="border-t border-lc-line">
             <td className="lc-num py-1">{r.number}</td>
-            <td>{r.course}</td>
+            <td>
+              {r.status === 'scheduled' ? (
+                r.course
+              ) : (
+                <LedgerLink
+                  to={{
+                    kind: r.status === 'complete' ? 'race' : 'prelim',
+                    year: hub.year,
+                    round: r.number,
+                  }}
+                >
+                  {r.course}
+                </LedgerLink>
+              )}
+            </td>
             <td>{formatDate(r.finalDate)}</td>
             <td className={r.status === 'complete' ? 'text-lc-good' : 'text-lc-dim'}>
               {t(`hub.status.${r.status}`)}
@@ -67,7 +82,7 @@ export function OwnedCars({ locked }: { locked: boolean }) {
           className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
         >
           <span>
-            <Plate plate={c.plate} state={c.plateState} />{' '}
+            <Plate plate={c.plate} state={c.plateState} carId={c.carId} />{' '}
             <span className="font-medium">{c.modelName}</span>{' '}
             <span className="text-lc-dim">
               {t('market.carDetail', {
@@ -107,7 +122,7 @@ export function UsedMarket({ locked }: { locked: boolean }) {
           className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
         >
           <span>
-            <Plate plate={l.plate} state={l.plateState} />{' '}
+            <Plate plate={l.plate} state={l.plateState} carId={l.carId} />{' '}
             <span className="font-medium">{l.modelName}</span>{' '}
             <span className="text-lc-dim">
               {t('market.listingDetail', { year: l.modelYear, km: l.roadKm })}
