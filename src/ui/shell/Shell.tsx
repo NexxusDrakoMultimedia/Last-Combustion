@@ -14,6 +14,7 @@ import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
+import { AlmanacPanel } from './AlmanacPanel';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
@@ -35,6 +36,7 @@ type PanelId =
   | 'staff'
   | 'operations'
   | 'sponsors'
+  | 'almanac'
   | 'money'
   | 'menu';
 
@@ -47,6 +49,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'staff', label: 'rail.staff' },
   { id: 'operations', label: 'rail.operations' },
   { id: 'sponsors', label: 'rail.sponsors' },
+  { id: 'almanac', label: 'rail.almanac' },
   { id: 'money', label: 'rail.money' },
 ];
 
@@ -69,9 +72,11 @@ export function Shell() {
   const [seasonTab, setSeason] = useState('calendar');
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
+  const [almanacTab, setAlmanac] = useState('seasons');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
     if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
+    if (id === 'almanac') s.loadRecords();
     setPanel(id);
   };
   const setSeasonTab = (tab: string) => {
@@ -81,6 +86,10 @@ export function Shell() {
   const setStaffTab = (tab: string) => {
     trackDesign(undefined, 'Panel', 'Tab', 'staff', tab);
     setStaff(tab);
+  };
+  const setAlmanacTab = (tab: string) => {
+    trackDesign(undefined, 'Panel', 'Tab', 'almanac', tab);
+    setAlmanac(tab);
   };
   const setMarketTab = (tab: string) => {
     trackDesign(undefined, 'Panel', 'Tab', 'market', tab);
@@ -139,6 +148,8 @@ export function Shell() {
     news.push(
       t('hub.seasonEnd', { year: seasonEnd.year, prize: formatMoney(seasonEnd.prizePaid) }),
     );
+  if (seasonEnd && seasonEnd.awards.length > 0)
+    news.push(t('hub.awards', { count: seasonEnd.awards.length }));
   if (hub.championName) news.push(t('hub.champion', { name: hub.championName }));
   if (rollover)
     news.push(
@@ -324,6 +335,21 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           {staffTab === 'mechanics' ? <StaffPanel /> : <ExecutivesSection />}
+        </Panel>
+      )}
+      {!locked && open === 'almanac' && (
+        <Panel
+          title={t('rail.almanac')}
+          subtitle={t('almanac.intro')}
+          tabs={[
+            { id: 'seasons', label: t('almanac.tab.seasons') },
+            { id: 'records', label: t('almanac.tab.records') },
+          ]}
+          tab={almanacTab}
+          onTab={setAlmanacTab}
+          onClose={() => setOpen(null)}
+        >
+          <AlmanacPanel tab={almanacTab} />
         </Panel>
       )}
       {!locked && open === 'operations' && (

@@ -88,6 +88,7 @@ import {
   type Executive,
   type ExecutiveOutcome,
 } from '../db/executives';
+import { recordBook, type RecordBook } from '../db/records';
 import {
   offerSupplyContract,
   openSupplyNegotiation,
@@ -221,6 +222,8 @@ interface CareerState {
   /** The garage's utility, fuel and logistics suppliers, markets and contracts. */
   supply: SupplyView | undefined;
   supplyNegotiation: ActiveSupplyNegotiation | undefined;
+  /** The record book and the champions and awards of every finished season (read when the Almanac opens). */
+  recordBook: RecordBook | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
   auction: AuctionView | undefined;
   /** What the last auction to close meant for the player. */
@@ -256,6 +259,7 @@ interface CareerState {
   negotiateSupply(supplierId: number): Promise<void>;
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
+  loadRecords(): void;
   dismissExecutive(executiveId: number): Promise<void>;
   hireMechanic(offer: number): Promise<void>;
   fireMechanic(staffId: number): Promise<void>;
@@ -387,6 +391,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     executiveNegotiation: undefined,
     supply: undefined,
     supplyNegotiation: undefined,
+    recordBook: undefined,
     staff: [],
     staffOffers: [],
     crew: 0,
@@ -703,6 +708,10 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         });
         return undefined;
       }, 'SupplyOffer'),
+
+    loadRecords: () => {
+      if (openDb) set({ recordBook: recordBook(openDb) });
+    },
 
     endSupplyNegotiation: () => {
       set({ supplyNegotiation: undefined });

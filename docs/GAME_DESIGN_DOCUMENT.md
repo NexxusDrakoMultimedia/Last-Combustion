@@ -810,7 +810,7 @@ Prize money and sponsors fund the garage, while fame, reputation, rivalries and 
 - **Fame and reputation.** Two separate ratings. Fame is the 0–100 rating derived from fan count (see "Fans"), built from broadcast moments, attention flags and overtakes. Reputation is respect in the paddock, built from consistent results and clean racing. Sponsors chase fame; top garages hire on reputation.
 - **Driver development.** Drivers have stats that grow with experience on each kind of road: forest, coast, mountain and night. A driver can be brilliant on mountain roads and weak on coastal ones.
 - **Rivalries.** Repeated close finishes or contact between two drivers create a rivalry. Rivals racing each other draw extra broadcast attention and fame.
-- **Awards.** Rookie of the Year, most attention flags in a season, Fan Favourite (largest fan gain), and a Hall of Fame for retired champions.
+- **Awards.** Season awards are given out when a season ends (the list is in `data/awards.json`, and see "Season awards" in "Records and history"): Fan Favourite, Rookie of the Year, Hard Charger, Most Improved, Pole Sitter, Overtaker of the Year and Most Improved Garage. Still to come: most attention flags in a season and a Hall of Fame for retired champions.
 - **Damage and repairs.** Crashes cost money and time. Entries are road cars, so a car that can't be repaired can't be driven on the road either.
 - **Daily life.** Road distance between rounds adds wear to the car. Delivery driving gives a small income, which helps drivers early in their careers.
 - **Commentary and media.** The commentary team (see "Commentary team") and news headlines between rounds, generated from the records (for example, "#247 reaches their first final").
@@ -1031,6 +1031,20 @@ Cars change hands through dealers, private negotiation and the auction house. A 
 **Records.** Every sale writes to the car's history (seller, buyer, price, route) and to the garages' ledgers, and a famous sale makes the headlines.
 
 ## Records and history
+
+**Season awards (built).** When a season ends (`endSeason`), `awardSeason` gives each award in `data/awards.json` to one winner, written to `season_award` (one per award per season). The highest value wins; a tie goes to the one with more season points, then the lower id; an award with no one at or above its minimum is not given. All count the main series only.
+
+| Award | Goes to | Measure |
+| --- | --- | --- |
+| Fan Favourite | A driver | The most fans gained in the season (`driver_season_fans`, counted from migration 0031, so a season already under way when a save is upgraded counts from then) |
+| Rookie of the Year | A driver | The most points among drivers in their first season in the series; not given in the career's first year, when everyone is new |
+| Hard Charger | A driver | The most places gained in the finals: the sum of prelim position minus final position over classified finishes |
+| Most Improved | A driver | The most places climbed in the drivers' final table since last season (both seasons ranked, and points scored this year) |
+| Pole Sitter | A driver | The most poles |
+| Overtaker of the Year | A driver | The most overtakes in the finals |
+| Most Improved Garage | A garage | The most places climbed in the garages' final table since last season |
+
+**Almanac screen (built).** The rail's Almanac panel has two tabs: Seasons (every finished season, newest first, with its drivers' champion, garages' champion and the awards) and Records (all-time and single-season records for drivers and garages: points, wins, poles, titles, points and wins in a season, and for garages wins, titles and points in a season). Records are read from the results (`recordBook`, `src/db/records.ts`); a tie goes to whoever set the record first. The older per-person almanac (`almanac`, `src/db/almanac.ts`) still holds every driver's and garage's career line but has no screen yet.
 
 The game keeps a permanent, detailed history of every race, driver, garage and car, so any career can be looked back on in full.
 

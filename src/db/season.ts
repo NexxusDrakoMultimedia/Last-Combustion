@@ -12,6 +12,7 @@ import {
 } from '../sim/standings';
 import { fanBalance, seasonBalance } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
+import { awardSeason, type AwardWon } from './awards';
 import { all } from './entries';
 import { refreshPlayerPrestige } from './prestige';
 import { splitPrize } from './prizes';
@@ -72,6 +73,8 @@ export interface SeasonEnd {
   championPoints: number;
   prizePaid: number;
   bonusesPaid: number;
+  /** The season's awards, given out as it ends. */
+  awards: AwardWon[];
 }
 
 /**
@@ -201,6 +204,7 @@ export function endSeason(db: Database): SeasonEnd {
       "UPDATE season SET status = 'complete', champion_driver_id = ?, champion_garage_id = ? WHERE id = ?",
       [championDriverId, championGarageId, seasonId],
     );
+    const awards = awardSeason(db, seasonId, year, tables);
     refreshPlayerPrestige(db);
     db.exec('COMMIT');
     return {
@@ -210,6 +214,7 @@ export function endSeason(db: Database): SeasonEnd {
       championPoints: champion.points,
       prizePaid: prize,
       bonusesPaid,
+      awards,
     };
   } catch (error) {
     db.exec('ROLLBACK');
