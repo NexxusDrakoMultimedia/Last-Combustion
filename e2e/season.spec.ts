@@ -65,6 +65,11 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
 
+  // Delivery driving has paid the garage between the rounds, and the drivers' homes show.
+  await page.getByRole('button', { name: messages['rail.money'] }).click();
+  await expect(page.getByText(messages['money.category.delivery'])).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();
   await expect(page.getByText(/The 2031 season is over/)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/awards? given out/)).toBeVisible();
@@ -74,6 +79,12 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await expect(page.getByText(messages['award.fan_favourite'], { exact: true })).toBeVisible();
   await page.getByRole('tab', { name: messages['almanac.tab.records'] }).click();
   await expect(page.getByText(messages['almanac.record.driver_points'])).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // In the off-season a driver can book a move home.
+  await page.getByRole('button', { name: messages['rail.drivers'] }).click();
+  await expect(page.getByRole('heading', { name: messages['daily.title'] })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: /^Move .* to$/ }).first()).toBeVisible();
   await page.keyboard.press('Escape');
 
   await page.getByRole('button', { name: messages['hub.nextSeason'] }).click();

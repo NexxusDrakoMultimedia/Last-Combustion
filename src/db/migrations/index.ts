@@ -33,6 +33,7 @@ import { migration0029 } from './0029_executives';
 import { migration0030 } from './0030_supply';
 import { migration0031 } from './0031_awards';
 import { migration0032 } from './0032_headquarters';
+import { migration0033 } from './0033_daily_life';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -68,4 +69,5 @@ export const migrations: readonly Migration[] = [
   migration0030,
   migration0031,
   migration0032,
+  migration0033,
 ];
