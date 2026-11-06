@@ -20,7 +20,7 @@ Press **Start career**. You then choose a **starter car** from three used cars a
 
 ## The screen
 
-- **The top bar** shows your garage and the year, your balance, the next round and one big button for the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. **Menu** has saving, loading, exporting and the About screen.
+- **The top bar** shows your garage and the year, your balance, the next round and one big button for the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. **Feedback** opens the game's issue form on GitHub in a new tab, for bug reports, feature requests and anything else (it needs a free GitHub account). **Menu** has saving, loading, exporting and the About screen.
 - **The garage floor** shows each of your entries: race number (with its borders), licence plate, driver, car and the car's condition.
 - **The news strip** reports what has just happened.
 - **The rail** on the right opens the panels:
@@ -102,6 +102,6 @@ Only the Garage owner mode, with one save slot and no race calls. There is no Ju
 - **Plate:** every car is identified by its Australian licence plate and the state that issued it.
 - **Prelims:** seven days of timed laps before each final. Every entry runs one lap; the fastest start the final.
 - **Prestige:** a garage's standing, from its entries, its gold-bordered drivers and its titles. It decides which sponsors, suppliers and executives will deal with you.
-- **Registry:** the profiles of everything and everyone in the game.
+- **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds.
 - **Road affinity:** how good a driver is on forest, coast, mountain and night roads.
 - **Wear:** from 0 (new) to 100 (worn out), for the chassis and for each part.

@@ -560,7 +560,10 @@ export function roundProfile(
   };
 }
 
-/** Everything in the Registry, as short lines to browse and search. */
+/**
+ * Everything in the Registry, as short lines to browse and search. Drivers with a number this
+ * season come first, in number order; the rest (retirees, free agents) follow alphabetically.
+ */
 export interface RegistryIndex {
   drivers: {
     id: number;
@@ -582,7 +585,8 @@ export function registryIndex(db: Database): RegistryIndex {
       db,
       `SELECT d.id, d.name, e.race_number, g.name AS garage FROM driver d
          LEFT JOIN entry e ON e.driver_id = d.id AND e.series = 'main' AND e.season_id = (SELECT id FROM season WHERE year = ?)
-         LEFT JOIN garage g ON g.id = e.garage_id ORDER BY d.name, d.id`,
+         LEFT JOIN garage g ON g.id = e.garage_id
+        ORDER BY e.race_number IS NULL, e.race_number, d.name, d.id`,
       [year],
     ).map((d) => ({
       id: d.id as number,

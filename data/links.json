@@ -1,6 +1,7 @@
 {
-  "source": "Where to find Nexxus Drako Multimedia and the game. These are shown on the About screen and listed in the README.",
+  "source": "Where to find Nexxus Drako Multimedia and the game. These are shown on the About screen and listed in the README. 'issues' is where the Feedback button sends players.",
   "repository": "https://github.com/NexxusDrakoMultimedia/Last-Combustion",
+  "issues": "https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose",
   "webBuild": "https://lc.nexxusdrako.au",
   "links": [
     { "id": "website", "url": "https://nexxusdrako.au/" },

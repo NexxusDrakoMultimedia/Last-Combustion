@@ -387,7 +387,7 @@ export function createUsedCar(
   rng: ReturnType<ReturnType<typeof createRng>['stream']>,
   ownerGarageId: number,
   date: string,
-  only?: { tier: Tier; excludeModelIds: readonly number[] },
+  only?: { tier: Tier; excludeModelIds: readonly number[]; minAgeShare?: number },
 ): { carId: number; value: number } {
   const year = Number(date.slice(0, 4));
   const models = all(
@@ -406,7 +406,9 @@ export function createUsedCar(
     pool.map((m) => (only ? 1 : (weights[m.tier as string] ?? 0))),
   );
   const tier = model.tier as keyof typeof cars.maxAgeYears;
-  const age = rng.int(1, cars.maxAgeYears[tier]);
+  // A newcomer's starter cars are drawn from the older end of the range (minAgeShare of the oldest age).
+  const oldest = cars.maxAgeYears[tier];
+  const age = rng.int(Math.max(1, Math.ceil(oldest * (only?.minAgeShare ?? 0))), oldest);
   const roadKm =
     Math.round(
       (age * rng.float(cars.roadKmPerYear[0]!, cars.roadKmPerYear[1]!) * cars.usageFactor[tier] +

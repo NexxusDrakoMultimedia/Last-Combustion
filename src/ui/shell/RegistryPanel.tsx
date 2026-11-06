@@ -519,10 +519,13 @@ function RoundPage({ p }: { p: RoundProfile }) {
   );
 }
 
-const MAX_SHOWN = 40;
+const INDEX_TABS = ['drivers', 'cars', 'garages', 'rounds'] as const;
+type IndexTab = (typeof INDEX_TABS)[number];
 
+/** Every driver, car, garage and round in its own tab, with a search that narrows the open tab. */
 function IndexPage({ data }: { data: RegistryIndex }) {
   const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<IndexTab>('drivers');
   const open = useCareerStore((s) => s.openRegistry);
   const q = query.trim().toLowerCase();
   const match = (...parts: (string | number | null)[]) =>
@@ -531,12 +534,14 @@ function IndexPage({ data }: { data: RegistryIndex }) {
   const cars = data.cars.filter((c) => match(c.plate, c.model, c.plateState));
   const garages = data.garages.filter((g) => match(g.name));
   const rounds = data.rounds.filter((r) => match(r.year, r.course, `round ${r.round}`));
-  const more = (n: number) =>
-    n > MAX_SHOWN ? (
-      <li className="text-lc-dim">{t('registry.more', { count: n - MAX_SHOWN })}</li>
-    ) : null;
+  const counts: Record<IndexTab, number> = {
+    drivers: drivers.length,
+    cars: cars.length,
+    garages: garages.length,
+    rounds: rounds.length,
+  };
   return (
-    <div className="space-y-5 text-sm">
+    <div className="space-y-4 text-sm">
       <label className="block space-y-1" htmlFor="registry-search">
         {t('registry.search')}
         <input
@@ -546,65 +551,86 @@ function IndexPage({ data }: { data: RegistryIndex }) {
           onChange={(e) => setQuery(e.target.value)}
         />
       </label>
-      <Section title={t('registry.driversCount', { count: drivers.length })}>
-        <ul className="grid gap-1 sm:grid-cols-2">
-          {drivers.slice(0, MAX_SHOWN).map((d) => (
-            <li key={d.id} className="flex items-center gap-2">
-              {d.number !== null && <RaceNumber number={d.number} badge={d.badge} />}
-              <RegistryLink to={{ kind: 'driver', id: d.id }}>{d.name}</RegistryLink>
-              {d.garage && <span className="text-lc-dim">{d.garage}</span>}
-            </li>
-          ))}
-          {more(drivers.length)}
-        </ul>
-      </Section>
-      <Section title={t('registry.carsCount', { count: cars.length })}>
-        <ul className="grid gap-1 sm:grid-cols-2">
-          {cars.slice(0, MAX_SHOWN).map((c) => (
-            <li key={c.id} className="flex items-center gap-2">
-              <Plate plate={c.plate} state={c.plateState} carId={c.id} />
-              <span className="text-lc-dim">{c.model}</span>
-            </li>
-          ))}
-          {more(cars.length)}
-        </ul>
-      </Section>
-      <Section title={t('registry.garagesCount', { count: garages.length })}>
-        <ul className="grid gap-1 sm:grid-cols-2">
-          {garages.slice(0, MAX_SHOWN).map((g) => (
-            <li key={g.id}>
-              <RegistryLink to={{ kind: 'garage', id: g.id }}>{g.name}</RegistryLink>
-            </li>
-          ))}
-          {more(garages.length)}
-        </ul>
-      </Section>
-      <Section title={t('registry.roundsCount', { count: rounds.length })}>
-        <ul className="space-y-1">
-          {rounds.slice(0, MAX_SHOWN).map((r) => (
-            <li key={`${r.year}-${r.round}`} className="flex flex-wrap items-center gap-3">
-              <span className="lc-num">
-                {t('registry.roundName', { year: r.year, round: r.round, course: r.course })}
-              </span>
-              <button
-                type="button"
-                className={quiet}
-                onClick={() => open({ kind: 'prelim', year: r.year, round: r.round })}
-              >
-                {t('tables.session.prelims')}
-              </button>
-              <button
-                type="button"
-                className={quiet}
-                onClick={() => open({ kind: 'race', year: r.year, round: r.round })}
-              >
-                {t('registry.race')}
-              </button>
-            </li>
-          ))}
-          {more(rounds.length)}
-        </ul>
-      </Section>
+      <div
+        role="tablist"
+        aria-label={t('registry.intro')}
+        className="flex flex-wrap gap-1 border-b border-lc-line"
+      >
+        {INDEX_TABS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            id={`registry-tab-${id}`}
+            aria-selected={tab === id}
+            aria-controls="registry-tab-panel"
+            className={`lc-display px-3 py-2 text-xs ${
+              tab === id ? 'border-b-2 border-lc-accent-ink text-lc-text' : 'text-lc-dim'
+            }`}
+            onClick={() => setTab(id)}
+          >
+            {t(`registry.${id}Count` as never, { count: counts[id] })}
+          </button>
+        ))}
+      </div>
+      <div role="tabpanel" id="registry-tab-panel" aria-labelledby={`registry-tab-${tab}`}>
+        {tab === 'drivers' && (
+          <ul className="grid gap-1 sm:grid-cols-2">
+            {drivers.map((d) => (
+              <li key={d.id} className="flex items-center gap-2">
+                {d.number !== null && <RaceNumber number={d.number} badge={d.badge} />}
+                <RegistryLink to={{ kind: 'driver', id: d.id }}>{d.name}</RegistryLink>
+                {d.garage && <span className="text-lc-dim">{d.garage}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+        {tab === 'cars' && (
+          <ul className="grid gap-1 sm:grid-cols-2">
+            {cars.map((c) => (
+              <li key={c.id} className="flex items-center gap-2">
+                <Plate plate={c.plate} state={c.plateState} carId={c.id} />
+                <span className="text-lc-dim">{c.model}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {tab === 'garages' && (
+          <ul className="grid gap-1 sm:grid-cols-2">
+            {garages.map((g) => (
+              <li key={g.id}>
+                <RegistryLink to={{ kind: 'garage', id: g.id }}>{g.name}</RegistryLink>
+              </li>
+            ))}
+          </ul>
+        )}
+        {tab === 'rounds' && (
+          <ul className="space-y-1">
+            {rounds.map((r) => (
+              <li key={`${r.year}-${r.round}`} className="flex flex-wrap items-center gap-3">
+                <span className="lc-num">
+                  {t('registry.roundName', { year: r.year, round: r.round, course: r.course })}
+                </span>
+                <button
+                  type="button"
+                  className={quiet}
+                  onClick={() => open({ kind: 'prelim', year: r.year, round: r.round })}
+                >
+                  {t('tables.session.prelims')}
+                </button>
+                <button
+                  type="button"
+                  className={quiet}
+                  onClick={() => open({ kind: 'race', year: r.year, round: r.round })}
+                >
+                  {t('registry.race')}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {counts[tab] === 0 && <p className="text-lc-dim">{t('registry.none')}</p>}
+      </div>
     </div>
   );
 }
