@@ -14,7 +14,7 @@ import { EntriesSection } from './EntriesSection';
 import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
-import { About } from '../About';
+import { About, FeedbackLink } from '../About';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { RegistryLink } from '../RegistryLink';
@@ -198,6 +198,7 @@ export function Shell() {
             {t(action.label)}
           </button>
         )}
+        <FeedbackLink />
         <button type="button" className={quiet} onClick={() => setOpen('menu')}>
           {t('shell.menu')}
         </button>

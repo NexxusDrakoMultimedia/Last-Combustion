@@ -1,5 +1,5 @@
 {
-  "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year.",
+  "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). Every supplier serves all of Australia for now, so only prestige (its tier) gates them. A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year.",
   "maxYears": 3,
   "discount": { "base": 0.04, "perPrestige": 0.001, "cap": 0.15 },
   "tiers": {
@@ -28,7 +28,7 @@
       "tier": "local",
       "priceIndex": 1.05,
       "reliability": 0.9,
-      "states": ["SA", "NT"]
+      "states": null
     },
     {
       "id": 2,
@@ -37,7 +37,7 @@
       "tier": "regional",
       "priceIndex": 0.97,
       "reliability": 0.94,
-      "states": ["SA", "Vic", "NSW", "Tas", "ACT"]
+      "states": null
     },
     {
       "id": 3,
@@ -55,7 +55,7 @@
       "tier": "local",
       "priceIndex": 1.1,
       "reliability": 0.92,
-      "states": ["SA", "Vic"]
+      "states": null
     },
     {
       "id": 5,
@@ -64,7 +64,7 @@
       "tier": "regional",
       "priceIndex": 0.98,
       "reliability": 0.95,
-      "states": ["SA", "Vic", "NSW", "Qld", "ACT"]
+      "states": null
     },
     {
       "id": 6,
@@ -82,7 +82,7 @@
       "tier": "regional",
       "priceIndex": 1.12,
       "reliability": 0.9,
-      "states": ["SA", "Vic", "NSW", "Qld", "WA"]
+      "states": null
     },
     {
       "id": 8,
@@ -109,7 +109,7 @@
       "tier": "local",
       "priceIndex": 1.08,
       "reliability": 0.93,
-      "states": ["SA", "Vic", "NSW"]
+      "states": null
     },
     {
       "id": 11,
@@ -118,7 +118,7 @@
       "tier": "regional",
       "priceIndex": 0.99,
       "reliability": 0.94,
-      "states": ["SA", "NT", "WA", "Qld", "NSW"]
+      "states": null
     },
     {
       "id": 12,
@@ -136,7 +136,7 @@
       "tier": "local",
       "priceIndex": 1.1,
       "reliability": 0.88,
-      "states": ["SA", "Vic", "Tas"]
+      "states": null
     },
     {
       "id": 14,
@@ -145,7 +145,7 @@
       "tier": "regional",
       "priceIndex": 1.0,
       "reliability": 0.93,
-      "states": ["SA", "Vic", "NSW", "Qld", "WA", "NT"]
+      "states": null
     },
     {
       "id": 15,

@@ -4,6 +4,7 @@ import type { Database } from 'sql.js';
 import { listingPrice } from '../sim/economy';
 import { createRng } from '../sim/rng';
 import { makeRookie } from '../sim/worldgen';
+import { economyBalance } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { insertDriver, placeIdMap } from './drivers';
 import { all } from './entries';
@@ -62,6 +63,7 @@ export function createStarterOffers(db: Database): void {
       const { carId } = createUsedCar(db, carRng, market, career.gameDate, {
         tier: 'starter',
         excludeModelIds: used,
+        minAgeShare: economyBalance.starter.carMinAgeShare,
       });
       used.push(Number(all(db, 'SELECT car_model_id AS m FROM car WHERE id = ?', [carId])[0]!.m));
       db.run("INSERT INTO starter_offer (kind, subject_id) VALUES ('car', ?)", [carId]);
@@ -71,7 +73,11 @@ export function createStarterOffers(db: Database): void {
     for (let i = 0; i < STARTER_DRIVERS; i++) {
       insertDriver(
         db,
-        makeRookie(driverRng, nextId, year, { ageMin: 18, ageMax: 24, paceMean: 45 }),
+        makeRookie(driverRng, nextId, year, {
+          ageMin: 18,
+          ageMax: 24,
+          paceMean: economyBalance.starter.driverPaceMean,
+        }),
         placeIds,
       );
       db.run("INSERT INTO starter_offer (kind, subject_id) VALUES ('driver', ?)", [nextId]);
