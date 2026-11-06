@@ -87,12 +87,11 @@ describe('the spot market', () => {
 });
 
 describe('negotiating a supply contract', () => {
-  it('needs the prestige and the region, and one contract a category', () => {
+  it('needs the prestige (any state will do), and one contract a category', () => {
     const { db, garageId } = fresh('supply-gates');
     expect(() => openSupplyNegotiation(db, garageId, electricityGlobal.id)).toThrow(/cannot deal/);
-    db.run("UPDATE garage SET home_state = 'Bavaria' WHERE id = ?", [garageId]);
-    expect(() => openSupplyNegotiation(db, garageId, electricityLocal.id)).toThrow(/cannot deal/);
-    db.run("UPDATE garage SET home_state = 'SA' WHERE id = ?", [garageId]);
+    // Suppliers serve all of Australia, so the base state makes no difference.
+    db.run("UPDATE garage SET home_state = 'WA' WHERE id = ?", [garageId]);
     const n = openSupplyNegotiation(db, garageId, electricityLocal.id);
     expect(n.fairValue).toBeCloseTo(0.041, 3);
     const result = offerSupplyContract(db, n.id, { discount: 0.01, years: 2 });

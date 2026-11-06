@@ -32,13 +32,19 @@ describe('suppliers', () => {
     }
   });
 
-  it('only deal with garages that have the prestige and that they serve', () => {
-    const local = SUPPLIERS.find((s) => s.tier === 'local' && s.states !== null)!;
+  it('serve all of Australia, so only prestige decides who can deal with them', () => {
+    for (const s of SUPPLIERS) expect(s.states, s.name).toBeNull();
+    const local = SUPPLIERS.find((s) => s.tier === 'local')!;
     const global = SUPPLIERS.find((s) => s.tier === 'global')!;
-    expect(canDealWith(local, 0, local.states![0]!)).toBe(true);
-    expect(canDealWith(local, 0, 'Bavaria')).toBe(false);
-    expect(canDealWith(global, 49, 'Bavaria')).toBe(false);
-    expect(canDealWith(global, 50, 'Bavaria')).toBe(true);
+    for (const state of ['SA', 'WA', 'Tas', 'NT']) expect(canDealWith(local, 0, state)).toBe(true);
+    expect(canDealWith(global, 49, 'Qld')).toBe(false);
+    expect(canDealWith(global, 50, 'Qld')).toBe(true);
+  });
+
+  it('can still limit a supplier to some regions through its states', () => {
+    const limited = { ...SUPPLIERS[0]!, states: ['SA'] };
+    expect(canDealWith(limited, 100, 'SA')).toBe(true);
+    expect(canDealWith(limited, 100, 'WA')).toBe(false);
   });
 });
 

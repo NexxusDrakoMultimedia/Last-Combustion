@@ -20,7 +20,7 @@ Press **Start career**. You then choose a **starter car** from three used cars a
 
 ## The screen
 
-- **The top bar** shows your garage and the year, your balance, the next round and one big button for the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. **Menu** has saving, loading, exporting and the About screen.
+- **The top bar** shows your garage and the year, your balance, the next round and one big button for the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. **Feedback** opens the game's issue form on GitHub in a new tab, for bug reports, feature requests and anything else (it needs a free GitHub account). **Menu** has saving, loading, exporting and the About screen.
 - **The garage floor** shows each of your entries: race number (with its borders), licence plate, driver, car and the car's condition.
 - **The news strip** reports what has just happened.
 - **The rail** on the right opens the panels:

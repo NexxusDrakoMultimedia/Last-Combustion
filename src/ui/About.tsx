@@ -6,7 +6,7 @@ import credits from '../../CREDITS.md?raw';
 import { t } from '../i18n';
 import { APP_VERSION } from '../db/session';
 import { siteLinks } from '../sim/worldgen/data';
-import { dataTable } from './styles';
+import { dataTable, quiet } from './styles';
 import { parseMarkdown, type Block, type Inline } from './markdown';
 
 const link =
@@ -110,6 +110,20 @@ function Document({ source }: { source: string }) {
 type Tab = 'about' | 'credits' | 'changelog';
 const TABS: Tab[] = ['about', 'credits', 'changelog'];
 
+/** A button-styled link to the game's GitHub issue form (bugs, feature requests and other feedback) in a new tab. */
+export function FeedbackLink() {
+  return (
+    <a
+      className={`${quiet} inline-block`}
+      href={siteLinks.issues}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {t('shell.feedback')}
+    </a>
+  );
+}
+
 /** The About screen: what the game is, who made it and where to find them, the credits, and the changelog. */
 export function About() {
   const [tab, setTab] = useState<Tab>('about');
@@ -177,6 +191,9 @@ export function About() {
                 >
                   {t('about.sourceLink')}
                 </a>
+              </p>
+              <p>
+                {t('about.feedback')} <FeedbackLink />
               </p>
               <p className="text-lc-dim">{t('about.trademark')}</p>
             </section>
