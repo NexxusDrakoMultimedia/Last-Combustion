@@ -88,6 +88,7 @@ describe('migrate', () => {
       'headquarters',
       'daily_life',
       'restorations',
+      'garage_champions',
     ]);
   });
 
@@ -214,5 +215,24 @@ describe('headquarters (schema version 32)', () => {
     expect(rows[1]![1]).toBe('au-test-a');
     expect(rows[1]![2]).toBe('AU');
     expect(rows[1]![3]).toBe('SA');
+  });
+});
+
+describe('garage champions (schema version 35)', () => {
+  it('moves the old garage column to its clearer name and fills the Garage Championship winner from the saved table', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 34));
+    expect(getSchemaVersion(db)).toBe(34);
+    db.exec(`INSERT INTO season (id, year, era, final_size, series_fans, status, champion_garage_id)
+             VALUES (1, 2031, 'original', 15, 100, 'complete', 7), (2, 2032, 'original', 15, 100, 'scheduled', NULL)`);
+    db.exec(`INSERT INTO standing_snapshot (season_id, table_kind, subject, after_round, points, wins, position)
+             VALUES (1, 'garage', '12', 6, 90, 3, 1), (1, 'garage', '7', 6, 80, 2, 2), (1, 'driver', '5', 6, 50, 3, 1)`);
+    migrate(db);
+    const rows = db.exec(
+      'SELECT year, champion_driver_garage_id, champion_garage_id FROM season ORDER BY year',
+    )[0]!.values;
+    // The old value is kept under its new name; the winner comes from the garage table.
+    expect(rows[0]).toEqual([2031, 7, 12]);
+    expect(rows[1]).toEqual([2032, null, null]);
   });
 });

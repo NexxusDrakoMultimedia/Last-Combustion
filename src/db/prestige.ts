@@ -38,7 +38,7 @@ export function refreshPlayerPrestige(db: Database): number | undefined {
     )[0]!.n,
   );
   const titles = Number(
-    all(db, 'SELECT COUNT(*) AS n FROM season WHERE champion_garage_id = ?', [id])[0]!.n,
+    all(db, 'SELECT COUNT(*) AS n FROM season WHERE champion_driver_garage_id = ?', [id])[0]!.n,
   );
   const prestige = prestigeOf(entries, gold, titles);
   db.run('UPDATE garage SET prestige = ? WHERE id = ?', [prestige, id]);
