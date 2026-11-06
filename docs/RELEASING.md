@@ -4,7 +4,7 @@ This is how Last Combustion is released to players. The [Game Design Document](G
 
 ## Versions
 
-Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each milestone from M5 on ends in a release (proposed numbers, to be confirmed at each milestone). **1.0.0 is not tied to any milestone**: the project owner declares it when the game is feature complete, so milestones after M8, or more releases between, are possible.
+Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each milestone from M5 on ends in a release (the numbers below are confirmed). **1.0.0 is not tied to any milestone**: the project owner declares it when the game is feature complete, so milestones after M8, or more releases between, are possible.
 
 | Milestone                | Release   | What players get                                                                                                                                  |
 | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -42,7 +42,7 @@ It may not contain new features, new screens, new rules, schema changes or anyth
 ## Branches
 
 - **`main` is the latest release.** The web build on GitHub Pages deploys from `main`, so players only ever see released work.
-- **Every milestone from M6 on runs on its own branch**, `milestone/m6-depth`, `milestone/m7-junior` and so on. It is created from `main` when the milestone starts, and all of the milestone's pull requests target it, not `main`. CI (lint, types, tests, build, browser test, CodeQL, dependency review) runs on every pull request whatever its base, and on pushes to `main` and to `milestone/**`.
+- **Every milestone from M6 on runs on its own branch named for its release series**: `feature/0.2.x` for M6, `feature/0.3.x` for M7 and `feature/0.4.x` for M8. It is created from `main` when the milestone starts, and all of the milestone's pull requests target it, not `main`. CI (lint, types, tests, build, browser test, CodeQL, dependency review) runs on every pull request whatever its base, and on pushes to `main`, `feature/**` and `hotfix/**`.
 - **Feature pull requests** are squash-merged into the milestone branch. The squash title ends with the pull request number, as now. The designated session branch (`claude/...`) stays the working branch; only the pull request's base changes.
 - **Finishing a milestone.** When everything in the milestone is built and its game-design-document status is up to date, a release pull request merges the milestone branch into `main` with a merge commit (not a squash, so the milestone's history stays readable), titled `release: 0.2.0 (M6 depth)`. The release steps below run on it. Then `main` is tagged `v0.2.0` and a GitHub Release is published (publishing it also rebuilds the web build).
 - **The next milestone** branch is created from the new `main` once the release is out.

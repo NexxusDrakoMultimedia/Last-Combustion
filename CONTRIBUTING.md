@@ -16,7 +16,7 @@ A good first read is the [README](README.md), then [How to play](docs/HOW_TO_PLA
 ## How a change goes in
 
 1. **Pick something.** Look at the open issues, or the "built so far" notes in the Game Design Document for what comes next. For anything big, open an issue first so we can agree the shape.
-2. **Branch.** Work on a short-lived branch and open a pull request. Until the first release (0.1.0) pull requests go to `main`. From then on each milestone has its own `milestone/...` branch and pull requests go there (see [Releasing](docs/RELEASING.md)).
+2. **Branch.** Work on a short-lived branch and open a pull request. Until the first release (0.1.0) pull requests go to `main`. From then on each milestone has its own feature branch (`feature/0.2.x` for M6) and pull requests go there (see [Releasing](docs/RELEASING.md)).
 3. **Keep it focused.** One change per pull request. A bug fix does not need a refactor next to it.
 4. **Change the design with the code.** If behaviour changes, update the Game Design Document in the same pull request.
 5. **Open the pull request** using the template, and wait for the checks to go green.
