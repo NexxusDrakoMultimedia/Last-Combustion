@@ -7,7 +7,7 @@ import { useCareerStore } from '../../state/career.store';
 import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
-import { field, quiet } from '../styles';
+import { dataTable, field, quiet } from '../styles';
 
 const mine = 'bg-lc-raised font-medium';
 
@@ -83,7 +83,7 @@ export function StandingsPanel() {
         <p className="text-lc-dim">{t('hub.tableEmpty')}</p>
       ) : (
         <div className="max-h-[60vh] overflow-auto">
-          <table className="w-full text-left">
+          <table className={dataTable}>
             <caption className="sr-only">{t(`tables.kind.${kind}` as never)}</caption>
             <thead className="lc-display sticky top-0 bg-lc-panel text-xs text-lc-dim">
               <tr>
@@ -208,7 +208,7 @@ export function ResultsPanel() {
         <p className="text-lc-dim">{t('tables.notRun')}</p>
       ) : (
         <div className="max-h-[60vh] overflow-auto">
-          <table className="w-full text-left">
+          <table className={dataTable}>
             <caption className="sr-only">{t(`tables.session.${session}` as never)}</caption>
             <thead className="lc-display sticky top-0 bg-lc-panel text-xs text-lc-dim">
               <tr>

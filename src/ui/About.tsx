@@ -6,6 +6,7 @@ import credits from '../../CREDITS.md?raw';
 import { t } from '../i18n';
 import { APP_VERSION } from '../db/session';
 import { siteLinks } from '../sim/worldgen/data';
+import { dataTable } from './styles';
 import { parseMarkdown, type Block, type Inline } from './markdown';
 
 const link =
@@ -70,7 +71,7 @@ function Document({ source }: { source: string }) {
           case 'table':
             return (
               <div key={i} className="overflow-x-auto">
-                <table className="w-full text-left">
+                <table className={dataTable}>
                   <thead className="lc-display text-xs text-lc-dim">
                     <tr>
                       {b.head.map((h, j) => (

@@ -8,7 +8,15 @@ import type { NumberBadge } from '../db/registry';
  * border for a Junior Series points scorer, and a black box for the reigning champion. These
  * colours are race content and stay the same in every theme.
  */
-export function RaceNumber({ number, badge }: { number: number; badge?: NumberBadge }) {
+export function RaceNumber({
+  number,
+  badge,
+  size = 'normal',
+}: {
+  number: number;
+  badge?: NumberBadge;
+  size?: 'normal' | 'large';
+}) {
   const gold = badge?.gold === true;
   const silver = !gold && badge?.silver === true;
   const black = badge?.blackBox === true;
@@ -25,7 +33,9 @@ export function RaceNumber({ number, badge }: { number: number; badge?: NumberBa
       role="img"
       aria-label={label}
       title={label}
-      className="lc-num inline-block min-w-8 rounded-sm px-1.5 text-center text-xs font-bold leading-5"
+      className={`lc-num inline-block rounded-sm text-center font-bold ${
+        size === 'large' ? 'min-w-14 px-3 text-2xl leading-9' : 'min-w-8 px-1.5 text-xs leading-5'
+      }`}
       style={{
         color: black ? '#ffffff' : '#111111',
         backgroundColor: black ? '#000000' : '#f1f3f5',
