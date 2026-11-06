@@ -93,3 +93,5 @@ Wear: parts lose effect as they wear (`partEffects` in `src/sim/upgrades.ts`) an
 The rail's Sponsors and Money panels (`src/ui/shell/SponsorsPanel.tsx`, `MoneyPanel.tsx`) read `activeSponsorDeal`, `approachableSponsors` and `garageFinance`, and negotiate through `openSponsorNegotiation` and `offerSponsorDeal`.
 
 Development: `src/sim/progression.ts` has `driverCurve` (a driver's own growth curve from the seed and id) and `develop` (curve, training and the soft cap), and `src/db/training.ts` sets levels and pays for them at the rollover (migration 0026).
+
+Entries: `addEntry`, `removeEntry` and `garageEntries` in `src/db/garage.ts`; the Cars panel's Entries section is `src/ui/shell/EntriesSection.tsx`.

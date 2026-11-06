@@ -25,7 +25,16 @@ import {
 } from '../db/upgrades';
 import type { PartCategory } from '../sim/upgrades';
 import { freeAgents, type FreeAgent } from '../db/freeagents';
-import { ownedCars, setEntryCar, setEntryDriver, type OwnedCar } from '../db/garage';
+import {
+  addEntry as dbAddEntry,
+  garageEntries,
+  ownedCars,
+  removeEntry as dbRemoveEntry,
+  setEntryCar,
+  setEntryDriver,
+  type GarageEntry,
+  type OwnedCar,
+} from '../db/garage';
 import {
   offerDriverContract,
   openDriverNegotiation,
@@ -113,6 +122,7 @@ interface CareerState {
   upgrades: UpgradeView[];
   gear: GearCondition[];
   trained: TrainedDriver[];
+  entries: GarageEntry[];
   sponsors: SponsorsView | undefined;
   money: GarageFinance | undefined;
   sponsorNegotiation: ActiveSponsorNegotiation | undefined;
@@ -138,6 +148,8 @@ interface CareerState {
   renewGear(driverId: number, itemId: string): Promise<void>;
   setTraining(driverId: number, level: number): Promise<void>;
   raceCar(carId: number): Promise<void>;
+  addEntry(carId: number, driverId: number): Promise<void>;
+  removeEntry(raceNumber: number): Promise<void>;
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
   runNextPrelims(): Promise<void>;
@@ -172,6 +184,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
       gear: playerGarageId(db) === null ? [] : garageGear(db, playerGarageId(db)!),
       trained: playerGarageId(db) === null ? [] : trainedDrivers(db, playerGarageId(db)!),
+      entries: playerGarageId(db) === null ? [] : garageEntries(db, playerGarageId(db)!),
       sponsors:
         playerGarageId(db) === null
           ? undefined
@@ -222,6 +235,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     upgrades: [],
     gear: [],
     trained: [],
+    entries: [],
     sponsors: undefined,
     money: undefined,
     sponsorNegotiation: undefined,
@@ -429,6 +443,26 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         )[0]?.values[0]?.[0];
         if (garageId === null || typeof entry !== 'number') return undefined;
         setEntryCar(openDb, garageId, entry, carId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    addEntry: (carId, driverId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbAddEntry(openDb, garageId, carId, driverId);
+        refresh(openDb);
+        return undefined;
+      }),
+
+    removeEntry: (raceNumber) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbRemoveEntry(openDb, garageId, raceNumber);
         refresh(openDb);
         return undefined;
       }),
