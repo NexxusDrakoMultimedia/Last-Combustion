@@ -4,7 +4,10 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
 import { garageFinance } from '../../src/db/finance';
 import {
+  buyNewCar,
   buyUsedCar,
+  dealerOffers,
+  dealerQuote,
   ensureMarketGarage,
   openListings,
   refreshUsedMarket,
@@ -188,5 +191,49 @@ describe('licence plates on cars bought and sold', () => {
     const total = Number(db.exec('SELECT COUNT(*) FROM car')[0]!.values[0]![0]);
     const distinct = Number(db.exec('SELECT COUNT(DISTINCT plate) FROM car')[0]!.values[0]![0]);
     expect(distinct).toBe(total);
+  });
+});
+
+describe('the dealers’ offers', () => {
+  it('list every model on sale, cheapest first, at the price this garage pays', () => {
+    const db = newCareer('dealer-offers');
+    const garage = Number(
+      db.exec("SELECT id FROM garage WHERE kind = 'racing' LIMIT 1")[0]!.values[0]![0],
+    );
+    const offers = dealerOffers(db, garage);
+    expect(offers.length).toBeGreaterThan(20);
+    expect(offers.map((o) => o.listPrice)).toEqual(
+      [...offers.map((o) => o.listPrice)].sort((a, b) => a - b),
+    );
+    for (const o of offers) {
+      expect(o.price).toBeLessThanOrEqual(o.listPrice);
+      expect(o.maker.length).toBeGreaterThan(0);
+    }
+    // No one-off cars are for sale new.
+    expect(offers.some((o) => o.tier === 'unique')).toBe(false);
+  });
+
+  it('show the discount from a manufacturer deal, and match what buying costs', () => {
+    const db = newCareer('dealer-deal');
+    const garage = Number(
+      db.exec("SELECT id FROM garage WHERE kind = 'racing' LIMIT 1")[0]!.values[0]![0],
+    );
+    db.run('UPDATE garage SET cash = 900000000 WHERE id = ?', [garage]);
+    const cheapest = dealerOffers(db, garage)[0]!;
+    const before = Number(
+      db.exec(`SELECT cash FROM garage WHERE id = ${garage}`)[0]!.values[0]![0],
+    );
+    const bought = buyNewCar(db, garage, cheapest.modelId);
+    const after = Number(db.exec(`SELECT cash FROM garage WHERE id = ${garage}`)[0]!.values[0]![0]);
+    expect(bought.price).toBe(cheapest.price);
+    expect(before - after).toBe(cheapest.price);
+  });
+
+  it('quote what a dealer would pay for a car as a share of its value', () => {
+    const db = newCareer('dealer-quote');
+    const carId = Number(db.exec('SELECT id FROM car LIMIT 1')[0]!.values[0]![0]);
+    const quote = dealerQuote(db, carId);
+    expect(quote).toBeGreaterThan(0);
+    expect(quote).toBeLessThan(valueOfCar(db, carId));
   });
 });

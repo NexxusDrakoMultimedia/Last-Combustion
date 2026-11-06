@@ -1,7 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { beforeAll, describe, expect, it } from 'vitest';
-import { closeAuction, consignCar, openAuction, openLots, placeBid } from '../../src/db/auction';
+import {
+  auctionCycle,
+  closeAuction,
+  consignCar,
+  currentAuction,
+  ensureAuction,
+  openAuction,
+  openLots,
+  placeBid,
+} from '../../src/db/auction';
+import { registerCar } from '../../src/db/plates';
 import { createCareer } from '../../src/db/career';
 import { garageFinance } from '../../src/db/finance';
 import { createNewDatabase, packDatabase, unpackDatabase } from '../../src/db/session';
@@ -160,5 +170,101 @@ describe('closing an auction', () => {
     expect(JSON.stringify(closeAuction(a, 1))).toBe(JSON.stringify(closeAuction(b, 1)));
     const { db: loaded } = await unpackDatabase(SQL, await packDatabase(a, 'auction'));
     expect(scalar(loaded, 'SELECT COUNT(*) FROM auction_lot')).toBe(8);
+  });
+});
+
+describe('the auction as a garage sees it', () => {
+  it('shows each lot with its plate, the garage’s own bid and whether it consigned the lot', () => {
+    const db = newCareer('auction-view');
+    const { carId, garageId } = spareCar(db);
+    registerCar(db, carId);
+    db.run('UPDATE garage SET cash = 5000000 WHERE id = ?', [garageId]);
+    const auction = openAuction(db);
+    expect(currentAuction(db, garageId)?.id).toBe(auction.id);
+    const mine = consignCar(db, garageId, carId, auction.id, 20_000);
+    const lot = openLots(db, auction.id).find((l) => l.id !== mine)!;
+    placeBid(db, garageId, lot.id, lot.openingPrice + 1000);
+    const view = currentAuction(db, garageId)!;
+    expect(view.lotViews).toHaveLength(9);
+    const own = view.lotViews.find((l) => l.id === mine)!;
+    expect(own.mine).toBe(true);
+    expect(own.myBid).toBeNull();
+    expect(own.sellerGarageId).toBe(garageId);
+    expect(own.plate).toMatch(/\S/);
+    const bid = view.lotViews.find((l) => l.id === lot.id)!;
+    expect(bid.myBid).toBe(lot.openingPrice + 1000);
+    expect(bid.mine).toBe(false);
+    expect(bid.sellerGarageId).toBeNull();
+    // Another garage sees none of this garage's bids.
+    const other = Number(
+      scalar(db, `SELECT id FROM garage WHERE id <> ${garageId} AND kind = 'racing' LIMIT 1`),
+    );
+    expect(currentAuction(db, other)!.lotViews.every((l) => l.myBid === null)).toBe(true);
+  });
+
+  it('has no view when no auction is open, and opens one once with ensureAuction', () => {
+    const db = newCareer('auction-ensure');
+    expect(currentAuction(db, 1)).toBeUndefined();
+    expect(ensureAuction(db)).toBeDefined();
+    expect(ensureAuction(db)).toBeUndefined();
+    expect(scalar(db, "SELECT COUNT(*) FROM auction WHERE status = 'open'")).toBe(1);
+  });
+});
+
+describe('the auction house between rounds', () => {
+  it('closes the open auction and opens a new one with different cars', () => {
+    const db = newCareer('auction-cycle');
+    ensureAuction(db);
+    const first = openLots(db, 1)
+      .map((l) => l.modelName + l.reserve)
+      .join('|');
+    const closing = auctionCycle(db, null)!;
+    expect(closing.auctionId).toBe(1);
+    expect(closing.result.sold + closing.result.unsold).toBe(8);
+    expect(scalar(db, 'SELECT status FROM auction WHERE id = 1')).toBe('closed');
+    expect(scalar(db, "SELECT COUNT(*) FROM auction WHERE status = 'open'")).toBe(1);
+    const second = openLots(db, 2)
+      .map((l) => l.modelName + l.reserve)
+      .join('|');
+    expect(second).not.toBe(first);
+    // The first cycle with nothing open just opens one.
+    const fresh = newCareer('auction-cycle-2');
+    expect(auctionCycle(fresh, null)).toBeUndefined();
+    expect(scalar(fresh, "SELECT COUNT(*) FROM auction WHERE status = 'open'")).toBe(1);
+  });
+
+  it('tells the garage what it won, sold, left unsold and was outbid on', () => {
+    const db = newCareer('auction-outcomes');
+    const { carId, garageId } = spareCar(db);
+    registerCar(db, carId);
+    db.run('UPDATE garage SET cash = 90000000 WHERE id = ?', [garageId]);
+    ensureAuction(db);
+    const lots = openLots(db, 1);
+    // A sky-high bid wins; a bid at the opening price on another lot is beaten by the field or the reserve.
+    placeBid(db, garageId, lots[0]!.id, lots[0]!.reserve * 5);
+    placeBid(db, garageId, lots[1]!.id, lots[1]!.openingPrice);
+    consignCar(db, garageId, carId, 1, 10_000_000_000);
+    const closing = auctionCycle(db, garageId)!;
+    const outcomes = closing.lots.map((l) => l.outcome);
+    expect(outcomes).toContain('won');
+    expect(outcomes).toContain('unsold');
+    const won = closing.lots.find((l) => l.outcome === 'won')!;
+    expect(won.price).toBeGreaterThan(0);
+    expect(won.price).toBeLessThanOrEqual(lots[0]!.reserve * 5);
+    for (const l of closing.lots) expect(['won', 'sold', 'unsold', 'lost']).toContain(l.outcome);
+    expect(closing.lots.some((l) => l.outcome === 'lost') || outcomes.length >= 2).toBe(true);
+  });
+
+  it('is the same for the same seed', () => {
+    const run = () => {
+      const db = newCareer('auction-same');
+      ensureAuction(db);
+      auctionCycle(db, null);
+      return JSON.stringify([
+        openLots(db, 2).map((l) => [l.modelName, l.reserve]),
+        scalar(db, 'SELECT SUM(final_price) FROM auction_lot'),
+      ]);
+    };
+    expect(run()).toBe(run());
   });
 });
