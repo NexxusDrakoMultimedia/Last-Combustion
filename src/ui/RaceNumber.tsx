@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../i18n';
-import type { NumberBadge } from '../db/ledger';
+import type { NumberBadge } from '../db/registry';
 
 /**
  * A race number as it appears on the car: a gold border for anyone who has reached a final, a silver

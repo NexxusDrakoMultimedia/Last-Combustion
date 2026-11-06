@@ -49,18 +49,18 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   // Finalists carry a gold border on their number.
   await expect(finalTable.getByRole('img', { name: /gold border/ }).first()).toBeVisible();
 
-  // Names, plates and rounds open profiles in the Ledger, which link on to each other.
+  // Names, plates and rounds open profiles in the Registry, which link on to each other.
   await finalTable.getByRole('button').first().click();
-  await expect(page.getByText(messages['ledger.driverDecals'])).toBeVisible();
+  await expect(page.getByText(messages['registry.driverDecals'])).toBeVisible();
   await page
     .getByRole('table')
     .getByRole('button', { name: /Licence plate/ })
     .first()
     .click();
-  await expect(page.getByText(messages['ledger.carDecals'])).toBeVisible();
-  await page.getByRole('button', { name: messages['ledger.index'] }).click();
+  await expect(page.getByText(messages['registry.carDecals'])).toBeVisible();
+  await page.getByRole('button', { name: messages['registry.index'] }).click();
   await expect(page.getByText(/Prelims and races \(\d+\)/)).toBeVisible();
-  await page.getByRole('button', { name: messages['ledger.race'], exact: true }).first().click();
+  await page.getByRole('button', { name: messages['registry.race'], exact: true }).first().click();
   await expect(page.getByRole('heading', { name: /round \d+ race/ })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');

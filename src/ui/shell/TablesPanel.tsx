@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { formatGap, formatLapTime, formatMoney, t } from '../../i18n';
 import { TABLE_KINDS, type ResultRow, type TableKind } from '../../db/tables';
 import { useCareerStore } from '../../state/career.store';
-import { LedgerLink } from '../LedgerLink';
+import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { field, quiet } from '../styles';
@@ -107,10 +107,12 @@ export function StandingsPanel() {
                     {r.driverId > 0 ? (
                       <span className="inline-flex items-center gap-2">
                         <RaceNumber number={r.raceNumber} badge={r.badge} />
-                        <LedgerLink to={{ kind: 'driver', id: r.driverId }}>{r.name}</LedgerLink>
+                        <RegistryLink to={{ kind: 'driver', id: r.driverId }}>
+                          {r.name}
+                        </RegistryLink>
                       </span>
                     ) : r.garageId > 0 && kind === 'garages' ? (
-                      <LedgerLink to={{ kind: 'garage', id: r.garageId }}>{r.name}</LedgerLink>
+                      <RegistryLink to={{ kind: 'garage', id: r.garageId }}>{r.name}</RegistryLink>
                     ) : (
                       r.name
                     )}
@@ -118,7 +120,9 @@ export function StandingsPanel() {
                   {(kind === 'drivers' || kind === 'manufacturers') && (
                     <td className="text-lc-dim">
                       {kind === 'drivers' && r.garageId > 0 ? (
-                        <LedgerLink to={{ kind: 'garage', id: r.garageId }}>{r.detail}</LedgerLink>
+                        <RegistryLink to={{ kind: 'garage', id: r.garageId }}>
+                          {r.detail}
+                        </RegistryLink>
                       ) : (
                         r.detail
                       )}
@@ -195,9 +199,9 @@ export function ResultsPanel() {
       {ready && (
         <p className="text-lc-dim">
           {t('tables.roundLine', { round: c.round, course: c.course, count: rows.length })}{' '}
-          <LedgerLink to={{ kind: session === 'final' ? 'race' : 'prelim', year, round }}>
+          <RegistryLink to={{ kind: session === 'final' ? 'race' : 'prelim', year, round }}>
             {t('tables.openProfile')}
-          </LedgerLink>
+          </RegistryLink>
         </p>
       )}
       {ready && rows.length === 0 ? (
@@ -228,12 +232,14 @@ export function ResultsPanel() {
                   <td>
                     <span className="inline-flex items-center gap-2">
                       <RaceNumber number={r.raceNumber} badge={r.badge} />
-                      <LedgerLink to={{ kind: 'driver', id: r.driverId }}>{r.driver}</LedgerLink>
+                      <RegistryLink to={{ kind: 'driver', id: r.driverId }}>
+                        {r.driver}
+                      </RegistryLink>
                       {r.pole && session === 'prelims' && ` ${t('tables.pole')}`}
                     </span>
                   </td>
                   <td className="text-lc-dim">
-                    <LedgerLink to={{ kind: 'garage', id: r.garageId }}>{r.garage}</LedgerLink>
+                    <RegistryLink to={{ kind: 'garage', id: r.garageId }}>{r.garage}</RegistryLink>
                   </td>
                   <td className="text-lc-dim">
                     <Plate plate={r.plate} state={r.plateState} carId={r.carId} /> {r.car}

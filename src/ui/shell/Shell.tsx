@@ -16,7 +16,7 @@ import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { About } from '../About';
 import { AlmanacPanel } from './AlmanacPanel';
-import { LedgerPanel } from './LedgerPanel';
+import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
@@ -47,7 +47,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'operations', label: 'rail.operations' },
   { id: 'sponsors', label: 'rail.sponsors' },
   { id: 'almanac', label: 'rail.almanac' },
-  { id: 'ledger', label: 'rail.ledger' },
+  { id: 'ledger', label: 'rail.registry' },
   { id: 'money', label: 'rail.money' },
 ];
 
@@ -67,8 +67,8 @@ export function Shell() {
     notice,
   } = s;
   const [openPanel, setPanel] = useState<PanelId | null>(null);
-  // A profile opened from anywhere (a plate, a name, a number) shows the Ledger over whatever is open.
-  const open = s.ledgerPage ? 'ledger' : openPanel;
+  // A profile opened from anywhere (a plate, a name, a number) shows the Registry over whatever is open.
+  const open = s.registryPage ? 'ledger' : openPanel;
   const [seasonTab, setSeason] = useState('calendar');
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
@@ -77,7 +77,7 @@ export function Shell() {
   const setOpen = (id: PanelId | null) => {
     if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
     if (id === 'ledger') {
-      s.openLedger({ kind: 'index' });
+      s.openRegistry({ kind: 'index' });
       return;
     }
     if (id === 'almanac') s.loadRecords();
@@ -364,8 +364,8 @@ export function Shell() {
         </Panel>
       )}
       {!locked && open === 'ledger' && (
-        <Panel title={t('rail.ledger')} subtitle={t('ledger.intro')} onClose={s.closeLedger}>
-          <LedgerPanel />
+        <Panel title={t('rail.registry')} subtitle={t('registry.intro')} onClose={s.closeRegistry}>
+          <RegistryPanel />
         </Panel>
       )}
       {!locked && open === 'operations' && (

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
-import { LedgerLink } from '../LedgerLink';
+import { RegistryLink } from '../RegistryLink';
 
 /** The almanac: every finished season's champions and awards, and the record book. */
 export function AlmanacPanel({ tab }: { tab: string }) {
@@ -39,14 +39,14 @@ export function AlmanacPanel({ tab }: { tab: string }) {
           <h3 className="lc-display text-sm">{t('almanac.season', { year: s.year })}</h3>
           <p>
             {t('almanac.championsLead')}{' '}
-            <LedgerLink to={{ kind: 'driver', id: s.championDriverId }}>
+            <RegistryLink to={{ kind: 'driver', id: s.championDriverId }}>
               {s.championDriver}
-            </LedgerLink>{' '}
+            </RegistryLink>{' '}
             {t('almanac.championsPoints', { points: s.championPoints })}{' '}
             {t('almanac.championsGarage')}{' '}
-            <LedgerLink to={{ kind: 'garage', id: s.championGarageId }}>
+            <RegistryLink to={{ kind: 'garage', id: s.championGarageId }}>
               {s.championGarage}
-            </LedgerLink>
+            </RegistryLink>
           </p>
           <ul className="grid gap-1 sm:grid-cols-2">
             {s.awards.map((a) => (
@@ -55,7 +55,9 @@ export function AlmanacPanel({ tab }: { tab: string }) {
                   {t(`award.${a.award}` as never)}
                 </span>
                 <span className="font-medium">
-                  <LedgerLink to={{ kind: a.subjectType, id: a.subjectId }}>{a.name}</LedgerLink>
+                  <RegistryLink to={{ kind: a.subjectType, id: a.subjectId }}>
+                    {a.name}
+                  </RegistryLink>
                 </span>{' '}
                 <span className="lc-num text-lc-dim">
                   {t(`award.${a.award}.value` as never, { value: a.value })}

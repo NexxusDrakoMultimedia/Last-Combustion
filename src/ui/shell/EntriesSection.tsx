@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
 import { economyBalance, seasonBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
-import { LedgerLink } from '../LedgerLink';
+import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { button, field, quiet } from '../styles';
@@ -44,7 +44,7 @@ export function EntriesSection({ locked }: { locked: boolean }) {
             <span>
               <RaceNumber number={e.raceNumber} badge={e.badge} />{' '}
               <Plate plate={e.plate} state={e.plateState} carId={e.carId} />{' '}
-              <LedgerLink to={{ kind: 'driver', id: e.driverId }}>{e.driverName}</LedgerLink>{' '}
+              <RegistryLink to={{ kind: 'driver', id: e.driverId }}>{e.driverName}</RegistryLink>{' '}
               <span className="text-lc-dim">{e.carName}</span>
             </span>
             {entries.length > 1 && (

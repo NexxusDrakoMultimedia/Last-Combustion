@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../i18n';
 import { plateStyles, type PlateState } from '../sim/plates';
-import { LedgerLink } from './LedgerLink';
+import { RegistryLink } from './RegistryLink';
 
 /**
  * A car's Australian licence plate, in the colours of the state or territory that issued it, with
@@ -15,7 +15,7 @@ export function Plate({
 }: {
   plate: string;
   state: string;
-  /** When given, the plate opens the car's profile in the Ledger. */
+  /** When given, the plate opens the car's profile in the Registry. */
   carId?: number;
 }) {
   const style = plateStyles[state as PlateState];
@@ -41,6 +41,6 @@ export function Plate({
   return carId === undefined ? (
     face
   ) : (
-    <LedgerLink to={{ kind: 'car', id: carId }}>{face}</LedgerLink>
+    <RegistryLink to={{ kind: 'car', id: carId }}>{face}</RegistryLink>
   );
 }

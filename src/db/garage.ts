@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { badgesFor, NO_BADGE, type NumberBadge } from './ledger';
+import { badgesFor, NO_BADGE, type NumberBadge } from './registry';
 import type { Database } from 'sql.js';
 import { RESERVED_NUMBER } from '../sim/worldgen';
 import { seasonBalance } from '../sim/worldgen/data';
