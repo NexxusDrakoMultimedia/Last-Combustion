@@ -1039,6 +1039,11 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
   - **Standings.** Each series keeps separate standings (see "Standings"); team orders apply only within a series.
   - **Promotion.** A Junior driver who must move up can be kept by the same garage or released to another.
   - **Extra crew.** Optional but beneficial.
+- **Every garage is based in Australia.** Its flag marks its headquarters (factory, founder, owner or executive office), not where it works (see "Garages and Field Size").
+- **A hard start.** The starter cars are old and worn and the starter drivers are below the field's average, so strength is earned over the first seasons (see "Starting conditions").
+- **Suppliers are national.** Every supplier serves all of Australia and only prestige gates them. A five-tier ladder for sponsors and suppliers (local, regional, national, continental, global) is planned (see "Garage operations").
+- **Feedback goes to GitHub.** The Feedback button opens the game's issue form, for bugs, feature requests and the rest.
+- **Release flow.** M5 is 0.1.0, each later milestone is a release on its own branch, and the owner declares 1.0.0 (see `docs/RELEASING.md`).
 - **A garage is a business.** Mechanics (built), executives, facilities, utility, fuel and logistics suppliers (with a spot market, contracts and outages), a cap table with shares, funding rounds, a board and takeovers, and a social and family layer all belong to the design (see "Garage operations", "Ownership and the cap table" and "People and relationships"). They are staged in M6 and M8.
 - **Family in the game.** Partners, marriage and children exist, and children appear as characters only from the age of 18.
 - **Employed manager.** A fourth, planned career mode: a manager or executive on a computer garage's payroll who earns options, buys shares and works towards owning the garage (M8).
@@ -1153,39 +1158,43 @@ The full design is large, so development is staged. Each milestone must be playa
 
 **Releases and milestone branches.** Finishing M5 is the first release for players, **version 0.1.0**, published with a set of branding and social assets and the first entry in the changelog (a plain list of the game's features; from then on the changelog follows Keep a Changelog). Each later milestone ends in a release too (proposed: M6 0.2.0, M7 0.3.0, M8 0.4.0). From M6 on, every milestone runs on its own branch (`milestone/m6-depth` and so on), made from `main`, so `main` is always the latest release and the web build, which deploys from it, never shows players unfinished work; a release pull request merges the milestone branch into `main` and `main` is tagged. **1.0.0 is not tied to a milestone**: the project owner declares it when the game is feature complete, whatever number of releases that takes. Saves from an earlier version must keep loading. The steps, the branch rules, the changelog rules and the list of branding and social assets are in `docs/RELEASING.md`.
 
-**What is left of M5 before 0.1.0:** a last pass on the first-season experience (playing it end to end and fixing what feels wrong); the branding and social assets, the documentation pass and the changelog are made as part of the release itself.
+**Where M5 stands.** The first playable season is built: a Garage owner career from the title screen to the next season, with every system the MVP definition lists, plus supply contracts, daily life, season awards, the Almanac, the Registry and full results. A browser test plays a whole season (`e2e/season.spec.ts`). What is left before 0.1.0 is the release itself: the documentation pass, the branding and social assets, the version bump and the changelog, and the owner's final say (see `docs/RELEASING.md`). Playtest fixes found on the way are made as they come up.
 
 ## Technical architecture
 
 **Layers**
 
 - **Data layer.** SQLite (SQL.js) is the single source of truth. The database file is persisted to IndexedDB. Content (courses, parts, car models, manufacturers, starting garages and drivers, name pools) ships as versioned JSON in `/data` and is loaded into the database when a new career starts. Mods use the same files and schemas (see "Modding").
-- **Simulation layer.** Pure TypeScript with no React or browser imports, so it can be unit-tested in Node and run inside a Web Worker. Entry points: `generateWorld(seed)`, `advanceDay(state)`, `runPrelimDay(state)`, `runFinal(state, calls)`.
+- **Simulation layer.** Pure TypeScript with no React or browser imports, so it can be unit-tested in Node and run inside a Web Worker. Entry points (built): `generateWorld(seed)`, `simulateRoundPrelims`, `FinalRace` and the pure rules modules beside them; the database side of each (`playPrelims`, `playFinal`, `settleRound`, `endSeason`, `startNextSeason`) is in `src/db`. `docs/ARCHITECTURE.md` maps every module.
 - **State layer.** Zustand stores hold UI state and a cached read-model of the current career. Stores never own game truth; they query the database through a repository module and refresh after each simulated step.
 - **UI layer.** React + Tailwind. Screens are routed (see "Screens and flow").
 
 **Rules**
 
 - **Deterministic simulation.** Every career has a master seed. Each random draw uses a named stream (`prelim:2031:R3:day4`, `final:2031:R3`, `worldgen`) derived from the master seed, so a save replays identically and bugs can be reproduced.
-- **Worker execution.** Prelim days and finals run in a Web Worker and post progress messages, so the UI never freezes while simulating 300+ entries.
+- **Worker execution (planned).** Prelim days and finals will run in a Web Worker and post progress messages, so the UI never freezes while simulating 300+ entries. For now they run on the main thread, which takes a moment per round (`src/workers` does not exist yet).
 - **Save slots.** Three manual slots plus an autosave taken at the start of each round week, before the final, and at season end. Saves carry a schema version; migrations run on load.
 - **Externalised text.** The game is English-only, but no player-facing string is written in code. See "Localisation".
 - **Data-driven balance.** All coefficients in the formulas below live in `/data/balance.json`.
 - **Testing.** Unit tests for the Equalizer, points, tiebreaks, number clashes, border rules and formulas. Property tests that a generated world is always valid (unique numbers, no driver in two garages, every entry has a legal car). A headless "sim 10 seasons" script reports balance statistics.
 
-**Suggested folder layout**
+**Folder layout (as built)**
 
 ```text
-/data          courses.json, manufacturers.json, car_models.json, parts.json, garages.json, drivers.json, balance.json, names.json
+/data          reference data and balance (see docs/DATA_FILES.md)
 /locales       en.json (all player-facing text)
-/mods          installed mods (one folder each)
-/src/sim       rng.ts, worldgen.ts, prelim.ts, final.ts, tyres.ts, incidents.ts, flags.ts
-/src/db        schema.sql, migrations/, repo/ (one module per table group)
-/src/state     career.store.ts, ui.store.ts
-/src/ui        screens/, components/
-/src/workers   sim.worker.ts
-/tests         sim/, db/
+/src/sim       pure rules: rng.ts, worldgen/, prelim/, final/, and one module a topic
+/src/db        migrations/, and one module a topic that reads and writes the world
+/src/state     career.store.ts, services.ts
+/src/platform  PlatformServices, telemetry and consent
+/src/ui        screens, shell/ (the panels), components
+/src/i18n      the text lookup
+/scripts       documentation, licence and release checks
+/tools         Python helpers that build or measure data
+/tests, /e2e   Vitest and Playwright tests
 ```
+
+Planned, not yet present: `/mods` (installed mods), `/src/workers` (the simulation worker) and `/schemas` (published JSON Schemas for mod files).
 
 ## Licensing and distribution
 
@@ -1241,30 +1250,30 @@ The project follows common industry practice from the first commit (milestone M0
 - TypeScript in strict mode, ESLint (typescript-eslint, react-hooks, jsx-a11y), Prettier and EditorConfig.
 - Husky and lint-staged for fast pre-commit checks.
 - Node version pinned in `.nvmrc`, pnpm with a committed lockfile.
-- Vitest for unit tests (simulation coverage target 90%), fast-check for property tests, React Testing Library for components, Playwright for end-to-end tests, and axe for accessibility checks.
+- Vitest for unit tests (simulation coverage target 90%), fast-check for property tests and Playwright for end-to-end tests (all in use); React Testing Library for components and axe for accessibility checks are planned.
 - Accessibility target: WCAG 2.1 AA. Performance budgets: a prelim day of 300+ entries simulates in under 2 seconds in the worker, and the web bundle stays under an agreed size.
 - No accounts, no server of our own and no network calls other than optional mod downloads and the web build's telemetry (see "Telemetry"). Telemetry exists only on the web build hosted on GitHub Pages (`lc.nexxusdrako.au`): **GameAnalytics** is the primary tool and the **Google tag** (Google Analytics) the secondary one. Each is built in only when its keys are set (GitHub `github-pages` environment secrets `GA_GAME_KEY` and `GA_SECRET_KEY` for GameAnalytics and `GTAG_ID` for Google, never kept in the repository) and is loaded only after the visitor accepts the privacy prompt (declining stops both, removes the Google cookies, and a "Privacy settings" button reopens the choice). Local, test and desktop (Electron and Steam) builds carry no telemetry.
 
 **GitHub Actions workflows**
 
-| Workflow | Trigger | Purpose |
-| --- | --- | --- |
-| `ci.yml` | Pull request, push to `main` | Install, lint, typecheck, unit and property tests, build, licence check, REUSE lint |
-| `e2e.yml` | Pull request | Playwright end-to-end and accessibility tests |
-| `codeql.yml` | Pull request, weekly | Code scanning |
-| `dependency-review.yml` | Pull request | Blocks vulnerable or GPL-incompatible new dependencies |
-| `balance.yml` | Nightly, manual | Runs the headless multi-season sim and fails if balance statistics drift beyond set limits |
-| `docs.yml` | Pull request | Markdown lint, link check, API docs build |
-| `release.yml` | Tag push `v*` | Release automation: changelog, web build, Electron builds for Windows, macOS and Linux, checksums, GitHub Release |
-| `pages.yml` | Merge to `main`, release | Deploy the web build to GitHub Pages at `lc.nexxusdrako.au` (a custom domain, so the build uses the root path) |
+| Workflow | Trigger | Purpose | Status |
+| --- | --- | --- | --- |
+| `ci.yml` | Pull request, push to `main` | Install, format check, lint, typecheck, unit and property tests, build, licence check, REUSE lint | Built |
+| `e2e.yml` | Pull request | Playwright end-to-end tests (accessibility checks with axe are planned) | Built |
+| `codeql.yml` | Pull request, push, weekly | Code scanning | Built |
+| `dependency-review.yml` | Pull request | Blocks vulnerable or GPL-incompatible new dependencies | Built |
+| `docs.yml` | Pull request | Markdown lint, writing style (`pnpm docs:style`) and the facts in the documents (`pnpm docs:check`: links, paths, commands, data files). API docs are planned | Built |
+| `release.yml` | Tag push `v*` | Runs the tests and build, zips the web build with checksums, and creates the GitHub Release with the changelog section as notes. Electron builds for Windows, macOS and Linux are planned | Built (web only) |
+| `pages.yml` | Push to `main`, release, manual | Deploy the web build to GitHub Pages at `lc.nexxusdrako.au` (a custom domain, so the build uses the root path) | Built |
+| `balance.yml` | Nightly, manual | Runs the headless multi-season sim and fails if balance statistics drift beyond set limits | Planned |
 
 Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with actions pinned to versions or commit hashes.
 
 **Documentation**
 
 - `README.md` (what it is, how to build and run, licence), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant), `SECURITY.md`, issue and pull request templates.
-- `docs/GAME_DESIGN_DOCUMENT.md` (this document), `docs/ARCHITECTURE.md`, architecture decision records in `docs/adr/` (MADR format), a modding guide in `docs/modding/`, and published JSON Schemas for all mod files in `schemas/`.
-- TypeDoc API documentation for the simulation layer. User-facing text lives in `/locales`.
+- `docs/GAME_DESIGN_DOCUMENT.md` (this document), `docs/HOW_TO_PLAY.md`, `docs/ARCHITECTURE.md`, `docs/DATA_FILES.md`, `docs/RELEASING.md`, architecture decision records in `docs/adr/` (MADR format), all built. A modding guide in `docs/modding/` and published JSON Schemas for all mod files in `schemas/` are planned. `pnpm docs:check` keeps the documents honest against the code and data.
+- TypeDoc API documentation for the simulation layer is planned. User-facing text lives in `/locales`.
 
 **Definition of done:** the change has tests, passes every required check, updates the docs where behaviour changes, introduces no hard-coded strings and no incompatible licences.
 
@@ -1365,8 +1374,10 @@ Records described in "Records and history" are all derivable from these tables; 
 | Car | One cheap road car (player picks from 3 starters) | Exactly one car, the player's own starter | Same, owned personally |
 | Driver | One unknown driver (player picks from 5 offered) | The player's own driver, built at creation | The player's driver |
 | Prestige | 1 (of 100) | 1 | n/a |
-| Race number | Open number ≥ 41, random if not chosen | Same | Same |
+| Race number | Numbers 1 to 40 go to last season's ranking and a ranked driver cannot decline theirs; otherwise an open number from 41 up. A driver withdrawn from an entry and seated again keeps their ranked number | Same | Same |
 | Sponsor | None; first small offer in week 1 | Same | None |
+
+**A hard start (built).** The starting offers are poor on purpose, so that a good driver and a good car are earned. The three starter cars are Starter-tier cars from the older 60% of that tier's age range (at least ten years old, so worn), and the five prospects are rookies aged 18 to 24 with a mean pace of 32 against a field mean of 45 (`economy.starter` in `data/balance.json`), so the best of the five usually lands near the field's median. The numbers are tunable. Better drivers and cars come from the free agents, the dealers, the used market and the auction house, and from training.
 
 **Character creation by mode**
 
@@ -1937,4 +1948,8 @@ Branding and social media are planned work for after the first playable season (
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
 - [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and the artwork of the Drake characters are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
+- [ ] The Garage Championship prize: the design names the title but gives no prize money, and none is paid yet.
+- [ ] Whether to claim the two series administrators, Declan Marsh and Ingrid Halloran, as trademarks (today only the four commentators and Pyra Drake are claimed).
+- [ ] Confirm the proposed release numbers for M6 (0.2.0), M7 (0.3.0) and M8 (0.4.0).
+- [ ] A way to give feedback without a GitHub account.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).
