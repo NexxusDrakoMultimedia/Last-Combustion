@@ -12,6 +12,7 @@ On the title screen fill in:
 
 - **Your name** and **how you are described**, and your **date of birth** (you must be 18 to 50).
 - **Garage name.**
+- **Flags.** Every driver and garage has a flag icon beside its name. Hover over it for the nation's name.
 - **Garage flag.** This is where your garage's main factory, founder, owner or executive office is. It does not say where you work.
 - **Garage base.** Every garage in the series is based in an Australian state or territory. Your base decides your licence plates, which suppliers serve you and how far you travel to each round.
 - **Two livery colours.**

@@ -15,6 +15,7 @@ import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { DecalRow } from '../Decals';
 import { STATUS_ORDER, type RegistryStatus } from '../../db/status';
+import { Flag } from '../Flag';
 import { DragonMark, RegistryLink, YearsActive } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
@@ -61,7 +62,7 @@ function DriverPage({ p }: { p: DriverProfile }) {
       <div className="flex flex-wrap items-center gap-3">
         {p.number !== null && <RaceNumber number={p.number} badge={p.badge} />}
         <h2 className="lc-display text-lg">
-          {p.name}
+          <Flag code={p.flag} /> {p.name}
           {dragon && (
             <>
               {' '}
@@ -330,7 +331,9 @@ function GaragePage({ p }: { p: GarageProfile }) {
           className="inline-block h-5 w-8 rounded-sm border border-lc-line"
           style={{ background: `linear-gradient(90deg, ${p.colours[0]} 50%, ${p.colours[1]} 50%)` }}
         />
-        <h2 className="lc-display text-lg">{p.name}</h2>
+        <h2 className="lc-display text-lg">
+          <Flag code={p.flag} /> {p.name}
+        </h2>
       </div>
       <Facts
         items={[
@@ -638,7 +641,6 @@ function IndexPage({ data }: { data: RegistryIndex }) {
                 {d.number !== null && <RaceNumber number={d.number} badge={d.badge} />}
                 <RegistryLink to={{ kind: 'driver', id: d.id }}>{d.name}</RegistryLink>
                 <YearsActive kind="driver" id={d.id} />
-                {d.garage && <span className="text-lc-dim">{d.garage}</span>}
               </li>
             )}
           />

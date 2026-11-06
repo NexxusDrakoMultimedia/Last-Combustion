@@ -63,3 +63,8 @@ body {
 .lc-social {
   font-family: 'Roboto Flex', Roboto, system-ui, sans-serif;
 }
+
+/* The flag of the Commonwealth of Vyktory, which Australia's flag becomes in some careers. */
+.fi-vyktory {
+  background-image: url('../assets/flags/vyktory.svg');
+}

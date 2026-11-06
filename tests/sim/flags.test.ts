@@ -59,7 +59,7 @@ describe('excluded flags', () => {
     }
     for (const code of ['AU', 'JP', 'XK', 'TW', 'PR', 'HK', 'PS', 'GI', 'FO', 'CZ', 'TR'])
       expect(flagNames[code]).toBeDefined();
-    expect(flagNames.TW?.short).toBe('Chinese Taipei');
+    expect(flagNames.TW?.short).toBe('Republic of Taiwan');
     expect(flagNames.CZ).toEqual({ short: 'Czechia', long: 'Czech Republic' });
   });
 

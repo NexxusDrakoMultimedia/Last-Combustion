@@ -93,6 +93,8 @@ import {
 import {
   activeYearsOf,
   dragonDriverIds,
+  flagsOf,
+  vyktoryHappened,
   greylinkedKeys,
   registryPage,
   type RegistryPage,
@@ -254,6 +256,9 @@ interface CareerState {
   greylinked: ReadonlySet<string>;
   /** When each driver, garage and car was active (`driver:12`): first season and last, or null while active. */
   activeYears: ReadonlyMap<string, readonly [number, number | null]>;
+  /** The flag code of each driver and garage (`driver:12`), and whether Australia has become Vyktory. */
+  flags: ReadonlyMap<string, string>;
+  vyktory: boolean;
   standingsView: FullStandings | undefined;
   classificationView: RoundClassification | undefined;
   /** The auction that is open now, with each lot as the player sees it. */
@@ -340,6 +345,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       dragonDrivers: dragonDriverIds(db),
       greylinked: greylinkedKeys(db),
       activeYears: activeYearsOf(db),
+      flags: flagsOf(db),
+      vyktory: vyktoryHappened(db),
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
       listings: openListings(db),
@@ -443,6 +450,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     dragonDrivers: new Set<number>(),
     greylinked: new Set<string>(),
     activeYears: new Map(),
+    flags: new Map(),
+    vyktory: false,
     registryPage: undefined,
     classificationView: undefined,
     staff: [],

@@ -13,6 +13,14 @@ import {
 } from '../../src/i18n';
 
 describe('i18n', () => {
+  it('has no key twice in the text file (a later one would silently win)', () => {
+    const raw = readFileSync('locales/en.json', 'utf8');
+    const keys = [...raw.matchAll(/^ {2}"([^"]+)":/gm)].map((m) => m[1]);
+    const seen = new Set<string>();
+    const twice = keys.filter((k) => (seen.has(k!) ? true : (seen.add(k!), false)));
+    expect(twice).toEqual([]);
+  });
+
   it('looks up text', () => {
     expect(t('app.title')).toBe('Last Combustion');
   });

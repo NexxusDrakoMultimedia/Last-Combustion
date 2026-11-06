@@ -29,6 +29,7 @@ import '@fontsource/roboto-serif/latin-700.css';
 import '@fontsource/roboto-serif/latin-ext-700.css';
 import '@fontsource/roboto-flex/latin-400.css';
 import '@fontsource/roboto-flex/latin-ext-400.css';
+import 'flag-icons/css/flag-icons.min.css';
 import './index.css';
 
 setServices({ loadSql: loadSqlInBrowser, platform: createWebPlatform() });
