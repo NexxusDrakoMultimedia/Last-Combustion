@@ -2,6 +2,8 @@
 
 This is the working summary of how the code is organised. The design reasons live in the [Game Design Document](GAME_DESIGN_DOCUMENT.md) ("Technical architecture") and in the [decision records](adr/).
 
+Releases and the milestone branch rules are in [RELEASING.md](RELEASING.md).
+
 ## Layers
 
 | Layer      | Folder                  | Rule                                                                                     |
