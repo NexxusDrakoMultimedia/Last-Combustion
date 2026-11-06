@@ -14,6 +14,9 @@ importers:
 
   .:
     dependencies:
+      gameanalytics:
+        specifier: ^5.0.0
+        version: 5.0.0
       idb-keyval:
         specifier: ^6.3.0
         version: 6.3.0
@@ -1440,6 +1443,9 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+
+  gameanalytics@5.0.0:
+    resolution: {integrity: sha512-Hdns5ejXvAXGo8EVlavjNwaKnH+tBHJY83Vf2Cs04FuNPkKZ7HjWC9pB/MO1NnOVdzJFq37dbDGjyfxDC3iNzg==}
 
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
@@ -4446,6 +4452,8 @@ snapshots:
       is-document.all: 1.0.0
 
   functions-have-names@1.2.3: {}
+
+  gameanalytics@5.0.0: {}
 
   generator-function@2.0.1: {}
 

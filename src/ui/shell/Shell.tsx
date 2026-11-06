@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState } from 'react';
+import { trackDesign } from '../../platform/telemetry';
 import { formatDate, formatLapTime, formatMoney, t, type MessageKey } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
 import { StarterChoice } from '../StarterChoice';
@@ -49,9 +50,22 @@ export function Shell() {
     rollover,
     notice,
   } = s;
-  const [open, setOpen] = useState<PanelId | null>(null);
-  const [seasonTab, setSeasonTab] = useState('calendar');
-  const [marketTab, setMarketTab] = useState('market');
+  const [open, setPanel] = useState<PanelId | null>(null);
+  const [seasonTab, setSeason] = useState('calendar');
+  const [marketTab, setMarket] = useState('market');
+  /** Opens or closes a panel, counting which panels are used. */
+  const setOpen = (id: PanelId | null) => {
+    if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
+    setPanel(id);
+  };
+  const setSeasonTab = (tab: string) => {
+    trackDesign(undefined, 'Panel', 'Tab', 'season', tab);
+    setSeason(tab);
+  };
+  const setMarketTab = (tab: string) => {
+    trackDesign(undefined, 'Panel', 'Tab', 'market', tab);
+    setMarket(tab);
+  };
   if (!hub) return null;
 
   const busy = status === 'busy';
