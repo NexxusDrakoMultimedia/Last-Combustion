@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../i18n';
-import type { Decal } from '../db/ledger';
+import type { Decal } from '../db/registry';
 
 const GOLD = '#d4af37';
 const SILVER = '#c0c0c8';

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { ReactNode } from 'react';
-import type { LedgerTarget } from '../db/ledger';
+import type { RegistryTarget } from '../db/registry';
 import { useCareerStore } from '../state/career.store';
 
-/** Text that opens a profile in the Ledger: a driver, a car, a garage, a round's prelims or its race. */
-export function LedgerLink({ to, children }: { to: LedgerTarget; children: ReactNode }) {
-  const open = useCareerStore((s) => s.openLedger);
+/** Text that opens a profile in the Registry: a driver, a car, a garage, a round's prelims or its race. */
+export function RegistryLink({ to, children }: { to: RegistryTarget; children: ReactNode }) {
+  const open = useCareerStore((s) => s.openRegistry);
   return (
     <button
       type="button"

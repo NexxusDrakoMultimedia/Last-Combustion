@@ -6,20 +6,20 @@ import type {
   CarProfile,
   DriverProfile,
   GarageProfile,
-  LedgerIndex,
+  RegistryIndex,
   RoundProfile,
-} from '../../db/ledger';
+} from '../../db/registry';
 import type { ResultRow } from '../../db/tables';
 import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { DecalRow } from '../Decals';
-import { LedgerLink } from '../LedgerLink';
+import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { field, quiet } from '../styles';
 
 const flagName = (code: string): string => flagNames[code]?.short ?? code;
-const place = (rank: number | null): string => (rank === null ? t('ledger.none') : String(rank));
+const place = (rank: number | null): string => (rank === null ? t('registry.none') : String(rank));
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -52,47 +52,47 @@ function DriverPage({ p }: { p: DriverProfile }) {
         {p.number !== null && <RaceNumber number={p.number} badge={p.badge} />}
         <h2 className="lc-display text-lg">{p.name}</h2>
         {p.nickname && (
-          <span className="text-lc-dim">{t('ledger.nickname', { nickname: p.nickname })}</span>
+          <span className="text-lc-dim">{t('registry.nickname', { nickname: p.nickname })}</span>
         )}
       </div>
       <Facts
         items={[
-          [t('ledger.age'), p.age],
-          [t('ledger.nation'), flagName(p.flag)],
-          [t('ledger.identity'), t(`identity.${p.identity}` as never)],
-          [t('ledger.hometown'), p.hometown],
-          [t('ledger.residence'), p.residence],
-          [t('ledger.preferredNumber'), p.preferredNumber ?? t('ledger.none')],
+          [t('registry.age'), p.age],
+          [t('registry.nation'), flagName(p.flag)],
+          [t('registry.identity'), t(`identity.${p.identity}` as never)],
+          [t('registry.hometown'), p.hometown],
+          [t('registry.residence'), p.residence],
+          [t('registry.preferredNumber'), p.preferredNumber ?? t('registry.none')],
           [
-            t('ledger.border'),
+            t('registry.border'),
             p.goldBorderYear !== null
-              ? t('ledger.goldSince', { year: p.goldBorderYear })
+              ? t('registry.goldSince', { year: p.goldBorderYear })
               : p.silverBorderYear !== null
-                ? t('ledger.silverSince', { year: p.silverBorderYear })
-                : t('ledger.noBorder'),
+                ? t('registry.silverSince', { year: p.silverBorderYear })
+                : t('registry.noBorder'),
           ],
           [
-            t('ledger.status'),
+            t('registry.status'),
             p.retiredYear !== null
-              ? t('ledger.retired', { year: p.retiredYear })
-              : t('ledger.active'),
+              ? t('registry.retired', { year: p.retiredYear })
+              : t('registry.active'),
           ],
-          [t('ledger.fans'), p.fans.toLocaleString('en')],
+          [t('registry.fans'), p.fans.toLocaleString('en')],
         ]}
       />
-      <Section title={t('ledger.career')}>
+      <Section title={t('registry.career')}>
         <Facts
           items={[
             [t('hub.points'), p.career.points],
             [t('hub.wins'), p.career.wins],
-            [t('ledger.podiums'), p.career.podiums],
-            [t('ledger.finals'), p.career.finals],
-            [t('ledger.poles'), p.career.poles],
-            [t('ledger.championships'), p.career.championships],
+            [t('registry.podiums'), p.career.podiums],
+            [t('registry.finals'), p.career.finals],
+            [t('registry.poles'), p.career.poles],
+            [t('registry.championships'), p.career.championships],
           ]}
         />
       </Section>
-      <Section title={t('ledger.skills')}>
+      <Section title={t('registry.skills')}>
         <Facts
           items={(
             [
@@ -104,28 +104,30 @@ function DriverPage({ p }: { p: DriverProfile }) {
               'wetSkill',
               'potential',
             ] as const
-          ).map((k) => [t(`ledger.stat.${k}` as never), p.stats[k]] as [string, ReactNode])}
+          ).map((k) => [t(`registry.stat.${k}` as never), p.stats[k]] as [string, ReactNode])}
         />
       </Section>
-      <Section title={t('ledger.driverDecals')}>
+      <Section title={t('registry.driverDecals')}>
         <DecalRow decals={p.decals} />
         {p.titles.length > 0 && (
           <p className="text-lc-dim">
-            {p.titles.map((x) => t('ledger.titleLine', { name: x.name, year: x.year })).join(', ')}
+            {p.titles
+              .map((x) => t('registry.titleLine', { name: x.name, year: x.year }))
+              .join(', ')}
           </p>
         )}
       </Section>
-      <Section title={t('ledger.seasons')}>
+      <Section title={t('registry.seasons')}>
         {p.seasons.length === 0 ? (
-          <p className="text-lc-dim">{t('ledger.noSeasons')}</p>
+          <p className="text-lc-dim">{t('registry.noSeasons')}</p>
         ) : (
           <table className="w-full text-left">
             <thead className={th}>
               <tr>
-                <th scope="col">{t('ledger.year')}</th>
-                <th scope="col">{t('ledger.number')}</th>
+                <th scope="col">{t('registry.year')}</th>
+                <th scope="col">{t('registry.number')}</th>
                 <th scope="col">{t('tables.garage')}</th>
-                <th scope="col">{t('ledger.plate')}</th>
+                <th scope="col">{t('registry.plate')}</th>
                 <th scope="col">{t('hub.points')}</th>
                 <th scope="col">{t('hub.wins')}</th>
                 <th scope="col">{t('hub.rank')}</th>
@@ -139,9 +141,9 @@ function DriverPage({ p }: { p: DriverProfile }) {
                     <RaceNumber number={s.number} badge={s.badge} />
                   </td>
                   <td>
-                    <LedgerLink to={{ kind: 'garage', id: s.garage.id }}>
+                    <RegistryLink to={{ kind: 'garage', id: s.garage.id }}>
                       {s.garage.name}
-                    </LedgerLink>
+                    </RegistryLink>
                   </td>
                   <td>
                     <Plate plate={s.car.plate} state={s.car.plateState} carId={s.car.id} />
@@ -155,13 +157,13 @@ function DriverPage({ p }: { p: DriverProfile }) {
           </table>
         )}
       </Section>
-      <Section title={t('ledger.contracts')}>
+      <Section title={t('registry.contracts')}>
         <ul className="space-y-1">
           {p.contracts.map((c, i) => (
             <li key={`${c.garage.id}-${c.startYear}-${i}`}>
-              <LedgerLink to={{ kind: 'garage', id: c.garage.id }}>{c.garage.name}</LedgerLink>{' '}
+              <RegistryLink to={{ kind: 'garage', id: c.garage.id }}>{c.garage.name}</RegistryLink>{' '}
               <span className="lc-num text-lc-dim">
-                {t('ledger.contractLine', {
+                {t('registry.contractLine', {
                   start: c.startYear,
                   end: c.endYear,
                   salary: formatMoney(c.salary),
@@ -181,47 +183,47 @@ function CarPage({ p }: { p: CarProfile }) {
       <div className="flex flex-wrap items-center gap-3">
         <Plate plate={p.plate} state={p.plateState} />
         <h2 className="lc-display text-lg">
-          {t('ledger.carTitle', { year: p.modelYear, make: p.manufacturer, model: p.model })}
+          {t('registry.carTitle', { year: p.modelYear, make: p.manufacturer, model: p.model })}
         </h2>
       </div>
       <Facts
         items={[
-          [t('ledger.chassis'), p.chassisNo],
-          [t('ledger.tier'), p.tier],
-          [t('ledger.nation'), flagName(p.flag)],
+          [t('registry.chassis'), p.chassisNo],
+          [t('registry.tier'), p.tier],
+          [t('registry.nation'), flagName(p.flag)],
           [
-            t('ledger.ownedBy'),
+            t('registry.ownedBy'),
             p.garage ? (
-              <LedgerLink to={{ kind: 'garage', id: p.garage.id }}>{p.garage.name}</LedgerLink>
+              <RegistryLink to={{ kind: 'garage', id: p.garage.id }}>{p.garage.name}</RegistryLink>
             ) : (
-              t('ledger.forSale')
+              t('registry.forSale')
             ),
           ],
-          [t('ledger.roadKm'), p.roadKm.toLocaleString('en')],
-          [t('ledger.raceKm'), p.raceKm.toLocaleString('en')],
-          [t('ledger.wear'), p.wear],
+          [t('registry.roadKm'), p.roadKm.toLocaleString('en')],
+          [t('registry.raceKm'), p.raceKm.toLocaleString('en')],
+          [t('registry.wear'), p.wear],
           [
-            t('ledger.restorations'),
+            t('registry.restorations'),
             p.restorations === 0
-              ? t('ledger.none')
-              : t('ledger.restorationsValue', { count: p.restorations, floor: p.wearFloor }),
+              ? t('registry.none')
+              : t('registry.restorationsValue', { count: p.restorations, floor: p.wearFloor }),
           ],
-          [t('ledger.weight'), t('ledger.weightValue', { kg: p.kerbKg, mm: p.tyreWidthMm })],
-          [t('ledger.fans'), p.fans.toLocaleString('en')],
+          [t('registry.weight'), t('registry.weightValue', { kg: p.kerbKg, mm: p.tyreWidthMm })],
+          [t('registry.fans'), p.fans.toLocaleString('en')],
         ]}
       />
-      <Section title={t('ledger.carDecals')}>
+      <Section title={t('registry.carDecals')}>
         <DecalRow decals={p.decals} />
       </Section>
-      <Section title={t('ledger.drivers')}>
+      <Section title={t('registry.drivers')}>
         {p.seasons.length === 0 ? (
-          <p className="text-lc-dim">{t('ledger.noSeasons')}</p>
+          <p className="text-lc-dim">{t('registry.noSeasons')}</p>
         ) : (
           <table className="w-full text-left">
             <thead className={th}>
               <tr>
-                <th scope="col">{t('ledger.year')}</th>
-                <th scope="col">{t('ledger.number')}</th>
+                <th scope="col">{t('registry.year')}</th>
+                <th scope="col">{t('registry.number')}</th>
                 <th scope="col">{t('tables.driver')}</th>
                 <th scope="col">{t('tables.garage')}</th>
                 <th scope="col">{t('hub.points')}</th>
@@ -236,14 +238,14 @@ function CarPage({ p }: { p: CarProfile }) {
                     <RaceNumber number={s.number} badge={s.badge} />
                   </td>
                   <td>
-                    <LedgerLink to={{ kind: 'driver', id: s.driver.id }}>
+                    <RegistryLink to={{ kind: 'driver', id: s.driver.id }}>
                       {s.driver.name}
-                    </LedgerLink>
+                    </RegistryLink>
                   </td>
                   <td>
-                    <LedgerLink to={{ kind: 'garage', id: s.garage.id }}>
+                    <RegistryLink to={{ kind: 'garage', id: s.garage.id }}>
                       {s.garage.name}
-                    </LedgerLink>
+                    </RegistryLink>
                   </td>
                   <td className="lc-num">{s.points}</td>
                   <td className="lc-num">{s.wins}</td>
@@ -253,37 +255,39 @@ function CarPage({ p }: { p: CarProfile }) {
           </table>
         )}
       </Section>
-      <Section title={t('ledger.owners')}>
+      <Section title={t('registry.owners')}>
         <ul className="space-y-1">
           {p.owners.map((o, i) => (
             <li key={`${o.garage.id}-${o.from}-${i}`}>
               {o.forSale ? (
-                t('ledger.forSale')
+                t('registry.forSale')
               ) : (
-                <LedgerLink to={{ kind: 'garage', id: o.garage.id }}>{o.garage.name}</LedgerLink>
+                <RegistryLink to={{ kind: 'garage', id: o.garage.id }}>
+                  {o.garage.name}
+                </RegistryLink>
               )}{' '}
               <span className="lc-num text-lc-dim">
-                {t('ledger.ownerLine', {
+                {t('registry.ownerLine', {
                   from: formatDate(o.from),
-                  to: o.to ? formatDate(o.to) : t('ledger.present'),
+                  to: o.to ? formatDate(o.to) : t('registry.present'),
                   price: formatMoney(o.price),
-                  route: t(`ledger.route.${o.route}` as never),
+                  route: t(`registry.route.${o.route}` as never),
                 })}
               </span>
             </li>
           ))}
         </ul>
       </Section>
-      <Section title={t('ledger.parts')}>
+      <Section title={t('registry.parts')}>
         {p.parts.length === 0 ? (
-          <p className="text-lc-dim">{t('ledger.noParts')}</p>
+          <p className="text-lc-dim">{t('registry.noParts')}</p>
         ) : (
           <ul className="space-y-1">
             {p.parts.map((x) => (
               <li key={x.category}>
                 <span className="text-lc-dim">{x.category}</span> {x.name}{' '}
                 <span className="text-lc-dim">
-                  {t('ledger.partLine', { supplier: x.supplier, grade: x.grade })}
+                  {t('registry.partLine', { supplier: x.supplier, grade: x.grade })}
                 </span>
               </li>
             ))}
@@ -307,34 +311,38 @@ function GaragePage({ p }: { p: GarageProfile }) {
       </div>
       <Facts
         items={[
-          [t('ledger.nation'), flagName(p.flag)],
-          [t('ledger.base'), p.base],
-          [t('ledger.headquarters'), p.headquarters],
-          [t('ledger.founded'), p.foundedYear],
-          [t('ledger.prestige'), p.prestige],
-          [t('ledger.fans'), p.fans.toLocaleString('en')],
+          [t('registry.nation'), flagName(p.flag)],
+          [t('registry.base'), p.base],
+          [t('registry.headquarters'), p.headquarters],
+          [t('registry.founded'), p.foundedYear],
+          [t('registry.prestige'), p.prestige],
+          [t('registry.fans'), p.fans.toLocaleString('en')],
           [
-            t('ledger.status'),
-            p.closedYear !== null ? t('ledger.closed', { year: p.closedYear }) : t('ledger.active'),
+            t('registry.status'),
+            p.closedYear !== null
+              ? t('registry.closed', { year: p.closedYear })
+              : t('registry.active'),
           ],
           ...(p.cash !== null
             ? ([[t('money.cash'), formatMoney(p.cash)]] as [string, ReactNode][])
             : []),
           [
-            t('ledger.championships'),
-            p.championships.length > 0 ? p.championships.join(', ') : t('ledger.none'),
+            t('registry.championships'),
+            p.championships.length > 0 ? p.championships.join(', ') : t('registry.none'),
           ],
         ]}
       />
-      <Section title={t('ledger.entries')}>
+      <Section title={t('registry.entries')}>
         {p.entries.length === 0 ? (
-          <p className="text-lc-dim">{t('ledger.noEntries')}</p>
+          <p className="text-lc-dim">{t('registry.noEntries')}</p>
         ) : (
           <ul className="space-y-1">
             {p.entries.map((e) => (
               <li key={e.number} className="flex flex-wrap items-center gap-2">
                 <RaceNumber number={e.number} badge={e.badge} />
-                <LedgerLink to={{ kind: 'driver', id: e.driver.id }}>{e.driver.name}</LedgerLink>
+                <RegistryLink to={{ kind: 'driver', id: e.driver.id }}>
+                  {e.driver.name}
+                </RegistryLink>
                 <Plate plate={e.car.plate} state={e.car.plateState} carId={e.car.id} />
                 <span className="text-lc-dim">{e.car.model}</span>
               </li>
@@ -342,12 +350,12 @@ function GaragePage({ p }: { p: GarageProfile }) {
           </ul>
         )}
       </Section>
-      <Section title={t('ledger.seasons')}>
+      <Section title={t('registry.seasons')}>
         <table className="w-full text-left">
           <thead className={th}>
             <tr>
-              <th scope="col">{t('ledger.year')}</th>
-              <th scope="col">{t('ledger.entriesCount')}</th>
+              <th scope="col">{t('registry.year')}</th>
+              <th scope="col">{t('registry.entriesCount')}</th>
               <th scope="col">{t('hub.points')}</th>
               <th scope="col">{t('hub.wins')}</th>
               <th scope="col">{t('hub.rank')}</th>
@@ -366,7 +374,7 @@ function GaragePage({ p }: { p: GarageProfile }) {
           </tbody>
         </table>
       </Section>
-      <Section title={t('ledger.cars')}>
+      <Section title={t('registry.cars')}>
         <ul className="flex flex-wrap gap-3">
           {p.cars.map((c) => (
             <li key={c.id} className="flex items-center gap-2">
@@ -376,11 +384,11 @@ function GaragePage({ p }: { p: GarageProfile }) {
           ))}
         </ul>
       </Section>
-      <Section title={t('ledger.drivers')}>
+      <Section title={t('registry.drivers')}>
         <ul className="space-y-1">
           {p.drivers.map((d) => (
             <li key={d.id}>
-              <LedgerLink to={{ kind: 'driver', id: d.id }}>{d.name}</LedgerLink>{' '}
+              <RegistryLink to={{ kind: 'driver', id: d.id }}>{d.name}</RegistryLink>{' '}
               <span className="lc-num text-lc-dim">{d.years}</span>
             </li>
           ))}
@@ -398,11 +406,11 @@ function ClassificationRow({ r, race }: { r: ResultRow; race: boolean }) {
         <RaceNumber number={r.raceNumber} badge={r.badge} />
       </td>
       <td>
-        <LedgerLink to={{ kind: 'driver', id: r.driverId }}>{r.driver}</LedgerLink>
+        <RegistryLink to={{ kind: 'driver', id: r.driverId }}>{r.driver}</RegistryLink>
         {r.pole && !race && ` ${t('tables.pole')}`}
       </td>
       <td className="text-lc-dim">
-        <LedgerLink to={{ kind: 'garage', id: r.garageId }}>{r.garage}</LedgerLink>
+        <RegistryLink to={{ kind: 'garage', id: r.garageId }}>{r.garage}</RegistryLink>
       </td>
       <td>
         <Plate plate={r.plate} state={r.plateState} carId={r.carId} />
@@ -427,50 +435,50 @@ function RoundPage({ p }: { p: RoundProfile }) {
   return (
     <div className="space-y-5 text-sm">
       <h2 className="lc-display text-lg">
-        {t(race ? 'ledger.raceTitle' : 'ledger.prelimTitle', {
+        {t(race ? 'registry.raceTitle' : 'registry.prelimTitle', {
           year: p.year,
           round: p.round,
           course: p.course,
         })}
       </h2>
       <p>
-        <LedgerLink to={{ kind: other, year: p.year, round: p.round }}>
-          {t(race ? 'ledger.seePrelims' : 'ledger.seeRace')}
-        </LedgerLink>
+        <RegistryLink to={{ kind: other, year: p.year, round: p.round }}>
+          {t(race ? 'registry.seePrelims' : 'registry.seeRace')}
+        </RegistryLink>
       </p>
       <Facts
         items={[
-          [t('ledger.practiceFrom'), formatDate(p.practiceStart)],
-          [t('ledger.prelimsFrom'), formatDate(p.prelimStart)],
-          [t('ledger.finalOn'), formatDate(p.finalDate)],
+          [t('registry.practiceFrom'), formatDate(p.practiceStart)],
+          [t('registry.prelimsFrom'), formatDate(p.prelimStart)],
+          [t('registry.finalOn'), formatDate(p.finalDate)],
           [
-            t('ledger.pole'),
+            t('registry.pole'),
             p.pole ? (
-              <LedgerLink to={{ kind: 'driver', id: p.pole.id }}>{p.pole.name}</LedgerLink>
+              <RegistryLink to={{ kind: 'driver', id: p.pole.id }}>{p.pole.name}</RegistryLink>
             ) : (
-              t('ledger.none')
+              t('registry.none')
             ),
           ],
           [
-            t('ledger.winner'),
+            t('registry.winner'),
             p.winner ? (
-              <LedgerLink to={{ kind: 'driver', id: p.winner.id }}>{p.winner.name}</LedgerLink>
+              <RegistryLink to={{ kind: 'driver', id: p.winner.id }}>{p.winner.name}</RegistryLink>
             ) : (
-              t('ledger.none')
+              t('registry.none')
             ),
           ],
         ]}
       />
       {p.days.length > 0 && (
-        <Section title={t('ledger.conditions')}>
+        <Section title={t('registry.conditions')}>
           <ul className="flex flex-wrap gap-2">
             {p.days.map((d) => (
               <li key={d.date} className="border border-lc-line p-2">
                 <span className="lc-num block">{formatDate(d.date)}</span>
                 <span className="text-lc-dim">
-                  {t('ledger.dayLine', {
-                    kind: t(`ledger.day.${d.kind}` as never),
-                    weather: t(`ledger.weather.${d.weather}` as never),
+                  {t('registry.dayLine', {
+                    kind: t(`registry.day.${d.kind}` as never),
+                    weather: t(`registry.weather.${d.weather}` as never),
                     temp: Math.round(d.temperatureC),
                   })}
                 </span>
@@ -488,10 +496,10 @@ function RoundPage({ p }: { p: RoundProfile }) {
               <thead className={`${th} sticky top-0 bg-lc-panel`}>
                 <tr>
                   <th scope="col">{t('tables.pos')}</th>
-                  <th scope="col">{t('ledger.number')}</th>
+                  <th scope="col">{t('registry.number')}</th>
                   <th scope="col">{t('tables.driver')}</th>
                   <th scope="col">{t('tables.garage')}</th>
-                  <th scope="col">{t('ledger.plate')}</th>
+                  <th scope="col">{t('registry.plate')}</th>
                   <th scope="col">{t('tables.time')}</th>
                   <th scope="col">{t('tables.gap')}</th>
                   <th scope="col">{t('hub.points')}</th>
@@ -513,9 +521,9 @@ function RoundPage({ p }: { p: RoundProfile }) {
 
 const MAX_SHOWN = 40;
 
-function IndexPage({ data }: { data: LedgerIndex }) {
+function IndexPage({ data }: { data: RegistryIndex }) {
   const [query, setQuery] = useState('');
-  const open = useCareerStore((s) => s.openLedger);
+  const open = useCareerStore((s) => s.openRegistry);
   const q = query.trim().toLowerCase();
   const match = (...parts: (string | number | null)[]) =>
     q === '' || parts.some((x) => x !== null && String(x).toLowerCase().includes(q));
@@ -525,32 +533,32 @@ function IndexPage({ data }: { data: LedgerIndex }) {
   const rounds = data.rounds.filter((r) => match(r.year, r.course, `round ${r.round}`));
   const more = (n: number) =>
     n > MAX_SHOWN ? (
-      <li className="text-lc-dim">{t('ledger.more', { count: n - MAX_SHOWN })}</li>
+      <li className="text-lc-dim">{t('registry.more', { count: n - MAX_SHOWN })}</li>
     ) : null;
   return (
     <div className="space-y-5 text-sm">
-      <label className="block space-y-1" htmlFor="ledger-search">
-        {t('ledger.search')}
+      <label className="block space-y-1" htmlFor="registry-search">
+        {t('registry.search')}
         <input
-          id="ledger-search"
+          id="registry-search"
           className={field}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
       </label>
-      <Section title={t('ledger.driversCount', { count: drivers.length })}>
+      <Section title={t('registry.driversCount', { count: drivers.length })}>
         <ul className="grid gap-1 sm:grid-cols-2">
           {drivers.slice(0, MAX_SHOWN).map((d) => (
             <li key={d.id} className="flex items-center gap-2">
               {d.number !== null && <RaceNumber number={d.number} badge={d.badge} />}
-              <LedgerLink to={{ kind: 'driver', id: d.id }}>{d.name}</LedgerLink>
+              <RegistryLink to={{ kind: 'driver', id: d.id }}>{d.name}</RegistryLink>
               {d.garage && <span className="text-lc-dim">{d.garage}</span>}
             </li>
           ))}
           {more(drivers.length)}
         </ul>
       </Section>
-      <Section title={t('ledger.carsCount', { count: cars.length })}>
+      <Section title={t('registry.carsCount', { count: cars.length })}>
         <ul className="grid gap-1 sm:grid-cols-2">
           {cars.slice(0, MAX_SHOWN).map((c) => (
             <li key={c.id} className="flex items-center gap-2">
@@ -561,22 +569,22 @@ function IndexPage({ data }: { data: LedgerIndex }) {
           {more(cars.length)}
         </ul>
       </Section>
-      <Section title={t('ledger.garagesCount', { count: garages.length })}>
+      <Section title={t('registry.garagesCount', { count: garages.length })}>
         <ul className="grid gap-1 sm:grid-cols-2">
           {garages.slice(0, MAX_SHOWN).map((g) => (
             <li key={g.id}>
-              <LedgerLink to={{ kind: 'garage', id: g.id }}>{g.name}</LedgerLink>
+              <RegistryLink to={{ kind: 'garage', id: g.id }}>{g.name}</RegistryLink>
             </li>
           ))}
           {more(garages.length)}
         </ul>
       </Section>
-      <Section title={t('ledger.roundsCount', { count: rounds.length })}>
+      <Section title={t('registry.roundsCount', { count: rounds.length })}>
         <ul className="space-y-1">
           {rounds.slice(0, MAX_SHOWN).map((r) => (
             <li key={`${r.year}-${r.round}`} className="flex flex-wrap items-center gap-3">
               <span className="lc-num">
-                {t('ledger.roundName', { year: r.year, round: r.round, course: r.course })}
+                {t('registry.roundName', { year: r.year, round: r.round, course: r.course })}
               </span>
               <button
                 type="button"
@@ -590,7 +598,7 @@ function IndexPage({ data }: { data: LedgerIndex }) {
                 className={quiet}
                 onClick={() => open({ kind: 'race', year: r.year, round: r.round })}
               >
-                {t('ledger.race')}
+                {t('registry.race')}
               </button>
             </li>
           ))}
@@ -601,31 +609,31 @@ function IndexPage({ data }: { data: LedgerIndex }) {
   );
 }
 
-/** The Ledger: a profile of every driver, car, garage, round's prelims and race, with links between them. */
-export function LedgerPanel() {
-  const { ledgerPage, ledgerTrail, ledgerBack, openLedger } = useCareerStore();
-  if (!ledgerPage) return null;
+/** The Registry: a profile of every driver, car, garage, round's prelims and race, with links between them. */
+export function RegistryPanel() {
+  const { registryPage, registryTrail, registryBack, openRegistry } = useCareerStore();
+  if (!registryPage) return null;
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           className={quiet}
-          disabled={ledgerTrail.length < 2}
-          onClick={ledgerBack}
+          disabled={registryTrail.length < 2}
+          onClick={registryBack}
         >
-          {t('ledger.back')}
+          {t('registry.back')}
         </button>
-        <button type="button" className={quiet} onClick={() => openLedger({ kind: 'index' })}>
-          {t('ledger.index')}
+        <button type="button" className={quiet} onClick={() => openRegistry({ kind: 'index' })}>
+          {t('registry.index')}
         </button>
       </div>
-      {ledgerPage.kind === 'index' && <IndexPage data={ledgerPage.data} />}
-      {ledgerPage.kind === 'driver' && <DriverPage p={ledgerPage.data} />}
-      {ledgerPage.kind === 'car' && <CarPage p={ledgerPage.data} />}
-      {ledgerPage.kind === 'garage' && <GaragePage p={ledgerPage.data} />}
-      {(ledgerPage.kind === 'prelim' || ledgerPage.kind === 'race') && (
-        <RoundPage p={ledgerPage.data} />
+      {registryPage.kind === 'index' && <IndexPage data={registryPage.data} />}
+      {registryPage.kind === 'driver' && <DriverPage p={registryPage.data} />}
+      {registryPage.kind === 'car' && <CarPage p={registryPage.data} />}
+      {registryPage.kind === 'garage' && <GaragePage p={registryPage.data} />}
+      {(registryPage.kind === 'prelim' || registryPage.kind === 'race') && (
+        <RoundPage p={registryPage.data} />
       )}
     </div>
   );

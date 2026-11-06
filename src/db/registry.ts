@@ -560,8 +560,8 @@ export function roundProfile(
   };
 }
 
-/** Everything in the Ledger, as short lines to browse and search. */
-export interface LedgerIndex {
+/** Everything in the Registry, as short lines to browse and search. */
+export interface RegistryIndex {
   drivers: {
     id: number;
     name: string;
@@ -574,7 +574,7 @@ export interface LedgerIndex {
   rounds: { year: number; round: number; course: string; status: string }[];
 }
 
-export function ledgerIndex(db: Database): LedgerIndex {
+export function registryIndex(db: Database): RegistryIndex {
   const year = latestYear(db);
   const badges = badgesFor(db, year);
   return {
@@ -620,25 +620,25 @@ export function ledgerIndex(db: Database): LedgerIndex {
   };
 }
 
-/** Where in the Ledger to look. */
-export type LedgerTarget =
+/** Where in the Registry to look. */
+export type RegistryTarget =
   | { kind: 'index' }
   | { kind: 'driver' | 'car' | 'garage'; id: number }
   | { kind: SessionKind; year: number; round: number };
 
-/** A page of the Ledger, loaded from the database. */
-export type LedgerPage =
-  | { kind: 'index'; data: LedgerIndex }
+/** A page of the Registry, loaded from the database. */
+export type RegistryPage =
+  | { kind: 'index'; data: RegistryIndex }
   | { kind: 'driver'; data: DriverProfile }
   | { kind: 'car'; data: CarProfile }
   | { kind: 'garage'; data: GarageProfile }
   | { kind: SessionKind; data: RoundProfile };
 
 /** Loads the page for a target. */
-export function ledgerPage(db: Database, target: LedgerTarget): LedgerPage {
+export function registryPage(db: Database, target: RegistryTarget): RegistryPage {
   switch (target.kind) {
     case 'index':
-      return { kind: 'index', data: ledgerIndex(db) };
+      return { kind: 'index', data: registryIndex(db) };
     case 'driver':
       return { kind: 'driver', data: driverProfile(db, target.id) };
     case 'car':

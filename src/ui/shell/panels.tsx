@@ -3,7 +3,7 @@
 import { formatDate, formatMoney, t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
 import { button, quiet } from '../styles';
-import { LedgerLink } from '../LedgerLink';
+import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 
 /** A condition bar: 100 is new, 0 is worn out. */
@@ -49,7 +49,7 @@ export function SeasonCalendar() {
               {r.status === 'scheduled' ? (
                 r.course
               ) : (
-                <LedgerLink
+                <RegistryLink
                   to={{
                     kind: r.status === 'complete' ? 'race' : 'prelim',
                     year: hub.year,
@@ -57,7 +57,7 @@ export function SeasonCalendar() {
                   }}
                 >
                   {r.course}
-                </LedgerLink>
+                </RegistryLink>
               )}
             </td>
             <td>{formatDate(r.finalDate)}</td>
