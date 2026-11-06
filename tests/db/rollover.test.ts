@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { hasText } from '../../src/i18n';
 import { createCareer, readCareer } from '../../src/db/career';
 import { playFinal } from '../../src/db/final';
+import { addEntry } from '../../src/db/garage';
 import { settleRound } from '../../src/db/finance';
 import { playPrelims } from '../../src/db/prelims';
 import { startNextSeason } from '../../src/db/rollover';
@@ -178,6 +179,21 @@ describe('starting the next season', () => {
       );
     expect(rows(2032)).toBe(rows(2031));
     expect(rows(2032)).toBeGreaterThan(200);
+  });
+
+  it('gives a withdrawn ranked driver the same number when they are seated again', () => {
+    const row = db.exec(
+      `SELECT e.garage_id, e.driver_id, e.car_id, e.race_number FROM entry e
+         WHERE e.season_id = (SELECT MAX(id) FROM season) AND e.series = 'main' AND e.race_number <= 40
+         ORDER BY e.race_number DESC LIMIT 1`,
+    )[0]!.values[0] as number[];
+    const [garageId, driverId, carId, number] = row as [number, number, number, number];
+    db.run(
+      "DELETE FROM entry WHERE season_id = (SELECT MAX(id) FROM season) AND series = 'main' AND driver_id = ?",
+      [driverId],
+    );
+    const again = addEntry(db, garageId, carId, driverId);
+    expect(again.raceNumber).toBe(number);
   });
 
   it('cannot start twice, or before the season ends', () => {
