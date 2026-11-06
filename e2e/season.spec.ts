@@ -59,7 +59,11 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
     .click();
   await expect(page.getByText(messages['registry.carDecals'])).toBeVisible();
   await page.getByRole('button', { name: messages['registry.index'] }).click();
-  await expect(page.getByText(/Prelims and races \(\d+\)/)).toBeVisible();
+  // The index has a tab for each kind of thing; the Drivers tab opens first.
+  await expect(page.getByRole('tab', { name: /^Drivers \(\d+\)/, selected: true })).toBeVisible();
+  await page.getByRole('tab', { name: /^Cars \(\d+\)/ }).click();
+  await expect(page.getByRole('button', { name: /Licence plate/ }).first()).toBeVisible();
+  await page.getByRole('tab', { name: /^Prelims and races \(\d+\)/ }).click();
   await page.getByRole('button', { name: messages['registry.race'], exact: true }).first().click();
   await expect(page.getByRole('heading', { name: /round \d+ race/ })).toBeVisible();
   await page.keyboard.press('Escape');

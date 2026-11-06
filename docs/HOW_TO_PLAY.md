@@ -102,6 +102,6 @@ Only the Garage owner mode, with one save slot and no race calls. There is no Ju
 - **Plate:** every car is identified by its Australian licence plate and the state that issued it.
 - **Prelims:** seven days of timed laps before each final. Every entry runs one lap; the fastest start the final.
 - **Prestige:** a garage's standing, from its entries, its gold-bordered drivers and its titles. It decides which sponsors, suppliers and executives will deal with you.
-- **Registry:** the profiles of everything and everyone in the game.
+- **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds.
 - **Road affinity:** how good a driver is on forest, coast, mountain and night roads.
 - **Wear:** from 0 (new) to 100 (worn out), for the chassis and for each part.
