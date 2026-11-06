@@ -73,7 +73,7 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await expect(page.getByText(/Round 1 final: \d+ finished/)).toBeVisible();
   await page.getByRole('button', { name: messages['rail.season'] }).click();
   await page.getByRole('tab', { name: messages['hub.table'] }).click();
-  await expect(page.getByRole('table', { name: messages['hub.table'] })).toBeVisible();
+  await expect(page.getByRole('table', { name: messages['tables.kind.drivers'] })).toBeVisible();
   await page.screenshot({});
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: messages['shell.menu'] }).click();
