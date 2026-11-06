@@ -56,36 +56,6 @@ export function SeasonCalendar() {
   );
 }
 
-export function DriversTable() {
-  const hub = useCareerStore((s) => s.hub);
-  if (!hub) return null;
-  if (hub.standings.length === 0)
-    return <p className="text-sm text-lc-dim">{t('hub.tableEmpty')}</p>;
-  return (
-    <table className="w-full text-left text-sm">
-      <caption className="sr-only">{t('hub.table')}</caption>
-      <thead className="lc-display text-xs text-lc-dim">
-        <tr>
-          <th scope="col">{t('hub.rank')}</th>
-          <th scope="col">{t('hub.driver')}</th>
-          <th scope="col">{t('hub.points')}</th>
-          <th scope="col">{t('hub.wins')}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {hub.standings.map((d) => (
-          <tr key={d.rank} className="border-t border-lc-line">
-            <td className="lc-num py-1">{d.rank}</td>
-            <td>{t('hub.driverCell', { number: d.raceNumber, driver: d.driver })}</td>
-            <td className="lc-num">{d.points}</td>
-            <td className="lc-num">{d.wins}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
 export function OwnedCars({ locked }: { locked: boolean }) {
   const { cars, hub, status, raceCar } = useCareerStore();
   const started = hub?.rounds.some((r) => r.status !== 'scheduled') ?? false;

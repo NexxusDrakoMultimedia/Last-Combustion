@@ -29,6 +29,24 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
     });
   }
 
+  // The full tables and the full classification of a round, not just the leaders.
+  await page.getByRole('button', { name: messages['rail.season'], exact: true }).click();
+  await page.getByRole('tab', { name: messages['hub.table'] }).click();
+  const standings = page.getByRole('table', { name: messages['tables.kind.drivers'] });
+  await expect(standings).toBeVisible();
+  expect(await standings.getByRole('row').count()).toBeGreaterThan(100);
+  await page.locator('#standings-kind').selectOption('garages');
+  await expect(page.getByRole('table', { name: messages['tables.kind.garages'] })).toBeVisible();
+  await page.getByRole('tab', { name: messages['tables.results'] }).click();
+  await page.getByRole('button', { name: messages['tables.session.prelims'] }).click();
+  const prelims = page.getByRole('table', { name: messages['tables.session.prelims'] });
+  await expect(prelims).toBeVisible();
+  expect(await prelims.getByRole('row').count()).toBeGreaterThan(100);
+  await page.locator('#results-round').selectOption('3');
+  await page.getByRole('button', { name: messages['tables.session.final'] }).click();
+  await expect(page.getByRole('table', { name: messages['tables.session.final'] })).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();
   await expect(page.getByText(/The 2031 season is over/)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/awards? given out/)).toBeVisible();

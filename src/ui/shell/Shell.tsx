@@ -15,17 +15,11 @@ import { MoneyPanel } from './MoneyPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { AlmanacPanel } from './AlmanacPanel';
+import { ResultsPanel, StandingsPanel } from './TablesPanel';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
-import {
-  ConditionBar,
-  DriversTable,
-  MenuActions,
-  OwnedCars,
-  SeasonCalendar,
-  UsedMarket,
-} from './panels';
+import { ConditionBar, MenuActions, OwnedCars, SeasonCalendar, UsedMarket } from './panels';
 
 type PanelId =
   | 'season'
@@ -255,13 +249,20 @@ export function Shell() {
           title={t('hub.season', { year: hub.year })}
           tabs={[
             { id: 'calendar', label: t('hub.calendar') },
+            { id: 'results', label: t('tables.results') },
             { id: 'table', label: t('hub.table') },
           ]}
           tab={seasonTab}
           onTab={setSeasonTab}
           onClose={() => setOpen(null)}
         >
-          {seasonTab === 'calendar' ? <SeasonCalendar /> : <DriversTable />}
+          {seasonTab === 'calendar' ? (
+            <SeasonCalendar />
+          ) : seasonTab === 'results' ? (
+            <ResultsPanel />
+          ) : (
+            <StandingsPanel />
+          )}
         </Panel>
       )}
       {!locked && open === 'garage' && (
