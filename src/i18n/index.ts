@@ -72,6 +72,11 @@ export function formatGap(ms: number): string {
   return `+${ms >= 60_000 ? formatLapTime(ms) : (ms / 1000).toFixed(3)}`;
 }
 
+/** Formats championship points with one decimal place, so 145 reads 145.0 and the columns line up. */
+export function formatPoints(points: number): string {
+  return points.toFixed(1);
+}
+
 /** Formats an amount in Australian dollars. */
 export function formatMoney(amount: number): string {
   return new Intl.NumberFormat(formatLocale(), {

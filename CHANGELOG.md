@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 Nothing yet.
 
+## [0.1.1] - 2026-11-06
+
+### Changed
+
+- Points always show one decimal place (145.0, not 145), and the Points, Wins and Prize columns are right-aligned in the standings and on the race results screens.
+- Race numbers with a gold or silver border now have a thin black outline outside it, and the champion's black box has black digits inside the gold ring.
+
 ## [0.1.0] - 2026-11-06
 
 The first release: a playable first season of The Last Combustion of the Petrol Engine, in your browser.
