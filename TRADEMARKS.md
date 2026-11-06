@@ -9,7 +9,7 @@ The following are trademarks and intellectual property of **Nexxus Drako Multime
 - the game name **Last Combustion** (and the full series names, such as _The Last Combustion of the Petrol Engine World Motorsports Championship_)
 - the Last Combustion **logo**
 - the character **Pyra Drake**
-- the four **commentators**: Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera (their names, voices, backgrounds and likenesses; the names of the first two are placeholders that may change)
+- the four **commentators**: Reece Calloway, Alistair Thorne, Kazumi Aikawa and José Antonio Carrera (their names, voices, backgrounds and likenesses)
 - the hidden driver characters that appear in the game with a dragon mark
 
 Nexxus Drako Multimedia claims no copyright or trademark in any other character. Declan Marsh and Ingrid Halloran, who run the series, are fictional in-game characters whose names are not reserved (they are placeholders that may change).

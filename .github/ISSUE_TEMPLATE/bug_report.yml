@@ -18,3 +18,4 @@ body:
     id: version
     attributes:
       label: Game version
+      description: Shown on the About screen (Menu, then About), or say if you played the web build.
