@@ -49,4 +49,19 @@ describe('flag icons', () => {
     // The 2:1 original is kept as the source.
     expect(readFileSync('assets/flags/source/vyktory-2x1.svg', 'utf8')).toMatch(/viewBox="0 0 264/);
   });
+
+  it('keeps the V of the Vyktory flag at 31.3% of the width and does not stretch it', () => {
+    const svg = readFileSync('assets/flags/vyktory.svg', 'utf8');
+    const m = /transform="scale\(([\d.]+)\) translate\((-?[\d.]+) 0\)"/.exec(svg)!;
+    const scale = Number(m[1]);
+    const shift = Number(m[2]);
+    // One scale for both directions, so the V keeps its angle: the full 132.29 unit height fills 480.
+    expect(scale * 132.29167).toBeCloseTo(480, 1);
+    // In the 2:1 original the V's centre line is at 313 of 1000, that is 82.8 units of 264.58.
+    const centre = ((0.313 * 264.58333 + shift) * scale) / 640;
+    expect(centre).toBeCloseTo(0.313, 2);
+    // The window stays inside the original: nothing is cut off the top or bottom, and no empty space is added.
+    expect(-shift).toBeGreaterThanOrEqual(0);
+    expect(-shift + 640 / scale).toBeLessThanOrEqual(264.58333 + 0.01);
+  });
 });
