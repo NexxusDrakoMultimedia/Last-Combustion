@@ -16,6 +16,29 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each
 
 M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load: schema changes are new numbered migrations and a released migration is never edited.
 
+## Scope freeze and the 0.1.x series
+
+**From now until 0.1.0 is out, scope is frozen.** Only these go in: fixes for bugs found in play, corrections to text and documentation, and the release work itself (the version, the changelog, the branding and the notices). Anything new is written down and waits.
+
+**After 0.1.0, patch releases keep the first version healthy** while the next milestone is built on its own branch. A patch release (0.1.1, 0.1.2 and so on) is made on `hotfix/0.1.x`, branched from the `v0.1.0` tag, and is merged back into `main` and into the milestone branch in progress. It may contain:
+
+- **Bug fixes**, with a test that fails without the fix.
+- **Text and documentation fixes**, including the changelog and credits.
+- **Balance and data tweaks** that change only numbers in `data/*.json` and need no new migration, so every 0.1.0 save still loads and plays the same way. A change that alters how a save behaves is called out in the changelog.
+- **Small interface fixes** that do not add a feature (readability, spacing, a wrong label).
+
+It may not contain new features, new screens, new rules, schema changes or anything else that belongs to a milestone. Those wait for 0.2.0 (M6) or later. The test is simple: if a player would say "that is new", it is not a patch.
+
+**Where requests go.** Bugs are GitHub issues (the Feedback button opens the form). Ideas and feature requests are issues too, and are sorted into the patch series, M6, M7 or M8 when they are read. What is already decided to wait:
+
+| Waiting for | Item                                                                                                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M6 (0.2.0)  | Scouting and fog of war: scouts, the Head of Scouting, descriptions and ranges that tighten into exact values ("Scouting and fog of war")                                                                    |
+| M6 (0.2.0)  | The five-tier ladder for sponsors and suppliers (local, regional, national, continental, global)                                                                                                             |
+| M6 (0.2.0)  | The financial ledger, ownership and the cap table, facilities and the people layer                                                                                                                           |
+| M7 (0.3.0)  | The Junior Series, the 2036 expansion and the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior)                                                                                        |
+| Later       | The thematic type (Orbitron and Exo 2) for the logo and special screens, the story, press and social layers that use the slab, serif and flexible fonts, and a way to give feedback without a GitHub account |
+
 ## Branches
 
 - **`main` is the latest release.** The web build on GitHub Pages deploys from `main`, so players only ever see released work.
@@ -23,7 +46,7 @@ M0 to M4 were built before there were players and have no release. Before 1.0.0 
 - **Feature pull requests** are squash-merged into the milestone branch. The squash title ends with the pull request number, as now. The designated session branch (`claude/...`) stays the working branch; only the pull request's base changes.
 - **Finishing a milestone.** When everything in the milestone is built and its game-design-document status is up to date, a release pull request merges the milestone branch into `main` with a merge commit (not a squash, so the milestone's history stays readable), titled `release: 0.2.0 (M6 depth)`. The release steps below run on it. Then `main` is tagged `v0.2.0` and a GitHub Release is published (publishing it also rebuilds the web build).
 - **The next milestone** branch is created from the new `main` once the release is out.
-- **Fixes to a released version** go on `hotfix/0.1.x` from the tag, are released as a patch (`0.1.1`), and are merged into `main` and into the milestone branch in progress, so nothing is lost.
+- **Fixes to a released version** go on `hotfix/0.1.x` from the tag, are released as a patch (`0.1.1`), and are merged into `main` and into the milestone branch in progress, so nothing is lost. What a patch may and may not contain is in "Scope freeze and the 0.1.x series" above.
 - Until 0.1.0 is out, M5 finishes on `main` as before.
 
 ## Release steps

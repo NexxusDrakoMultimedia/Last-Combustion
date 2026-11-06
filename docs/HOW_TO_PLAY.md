@@ -101,10 +101,10 @@ Only the Garage owner mode, with one save slot and no race calls. There is no Ju
 - **Final:** the race that ends a round. The 15 fastest of the prelims start it.
 - **Gold border:** shown on the number of any driver who has reached a final. **Silver border:** will mark Junior Series points scorers.
 - **Headquarters:** where your garage's flag comes from (its factory, founder, owner or executive office).
-- **Plate:** every car is identified by its Australian licence plate and the state that issued it.
+- **Plate:** every car is identified by its Australian licence plate and the state that issued it. No two cars in a state share a plate.
 - **Prelims:** seven days of timed laps before each final. Every entry runs one lap; the fastest start the final.
 - **Prestige:** a garage's standing, from its entries, its gold-bordered drivers and its titles. It decides which sponsors, suppliers and executives will deal with you.
-- **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds. Each tab is split into Champions, Race winners, Active, Retired and Obscure.
+- **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds. Each tab is split into Champions, Race winners, Active, Retired and Obscure, and each name shows the years it was active, such as (2031-present).
 - **Greylinked (Obscure):** a driver, car or garage that retired or folded without ever scoring a point. It is listed apart and its links are grey, but its profile still opens.
 - **Road affinity:** how good a driver is on forest, coast, mountain and night roads.
 - **Wear:** from 0 (new) to 100 (worn out), for the chassis and for each part.
