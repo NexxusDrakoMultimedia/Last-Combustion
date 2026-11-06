@@ -3,6 +3,7 @@
 import { formatDate, formatMoney, t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
 import { button, quiet } from '../styles';
+import { Plate } from '../Plate';
 
 /** A condition bar: 100 is new, 0 is worn out. */
 export function ConditionBar({ wear }: { wear: number }) {
@@ -96,6 +97,7 @@ export function OwnedCars({ locked }: { locked: boolean }) {
           className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
         >
           <span>
+            <Plate plate={c.plate} state={c.plateState} />{' '}
             <span className="font-medium">{c.modelName}</span>{' '}
             <span className="text-lc-dim">
               {t('market.carDetail', {
@@ -135,6 +137,7 @@ export function UsedMarket({ locked }: { locked: boolean }) {
           className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
         >
           <span>
+            <Plate plate={l.plate} state={l.plateState} />{' '}
             <span className="font-medium">{l.modelName}</span>{' '}
             <span className="text-lc-dim">
               {t('market.listingDetail', { year: l.modelYear, km: l.roadKm })}

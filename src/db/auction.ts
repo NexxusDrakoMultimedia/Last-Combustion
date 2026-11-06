@@ -75,6 +75,8 @@ export function openAuction(
 export interface Lot {
   id: number;
   carId: number;
+  plate: string;
+  plateState: string;
   modelName: string;
   modelYear: number;
   reserve: number;
@@ -87,7 +89,7 @@ export interface Lot {
 export function openLots(db: Database, auctionId: number): Lot[] {
   return all(
     db,
-    `SELECT l.id, l.car_id, l.reserve, c.model_year, m.name,
+    `SELECT l.id, l.car_id, l.reserve, c.plate, c.plate_state, c.model_year, m.name,
             (SELECT MAX(amount) FROM auction_bid b WHERE b.lot_id = l.id) AS top
        FROM auction_lot l
        JOIN auction a ON a.id = l.auction_id AND a.status = 'open'
@@ -98,6 +100,8 @@ export function openLots(db: Database, auctionId: number): Lot[] {
   ).map((r) => ({
     id: r.id as number,
     carId: r.car_id as number,
+    plate: r.plate as string,
+    plateState: r.plate_state as string,
     modelName: r.name as string,
     modelYear: r.model_year as number,
     reserve: r.reserve as number,

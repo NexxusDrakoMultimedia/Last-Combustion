@@ -6,6 +6,7 @@ import { IDENTITY_SIGN } from '../sim/identity';
 import type { Identity } from '../sim/worldgen/types';
 import { useCareerStore } from '../state/career.store';
 import { button } from './styles';
+import { Plate } from './Plate';
 
 /** Before the first race the owner picks a starter car (of three) and a driver (of five). */
 export function StarterChoice() {
@@ -27,6 +28,7 @@ export function StarterChoice() {
               checked={carId === c.carId}
               onChange={() => setCarId(c.carId)}
             />
+            <Plate plate={c.plate} state={c.plateState} />
             {t('starter.car', {
               model: c.modelName,
               year: c.modelYear,

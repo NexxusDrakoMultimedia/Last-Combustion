@@ -140,6 +140,8 @@
   "upgrades.intro": "Parts change power, weight, grip and how much of the road-legality budget is left. A car over budget fails scrutineering.",
   "upgrades.noCars": "The garage has no cars.",
   "upgrades.car": "Car",
+  "upgrades.carOption": "{state} {plate}, {model}",
+  "plate.label": "Licence plate {plate}, {state}",
   "upgrades.kerb": "Kerb weight",
   "upgrades.kg": "{kg} kg",
   "upgrades.tyres": "Tyre width",

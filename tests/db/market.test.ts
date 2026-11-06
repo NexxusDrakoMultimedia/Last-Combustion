@@ -168,3 +168,25 @@ describe('buying a used car', () => {
     expect(openListings(loaded).some((l) => l.carId === carId)).toBe(true);
   });
 });
+
+describe('licence plates on cars bought and sold', () => {
+  it('gives a new car, a used car and a market car a plate in the right state, each different', async () => {
+    const { registerCar } = await import('../../src/db/plates');
+    const db = newCareer();
+    expect(registerCar).toBeTypeOf('function');
+    const plates = db.exec('SELECT plate FROM car WHERE plate IS NULL')[0];
+    expect(plates).toBeUndefined();
+    refreshUsedMarket(db);
+    const market = db
+      .exec(
+        "SELECT c.plate FROM market_listing l JOIN car c ON c.id = l.car_id WHERE l.status = 'open'",
+      )[0]!
+      .values.map((v) => String(v[0]));
+    expect(market.length).toBeGreaterThan(5);
+    expect(market.every((p) => p.length > 3)).toBe(true);
+    expect(new Set(market).size).toBe(market.length);
+    const total = Number(db.exec('SELECT COUNT(*) FROM car')[0]!.values[0]![0]);
+    const distinct = Number(db.exec('SELECT COUNT(DISTINCT plate) FROM car')[0]!.values[0]![0]);
+    expect(distinct).toBe(total);
+  });
+});

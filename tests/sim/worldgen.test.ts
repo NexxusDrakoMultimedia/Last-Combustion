@@ -9,6 +9,7 @@ import {
   fameFromFans,
   overallRating,
 } from '../../src/sim/worldgen';
+import { statesOfPlate } from '../../src/sim/plates';
 import { buildCalendar, addDays } from '../../src/sim/worldgen/calendar';
 import { carModels, manufacturers, nameLists, places } from '../../src/sim/worldgen/data';
 
@@ -73,6 +74,38 @@ describe('cars', () => {
       expect(car.tyreWidthMm).toBeLessThanOrEqual(Math.round(car.kerbKg / 5 + 40));
     }
     expect(new Set(world.cars.map((c) => c.chassisNo)).size).toBe(world.cars.length);
+  });
+
+  it('are each identified by a unique Australian plate, in the garage’s state when it is Australian', () => {
+    expect(new Set(world.cars.map((c) => c.plate)).size).toBe(world.cars.length);
+    const garages = new Map(world.garages.map((g) => [g.id, g]));
+    const regions: Record<string, string> = {
+      NSW: 'NSW',
+      Vic: 'VIC',
+      Qld: 'QLD',
+      SA: 'SA',
+      WA: 'WA',
+      Tas: 'TAS',
+      NT: 'NT',
+      ACT: 'ACT',
+    };
+    let checked = 0;
+    for (const car of world.cars) {
+      if (car.plate !== 'NEXXUS') expect(statesOfPlate(car.plate)).toContain(car.plateState);
+      const home = regions[garages.get(car.garageId)!.homeState];
+      if (home && car.plate !== 'NEXXUS') {
+        expect(car.plateState).toBe(home);
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+
+  it('gives the founder’s car its personalised Victorian plate', () => {
+    const spirit = world.cars.find((c) => c.modelId === 'homura-spirit-r-7')!;
+    expect(spirit.plate).toBe('NEXXUS');
+    expect(spirit.plateState).toBe('VIC');
+    expect(world.cars.filter((c) => c.plate === 'NEXXUS')).toHaveLength(1);
   });
 
   it('give every chassis a model year, road kilometres and wear, and no racing history yet', () => {

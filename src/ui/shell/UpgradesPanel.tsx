@@ -44,7 +44,7 @@ export function UpgradesPanel() {
         >
           {upgrades.map((u) => (
             <option key={u.carId} value={u.carId}>
-              {u.modelName}
+              {t('upgrades.carOption', { state: u.plateState, plate: u.plate, model: u.modelName })}
             </option>
           ))}
         </select>
