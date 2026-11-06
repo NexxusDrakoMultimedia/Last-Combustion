@@ -203,14 +203,14 @@ const dateOf = (db: Database): string => {
 export function ensureMarketGarage(db: Database): number {
   const found = all(db, "SELECT id FROM garage WHERE kind = 'market' LIMIT 1")[0];
   if (found) return found.id as number;
-  const place = all(db, 'SELECT id FROM place ORDER BY id LIMIT 1')[0];
+  const place = all(db, "SELECT id, region FROM place WHERE country = 'AU' ORDER BY id LIMIT 1")[0];
   if (!place) throw new Error('There are no places to base the market on.');
   const next = Number(all(db, 'SELECT COALESCE(MAX(id), 0) + 1 AS n FROM garage')[0]!.n);
   db.run(
-    `INSERT INTO garage (id, name, flag, base_place_id, home_state, primary_colour, secondary_colour,
+    `INSERT INTO garage (id, name, flag, base_place_id, hq_place_id, home_state, primary_colour, secondary_colour,
                          prestige, cash, founded_year, is_player, ai_profile, fans, kind)
-     VALUES (?, ?, 'AU', ?, 'NSW', '#888888', '#444444', 1, 0, ?, 0, 'cautious', 0, 'market')`,
-    [next, MARKET_NAME, place.id as number, yearOf(db)],
+     VALUES (?, ?, 'AU', ?, ?, ?, '#888888', '#444444', 1, 0, ?, 0, 'cautious', 0, 'market')`,
+    [next, MARKET_NAME, place.id as number, place.id as number, place.region as string, yearOf(db)],
   );
   return next;
 }

@@ -85,6 +85,7 @@ describe('migrate', () => {
       'executives',
       'supply',
       'awards',
+      'headquarters',
     ]);
   });
 
@@ -172,5 +173,44 @@ describe('career', () => {
         difficulty: 'standard',
       }),
     ).toThrow();
+  });
+});
+
+describe('headquarters (schema version 32)', () => {
+  function oldSave() {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 31));
+    expect(getSchemaVersion(db)).toBe(31);
+    const place = (stable: string) =>
+      Number(db.exec(`SELECT id FROM place WHERE stable_id = '${stable}'`)[0]?.values[0]?.[0]);
+    return { db, place };
+  }
+
+  it('keeps each garage’s old place as its headquarters and moves a foreign base to Australia', () => {
+    const { db } = oldSave();
+    db.exec(`INSERT INTO place (stable_id, name, region, country, latitude, longitude) VALUES
+      ('au-test-a', 'Alphaville', 'SA', 'AU', -34, 138), ('au-test-b', 'Betatown', 'Vic', 'AU', -37, 145),
+      ('gb-test', 'Londonish', 'England', 'GB', 51, 0)`);
+    const id = (s: string) =>
+      Number(db.exec(`SELECT id FROM place WHERE stable_id = '${s}'`)[0]!.values[0]![0]);
+    const garage = (n: number, place: string, state: string) =>
+      db.exec(`INSERT INTO garage (id, name, flag, base_place_id, home_state, primary_colour, secondary_colour, prestige, cash, founded_year, is_player, ai_profile, fans)
+               VALUES (${n}, 'G${n}', 'GB', ${id(place)}, '${state}', '#000000', '#ffffff', 5, 0, 2020, 0, 'cautious', 0)`);
+    garage(1, 'gb-test', 'England');
+    garage(2, 'au-test-a', 'SA');
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(latestSchemaVersion());
+    const rows = db.exec(
+      `SELECT g.id, hq.stable_id, base.country, base.region, g.home_state FROM garage g
+         JOIN place hq ON hq.id = g.hq_place_id JOIN place base ON base.id = g.base_place_id ORDER BY g.id`,
+    )[0]!.values;
+    // The foreign garage keeps London as its headquarters but is now based in Australia.
+    expect(rows[0]![1]).toBe('gb-test');
+    expect(rows[0]![2]).toBe('AU');
+    expect(rows[0]![4]).toBe(rows[0]![3]);
+    // An Australian garage is untouched: same base, same headquarters.
+    expect(rows[1]![1]).toBe('au-test-a');
+    expect(rows[1]![2]).toBe('AU');
+    expect(rows[1]![3]).toBe('SA');
   });
 });

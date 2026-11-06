@@ -60,6 +60,8 @@ Sponsors: `src/sim/sponsors.ts` has the sponsor list (`data/sponsors.json`), eli
 
 Deals: `src/sim/deals.ts` has the fair supplier and manufacturer discounts, and `src/db/deals.ts` has `openDealNegotiation`, `offerDeal` and `activeDiscount`, which `fitPart` and `buyNewCar` use to price parts and new cars (migration 0012 adds `supplier_deal` and `manufacturer_deal` and rebuilds the negotiation tables again).
 
+Garage places: a garage has a `base_place_id` (always an Australian place, which sets its home state, plates, supply reach and travel distances) and an `hq_place_id` (where its main factory, founder, owner or executive office is, which its flag and its home-nation fans follow); worldgen draws them in `src/sim/worldgen/index.ts` and migration 0032 repaired older saves.
+
 The Ledger: `src/db/ledger.ts` has `driverProfile`, `carProfile`, `garageProfile`, `roundProfile` (prelim or race), `ledgerIndex` and `ledgerPage`, `decalsOf` (the trophies and shields) and re-exports the number badges from `src/db/badges.ts` (`badgesFor`: gold and silver borders and the black box, by season). The UI is `src/ui/shell/LedgerPanel.tsx`, `LedgerLink`, `RaceNumber` and `Decals` in `src/ui`; the store keeps the trail of pages (`openLedger`, `ledgerBack`, `closeLedger`), and the Shell shows the Ledger over whatever panel is open.
 
 Results and standings: `src/db/tables.ts` has `fullStandings` (every row of the five championship tables for any season, from `computeStandings`) and `roundClassification` (the full prelim and final classification of any round), read on demand by the Season panel's Results and Standings tabs (`src/ui/shell/TablesPanel.tsx`).

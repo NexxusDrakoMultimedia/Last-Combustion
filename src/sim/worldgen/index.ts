@@ -213,7 +213,10 @@ export function makeNewGarage(
   const cfg = balance;
   const flag = rng.chance(cfg.garage.australianFlagShare) ? HOST_COUNTRY : pickNationality(rng);
   const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
-  const basePlaceId = placeIn(rng, flag);
+  // The flag is where the garage's main factory, founder, owner or executive office is. To race in
+  // the series the garage must be based in an Australian state or territory.
+  const hqPlaceId = placeIn(rng, flag);
+  const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(rng, HOST_COUNTRY);
   const [primary, secondary] = rng.pick(COLOUR_PAIRS);
   const prestige = seasonBalance.garages.newPrestige;
   return {
@@ -221,6 +224,7 @@ export function makeNewGarage(
     name: garageName(rng, nationality, usedNames),
     flag,
     basePlaceId,
+    hqPlaceId,
     homeState: (placeById.get(basePlaceId) as { region: string }).region,
     primaryColour: primary,
     secondaryColour: secondary,
@@ -284,6 +288,9 @@ export function generateWorld(seed: string | number): World {
 
   // --- garages ---
   const gRng = rng.stream('worldgen:garages');
+  // A garage with a foreign flag still has an Australian base, drawn from its own stream so the
+  // rest of the world does not change.
+  const bRng = rng.stream('worldgen:garage-bases');
   const sizes = garageSizes(gRng);
   const drakeIndex = sizes.findIndex((s) => s === 3);
   const usedNames = new Set<string>([DRAKE_MOTORSPORTS]);
@@ -324,7 +331,8 @@ export function generateWorld(seed: string | number): World {
       1,
       100,
     );
-    const basePlaceId = isDrake ? 'au-brisbane' : placeIn(gRng, flag);
+    const hqPlaceId = isDrake ? 'au-brisbane' : placeIn(gRng, flag);
+    const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(bRng, HOST_COUNTRY);
     const [primary, secondary] = isDrake ? ['#7f0000', '#ffd900'] : gRng.pick(COLOUR_PAIRS);
     const profile: AiProfile =
       size === 1 && gRng.chance(0.6)
@@ -338,6 +346,7 @@ export function generateWorld(seed: string | number): World {
       name: isDrake ? DRAKE_MOTORSPORTS : garageName(gRng, nationality, usedNames),
       flag,
       basePlaceId,
+      hqPlaceId,
       homeState: (placeById.get(basePlaceId) as { region: string }).region,
       primaryColour: primary,
       secondaryColour: secondary,
@@ -561,7 +570,7 @@ export function generateWorld(seed: string | number): World {
     else flagTotals.set(code, (flagTotals.get(code) ?? 0) + f.flagShare * fans);
   };
   drivers.forEach((d) => addToFlag(d.flag, d.fans, d.hometownPlaceId));
-  garages.forEach((g) => addToFlag(g.flag, g.fans, g.basePlaceId));
+  garages.forEach((g) => addToFlag(g.flag, g.fans, g.hqPlaceId));
   // The UK is the sum of its home nations (plus the fans of anyone with no home nation); Spain's
   // regions each take a portion of Spain's fans by their real population.
   for (const [parent, def] of Object.entries(flagRegions)) {

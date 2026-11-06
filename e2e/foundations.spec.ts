@@ -9,6 +9,9 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
 
   await page.getByLabel(messages['newCareer.ownerName']).fill('Test Owner');
   await page.getByLabel(messages['newCareer.garageName']).fill('Test Garage Racing');
+  await page
+    .getByLabel(messages['newCareer.baseState'])
+    .selectOption({ label: 'Western Australia' });
   await page.getByRole('button', { name: messages['newCareer.start'] }).click();
 
   await expect(page.getByText('Test Garage Racing').first()).toBeVisible();

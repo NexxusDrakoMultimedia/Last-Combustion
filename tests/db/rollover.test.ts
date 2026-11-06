@@ -249,6 +249,23 @@ describe('garages closing and opening at the rollover', () => {
     expect(scalar(db, `SELECT closed_year FROM garage WHERE id = ${playerId}`)).toBeNull();
   });
 
+  it('bases every garage, new ones included, in an Australian state or territory', () => {
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM garage g JOIN place p ON p.id = g.base_place_id
+          WHERE g.kind = 'racing' AND p.country <> 'AU'`,
+      ),
+    ).toBe(0);
+    expect(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM garage g JOIN place p ON p.id = g.base_place_id WHERE g.home_state <> p.region`,
+      ),
+    ).toBe(0);
+    expect(scalar(db, 'SELECT COUNT(*) FROM garage WHERE hq_place_id IS NULL')).toBe(0);
+  });
+
   it('opens three to ten new garages, each with a driver, a starter car and an entry', () => {
     expect(result.garagesOpened).toBeGreaterThanOrEqual(3);
     expect(result.garagesOpened).toBeLessThanOrEqual(10);

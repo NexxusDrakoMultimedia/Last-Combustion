@@ -11,7 +11,13 @@ import {
 } from '../../src/sim/worldgen';
 import { statesOfPlate } from '../../src/sim/plates';
 import { buildCalendar, addDays } from '../../src/sim/worldgen/calendar';
-import { carModels, manufacturers, nameLists, places } from '../../src/sim/worldgen/data';
+import {
+  AUSTRALIAN_STATES,
+  carModels,
+  manufacturers,
+  nameLists,
+  places,
+} from '../../src/sim/worldgen/data';
 
 const world = generateWorld('2031');
 const model = (id: string) => carModels.find((m) => m.id === id)!;
@@ -196,6 +202,35 @@ describe('garages', () => {
 
   it('are not the player', () => {
     expect(world.garages.every((g) => !g.isPlayer)).toBe(true);
+  });
+
+  it('are all based in an Australian state or territory, whatever their flag', () => {
+    const country = (id: string) => places.find((p) => p.id === id)!.country;
+    for (const g of world.garages) {
+      expect(country(g.basePlaceId)).toBe('AU');
+      expect(AUSTRALIAN_STATES).toContain(g.homeState);
+    }
+    // Plenty of garages fly a foreign flag from an Australian base.
+    expect(world.garages.filter((g) => g.flag !== 'AU').length).toBeGreaterThan(10);
+  });
+
+  it('fly the flag of their headquarters: the main factory, founder, owner or executive office', () => {
+    const country = (id: string) => places.find((p) => p.id === id)!.country;
+    const hasPlaces = (flag: string) => places.some((p) => p.country === flag);
+    for (const g of world.garages) {
+      expect(placeIds.has(g.hqPlaceId)).toBe(true);
+      if (g.flag === 'AU') expect(g.hqPlaceId).toBe(g.basePlaceId);
+      else if (hasPlaces(g.flag)) expect(country(g.hqPlaceId)).toBe(g.flag);
+    }
+  });
+
+  it('give the same bases for the same seed, and leave the rest of the world alone', () => {
+    expect(generateWorld('2031').garages.map((g) => g.basePlaceId)).toEqual(
+      world.garages.map((g) => g.basePlaceId),
+    );
+    expect(generateWorld('2031').drivers.map((d) => d.pace)).toEqual(
+      world.drivers.map((d) => d.pace),
+    );
   });
 });
 

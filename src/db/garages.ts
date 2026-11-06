@@ -111,14 +111,15 @@ export function openNewGarages(db: Database, o: OpeningOptions): number {
     const garage = makeNewGarage(o.rng, garageId, o.year, names);
     names.add(garage.name);
     db.run(
-      `INSERT INTO garage (id, name, flag, base_place_id, home_state, primary_colour, secondary_colour,
+      `INSERT INTO garage (id, name, flag, base_place_id, hq_place_id, home_state, primary_colour, secondary_colour,
                            prestige, cash, founded_year, is_player, ai_profile, fans)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)`,
       [
         garage.id,
         garage.name,
         garage.flag,
         placeIds.get(garage.basePlaceId)!,
+        placeIds.get(garage.hqPlaceId)!,
         garage.homeState,
         garage.primaryColour,
         garage.secondaryColour,
