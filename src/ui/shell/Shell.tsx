@@ -241,7 +241,7 @@ export function Shell() {
           </ul>
           <section aria-label={t('shell.news')} className="space-y-1 border-t border-lc-line pt-3">
             <h2 className="lc-display text-sm text-lc-dim">{t('shell.news')}</h2>
-            <ul className="space-y-1 text-sm" aria-live="polite">
+            <ul className="lc-news space-y-1 text-sm" aria-live="polite">
               {news.length === 0 && !hub.rounds.some((r) => r.status !== 'scheduled') && (
                 <>
                   <li className="text-lc-dim">{t('shell.gettingStarted')}</li>
