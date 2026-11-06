@@ -26,6 +26,7 @@ body {
   background-color: var(--color-lc-bg);
   color: var(--color-lc-text);
   font-family:
+    'Fira Sans',
     system-ui,
     -apple-system,
     'Segoe UI',
@@ -35,8 +36,8 @@ body {
 
 /* Headings and tabs: condensed, upper case, spaced. */
 .lc-display {
-  font-family: 'Arial Narrow', 'Roboto Condensed', 'Segoe UI', system-ui, sans-serif;
-  font-stretch: condensed;
+  font-family:
+    'Fira Sans Condensed', 'Arial Narrow', 'Roboto Condensed', 'Segoe UI', system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
