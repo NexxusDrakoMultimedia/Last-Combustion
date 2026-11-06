@@ -142,3 +142,17 @@ describe('where the player’s garage is based', () => {
     );
   });
 });
+
+describe('Drake Motorsports', () => {
+  it('stays based and headquartered in Brisbane, Queensland, and is never the garage the player takes over', () => {
+    const db = fresh();
+    const id = foundPlayerGarage(db, { ...setup, flag: 'JP', baseState: 'WA' });
+    const drake = db.exec(
+      `SELECT g.id, g.is_player, g.home_state, b.name, h.name FROM garage g
+         JOIN place b ON b.id = g.base_place_id JOIN place h ON h.id = g.hq_place_id
+        WHERE g.name = 'Drake Motorsports'`,
+    )[0]!.values[0]!;
+    expect(drake[0]).not.toBe(id);
+    expect(drake.slice(1)).toEqual([0, 'Qld', 'Brisbane', 'Brisbane']);
+  });
+});

@@ -197,6 +197,9 @@ describe('garages', () => {
     const drake = world.garages.find((g) => g.name === DRAKE_MOTORSPORTS)!;
     expect(drake.flag).toBe('AU');
     expect(drake.basePlaceId).toBe('au-brisbane');
+    // Pyra Drake lives in Queensland, so her garage is based and headquartered there.
+    expect(drake.hqPlaceId).toBe('au-brisbane');
+    expect(drake.homeState).toBe('Qld');
     expect([drake.primaryColour, drake.secondaryColour]).toEqual(['#7f0000', '#ffd900']);
   });
 
