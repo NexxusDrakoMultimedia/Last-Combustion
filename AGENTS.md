@@ -6,7 +6,7 @@ Guidance for AI coding agents (and a quick reference for people) working on **La
 
 - A single-player management game: TypeScript, React 19, Tailwind 4, Zustand, SQLite in the browser (SQL.js), built with Vite. Electron desktop builds come later.
 - The design is in `docs/GAME_DESIGN_DOCUMENT.md`. It is the source of truth for rules and numbers. Change it in the same pull request as any code that changes behaviour.
-- Work is staged in milestones M0 to M8 (see "Scope and build order" in the GDD). M0 to M4 (foundations, world generation, prelims, final race, garage and economy) are built as simulation and database code, and M5 (the first playable season) is in progress, with the first screens in place. The GDD says what is built.
+- Work is staged in milestones M0 to M8 (see "Scope and build order" in the GDD), released as 0.1.0 at the end of M5 and 1.0.0 at M8 (see `docs/RELEASING.md`). M0 to M4 (foundations, world generation, prelims, final race, garage and economy) are built as simulation and database code, and M5 (the first playable season) is in progress, with the first screens in place. The GDD says what is built.
 - Licence: GPL-3.0-or-later. The name, logo, Pyra Drake and the hidden driver characters are reserved; no other character is claimed (see `TRADEMARKS.md`).
 
 ## Setup and commands
@@ -66,7 +66,8 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 ## Commits and pull requests
 
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`; `!` for breaking changes), enforced by commitlint. Sign off commits (`git commit -s`).
-- Do not edit `CHANGELOG.md` in pull requests: it stays empty until there is a release. The first release is a simple list of the game's features, written at release time; later releases follow Keep a Changelog. Versions follow Semantic Versioning.
+- Do not edit `CHANGELOG.md` in pull requests until 0.1.0 is released: it stays empty until then. 0.1.0 (the end of M5) is a simple list of the game's features, written at release time. From 0.1.0 on it follows Keep a Changelog, and each pull request adds a line under `[Unreleased]`. Versions follow Semantic Versioning.
+- **Releases and branches** (see `docs/RELEASING.md`). `main` is the latest release, and the web build deploys from it. Until 0.1.0, work goes to `main`. From M6 on, every milestone runs on its own `milestone/...` branch made from `main`: pull requests target that branch, and a release pull request merges it into `main`, which is then tagged. Never merge unreleased milestone work straight into `main` once releases have started.
 - Keep pull requests focused. Use the pull request template. Do not merge your own pull request unless asked.
 - Never skip or disable a test to get CI green, and never force-push to a branch someone else is using.
 

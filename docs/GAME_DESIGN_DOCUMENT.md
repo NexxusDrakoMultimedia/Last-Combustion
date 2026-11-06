@@ -1097,6 +1097,10 @@ The full design is large, so development is staged. Each milestone must be playa
 
 **MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season, and begin 2032 with all records saved.
 
+**Releases and milestone branches.** Finishing M5 is the first release for players, **version 0.1.0**, published with a set of branding and social assets and the first entry in the changelog (a plain list of the game's features; from then on the changelog follows Keep a Changelog). Each later milestone ends in a release too (proposed: M6 0.2.0, M7 0.3.0, M8 1.0.0). From M6 on, every milestone runs on its own branch (`milestone/m6-depth` and so on), made from `main`, so `main` is always the latest release and the web build, which deploys from it, never shows players unfinished work; a release pull request merges the milestone branch into `main` and `main` is tagged. Saves from an earlier version must keep loading. The steps, the branch rules, the changelog rules and the list of branding and social assets are in `docs/RELEASING.md`.
+
+**What is left of M5 before 0.1.0:** daily life (delivery driving income on non-event days and the road distance that wears the car between rounds), residences and moving (where a driver lives and what it changes), and a last pass on the first-season experience; the branding and social assets and the changelog are made as part of the release itself.
+
 ## Technical architecture
 
 **Layers**
