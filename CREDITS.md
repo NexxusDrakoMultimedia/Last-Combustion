@@ -10,4 +10,6 @@
 
 The logo, favicons, social images, screenshots and the Vyktory flag are original works of Nexxus Drako Multimedia. The name and the logo are trademarks (see `TRADEMARKS.md`).
 
+The logo, favicons, social cards and profile art are original works by Nexxus Drako Multimedia, licensed [CC BY-SA 4.0](LICENSES/CC-BY-SA-4.0.txt) (one-way compatible with the GPL, so this project can include them). Credit them as "Last Combustion, Nexxus Drako Multimedia, CC BY-SA 4.0". The name and logo remain trademarks (see [TRADEMARKS.md](TRADEMARKS.md)).
+
 Add every new third-party asset or dependency here with its licence. Only GPL-compatible licences are accepted for code and assets (see the Game Design Document).

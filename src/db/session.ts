@@ -8,7 +8,7 @@ import { decodeSave, encodeSave, type SaveHeader } from './save-file';
 import { openDatabase } from './sql';
 import type { SaveSlot, SaveStorage } from './storage';
 
-export const APP_VERSION = '0.1.1';
+export const APP_VERSION = '0.1.2';
 
 /** Creates a new, migrated, empty database. */
 export function createNewDatabase(SQL: SqlJsStatic): Database {
