@@ -217,4 +217,55 @@ describe('career store', () => {
       expect(sinks).toContain('CarPurchase');
     }, 120_000);
   });
+
+  describe('mechanics', () => {
+    const setup = {
+      ownerName: 'Test Owner',
+      identity: 'masculine' as const,
+      birthDate: '1990-06-01',
+      garageName: 'Crew Test Racing',
+      flag: 'AU',
+      primaryColour: '#112233',
+      secondaryColour: '#ddeeff',
+    };
+    async function started() {
+      await useCareerStore.getState().startCareer(setup);
+      const starter = useCareerStore.getState().starter!;
+      await useCareerStore
+        .getState()
+        .chooseStarter(starter.cars[0]!.carId, starter.drivers[0]!.driverId);
+    }
+
+    it('starts with no crew, hires a mechanic, and lets them go', async () => {
+      await started();
+      expect(useCareerStore.getState().staff).toEqual([]);
+      expect(useCareerStore.getState().crew).toBe(0);
+      expect(useCareerStore.getState().staffOffers).toHaveLength(4);
+      await useCareerStore.getState().hireMechanic(0);
+      const hired = useCareerStore.getState().staff;
+      expect(hired).toHaveLength(1);
+      expect(useCareerStore.getState().crew).toBeGreaterThan(0);
+      await useCareerStore.getState().fireMechanic(hired[0]!.id);
+      expect(useCareerStore.getState().staff).toEqual([]);
+    });
+
+    it('pays the wages when a round is settled, and reports hiring', async () => {
+      await started();
+      const seen: TelemetryEvent[] = [];
+      addSink({ send: (e) => void seen.push(e) });
+      try {
+        await useCareerStore.getState().hireMechanic(0);
+        await useCareerStore.getState().runNextPrelims();
+        await useCareerStore.getState().runNextFinal();
+      } finally {
+        clearSinks();
+      }
+      const ids = seen.flatMap((e) => (e.kind === 'design' ? [e.id] : []));
+      expect(ids).toContain('Action:HireMechanic');
+      const wages = seen.flatMap((e) =>
+        e.kind === 'resource' && e.flow === 'Sink' && e.itemType === 'Wages' ? [e.amount] : [],
+      );
+      expect(wages.length).toBeGreaterThan(0);
+    }, 120_000);
+  });
 });

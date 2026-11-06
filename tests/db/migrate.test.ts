@@ -81,6 +81,7 @@ describe('migrate', () => {
       'gear_wear',
       'training',
       'plates',
+      'staff',
     ]);
   });
 

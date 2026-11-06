@@ -39,6 +39,13 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   ).toBeVisible();
   await page.keyboard.press('Escape');
 
+  await page.getByRole('button', { name: messages['rail.staff'] }).click();
+  await page.getByRole('button', { name: messages['staff.hire'] }).first().click();
+  await expect(
+    page.getByRole('button', { name: new RegExp(messages['staff.fire'].split('{')[0]!) }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['rail.sponsors'] }).click();
   await page.getByRole('button', { name: messages['sponsors.negotiate'] }).first().click();
   await page.getByLabel(messages['sponsors.fee']).fill('1000');

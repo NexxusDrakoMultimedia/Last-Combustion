@@ -370,6 +370,17 @@
       "festivalGrowth": 0.01
     }
   },
+  "staff": {
+    "weeksPerYear": 52,
+    "roundsPerSeason": 6,
+    "wageBase": 300,
+    "wagePerSkill": 4,
+    "skill": [30, 90],
+    "candidates": 4,
+    "maxPerGarage": 12,
+    "maxPartWearSaving": 0.25,
+    "maxRepairSaving": 0.2
+  },
   "negotiation": {
     "counterMargins": [0.15, 0.07, 0.02],
     "lowballWalkShare": [0.6, 0.8],

@@ -106,6 +106,7 @@ export const LEDGER_CATEGORIES = [
   'release_fee',
   'gear',
   'training',
+  'wages',
   'car_purchase',
   'car_sale',
   'parts',

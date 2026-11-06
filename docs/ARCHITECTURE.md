@@ -100,3 +100,5 @@ Plates: `src/sim/plates.ts` and `data/plates.json` (formats, colours and persona
 Telemetry: `src/platform/telemetry.ts` (events, `track`, sinks, money from the ledger), `gameanalytics.ts` (GameAnalytics, primary), `analytics.ts` (Google tag, secondary) and `consent.ts` (the visitor's choice); the store reports its actions, progression and money, and the shell reports panel opens.
 
 Market: `dealerOffers` and `dealerQuote` in `src/db/market.ts`, and `currentAuction`, `ensureAuction`, `auctionCycle` and `playerLots` in `src/db/auction.ts`; the Market panel's Dealers and Auctions tabs are `src/ui/shell/DealerSection.tsx` and `AuctionSection.tsx`.
+
+Staff: `src/sim/staff.ts` (wages, offers, crew cover and what it saves, pure) and `src/db/staff.ts` (hiring, notice and crew cover; migration 0028); wages are charged in `settleRound`, part wear in `wearParts` and the crash-repair bill in `src/db/finance.ts` follow the crew; the Staff panel is `src/ui/shell/StaffPanel.tsx`.
