@@ -112,9 +112,23 @@ export const LEDGER_CATEGORIES = [
   'car_sale',
   'parts',
   'restoration',
+  'electricity',
+  'water',
+  'race_fuel',
 ] as const;
 
-export const RESOURCE_ITEM_TYPES: string[] = LEDGER_CATEGORIES.map(resourceItemType);
+/** Categories reported together as one item type (GameAnalytics allows 20 item types). */
+const ITEM_GROUP: Readonly<Record<string, string>> = {
+  electricity: 'utilities',
+  water: 'utilities',
+  race_fuel: 'utilities',
+};
+
+const groupOf = (category: string): string => ITEM_GROUP[category] ?? category;
+
+export const RESOURCE_ITEM_TYPES: string[] = [...new Set(LEDGER_CATEGORIES.map(groupOf))].map(
+  resourceItemType,
+);
 
 /**
  * The money events between two ledger totals (category to total): a category whose total went up
@@ -125,14 +139,19 @@ export function ledgerDeltas(
   before: Readonly<Record<string, number>>,
   after: Readonly<Record<string, number>>,
 ): Extract<TelemetryEvent, { kind: 'resource' }>[] {
-  const out: Extract<TelemetryEvent, { kind: 'resource' }>[] = [];
+  const moves = new Map<string, number>();
   for (const category of LEDGER_CATEGORIES) {
-    const moved = Math.round((after[category] ?? 0) - (before[category] ?? 0));
+    const moved = (after[category] ?? 0) - (before[category] ?? 0);
+    moves.set(groupOf(category), (moves.get(groupOf(category)) ?? 0) + moved);
+  }
+  const out: Extract<TelemetryEvent, { kind: 'resource' }>[] = [];
+  for (const [group, total] of moves) {
+    const moved = Math.round(total);
     if (moved === 0) continue;
     out.push({
       kind: 'resource',
       flow: moved > 0 ? 'Source' : 'Sink',
-      itemType: resourceItemType(category),
+      itemType: resourceItemType(group),
       amount: Math.abs(moved),
     });
   }

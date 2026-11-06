@@ -108,10 +108,13 @@ describe('distance', () => {
 describe('round costs', () => {
   it('matches the Owner-driver balance check: a solo Starter car with no points', () => {
     const c = roundCosts({ entries: 1, top31: 0, upkeep: [1], distanceKm: 1500 });
-    expect(c.entryFees).toBe(3000);
+    expect(c.entryFees).toBe(2200);
+    expect(c.raceFuel).toBe(800);
     expect(c.tyres).toBe(1500 + 2100);
-    expect(c.servicing).toBe(1200);
+    expect(c.servicing).toBe(780);
+    expect(c.electricity + c.water).toBe(420);
     expect(c.travel).toBe(2000 + 1500);
+    // The split keeps the old total: entry fee + fuel was $3,000 and servicing + utilities $1,200.
     expect(c.total).toBe(3000 + 3600 + 1200 + 3500);
     // Six rounds: about $68,000 a season.
     expect(c.total * 6).toBeGreaterThan(65_000);
@@ -128,7 +131,7 @@ describe('round costs', () => {
   it('charges extra travel for each extra entry and scales servicing by upkeep', () => {
     const one = roundCosts({ entries: 1, top31: 0, upkeep: [4], distanceKm: 0 });
     const two = roundCosts({ entries: 2, top31: 0, upkeep: [1, 1], distanceKm: 0 });
-    expect(one.servicing).toBe(4800);
+    expect(one.servicing).toBe(3120);
     expect(two.travel - one.travel).toBe(750);
   });
 });

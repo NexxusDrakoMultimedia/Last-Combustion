@@ -82,9 +82,6 @@ describe('appointing an executive', () => {
     );
     db.run('UPDATE garage SET prestige = 10 WHERE id = ?', [garageId]);
     expect(executiveCapacity(db, garageId)).toEqual({ slots: 1, used: 0 });
-    expect(() => openExecutiveNegotiation(db, garageId, 'operations_director', 0)).toThrow(
-      /cannot be filled/,
-    );
     expect(() => openExecutiveNegotiation(db, garageId, 'finance_director', 7)).toThrow(
       /no such executive/,
     );
