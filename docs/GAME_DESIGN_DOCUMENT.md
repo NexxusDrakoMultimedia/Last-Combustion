@@ -73,17 +73,17 @@ The player's character ages like everyone else, and the career carries on when t
 
 **Each save is a universe**
 
-- A save holds one self-contained universe: its own world, history, almanac, records, rivalries and storylines, built from its master seed. Saves never share anything, and nothing carries between them except the player's settings and achievements.
+- A save holds one self-contained universe: its own world, history, Registry, Almanac, records, rivalries and storylines, built from its master seed. Saves never share anything, and nothing carries between them except the player's settings and achievements.
 - The universe goes on without the player. The series, the other garages, the drivers and the history do not stop when the player's career does.
 
 **When a career fails**
 
-- **Failure ends the career, not the universe.** A garage can go bankrupt (cash below zero with no way to pay its bills at a season's end, after a sale of its cars and a bank-style bailout that the player may refuse), the owner or driver can die or retire with no one to carry on, or the player can simply walk away from the garage. The garage then ceases to operate (its closing year goes in the almanac, as in "Records and history"), its cars and staff are sold or released into the world's markets, and its history stays.
+- **Failure ends the career, not the universe.** A garage can go bankrupt (cash below zero with no way to pay its bills at a season's end, after a sale of its cars and a bank-style bailout that the player may refuse), the owner or driver can die or retire with no one to carry on, or the player can simply walk away from the garage. The garage then ceases to operate (its closing year goes in the Registry, as in "Records and history"), its cars and staff are sold or released into the world's markets, and its history stays.
 - **The player then chooses between three paths:**
   - **Reincarnate in the same universe** as a **new character**, who may be a relative of the old one (sharing the surname and some history) or unrelated, in an existing garage or in a **new, unrelated garage** that the new character founds. Rivals, sponsors and records carry on, and the new character starts with their own reputation and, as in "Starting conditions", the usual start for their role.
   - **Take over an existing garage** in the same universe (as a new owner), if one is for sale or has failed and left a vacancy.
   - **Reset the universe**, which deletes the save and starts a new one with a new master seed.
-- **The old career is remembered.** The failed career appears in the universe's history and Hall of Shame or Fame as it deserves, the almanac keeps its entries, and the commentary and headlines may refer to it.
+- **The old career is remembered.** The failed career appears in the universe's history and Hall of Shame or Fame as it deserves, the Registry and the Almanac keep its entries, and the commentary and headlines may refer to it.
 - **Achievements and the Founder's career.** Achievements are not lost when a career fails, and reincarnating does not count as starting a new game for achievements that need one.
 - **Data.** The `character` table's `end_reason` gains a `bankrupt` and an `abandoned` value, and the garage's `closed_year` is set when it stops operating.
 
