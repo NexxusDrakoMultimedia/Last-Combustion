@@ -25,6 +25,7 @@ import { RegistryLink } from '../RegistryLink';
 import { AlmanacPanel } from './AlmanacPanel';
 import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
+import { ContactsSection } from './ContactsSection';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
@@ -388,12 +389,15 @@ export function Shell() {
           tabs={[
             { id: 'mechanics', label: t('staff.mechanicsTab') },
             { id: 'executives', label: t('executive.tab') },
+            { id: 'contacts', label: t('contacts.tab') },
           ]}
           tab={staffTab}
           onTab={setStaffTab}
           onClose={() => setOpen(null)}
         >
-          {staffTab === 'mechanics' ? <StaffPanel /> : <ExecutivesSection />}
+          {staffTab === 'mechanics' && <StaffPanel />}
+          {staffTab === 'executives' && <ExecutivesSection />}
+          {staffTab === 'contacts' && <ContactsSection />}
         </Panel>
       )}
       {!locked && open === 'almanac' && (

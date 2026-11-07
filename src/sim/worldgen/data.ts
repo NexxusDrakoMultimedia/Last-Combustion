@@ -40,6 +40,7 @@ export const seasonBalance = balanceJson.season;
 export const fanBalance = balanceJson.fans;
 export const staffBalance = balanceJson.staff;
 export const moraleBalance = balanceJson.morale;
+export const relationshipKinds = balanceJson.relationshipKinds;
 export const dailyBalance = balanceJson.daily;
 export const executiveData = executivesJson;
 export const siteLinks = linksJson;
