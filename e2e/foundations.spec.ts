@@ -92,8 +92,16 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await expect(page.getByText(messages['money.cash'], { exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
 
+  // The calendar lists what is coming.
+  await page.getByRole('button', { name: messages['rail.calendar'] }).click();
+  await expect(page.getByRole('heading', { name: messages['calendar.upcoming'] })).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // Continue skips to the day of the prelims; on the day it runs them.
+  await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
   await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
   await expect(page.getByText(/Round 1 prelims: \d+ set a time/)).toBeVisible();
+  await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
   await page.getByRole('button', { name: messages['hub.runFinal'] }).click();
   await expect(page.getByText(/Round 1 final: \d+ finished/)).toBeVisible();
   await page.getByRole('button', { name: messages['rail.season'] }).click();

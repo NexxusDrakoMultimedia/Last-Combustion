@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import {
+  bringForwardTo,
+  calendarView,
+  skipTime as skipTimeDb,
+  type CalendarView,
+} from '../db/calendar';
+import type { SkipMode } from '../sim/calendar';
 import { contactsBook, type Contact, type ContactType } from '../db/contacts';
 import { pressView, type PressView } from '../db/press';
 import { converse as dbConverse, socialView, type SocialView } from '../db/social';
@@ -274,6 +281,7 @@ interface CareerState {
   /** The computer garages the owner could invest in (read when the Investments tab opens), and the one being looked at. */
   investments: InvestmentTarget[];
   contacts: Contact[];
+  calendar: CalendarView | undefined;
   social: SocialView | undefined;
   press: PressView | undefined;
   investment: InvestmentView | undefined;
@@ -355,6 +363,8 @@ interface CareerState {
   buildFacility(kind: FacilityKind): Promise<void>;
   loadInvestments(): void;
   loadContacts(): void;
+  continueTime(): Promise<void>;
+  skipTime(mode: SkipMode): Promise<void>;
   loadSocial(): void;
   loadPress(): void;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
@@ -420,6 +430,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       career: readCareer(db),
       world: readWorldSummary(db),
       nextRound: nextRoundNumber(db),
+      calendar: calendarView(db),
       nextFinal: nextFinalRound(db),
       hub: hubView(db),
       dragonDrivers: dragonDriverIds(db),
@@ -541,6 +552,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     wealth: undefined,
     investments: [],
     contacts: [],
+    calendar: undefined,
     social: undefined,
     press: undefined,
     investment: undefined,
@@ -1042,6 +1054,29 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         return undefined;
       }, 'Converse'),
 
+    skipTime: (mode) =>
+      run(
+        async () => {
+          if (!openDb) return undefined;
+          skipTimeDb(openDb, mode);
+          refresh(openDb);
+          return undefined;
+        },
+        mode === 'event' ? 'SkipToEvent' : mode === 'week' ? 'SkipWeek' : 'SkipDay',
+      ),
+
+    continueTime: async () => {
+      if (!openDb) return;
+      const view = calendarView(openDb);
+      if (!view) return;
+      const due = view.due;
+      if (!due) return get().skipTime('due');
+      if (due.kind === 'prelims') return get().runNextPrelims();
+      if (due.kind === 'final') return get().runNextFinal();
+      if (due.kind === 'end_season') return get().finishSeason();
+      if (due.kind === 'new_season') return get().newSeason();
+    },
+
     loadContacts: () => {
       const garageId = openDb ? playerGarageId(openDb) : null;
       if (openDb && garageId !== null) set({ contacts: contactsBook(openDb, garageId) });
@@ -1169,6 +1204,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     finishSeason: () =>
       run(async () => {
         if (!openDb) return undefined;
+        bringForwardTo(openDb, 'end_season');
         const seasonEnd = endSeason(openDb);
         refresh(openDb);
         track({
@@ -1219,6 +1255,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (!openDb) return undefined;
         const round = nextRoundNumber(openDb);
         if (round === null) return undefined;
+        bringForwardTo(openDb, 'prelims', round);
         const summary = playPrelims(openDb, round);
         refresh(openDb);
         track({
@@ -1235,6 +1272,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (!openDb) return undefined;
         const round = nextFinalRound(openDb);
         if (round === null) return undefined;
+        bringForwardTo(openDb, 'final', round);
         const summary = playFinal(openDb, round);
         const settlement = settleRound(openDb, round);
         // The auction house closes its auction between rounds and opens the next one.
