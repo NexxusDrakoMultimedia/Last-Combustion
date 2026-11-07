@@ -17,8 +17,7 @@ export function DragonMark() {
 }
 
 /**
- * Text that opens a profile in the Registry: a driver, a car, a garage, a round's prelims or its
- * race. A dragon-blooded driver's link carries the dragon mark.
+ * Text that opens a profile in the Registry: a driver, a car, a garage or a person. A dragon-blooded driver's link carries the dragon mark.
  */
 export function RegistryLink({ to, children }: { to: RegistryTarget; children: ReactNode }) {
   const open = useCareerStore((s) => s.openRegistry);
@@ -48,6 +47,30 @@ export function RegistryLink({ to, children }: { to: RegistryTarget; children: R
           <DragonMark />
         </>
       )}
+    </button>
+  );
+}
+
+/** Text that opens a round's results (its prelims or its final) on the Season panel. */
+export function RoundLink({
+  year,
+  round,
+  session,
+  children,
+}: {
+  year: number;
+  round: number;
+  session: 'prelims' | 'final';
+  children: ReactNode;
+}) {
+  const openResults = useCareerStore((s) => s.openResults);
+  return (
+    <button
+      type="button"
+      className="cursor-pointer text-left underline decoration-lc-line decoration-dotted underline-offset-2 hover:decoration-lc-accent-ink focus-visible:outline-2 focus-visible:outline-lc-accent-ink"
+      onClick={() => openResults(year, round, session)}
+    >
+      {children}
     </button>
   );
 }

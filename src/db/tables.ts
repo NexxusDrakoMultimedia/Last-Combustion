@@ -175,6 +175,11 @@ export interface RoundClassification {
   course: string;
   finalDate: string;
   status: string;
+  /** The dates: the first practice day, the first prelim day and the final. */
+  practiceStart: string;
+  prelimStart: string;
+  /** The weather and temperature of each day of the round, once the prelims have been run. */
+  days: { date: string; kind: string; weather: string; temperatureC: number }[];
   /** Every car that ran the prelims, fastest first, then those with no time. */
   prelims: ResultRow[];
   /** Every car that started the final, in finishing order, then those that did not finish. */
@@ -192,7 +197,7 @@ export function roundClassification(
 ): RoundClassification {
   const round = all(
     db,
-    `SELECT r.id, r.final_date, r.status, c.name AS course
+    `SELECT r.id, r.final_date, r.status, r.practice_start, r.prelim_start, r.weather_log, c.name AS course
        FROM round r JOIN course c ON c.id = r.course_id JOIN season s ON s.id = r.season_id
       WHERE s.year = ? AND r.number = ?`,
     [year, roundNumber],
@@ -290,7 +295,24 @@ export function roundClassification(
     course: round.course as string,
     finalDate: round.final_date as string,
     status: round.status as string,
+    practiceStart: round.practice_start as string,
+    prelimStart: round.prelim_start as string,
+    days: parseDays(String(round.weather_log ?? '[]')),
     prelims,
     final,
   };
+}
+
+/** The days of a round's schedule from its saved log (empty before the prelims are run). */
+function parseDays(log: string): RoundClassification['days'] {
+  try {
+    return (JSON.parse(log) as Record<string, unknown>[]).map((d) => ({
+      date: String(d.date),
+      kind: String(d.kind),
+      weather: String(d.weather),
+      temperatureC: Number(d.temperatureC),
+    }));
+  } catch {
+    return [];
+  }
 }

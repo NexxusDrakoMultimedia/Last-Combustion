@@ -6,6 +6,7 @@ import { createCareer } from '../../src/db/career';
 import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
 import { playPrelims } from '../../src/db/prelims';
+import { ensureMarketGarage } from '../../src/db/market';
 import { recordBook } from '../../src/db/records';
 import { driverProfile, garageProfile } from '../../src/db/registry';
 import { roundClassification } from '../../src/db/tables';
@@ -183,6 +184,20 @@ describe('season awards over two seasons', () => {
     for (const row of ranking('nation_fans').board) expect(row.flag).toMatch(/^[A-Za-z-]{2,}$/);
     // A car on a board has the plate to show.
     for (const row of ranking('car_fans').board.slice(0, 5)) expect(row.plate).toBeTruthy();
+  });
+
+  it('leaves the used car market out of every ranking', () => {
+    const market = ensureMarketGarage(db);
+    const car = Number(scalar(db, 'SELECT id FROM car LIMIT 1'));
+    db.run('UPDATE garage SET fans = 900000000, prestige = 99 WHERE id = ?', [market]);
+    db.run('UPDATE car SET garage_id = ?, fans = 900000000 WHERE id = ?', [market, car]);
+    const book = recordBook(db);
+    for (const id of ['garage_fans', 'garage_prestige']) {
+      const record = book.records.find((r) => r.id === id)!;
+      expect(record.board.some((row) => row.subjectId === market)).toBe(false);
+    }
+    const cars = book.records.find((r) => r.id === 'car_fans')!;
+    expect(cars.board.some((row) => row.subjectId === car)).toBe(false);
   });
 
   it('logs attention flags, ranks them for drivers and garages and shows them in the Registry', () => {

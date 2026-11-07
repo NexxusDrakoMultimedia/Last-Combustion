@@ -78,9 +78,8 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await expect(page.getByRole('tab', { name: /^Drivers \(\d+\)/, selected: true })).toBeVisible();
   await page.getByRole('tab', { name: /^Cars \(\d+\)/ }).click();
   await expect(page.getByRole('button', { name: /Licence plate/ }).first()).toBeVisible();
-  await page.getByRole('tab', { name: /^Prelims and races \(\d+\)/ }).click();
-  await page.getByRole('button', { name: messages['registry.race'], exact: true }).first().click();
-  await expect(page.getByRole('heading', { name: /round \d+ race/ })).toBeVisible();
+  // Rounds are not in the Registry: their results are on the Season panel, not copied here.
+  await expect(page.getByRole('tab', { name: /^Prelims and races/ })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
 

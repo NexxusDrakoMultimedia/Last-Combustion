@@ -5,7 +5,7 @@ import { formatDate, formatMoney, t } from '../../i18n';
 import { repairBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
-import { RegistryLink } from '../RegistryLink';
+import { RoundLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 
 /** A condition bar: 100 is new, 0 is worn out. */
@@ -51,15 +51,13 @@ export function SeasonCalendar() {
               {r.status === 'scheduled' ? (
                 r.course
               ) : (
-                <RegistryLink
-                  to={{
-                    kind: r.status === 'complete' ? 'race' : 'prelim',
-                    year: hub.year,
-                    round: r.number,
-                  }}
+                <RoundLink
+                  year={hub.year}
+                  round={r.number}
+                  session={r.status === 'complete' ? 'final' : 'prelims'}
                 >
                   {r.course}
-                </RegistryLink>
+                </RoundLink>
               )}
             </td>
             <td>{formatDate(r.finalDate)}</td>

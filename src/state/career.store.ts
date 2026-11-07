@@ -312,6 +312,8 @@ interface CareerState {
   /** The Registry: where the player has been (newest last) and the page now showing. */
   registryTrail: RegistryTarget[];
   registryPage: RegistryPage | undefined;
+  /** A round's results the player asked to see (from a link): the Season panel opens on them. */
+  resultsFocus: { year: number; round: number; session: 'prelims' | 'final' } | undefined;
   /** The dragon-blooded drivers, who carry the dragon mark wherever their name is a link. */
   dragonDrivers: ReadonlySet<number>;
   /** Everything greylinked (`driver:12`, `car:7`, `garage:3`): listed apart, with grey links. */
@@ -377,6 +379,8 @@ interface CareerState {
   buyBackShares(holdingId: number, shares: number, by: 'garage' | 'owner'): Promise<void>;
   loadRecords(): void;
   openRegistry(target: RegistryTarget): void;
+  openResults(year: number, round: number, session: 'prelims' | 'final'): void;
+  clearResultsFocus(): void;
   registryBack(): void;
   closeRegistry(): void;
   loadLedger(year: number): void;
@@ -571,6 +575,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     years: [],
     standingsView: undefined,
     registryTrail: [],
+    resultsFocus: undefined,
     dragonDrivers: new Set<number>(),
     greylinked: new Set<string>(),
     activeYears: new Map(),
@@ -967,6 +972,13 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         set({ notice: describeError(error) });
       }
     },
+
+    openResults: (year, round, session) => {
+      trackDesign(undefined, 'Registry', 'Open', session === 'final' ? 'race' : 'prelim');
+      set({ registryTrail: [], registryPage: undefined, resultsFocus: { year, round, session } });
+    },
+
+    clearResultsFocus: () => set({ resultsFocus: undefined }),
 
     registryBack: () => {
       const trail = get().registryTrail.slice(0, -1);

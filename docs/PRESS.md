@@ -6,6 +6,8 @@ Everything you need to write about **The Last Combustion of the Petrol Engine**,
 
 _Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft._
 
+The short pitch: _Dwarf Fortress meets MF Ghost meets Aussie car culture._
+
 ## About the game
 
 Petrol is the rarest thing in the world, and a handful of people still race combustion cars on it. In 2031 they meet on closed Australian public roads for a new championship, six rounds a season, in ordinary road-legal cars. You run a garage. You buy and upgrade the cars, sign the drivers, keep the money coming in, and try to build a name that lasts through the seasons. Every driver, car, garage and race is remembered.

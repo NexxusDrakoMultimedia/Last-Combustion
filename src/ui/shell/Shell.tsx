@@ -73,8 +73,11 @@ export function Shell() {
   const { hub, starter, status, prelims, final, seasonEnd, rollover, notice } = s;
   const [openPanel, setPanel] = useState<PanelId | null>(null);
   // A profile opened from anywhere (a plate, a name, a number) shows the Registry over whatever is open.
-  const open = s.registryPage ? 'registry' : openPanel;
-  const [seasonTab, setSeason] = useState('calendar');
+  // A link to a round's results shows them on the Season panel's Results tab.
+  const focus = s.resultsFocus;
+  const open = s.registryPage ? 'registry' : focus ? 'season' : openPanel;
+  const [seasonTabState, setSeason] = useState('calendar');
+  const seasonTab = focus ? 'results' : seasonTabState;
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
   const [operationsTab, setOperationsTab] = useState('suppliers');
@@ -83,6 +86,7 @@ export function Shell() {
   const [almanacTab, setAlmanac] = useState('seasons');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
+    s.clearResultsFocus();
     if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
     if (id === 'registry') {
       s.openRegistry({ kind: 'index' });
@@ -92,6 +96,7 @@ export function Shell() {
     setPanel(id);
   };
   const setSeasonTab = (tab: string) => {
+    s.clearResultsFocus();
     trackDesign(undefined, 'Panel', 'Tab', 'season', tab);
     setSeason(tab);
   };
@@ -346,7 +351,9 @@ export function Shell() {
           {seasonTab === 'calendar' ? (
             <SeasonCalendar />
           ) : seasonTab === 'results' ? (
-            <ResultsPanel />
+            <ResultsPanel
+              key={focus ? `${focus.year}-${focus.round}-${focus.session}` : 'results'}
+            />
           ) : (
             <StandingsPanel />
           )}
