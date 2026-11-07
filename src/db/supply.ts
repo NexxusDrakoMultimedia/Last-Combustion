@@ -12,7 +12,6 @@ import {
 import { createRng } from '../sim/rng';
 import {
   BASE_RATES,
-  SUPPLIERS,
   SUPPLY_CATEGORIES,
   canDealWith,
   contractRate,
@@ -27,6 +26,7 @@ import {
 import { economyBalance, supplyData } from '../sim/worldgen/data';
 import { OUTAGE_CATEGORIES, outageChance, type OutageCategory } from '../sim/outages';
 import { garageBonuses } from './bonuses';
+import { supplierOffers } from './companies';
 import { readCareer } from './career';
 import { all } from './entries';
 import { garageFacilityBonuses } from './facilities';
@@ -222,7 +222,15 @@ export function supplyView(db: Database, garageId: number): SupplyView {
               next: down.includes(category as OutageCategory),
             }
           : null,
-        suppliers: SUPPLIERS.filter((s) => s.category === category).map((s) => ({
+        // Three offered at random (weighted by tier, prestige and relationship), sorted by tier then name.
+        suppliers: supplierOffers(
+          db,
+          garageId,
+          category,
+          garage.prestige as number,
+          (s) => canDealWith(s, garage.prestige as number, garage.home_state as string),
+          contracts.find((c) => c.category === category)?.supplierId,
+        ).map((s) => ({
           id: s.id,
           name: s.name,
           tier: s.tier,

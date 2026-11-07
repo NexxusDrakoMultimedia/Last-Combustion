@@ -599,5 +599,20 @@
     "mechanicRetireAge": 65,
     "executiveRetireAge": 70,
     "mechanicAge": [22, 58]
+  },
+  "companies": {
+    "source": "Sponsors and utility suppliers come and go, like garages and drivers, but never for good. Each year a company that is not tied to a deal withdraws from the series with chance 'breakChance', for 'breakYears' (a low and a high number of years), and then returns. Each season the garage is offered 'offers' sponsors and 'offers' suppliers in each category, drawn at random without repeats and weighted by three things: the tier ('tierWeight', higher is likelier), how close the company's minimum prestige is to the garage's prestige (1 over 1 plus the gap divided by 'prestigeGap'), and the relationship (one plus the score above zero divided by 'relationshipScale').",
+    "offers": 3,
+    "breakChance": 0.08,
+    "breakYears": [1, 3],
+    "tierWeight": {
+      "local": 1,
+      "regional": 1,
+      "national": 0.9,
+      "continental": 0.8,
+      "global": 0.7
+    },
+    "prestigeGap": 20,
+    "relationshipScale": 50
   }
 }

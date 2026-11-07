@@ -20,10 +20,10 @@ const market = (seed: string, category: (typeof SUPPLY_CATEGORIES)[number], year
   marketRate(createRng(seed).stream(`market:${category}:${2031 + years}`), category, years);
 
 describe('suppliers', () => {
-  it('are fictional companies with unique ids, four to a category, each with a believable price index', () => {
+  it('are fictional companies with unique ids, eight to a category, each with a believable price index', () => {
     expect(new Set(SUPPLIERS.map((s) => s.id)).size).toBe(SUPPLIERS.length);
     for (const category of SUPPLY_CATEGORIES) {
-      expect(SUPPLIERS.filter((s) => s.category === category)).toHaveLength(4);
+      expect(SUPPLIERS.filter((s) => s.category === category)).toHaveLength(8);
     }
     for (const s of SUPPLIERS) {
       expect(s.priceIndex).toBeGreaterThanOrEqual(0.8);

@@ -42,6 +42,7 @@ export const seasonBalance = balanceJson.season;
 export const fanBalance = balanceJson.fans;
 export const staffBalance = balanceJson.staff;
 export const jobsBalance = balanceJson.jobs;
+export const companyBalance = balanceJson.companies;
 export const pressData = pressJson;
 export const socialData = socialJson;
 export const moraleBalance = balanceJson.morale;

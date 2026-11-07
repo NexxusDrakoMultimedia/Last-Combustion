@@ -48,25 +48,27 @@ Rules for editing data:
 
 The one file of tunable numbers. Each top-level section belongs to one part of the game.
 
-| Section             | What it tunes                                                                                                                                                                                |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `worldgen`          | The starting world: garage and entry counts, garage sizes, driver and car generation, origins, fans, contracts, lineups, number pool                                                         |
-| `wear`              | Chassis wear per kilometre (road and race), the tier factors and where parts start to fail                                                                                                   |
-| `sim`               | The lap-time model: grip, power, altitude, temperature, driver weights, noise, incidents, practice (including how much of it counts as race distance), prelims and the pole bonus            |
-| `junior`            | The Junior Series rules: power cap, age limit                                                                                                                                                |
-| `final`             | The final race: gaps, overtaking, calls, tyres, mechanical failures, weather, drones and the overtake bonus                                                                                  |
-| `daily`             | Daily life, settled for each day that passes: delivery pay and road kilometres per day, moving cost, road training per day and its cap, and the local-area pay factors by state              |
-| `economy`           | Used car prices, provenance, tier upkeep, the round costs (entry fee, tyres, servicing, fuel, utilities, travel), venue positions, the used market, the auction house and the starter offers |
-| `upgrades`          | The road-legality budget, the part categories, tyre width limits                                                                                                                             |
-| `fans`              | Fan gains by result, how fans are shared, the cap, losses, and merchandise income                                                                                                            |
-| `staff`             | Mechanics: wages, skill, candidates, the crew's savings on wear and repairs                                                                                                                  |
-| `negotiation`       | The deal-making rules: counters, patience, leverage, relationship and rival effects                                                                                                          |
-| `sponsors`          | The title sponsor fee formula                                                                                                                                                                |
-| `deals`             | Part supplier and manufacturer discounts                                                                                                                                                     |
-| `repairs`           | Part and gear wear, servicing, crash repairs and full chassis restorations (the wear floor each one adds, by tier, and the 50 past which a car retires)                                      |
-| `season`            | The season: the Drivers' and Garage Championship prizes, retirements, rookies, garage openings and closings, driver progression and training                                                 |
-| `morale`            | Morale of mechanics and executives: the starting value, how far it moves each season, what pushes it (pay, results, facilities, workload) and when someone quits                             |
-| `relationshipKinds` | The relationship scores at which someone counts as a friend, a rival or an enemy                                                                                                             |
+| Section             | What it tunes                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `worldgen`          | The starting world: garage and entry counts, garage sizes, driver and car generation, origins, fans, contracts, lineups, number pool                                                                                |
+| `wear`              | Chassis wear per kilometre (road and race), the tier factors and where parts start to fail                                                                                                                          |
+| `sim`               | The lap-time model: grip, power, altitude, temperature, driver weights, noise, incidents, practice (including how much of it counts as race distance), prelims and the pole bonus                                   |
+| `junior`            | The Junior Series rules: power cap, age limit                                                                                                                                                                       |
+| `final`             | The final race: gaps, overtaking, calls, tyres, mechanical failures, weather, drones and the overtake bonus                                                                                                         |
+| `daily`             | Daily life, settled for each day that passes: delivery pay and road kilometres per day, moving cost, road training per day and its cap, and the local-area pay factors by state                                     |
+| `economy`           | Used car prices, provenance, tier upkeep, the round costs (entry fee, tyres, servicing, fuel, utilities, travel), venue positions, the used market, the auction house and the starter offers                        |
+| `upgrades`          | The road-legality budget, the part categories, tyre width limits                                                                                                                                                    |
+| `fans`              | Fan gains by result, how fans are shared, the cap, losses, and merchandise income                                                                                                                                   |
+| `staff`             | Mechanics: wages, skill, candidates, the crew's savings on wear and repairs                                                                                                                                         |
+| `negotiation`       | The deal-making rules: counters, patience, leverage, relationship and rival effects                                                                                                                                 |
+| `sponsors`          | The title sponsor fee formula                                                                                                                                                                                       |
+| `deals`             | Part supplier and manufacturer discounts                                                                                                                                                                            |
+| `repairs`           | Part and gear wear, servicing, crash repairs and full chassis restorations (the wear floor each one adds, by tier, and the 50 past which a car retires)                                                             |
+| `season`            | The season: the Drivers' and Garage Championship prizes, retirements, rookies, garage openings and closings, driver progression and training, the yearly chance of a death outside racing and what a driver invests |
+| `companies`         | Sponsors and utility suppliers coming and going, and the offers: how many are offered, the chance of withdrawing and for how long, and the weights of tier, prestige and relationship                               |
+| `jobs`              | The job market: how long someone stays out of work, the retirement ages for mechanics and executives and a mechanic's age                                                                                           |
+| `morale`            | Morale of mechanics and executives: the starting value, how far it moves each season, what pushes it (pay, results, facilities, workload) and when someone quits                                                    |
+| `relationshipKinds` | The relationship scores at which someone counts as a friend, a rival or an enemy                                                                                                                                    |
 
 ## Adding or changing a file
 

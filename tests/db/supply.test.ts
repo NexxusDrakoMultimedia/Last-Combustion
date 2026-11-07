@@ -172,10 +172,20 @@ describe('paying for a round', () => {
     for (const c of view.categories) {
       expect(c.nextRound).toBeGreaterThan(0);
       expect(c.contract).toBeUndefined();
-      expect(c.suppliers).toHaveLength(4);
+      // At most three are offered, all of them ones the garage can deal with, sorted by tier then name.
+      expect(c.suppliers.length).toBeGreaterThan(0);
+      expect(c.suppliers.length).toBeLessThanOrEqual(3);
+      expect(c.suppliers.every((s) => s.eligible)).toBe(true);
+      const tiers = ['local', 'regional', 'national', 'continental', 'global'];
+      const order = c.suppliers.map((s) => tiers.indexOf(s.tier));
+      expect(order).toEqual([...order].sort((a, b) => a - b));
     }
     const electricity = view.categories.find((c) => c.category === 'electricity')!;
-    expect(electricity.suppliers.find((s) => s.id === electricityGlobal.id)!.eligible).toBe(false);
-    expect(electricity.suppliers.find((s) => s.id === electricityLocal.id)!.eligible).toBe(true);
+    // A global supplier asks for more prestige than this garage has, so it is not offered.
+    expect(electricity.suppliers.some((s) => s.id === electricityGlobal.id)).toBe(false);
+    // The same offers wait all season.
+    expect(supplyView(db, garageId).categories.map((c) => c.suppliers.map((s) => s.id))).toEqual(
+      view.categories.map((c) => c.suppliers.map((s) => s.id)),
+    );
   });
 });
