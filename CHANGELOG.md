@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 ### Added
 
 - Ownership: every garage now has a cap table. You own all of your garage's shares from the day you found it; computer garages belong to their founder and family, or have an outside investor, or are partly held by a sponsor or a manufacturer. The new Ownership panel shows who holds what, the garage's valuation (cash, cars, profit, fans, prestige and titles), the price of a share and how the valuation has moved over the seasons. Saves from earlier versions are given their owners when they load.
-- The Registry has a People tab with a profile for every executive, staff member and shareholder, linked from the Ownership, Staff and Executives panels.
+- The Registry has a Paddock tab with a profile for every executive, staff member and shareholder, linked from the Ownership, Staff and Executives panels.
 
 ## [0.2.0-beta3] - 2026-11-07
 

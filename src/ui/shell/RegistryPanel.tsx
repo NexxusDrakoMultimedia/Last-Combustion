@@ -624,7 +624,7 @@ function ByStatus<T extends { status: RegistryStatus }>({
   );
 }
 
-const INDEX_TABS = ['drivers', 'cars', 'garages', 'people', 'rounds'] as const;
+const INDEX_TABS = ['drivers', 'cars', 'garages', 'paddock', 'rounds'] as const;
 type IndexTab = (typeof INDEX_TABS)[number];
 
 /** Every driver, car, garage and round in its own tab, with a search that narrows the open tab. */
@@ -638,13 +638,13 @@ function IndexPage({ data }: { data: RegistryIndex }) {
   const drivers = data.drivers.filter((d) => match(d.name, d.number, d.garage));
   const cars = data.cars.filter((c) => match(c.plate, c.model, c.plateState));
   const garages = data.garages.filter((g) => match(g.name));
-  const people = data.people.filter((p) => match(p.name, p.garage, personRole(p.kind, p.role)));
+  const paddock = data.people.filter((p) => match(p.name, p.garage, personRole(p.kind, p.role)));
   const rounds = data.rounds.filter((r) => match(r.year, r.course, `round ${r.round}`));
   const counts: Record<IndexTab, number> = {
     drivers: drivers.length,
     cars: cars.length,
     garages: garages.length,
-    people: people.length,
+    paddock: paddock.length,
     rounds: rounds.length,
   };
   return (
@@ -716,15 +716,15 @@ function IndexPage({ data }: { data: RegistryIndex }) {
             )}
           />
         )}
-        {tab === 'people' && (
+        {tab === 'paddock' && (
           <div className="space-y-6">
             {(['executive', 'staff', 'shareholder'] as const).map((kind) => {
-              const group = people.filter((p) => p.kind === kind);
+              const group = paddock.filter((p) => p.kind === kind);
               if (group.length === 0) return null;
               return (
                 <section key={kind} className="space-y-2">
                   <h3 className="lc-display text-sm text-lc-dim">
-                    {t(`registry.people.${kind}s` as never)}
+                    {t(`registry.paddock.${kind}s` as never)}
                   </h3>
                   <ByStatus
                     items={group}
