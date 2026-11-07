@@ -72,6 +72,9 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   // Delivery driving has paid the garage between the rounds, and the drivers' homes show.
   await page.getByRole('button', { name: messages['rail.money'] }).click();
   await expect(page.getByText(messages['money.category.delivery'])).toBeVisible();
+  await expect(page.getByLabel(messages['ledger.year'])).toHaveValue('2031');
+  await expect(page.getByText(messages['ledger.operating'])).toBeVisible();
+  await expect(page.getByText(messages['ledger.running'])).toBeVisible();
   await page.keyboard.press('Escape');
 
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();

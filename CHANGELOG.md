@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
-- The ledger keeps a summary of each financial year (closing on 11 November, with the season) for every garage, grouped into racing income, commercial income, race running costs, premises, people and assets, with the year's operating result and net cash movement. Years played in earlier versions are summed from the ledger when the save loads. The screen for it comes next.
+- The ledger keeps a summary of each financial year (closing on 11 November, with the season) for every garage, grouped into racing income, commercial income, race running costs, premises, people and assets, with the year's operating result and net cash movement. Years played in earlier versions are summed from the ledger when the save loads. The Money panel is now the Ledger panel, with a year picker and a table of each group and category showing income, spending, net, the change on the year before and its share of the group.
 
 ## [0.2.0-beta2] - 2026-11-07
 
