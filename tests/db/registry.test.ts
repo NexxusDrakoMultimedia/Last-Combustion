@@ -13,11 +13,11 @@ import {
   activeYearsOf,
   dragonDriverIds,
   registryIndex,
-  roundProfile,
 } from '../../src/db/registry';
 import { playPrelims } from '../../src/db/prelims';
 import { startNextSeason } from '../../src/db/rollover';
 import { endSeason } from '../../src/db/season';
+import { roundClassification } from '../../src/db/tables';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
@@ -145,18 +145,15 @@ describe('the registry over two seasons', () => {
     db.run('UPDATE garage SET is_player = 0 WHERE id = ?', [id]);
   });
 
-  it('gives a round a prelim profile and a race profile with the conditions and every car', () => {
-    const prelim = roundProfile(db, 'prelim', 2031, 1);
-    const race = roundProfile(db, 'race', 2031, 1);
-    expect(prelim.course).toBe(race.course);
-    expect(prelim.days.length).toBeGreaterThan(2);
-    expect(prelim.rows.length).toBeGreaterThan(300);
-    expect(race.rows.length).toBeGreaterThan(10);
-    expect(race.winner).not.toBeNull();
-    expect(race.rows[0]!.driverId).toBe(race.winner!.id);
-    expect(prelim.pole).not.toBeNull();
-    expect(race.rows.every((r) => r.carId > 0 && r.garageId > 0)).toBe(true);
-    expect(roundProfile(db, 'race', 2032, 1).rows[0]!.badge).toBeDefined();
+  it('gives a round its dates, its conditions and every car in one classification', () => {
+    const c = roundClassification(db, 2031, 1);
+    expect(c.days.length).toBeGreaterThan(2);
+    expect(c.practiceStart < c.prelimStart && c.prelimStart < c.finalDate).toBe(true);
+    expect(c.prelims.length).toBeGreaterThan(300);
+    expect(c.final.length).toBeGreaterThan(10);
+    expect(c.prelims.some((r) => r.pole)).toBe(true);
+    expect(c.final.every((r) => r.carId > 0 && r.garageId > 0)).toBe(true);
+    expect(roundClassification(db, 2032, 1).final[0]!.badge).toBeDefined();
   });
 
   it('indexes everything to browse and search', () => {
@@ -164,8 +161,6 @@ describe('the registry over two seasons', () => {
     expect(index.drivers.length).toBeGreaterThan(313);
     expect(index.cars.length).toBeGreaterThan(300);
     expect(index.garages.length).toBeGreaterThan(50);
-    expect(index.rounds).toHaveLength(12);
-    expect(index.rounds[0]).toMatchObject({ year: 2032, round: 1 });
     expect(index.drivers.find((d) => d.id === championId)!.badge.gold).toBe(true);
   });
 

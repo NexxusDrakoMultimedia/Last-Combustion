@@ -4,7 +4,7 @@ Nov 2, 2026 · @Pyra Drake
 
 ## Overview
 
-**Last Combustion** is a racing driver management and car upgrading game about a 2031 racing series for road-legal combustion cars, run on closed Australian public roads. It is loosely inspired by the anime/manga *MF Ghost*; all names and branding are original.
+**Last Combustion** is a racing driver management and car upgrading game about a 2031 racing series for road-legal combustion cars, run on closed Australian public roads. It is loosely inspired by the anime/manga *MF Ghost*; all names and branding are original. The short pitch is *Dwarf Fortress meets MF Ghost meets Aussie car culture*: a world that keeps running and remembers everything, a series of road-legal cars on closed roads, and a garage culture that is unmistakably Australian.
 
 The game's full name is **The Last Combustion of the Petrol Engine**, or **Last Combustion** for short. The series it is about has its own full name, **The Last Combustion of the Petrol Engine World Motorsports Championship**, also shortened to *Last Combustion* in everyday use.
 
@@ -112,6 +112,16 @@ The season runs annually from **March to October**. It consists of six rounds on
 - **Pyra Drake's Birthday & Season Start:** Pyra was born in 1996, celebrating her 35th birthday in Season 1 (2031) and her 40th birthday in Season 6 (2036). The first day of Round 1 practice and the opening ceremony always takes place on her birthday, **March 31st**.
 - **Season Wrap:** The racing season concludes in **mid-October** after Round 6.
 - **Closing Ceremony & Festival:** The Closing Ceremony, Awards Gala, and opening day of the week-long **Drake Motorsports International Motoring Festival** in **Healesville, Victoria** (HQ town of Last Combustion and Pyra's hometown) always take place on **November 11th**.
+
+**The game calendar and time controls (built, first version; the rest is design).** Today the game has a date only in name: the player presses **Run next prelims** and **Run next final**, and the date jumps from phase to phase. The design replaces that with a calendar the player moves through, like the time controls of Football Manager.
+
+- **A date that moves a day at a time.** The game date advances one day per tick. Everything that happens on a day (the daily life of drivers, a negotiation's answer, a contract running out, a part arriving, a supplier outage, the financial year closing on 11 November) is settled by that day's tick, from the career's seed and the date, so skipping a week gives exactly the world that seven single days give.
+- **Controls.** The top bar shows the date and four controls: **Continue** (go on until something needs the player), **Next event** (skip to the next scheduled event on the calendar), **Day** and **Week**. A skip always stops early for anything that needs the player: a round beginning, an offer or a negotiation answered, a contract about to run out, a social occasion, an outage, a board message, the end of the financial year.
+- **Races are events on the calendar.** A round is a run of dated events: practice from the round's start (31 March for round 1), seven prelim days, and the final. The Run prelims and Run final buttons go. The player skips to the event, and on its day **Continue** runs it (the prelim day's runs, then the final), with the result shown as it is today. Between rounds the days are the player's to use: upgrades, training, hiring, deals and social occasions.
+- **A calendar to look at.** A Calendar panel shows the month with the rounds, the prelim days, the occasions, the contract and negotiation dates, the financial year end and the festival, and what is coming in the next fortnight.
+- **Dated occasions.** The social occasions move from "after round N" to dates: the season opening on 31 March, the sponsor dinner and press day in the weeks between rounds, the paddock party before the final round, the closing ceremony and the start of the festival on 11 November.
+- **Built so far.** The game date (`career.game_date`) now moves, a day at a time, with the controls in the top bar: **Continue** (runs what is due today, or skips to the next day something needs the player, past the dates that only mark a day), **+1 day**, **+1 week** and **Next event** (which stops at every event). A skip moves one day at a time and stops early at the next event, and does nothing while a prelims, a final, the end of the season or the next season is due. The events are, for each round, practice (a marker), prelims and the final, then the end of the season on 11 November and the start of the next on 1 February; a final's date follows the prelims, which fix it. The Run next prelims and Run next final buttons are gone from the top bar: on the day, Continue says what it will run. A **Calendar** panel in the rail lists what is coming and what has happened. Dates in the ledger and in other records now follow the game date. The social occasions are on the calendar, on their dates (see "Social occasions"), and Continue stops at each. The garage's daily life (delivery pay, road wear, the drivers' training on the roads at home) is now settled a day at a time (see "Driver origins: hometown and residence"). Not built yet: other work done for each day that passes, the contract and negotiation dates as events, prelims run a day at a time, and watching an event.
+- **Build order.** First the date and the day tick, settling the daily things that exist now. Then the Calendar panel. Then the controls and the stops. Then the Run buttons give way to events on the calendar, and the social occasions and other dated things move onto dates. The first playable version keeps a prelim or a final as one event that runs at once; running a prelim a day at a time, and watching a final, come later.
 
 | Rd | Course | State | Character |
 | --- | --- | --- | --- |
@@ -349,6 +359,8 @@ The Vyktory rename itself is now built too: `planWorldChanges` rolls it once per
 
 **Name generators and nicknames (built).** People, garages, cars and nicknames come from themed, categorised generators (`data/names/`): garages from eleven themes (heritage, engineering, animal, place, myth, speed, vintage, touge, bush, business, colour), car models by category (hypercar, supercar, JDM, sports, domestic, other) with real model names denied, and nicknames such as "The Midnight Ghost" chosen from the road a driver calls home and how they race. About 40% of drivers have one. One nation in twenty is picked with no weighting at all. Drivers also earn titles (`data/titles.json`) for career feats, as in Wangan Midnight and Tokyo Xtreme Racer, and equip one.
 
+**Names from many cultures (built).** `data/names.json` holds first names (male and female) and family names for 58 nations and cultures: the first fifteen (Australia, New Zealand, Britain, the United States, Japan, Germany, Italy, France, Sweden, Brazil, South Korea, South Africa, Canada, Ireland and the Netherlands) are larger than before, and forty-three more are added across Latin America, Europe, East, South-East and South Asia, the Middle East, Africa and the Pacific. Australia keeps 60% of the weight; the established nations share 34%, the new cultures 6%, and the wildcard (5% of draws, any nation with names at random) gives every one of them an occasional driver. A first name never has a space in it (a compound is hyphenated, as in "Seo-yeon"), because the first word of a name is taken to be the given name. **Names that are not allowed.** Generated names are checked against a list of offensive words (each part of a name is compared in lower case) and a list of infamous people, and a name that matches is drawn again. A name that happens to match a real person who is not on the list, including a real driver, is allowed: the work-of-fiction disclaimer says so. Names of well-known real people and rulers are kept out of the lists themselves.
+
 ```latex
 \text{Max tyre width (mm)} = \frac{\text{Kerb weight (kg)}}{5} + 40
 ```
@@ -424,6 +436,8 @@ Every car's driving data is streamed by telemetry to the central computer at Las
 - **Comms rooms.** Every garage is alerted, not just the driver's own.
 - **Effects.** A flag boosts fame and draws sponsor and supplier interest. Rival garages notice too, so a flagged driver may get contract offers from them.
 - **Scouting.** Flags on other garages' drivers are leads for the player, especially drivers who don't have a gold border yet.
+
+**Built so far (attention flags, M6 slice 1).** The prelims raise flags (`attentionFlags`, `src/sim/prelim/attention.ts`; the threshold is `sim.attention.zThreshold` in `data/balance.json`). Each run's time is compared with what its car alone should manage in the day's conditions (power, weight and tyres on that road, with no driver in it, plus any setup gain), and the gain is compared across the whole field: a run at least 2.5 standard deviations above the field's average gain is flagged, and a crash cannot be flagged. The comparison is made over the whole run, with the gains of its sectors added up, and not sector by sector, because a sector-by-sector test at 2.5 standard deviations would flag dozens of runs a round and the design asks for once or twice; measured over many seeds and all six courses it is about 1.6 a round. The sector where the driver gained most is recorded. A flag is an `attention` row in the event log (the sector, the z score and the gain in milliseconds). It gives the driver 0.6% of the series audience (`fans.gains.attention`, shared with the garage, car and flag like any other gain), and the series audience grows by 0.5% for each flag raised in the season that has ended (`fans.series.attentionGrowth`). The ATTN pennant marks a flagged run in the prelim results and in the Registry; a driver's and a garage's profile list their flags, and the Almanac's Records tab ranks drivers and garages by flags. Not built yet: flags in the final race, the broadcast priority and the drones, the comms-room alert, sponsor, supplier and rival-garage interest, and contract offers after a flag.
 
 **Crash highlights.** The prelim field is a mixed bag, and some viewers tune in to watch less-skilled drivers crash expensive cars spectacularly. Big crashes make the highlight reels: they raise a driver's fame as notoriety but cost reputation, on top of the repair bill.
 
@@ -573,7 +587,7 @@ Drivers, cars and garages have traits, in the manner of an RPG. Traits give each
 - Trait names and descriptions are in `locales/en.json`.
 - Founder's-career characters and the commentary team carry fixed traits written by hand.
 
-**Build order.** M4 (negotiation) adds personality to driver generation and contracts, M5 adds earned traits and driver-development effects, M6 adds trait-driven incidents, rivalries and storylines. Car and garage traits arrive with the auction house and AI garage behaviour in M4.
+**Build order.** M4 (negotiation) adds personality to driver generation and contracts, M5 adds earned traits and driver-development effects, M7 adds trait-driven incidents, rivalries and storylines. Car and garage traits arrive with the auction house and AI garage behaviour in M4.
 
 ## Driver gear
 
@@ -630,14 +644,14 @@ Last Combustion is as much a garage simulation as a racing simulation and a driv
 | Commercial Director | Better sponsor offers and more sponsors willing to talk. | +20% title sponsor fee, sponsors' minimum prestige 10 points lower |
 | Contracts Director | Negotiation power in every deal the garage makes (drivers, sponsors, manufacturers, suppliers, executives): the garage's leverage rises. | +0.05 leverage (the limit is ±0.2), one more counter of patience from skill 80 |
 | Head of Marketing | Faster fan growth for the garage's drivers, cars and the garage, and more merchandise income. | +25% fans gained from results, +30% merchandise income |
-| Operations Director | Cheaper utilities, fuel and logistics, and shorter supply outages. | −15% on those bills, outages last 30% fewer rounds |
+| Operations Director | Cheaper utilities, fuel and logistics, and shorter supply outages. | −15% on those bills, outages 30% less likely to run on |
 | Finance Director | Cheaper money. Lower auction fees, earlier warning of trouble, and kinder terms when money runs short. | Buyer's premium 10% to 7%, seller's fee 5% to 3%, bailout interest halved |
 | Technical Director | Better cars. Parts cost less and wear more slowly (stacking with the crew), and scrutineering problems are flagged before they bite. | −10% part prices, −15% part wear |
 | Sporting Director | Better drivers. Training works harder, gear lasts longer and drivers settle in faster. | +25% training effect, −20% gear refurbishment cost |
 
 A garage's prestige sets how many executive roles it may fill: the first at prestige 10, then one more for every 10 points, so all eight at 80. An executive costs `$40,000 + $1,200 × skill` a year, about $100,000 for a middling 50. That makes them a real decision: an Operations Director saving 15% on utilities, fuel and logistics pays for themself only in a garage with several entries, while a Commercial Director pays for themself as soon as a title sponsor is in play. Executives have the same personality axes and traits as drivers (see "Personalities and traits"): an ambitious executive wants a bigger role and may leave for a rival, a loyal one stays through a bad season, and two executives with a bad history in the relationship table (see "People and relationships") work worse together.
 
-**Executives (built, first version).** The Staff panel's Executives tab appoints executives to any of the eight roles. A garage's slots follow its prestige (the first at 10, then one more for each 10), and the player's prestige now moves with what the garage does: it starts at 1 and rises by 4 for each entry after the first, 2 for each gold-bordered driver in its entries and 5 for each Drivers' Championship won, up to 100 (`refreshPlayerPrestige`: so a third entry and a gold-bordered driver are about what the first slot takes; computer garages keep the prestige they were drawn with for now). Each role has three people on offer, drawn from the career seed, with a name, an age, a skill from 35 to 90 and an asking salary of `$40,000 + $1,200 × skill`. Hiring is a negotiation like any other (a new `executive_contract` kind: salary and a contract of one to three years, with the executive's walk-away salary from their skill against the garage's prestige and their relationship, and the garage's own Contracts Director helping). Salaries are paid a round at a time (a sixth of the year, ledger category `salaries`), dismissal costs half a year's pay, and a contract that runs out ends when the next season starts, so the player renegotiates or replaces. The bonuses are live: the Contracts Director adds leverage and, from skill 80, a counter of patience to every driver, sponsor and supplier or manufacturer negotiation; the Commercial Director raises the title sponsor fee asked and lets sponsors with a higher minimum prestige talk; the Head of Marketing multiplies the fans the garage's drivers win and its merchandise income; the Finance Director cuts the auction buyer's premium and seller's fee; the Technical Director cuts part prices and part wear (stacking with the crew); the Sporting Director makes training work harder and gear refurbishment cheaper; and the Chief Executive lifts every other bonus. The Operations Director is live now that suppliers are (he or she cuts every supply bill, see "Utilities, fuel and logistics"). Not yet built: poaching, personality and traits for executives, equity options, retirement ages and the Chief Executive's faster prestige.
+**Executives (built, first version).** The Staff panel's Executives tab appoints executives to any of the eight roles. A garage's slots follow its prestige (the first at 10, then one more for each 10), and the player's prestige now moves with what the garage does: it starts at 1 and rises by 4 for each entry after the first, 2 for each gold-bordered driver in its entries and 5 for each Drivers' Championship won, up to 100 (`refreshPlayerPrestige`: so a third entry and a gold-bordered driver are about what the first slot takes; computer garages keep the prestige they were drawn with for now). Each role has three people on offer, drawn from the career seed, with a name, an age, a skill from 35 to 90 and an asking salary of `$40,000 + $1,200 × skill`. Hiring is a negotiation like any other (a new `executive_contract` kind: salary and a contract of one to three years, with the executive's walk-away salary from their skill against the garage's prestige and their relationship, and the garage's own Contracts Director helping). Salaries are paid a round at a time (a sixth of the year, ledger category `salaries`), dismissal costs half a year's pay, and a contract that runs out ends when the next season starts, so the player renegotiates or replaces. The bonuses are live: the Contracts Director adds leverage and, from skill 80, a counter of patience to every driver, sponsor and supplier or manufacturer negotiation; the Commercial Director raises the title sponsor fee asked and lets sponsors with a higher minimum prestige talk; the Head of Marketing multiplies the fans the garage's drivers win and its merchandise income; the Finance Director cuts the auction buyer's premium and seller's fee; the Technical Director cuts part prices and part wear (stacking with the crew); the Sporting Director makes training work harder and gear refurbishment cheaper; and the Chief Executive lifts every other bonus. The Operations Director is live now that suppliers are (he or she cuts every supply bill, see "Utilities, fuel and logistics"). **Retirement, poaching and the Chief Executive (built).** Each executive retires at an age from 60 to 70, drawn once for each person from the career's seed (`executive:retire:<id>`), when the next season starts. Each year a rival may also poach an executive: the chance is `4% + 8% × skill ÷ 100`, multiplied by `2 − (their pay ÷ the market pay for their skill)` (kept between 0.25 and 2, so an underpaid star is the likeliest to go), drawn from the seed (`executive:poach:<id>:<year>`). The Executives tab says who left and why, and the reason is kept (a contract that ran out, dismissal, retirement or poaching). A Chief Executive makes the prestige the garage has earned above the base count for up to 25% more, in proportion to skill. Not yet built: personality and traits for executives, a bonus on results, and equity options (the last waits for the cap table).
 
 **Facilities.** A garage can build and upgrade its premises, much as a stable builds its yards. Each facility has levels from 1 to 5, a build cost, a running cost each round and an effect, and some need others first (the simulator needs the data room).
 
@@ -653,6 +667,8 @@ A garage's prestige sets how many executive roles it may fill: the first at pres
 | Water tanks | Lowers water bills and softens outages | |
 | Fuel store | Buffers race and travel fuel, so a shortage bites later | Needs a licence, rare in the post-petrol world |
 | Transporter fleet | Own transport: lower logistics bills, no late deliveries | Running costs rise with the fleet |
+
+**Facilities (built, first version).** The Operations panel has a Facilities tab where the player builds and upgrades seven facilities (`data/facilities.json`): workshop bays, the dyno and data room, the driver simulator, the tyre and parts store, the solar array, water tanks and the transporter fleet. Each has levels 1 to 5. Level 1 costs the facility's build cost ($8,000 for water tanks up to $60,000 for the simulator) and each next level costs 1.6 times the one before, paid at once; each level held also costs a running amount every round, written to the ledger as `facilities` with the round's other bills (a few hundred dollars a level). Per level: workshop bays lift the crew's cover, and the most it can reach, by 5%; the data room makes a practice setup breakthrough 15% more likely; the driver simulator adds 8% to the effect of driver training and needs the data room first; the parts store takes 1.5% off part prices (on top of a Technical Director); the solar array takes 8% off the electricity bill and 15% off the crew cover a power cut costs; water tanks take 8% off the water bill; and the transporter fleet takes 6% off the logistics bill and makes late transport 20% less likely (none at level 5). The hospitality suite, medical room and fuel store wait for the systems they act on (relationships, injuries and fuel licences) and are not built yet. Computer garages hold no facilities for now.
 
 **Utilities, fuel and logistics.** A garage buys the things it uses from suppliers, and each is a category with its own companies, prices and contracts. The post-petrol setting matters here: petrol is the rarest thing in the world, and the series runs on an allocation.
 
@@ -677,15 +693,21 @@ Each supplier is a fictional company with a category, the states it serves (a ga
 
 *Outages.* A supplier with low reliability can fail: an electricity outage idles the crew for a round (crew cover down 20%), a fuel shortage cuts practice laps, a logistics delay brings a car in late and loses a practice day. Outages come from the career seed, are announced as event cards, and are shorter with an Operations Director and softer with the matching facility.
 
+**Outages (built, first version).** The player's garage can lose three supplies: electricity, race fuel and logistics (water and travel fuel are not played out yet). Each round, each supply fails with chance `(1 − reliability) × 1`, where reliability is the contracted supplier's, or 0.90 when the garage buys on the spot market (so a local firm at 0.88 to 0.90 fails about one round in ten, and a global one at 0.99 about one in a hundred). An outage that starts can run on into the next round with chance 35%, which an Operations Director cuts by up to 30%. The luck comes from the career seed (`outage:<garage>:<category>:<year>:R<round>`) and does not change with the supplier, so a better supplier only lowers the bar. While electricity is down the crew's cover is 20% lower (part wear and the crash repair bill rise as for a smaller crew); while race fuel is short the garage's entries run half their practice laps; while logistics is late the garage's cars miss the first practice day. The Operations panel shows each supply's chance of an outage and warns when one is down in the next round, and the outage is written to the event log when the round is played. Computer garages do not model their supplies. Facilities that soften outages and event cards for them are still to come.
+
+**Computer garages are businesses too (built, first version).** Schema version 45 adds a `business` table (a sponsor and an electricity supplier for each computer garage). Every open computer garage now has executives for as many roles as its prestige allows (the same rules as the player's: one role from prestige 10 and one more for every 10, hired on one- to three-year contracts and retiring or poached by the same yearly draws, with a vacancy filled by a new hire at the start of the next season), facilities (one level for every 12 points of prestige, built after what each needs), a sponsor (one of the three strongest that will have a garage of that prestige) and an electricity supplier, all drawn from the career's seed (`business:<garage>:<year>`); garages in older saves are given theirs when the save opens, and a garage's Registry page shows its business, with each executive linking to their profile in the Paddock. *Keeping the economy unchanged:* each year the sponsor covers what the executives and facilities cost to run (ledger lines for salaries, facilities and sponsorship that net to nothing), so a garage's cash is the same as before, and the executives' and facilities' effects are not applied to the computer garages yet. *Dividends:* a computer garage with more than $150,000 of cash pays half of its last closed year's operating profit to its holders each year, never taking it below that cash. The owner's share is paid into their own cash, so holding shares in a garage now pays. Not built yet: mechanics crews for computer garages, supply contracts and outages for them, their effects, computer garages raising money or trading shares among themselves, a board for each, and what the board approves. Design direction as before: every computer garage should have what the player's garage has,  Every computer garage should have what the player's garage has, not only an owner: a crew of mechanics and managers, executives for the roles its prestige allows (hired, retiring and poached by the same rules), a title sponsor, supply contracts or spot-market supply with their outages, and facilities. They are drawn for the starting world from the career's seed, in line with each garage's prestige and profile, kept up through the seasons by the same rules, and paid for out of their own books. Their effects (a better crew saving wear, a Commercial Director raising a sponsor's fee, a facility cutting a bill) apply to them as they do to the player, and the starting prestige, cash and sponsorship income are rebalanced so that the world's economy is no richer or poorer than it is now. Still to come: a crew of mechanics, supply contracts with outages and the effects of all of it.
+
+**Manufacturers, suppliers and sponsors are businesses too (design direction, to come).** The companies the garage deals with should be run like garages: each has a cap table with shareholders (founders, families, investors, banks, and other companies, garages and the player), can be bought into or taken over by the same rules, pays dividends, raises money and can fail. They also start up and wind down: new fictional manufacturers, suppliers and sponsors appear as the years pass (a founder with a name, a base and a first product), and companies that stay unprofitable close, merge or are bought, their contracts ending by the rules for a closed garage. The starting world stays as it is, with 31 manufacturers and 96 models; changes come only as the seasons run. Today the Registry lists every company with a profile (and the shares a sponsor or manufacturer holds in garages), but companies themselves have no owners, accounts, start-ups or closures.
+
 *How it enters the economy.* The cost baseline is re-split rather than raised, so the economy keeps its balance at a market index of 1.0: race fuel and utilities come out of the entry fee and the servicing bill, and travel is split into fuel, logistics and accommodation (see "Cost baseline"). What changes is that each part now has a price the player can influence by shopping around, signing contracts and employing the right executives. Computer garages do not model each bill; their sponsorship income already covers their costs, and their efficiency stands in for the choices a player makes.
 
 *Screens.* The Staff panel has two tabs (mechanics and executives). A new Operations panel lists each category with the garage's spot and contract prices, the expected cost for the next round, the contract and its terms, and a Negotiate button; and the Money panel breaks the bills down by category with a forecast for the next round. Suppliers' and executives' names appear on the garage's trucks and doors.
 
-**Tiers and reach (design).** Sponsors and suppliers will eventually have five tiers, widening in reach and in the prestige they ask: local, regional, national, continental and global. Today there are four (the continental tier is to come, between national and global, with its own minimum prestige, strength and companies). **Suppliers work across Australia.** Utilities (electricity, water, logistics) and fuels (race and travel fuel) are all national in reach: every supplier serves the whole country, and only prestige (its tier) decides which a garage can deal with, wherever the garage is based. The `states` field stays in the data so a later mod or tier can limit a supplier to some regions. **Built:** the `states` of every supplier in `data/suppliers.json` is `null` (everywhere); the five-tier ladder is not built.
+**Tiers and reach.** Sponsors and suppliers have five tiers, widening in reach and in the prestige they ask: local, regional, national, continental and global. The continental tier (built) sits between national and global: suppliers in it ask for prestige 40 and carry a strength of 72 (national asks 30 and carries 65, global asks 50 and carries 80), and there is one continental supplier in each category (the power, water, race fuel, travel fuel and logistics companies of the wider region) and three continental sponsors (prestige 58 to 62, strength 80 to 85). Careers started before 0.2.0 gain the three continental sponsors when they load (schema version 37). **Suppliers work across Australia.** Utilities (electricity, water, logistics) and fuels (race and travel fuel) are all national in reach: every supplier serves the whole country, and only prestige (its tier) decides which a garage can deal with, wherever the garage is based. The `states` field stays in the data so a later mod or tier can limit a supplier to some regions. **Built:** the `states` of every supplier in `data/suppliers.json` is `null` (everywhere); the tiers differ in prestige and strength, not in the regions served.
 
 **Supply contracts (built, first version).** The rail's Operations panel lists the five supplied categories (electricity, water, race fuel, travel fuel and logistics, `data/suppliers.json`). Fifteen fictional suppliers, three to a category in tiers from local to global, each with a price index (0.86 to 1.12 of the market), a reliability and the home regions it serves (a tier sets the prestige it asks: 0, 10, 30 and 50, so a new garage deals with local firms only; every supplier serves every region, see "Tiers and reach"). The market rate of each category is drawn from the career seed and moves year to year (race fuel drifts up 3% a year, the others 0 to 1.5%, with a swing of 5 to 7% and now and then a shock of 15 to 50%); it is exactly the base price in the first season. Without a contract the player's garage pays the market rate. A contract is negotiated like a part-supplier deal (kind `supply_contract`): the garage asks for a discount (fair value 4% + 0.1% a point of prestige, capped at 15%, against the supplier's tier strength) and a length of one to three years, and the price locks in as the supplier's index times that year's market less the discount for the whole contract, whatever the market does. A garage has one contract a category, and a supplier that walks away will not deal again that year. Each round the settlement charges `electricity`, `water` and `race_fuel` lines (per entry) and the `travel` line is now road fuel by distance plus logistics; the Operations Director takes his or her saving off all five. The Operations panel shows the market, the price paid and the next round's bill for each category. Computer garages pay the base price (their costs are not modelled bill by bill). In the telemetry the three new ledger lines are reported together as `Utilities`. Not yet built: outages and reliability guarantees, volume commitments, exclusivity and door spots, payment terms, green ratings, accommodation, and the other categories in the table (tyres, insurance and so on).
 
-**Build order.** Mechanics are built (M5), and so is the first version of executives and supply contracts. Outages, facilities and the rest of the executive design belong to M6 (depth), in that order, each as its own step.
+**Build order.** Mechanics are built (M5), and so is the first version of executives and supply contracts. Outages, the first seven facilities and the retirement, poaching and prestige side of executives are built (first version, M6); the other three facilities (the hospitality suite, the medical room and the fuel store) and the rest of the executive design wait for what they need, as the left-overs in [the M6 plan](M6_PLAN.md) say.
 
 ## Ownership and the cap table
 
@@ -707,23 +729,33 @@ Every garage is a company, and who owns it matters. The player starts as the sol
 
 **Holding other companies.** The player's own wealth (personal cash and holdings) is tracked beside the garage's. The player can buy stakes in other garages, in manufacturers and in suppliers when their holders will sell, hold them for dividends and influence, and build up to a **takeover**: a bid for a controlling stake that the target's board must support or fight. A successful takeover merges the target into the player's garage (its cars, staff and drivers move across, its entries count towards the eight-entry limit, its name and fans pass to the new owner and its record stays in the almanac under its old name). Manufacturers and suppliers owned by the player give the owner's garage the strategic benefits above.
 
-**Listing (M8, part of the feature set 1.0.0 needs).** A garage can become an *open* (publicly traded) company: it lists on the Last Combustion Exchange (a fictional market), selling a block of shares to the public. A garage needs enough value and prestige to list. From then on its share price moves with results, news and its quarterly reports (one per round), analysts comment, a public company has stricter disclosure and a harder time ignoring its shareholders, and anyone, the player included, can buy and sell its shares on the exchange without the board's say, up to a takeover. A listing can be reversed by a buy-out and delisting. Computer garages list, trade and delist under the same rules, so the exchange has listed garages from the start of a long game. Listing is a late-game feature that ships in 1.0.0 (M8).
+**Holdings and takeovers (built, first version).** Schema version 44 adds `garage.acquired_by`, marks the owner's own shares (holder id 1 in `shareholding`) and widens the share history to stakes and takeovers. *Wealth.* The owner's wealth is their personal cash (from dividends and selling shares) and the worth of the shares they hold in other garages; the Ownership panel's **Investments** tab shows both, and the Registry's shareholder profile lists the holdings. *Buying a stake.* Any computer garage that is still open can be looked at: each holding shows what its holder asks, which is its share of the garage's worth plus a premium drawn once for that holding from the career's seed (`reserve:<holding id>`): founders ask 20% to 80% over, family and investors 0% to 40%, sponsors and manufacturers 10% to 60%. The owner buys a whole holding with their personal cash at that price and the shares become theirs. The owner can sell all their shares in a garage back to it at their worth, if the garage has the cash. *Takeovers.* A bid offers every holder a premium over the garage's worth (up to 100%). Every holder whose asking premium is at or below the bid accepts. The bid carries when the acceptors and the owner's own shares hold over half the votes (only ordinary shares vote); then the holders who did not accept are bought out at the same price per share, and everyone else's shares cost the owner's garage `valuation × (1 + premium) ÷ issued shares` each, paid from the garage's cash (the owner's own shares cost nothing). The quote also says whether the board (the founder and any holder of a tenth of the issued shares) supports the bid or would fight it. When it carries, the target's cars, its driver contracts that run on, its fans and its cash pass to the owner's garage (the cash, even if it is negative, as an `acquisitions` line in the ledger), the target closes, its holdings are cleared and its record stays in the Registry under its old name. A takeover can only be launched **between seasons**, after the season has ended and before the next begins, so no entry is left half-way; the new cars and drivers are entered next season like any other (the limit of eight entries still holds). Drake Motorsports is not for sale. Not built yet: stakes in manufacturers and suppliers and the benefits they give, dividends paid to the owner by the garages they hold shares in (they come with computer garages moving, below), a target's staff, executives, facilities and contracts moving across (computer garages do not have them yet), the bid being a negotiation, and the name and brand being used by the new owner.
+
+**Listing (M9, part of the feature set 1.0.0 needs).** A garage can become an *open* (publicly traded) company: it lists on the Last Combustion Exchange (a fictional market), selling a block of shares to the public. A garage needs enough value and prestige to list. From then on its share price moves with results, news and its quarterly reports (one per round), analysts comment, a public company has stricter disclosure and a harder time ignoring its shareholders, and anyone, the player included, can buy and sell its shares on the exchange without the board's say, up to a takeover. A listing can be reversed by a buy-out and delisting. Computer garages list, trade and delist under the same rules, so the exchange has listed garages from the start of a long game. Listing is a late-game feature that ships in 1.0.0 (M9).
 
 **Succession and failure.** When an owner dies or retires (see "Careers over time"), their shares pass by will to the surviving family, split as the owner arranged, and the successor the player takes over as may hold a minority. Each heir who inherits becomes a shareholder with their own personality and wishes, so a dynasty's garage can end up with a family dispute (relatives who want a dividend or a sale), which is a storyline. In a bankruptcy the shareholders lose their holdings, a bailout that the player accepts is paid for in shares for the bank (about 30%), and the bank's holding is sold on as the garage recovers.
 
 **Computer garages.** Every garage in the world has a full cap table, modelled by the same rules as the player's: the same classes, option pool, valuation, board, dividends and votes. The starting world draws them from the seed: most (about 70%) belong to their founder and family, a fifth have an outside investor with a board seat, and a few are held by a sponsor or a manufacturer. Computer garages raise money, pay dividends, buy and sell shares, are taken over, list and are delisted by the same rules, so ownership changes in the world while the player plays, and a headline marks the big moves. A garage's cap table shapes its AI profile and behaviour (a family garage is loyal and cautious, an investor-backed one chases growth, a manufacturer-backed one runs that manufacturer's cars, and a garage near a no-confidence vote may sack its driver), and the player can read any garage's cap table in the almanac, because ownership is part of the story.
 
+**Ownership (built, first version).** Schema version 41 adds `shareholding` (garage, holder type, holder, class, shares, what was paid and since when) and a `valuation` history; the share classes and the valuation numbers are data (`data/equity.json`), so there is no `share_class` table, and `share_event` and `board_member` arrive with the pieces that need them. Every racing garage has a cap table. The player's garage belongs to its owner, who holds all 1,000,000 ordinary shares from the day it is founded. A computer garage's owners are drawn from the career's seed (`cap:<garage id>`) when a save loads or a new garage opens: seven in ten belong to a founder (with a 55% to 100% stake) and one or two relatives who share the surname, a fifth have an outside investor with 20% to 40% on preferred shares, and the rest have a sponsor or a manufacturer holding 15% to 35% of the ordinary shares; the founder holds the rest, so the shares always add up to the founding capital. Saves from before 0.2.0 are given their owners when they load. A garage's worth is the formula above, read from the cash, the cars' values, the closed years' operating results in the ledger, and the fans, prestige and titles; it is written for every garage when a season ends (`valuation`). The Ownership panel (rail: Ownership) shows the player's valuation and the price of a share (the valuation over the issued shares), the holders with their stake in the issued shares, the fully diluted stake and their share of the votes, what they paid and since when, how the valuation is made up, and its history. The board, control, holdings and takeovers are the next pieces; the option pool is in the schema but unused.
+
+**Rounds, dividends and buy-backs (built, first version).** Schema version 42 adds `share_event` (a history of rounds, dividends and buy-backs) and personal cash for the owner (`owner.personal_cash`). *Funding rounds.* The Ownership panel offers the next round (Seed, then Series A to D), with three investors drawn from the career's seed (`investors:<garage>:<round>`; they stay the same until a round is done), each valuing the garage at 80% to 115% of its valuation. The player names an amount (at least $50,000); the investor gets newly issued **preferred** shares worth the share of the garage that the money is of its value to them, `amount ÷ (valuation × their appetite + amount)`, which dilutes every holder; a round may not give away more than 30% of the garage, and there is one round a financial year. The first version is a quote that the player accepts or leaves: haggling over the terms, a board seat, a liquidation preference and reserved-matter vetoes (the `equity_round` negotiation) come later. The money goes into the garage's cash (ledger category `share_issue`). *Dividends.* Once a financial year the player may pay a dividend up to the cash the garage holds; the board suggests half of the last closed year's operating profit. It is split between the holders of ordinary and preferred shares in proportion to their shares (the option pool gets nothing; the parts add up to the dollar), the garage pays all of it (`dividends` in the ledger), and the owner's part goes to their personal cash. *Buy-backs.* The garage can buy an outside holder's shares at the garage's valuation (`valuation × shares ÷ issued shares`) and cancel them, so every other holder owns a bigger share (`buyback` in the ledger), or the owner can buy them with their personal cash and hold them, which is how control is won back; either way the holding can be bought in part or whole, and the owner's own shares cannot be bought. These three ledger categories are the Ledger's Finance group, outside the operating result. Not built yet: relationships improving with a regular dividend, the right of first refusal on a new issue, and the option pool.
+
+**Control and the board (built, first version).** Schema version 43 adds the board's season target (`board_target`: garage, year, target, finish, whether it was met, and whether a vote was called). *Control.* Only ordinary shares vote (`data/equity.json`, `control`). The owner controls the garage with over half the votes; a holder with a quarter or more can block the reserved matters, and the Ownership panel says which, and who (the holders' votes are added up by name, so someone with two holdings counts once). Investors now differ in what they take: about four in ten insist on **ordinary shares**, with votes, and value the garage 10% higher for them; the rest take non-voting preferred shares. A voting investor therefore costs the owner votes, and a holder with a blocking minority **vetoes the issue of new shares** (a funding round is refused, the first reserved matter built); selling the garage, large debt, changing the owner, moving the base and selling the founding car are the others, to be enforced as those matters arrive. *The board* is the owner, a director for each outside holder of a tenth of the issued shares or more, and an independent chair (a fictional business person, drawn from the seed, the same all game). *The season target.* The first time the board looks at a season it sets the finish in the Garage table it expects: no worse than last season's (from the board's own record, or the saved standings for a save from before), or, for a garage that has not raced, its place among the garages by prestige. When the season ends the finish is written beside it and the target is met or missed. If it is missed twice running while the owner holds no more than half the votes, the board calls a **vote of no confidence**, and the panel says so. Losing the garage to the board (the player continuing as an employed manager) is not played yet, so the vote is recorded and shown but has no effect for now. Not built yet: the board approving budgets and executive appointments, and the board for computer garages.
+
 **Screens.** A Cap table panel (rail: Ownership) shows the holders, their percentages (current and fully diluted), the valuation and its history, the board and the pending matters. A funding-round screen sets the terms. A portfolio view shows the owner's other holdings and net worth.
 
 **Data.** Tables: `share_class`, `shareholding` (garage, holder type and id, class, shares, price per share, date and vesting), `share_event` (issues, transfers, buy-backs, dividends and listings), `valuation` (garage, date, value) and `board_member`. Negotiation kinds `equity_round`, `share_purchase` and `takeover` join the existing list. All telemetry about this stays categories and amounts (see "Telemetry").
 
-**Build order.** Ownership belongs to M6 (depth) after executives and supply contracts: first the cap table and valuation (for the player and every computer garage), then rounds and dividends, then control and the board, then holdings and takeovers. Listing on the exchange is M8, part of the feature set that must be complete before 1.0.0.
+**Build order.** Ownership was built in M6 (depth) after executives and supply contracts: first the cap table and valuation (for the player and every computer garage), then rounds and dividends, then control and the board, then holdings and takeovers. Listing on the exchange is M9, part of the feature set that must be complete before 1.0.0.
 
 ## The financial ledger
 
-Every garage keeps books. The **Ledger** is the garage's financial record: every dollar that comes in or goes out, summed up for each year by category, with a list of what the garage owns and owes. It is separate from the **Registry** (the profiles of drivers, cars, garages and races, see "Records and history"). The Ledger answers "where did the money go, and what is the garage worth?", and it is what the ownership and listing systems stand on: the valuation, dividends, funding rounds, takeovers and, in M8, the listed garages' published accounts all read from it.
+Every garage keeps books. The **Ledger** is the garage's financial record: every dollar that comes in or goes out, summed up for each year by category, with a list of what the garage owns and owes. It is separate from the **Registry** (the profiles of drivers, cars, garages and races, see "Records and history"). The Ledger answers "where did the money go, and what is the garage worth?", and it is what the ownership and listing systems stand on: the valuation, dividends, funding rounds, takeovers and, in M9, the listed garages' published accounts all read from it.
 
 **What exists today (built).** Every movement of cash is one line in the database's `ledger` table (garage, round, date, category, amount, note), written by the same code that moves the cash, so the lines always add up to the change in cash. The categories are the prize money lines (race prize, championship prize, pole and overtake bonuses), sponsors, merchandise and delivery driving as income, and entry fees, tyres, servicing, travel, electricity, water, race fuel, crash repairs, restorations, driver release fees, gear, training, mechanics' wages, executives' salaries, driver moves, parts and the buying and selling of cars as spending. The Money panel shows the garage's cash, its income and spending so far and the totals by category. It has no years, no assets and no history, which is what this section adds.
+
+**Yearly summary (built, first version).** Schema version 40 adds `ledger_year` (garage, year, category, income, spending) and `data/ledger.json`, which says which group each category belongs to and that a financial year closes on 11 November. When a season ends, every garage's year is summed from its ledger lines and kept for good; a year that closed before 0.2.0 is summed from the lines when the save loads, and the year still running is summed from the lines as they stand. Lines dated after 11 November (for example the off-season training bill) belong to the next year. `ledgerSummary` gives a garage's categories, the groups, the operating result, the asset result, the net cash movement and the same figures for the year before. **The Ledger panel (built, Summary tab).** The Money panel is now the Ledger panel (rail: Ledger). It opens with the garage's cash, and its all-time income and expenses, then a year picker (every year with books, newest first) and the chosen year's summary: the operating result, the asset spending and the net cash movement, and a table with each group (income, spending and net) and its categories, each with the change in its net on the year before and its share of the group. A running year says so; a closed year says it has closed. **Transactions (built).** The Ledger panel's second tab lists every ledger line, newest first, with the date, round, category, amount, the garage's cash after the line and the note. It can be filtered by financial year, category, round, a date range and text in the note. The running balance is worked back from the cash the garage holds now (every movement of cash is a ledger line, so it ends on the cash and begins at the garage's founding cash), and each line keeps its balance when the list is filtered. The newest 200 matching lines are shown, and "Export as CSV" saves every matching line (date, round, category, amount, balance and note, oldest first) as `ledger.csv`; a note that starts like a formula is quoted so a spreadsheet does not run it. The Balance sheet tab and the chart over the seasons are not built yet.
 
 **Yearly summary per category.** Each financial year runs with the season and closes on the day the season ends (the closing ceremony, 11 November). The Ledger keeps one summary for each garage and year (`ledger_year`: garage, year, category, income, spending), written when the season ends from the lines of that year, and keeps it for ever, so old years never change when prices or rules do. The summary groups the categories so the year reads at a glance:
 
@@ -735,7 +767,7 @@ Every garage keeps books. The **Ledger** is the garage's financial record: every
 | Premises and utilities | Electricity, water, logistics and, later, facilities and insurance |
 | People | Mechanics' wages, executives' salaries, training, release fees, driver moves |
 | Assets | Cars bought and sold, parts, gear, restorations (money turned into things the garage keeps) |
-| Finance | Later: interest, loan repayments, dividends paid and received, share issues and buy-backs |
+| Finance | Share issues, dividends and buy-backs (built); later interest and loan repayments |
 
 Each line shows the year's income, spending and net, the change from the year before, and its share of the group. The summary ends in the year's **operating result** (racing and commercial income less running costs, premises and people), the **asset spending** (cars, parts, gear and restorations, kept apart because they are investments and not running costs), and the **net cash movement**. The Ledger can show any year, or compare two.
 
@@ -744,8 +776,8 @@ Each line shows the year's income, spending and net, the change from the year be
 - **Cash**, at its face value (negative cash is a liability, an overdraft).
 - **Cars**, each at its value (new price, age, wear and provenance, see "Auction house and car trading"), so a champion chassis shows as a real asset. A restored car is carried at its value after restoration.
 - **Fitted parts and gear**, at their price less wear (book value, not resale value, since removed parts cannot be sold).
-- **Facilities and vehicles** (when built, M6), at cost less depreciation.
-- **Stakes in other companies** (garages, manufacturers, suppliers, M6), at the holder's share of their valuation.
+- **Facilities and vehicles**, at cost less depreciation (the facilities are built; the balance sheet itself is left for later, see the M6 plan).
+- **Stakes in other companies** (garages are built; manufacturers and suppliers come later), at the holder's share of their valuation.
 - **Money owed to the garage**: the unpaid part of a sponsor's season fee and prizes still to come.
 - **Liabilities**: loans and their interest, the bank's emergency bailout, unpaid wages and bills, and dividends declared but not yet paid. Signed contracts are commitments, shown in a note, not debts.
 
@@ -762,11 +794,11 @@ Garage owners also keep a **personal ledger** for their own wealth (their share 
 
 **Computer garages.** They have ledger lines too (prizes, sponsorship, entry fees and the running costs the model covers), so their year-end summaries and balance sheets are built the same way. The model for a computer garage is simpler than the player's (its bills are not shopped around), but its figures come from the same rules, which makes valuations, takeovers and listings compare like with like.
 
-**Financialisation (M8).** The Last Combustion Exchange (see "Ownership and the cap table", "Listing") runs on the Ledger. A listed garage **publishes its accounts** after each season: the yearly summary and the balance sheet, which the whole world can read. Its share price follows its valuation: the earnings multiple on its average yearly profit, its net asset value from the balance sheet, and a sentiment term from results, headlines and the accounts' direction (record profit, a loss, rising debt). Investors, analysts and rival garages read the same numbers: a **credit rating** from profit cover and the debt-to-assets ratio sets what loans and bonds cost (interest becomes a ledger category), covenants in a loan can force a dividend to be cut or a sale of assets, takeover bids are priced from net asset value and earnings, and the dividend per share comes from distributable profit in the year's summary. An insolvency test on the balance sheet, not only on cash, decides when a listed garage is put into administration, with a headline. Later: bonds, short-term credit lines, and the exchange's index of listed garages.
+**Financialisation (M9).** The Last Combustion Exchange (see "Ownership and the cap table", "Listing") runs on the Ledger. A listed garage **publishes its accounts** after each season: the yearly summary and the balance sheet, which the whole world can read. Its share price follows its valuation: the earnings multiple on its average yearly profit, its net asset value from the balance sheet, and a sentiment term from results, headlines and the accounts' direction (record profit, a loss, rising debt). Investors, analysts and rival garages read the same numbers: a **credit rating** from profit cover and the debt-to-assets ratio sets what loans and bonds cost (interest becomes a ledger category), covenants in a loan can force a dividend to be cut or a sale of assets, takeover bids are priced from net asset value and earnings, and the dividend per share comes from distributable profit in the year's summary. An insolvency test on the balance sheet, not only on cash, decides when a listed garage is put into administration, with a headline. Later: bonds, short-term credit lines, and the exchange's index of listed garages.
 
 **Data.** The existing `ledger` table is the source and does not change. New tables, written when a season ends: `ledger_year` (garage_id, year, category, income, spending), `ledger_asset` (garage_id, year, kind, reference, book_value, note) and `ledger_liability` (garage_id, year, kind, principal, interest_rate, due_year, note), plus `loan` and `dividend` when they are built. The category groups and the asset valuation rules are data (`data/ledger.json`), so mods can add categories.
 
-**Build order.** The yearly summary per category, the year picker and the transaction list with CSV export come first, with the ownership work in M6 (the valuation already needs three years of profit). The balance sheet, assets held and net worth follow in M6 once cars, facilities and holdings can be valued together. Published accounts, credit ratings, loans, bonds and the exchange are M8.
+**Build order.** The yearly summary per category, the year picker and the transaction list with CSV export come first, with the ownership work in M6 (the valuation already needs three years of profit). The balance sheet, assets held and net worth follow in M6 once cars, facilities and holdings can be valued together. Published accounts, credit ratings, loans, bonds and the exchange are M9.
 
 ## People and relationships
 
@@ -776,21 +808,29 @@ A garage is run by people, and the player's dealings with them are a game of the
 
 **Morale.** Staff, executives and drivers each have a morale from 0 to 100, moved by pay against the market, results against their hopes, workload (a mechanic covering three entries is stretched), the facilities, how the player treats them and who they work beside. High morale lifts performance by a few points, low morale makes people ask for more, work worse, talk to rivals and leave. Morale is read from the person's page, not hidden.
 
+**Morale (built, first version).** Schema version 46 gives every mechanic and executive a morale, starting at 50 (no effect). At the end of each season it moves 40% of the way to a target of 50 plus: pay against the market (up to 20 points either way; a mechanic hired at the going wage and an executive paid the market rate for their skill sit at 0), the garage's results (up to 10 points either way, from last place to champion), its facilities (1.5 a level, up to 10) and, for a mechanic, the workload (up to 20 off when the garage has fewer mechanics than entries). Morale changes a person's work by up to 5% either way (a mechanic's skill in the crew, an executive's skill in their bonuses), and a mechanic below 25 may leave at the start of a year, with a chance of 1.2% for every point below (30% at zero). It shows in the Staff and Executives panels and on the person's page in the Paddock, as a number and a word (low, poor, fair, good, high). Numbers are in `data/balance.json`. Not built yet: morale from how the player treats people, who they work beside, and workload for executives; low morale making people ask for more or talk to rivals; drivers' morale; and the hospitality suite.
+
 **Relationships.** The score between two people (−100 to +100, kept now per pair) gains a *kind*: acquaintance, friend, mentor, partner, family, rival or enemy. A kind brings its own effects: friends give honest tips and cheaper deals, a mentor passes traits to a protégé, a rival works against the player in a negotiation, and a feud between two staff lowers both. Kinds form from shared moments (a win together, a crash, a dismissal, a favour) and the personality axes: a loyal person is slow to make an enemy and slow to forgive.
 
+**Relationship kinds and the contacts book (built, first version).** The Staff panel has a Contacts tab, the start of the contacts book: every sponsor, utility supplier, parts supplier, manufacturer and executive the garage has dealt with, the best relationship first, with the score (−100 to +100) and the kind it earns: a *friend* from 50 up, an *acquaintance* in between, a *rival* at −20 or below and an *enemy* at −60 or below (`relationshipKinds` in `data/balance.json`). The effects are the ones scores already have in negotiation (patience, and the walk-away value moving by up to 10%). Executives link to their pages in the Paddock. Not built yet: the other kinds (mentor, partner, family), kinds formed from shared moments and personality, a feud between two staff, introductions and tips from friends, the contacts of drivers and journalists, and a contact's page.
+
 **Contacts and social events.** Every person the player has worked with or met goes in a **contacts book**, with what they do and what they could do for the garage (an introduction to a driver, a tip about a free agent, a candidate executive, a possible investor). The calendar has social occasions: the season opening on 31 March, sponsor dinners, paddock parties, press days, the closing ceremony and the festival in Healesville from 11 November. At each, the player has a few *conversations* to spend (time is limited), choosing who to talk to and how (warm, direct, bold, discreet). Conversations move relationships, create introductions and sometimes cause trouble.
+
+**Social occasions (built, first version).** Schema version 47 adds `conversation`, and `data/social.json` holds the calendar. The Staff panel's Social tab shows the occasion that is open and the conversations left at it (three). Occasions are on dates, and are open for a few days: the *season opening* on 31 March (three days), the *sponsor dinner*, *press day* and *paddock party* ten days after the finals of rounds 2, 3 and 4 (three days each, in the gap before the next round) and the *closing ceremony* from 11 November (seven days, the opening of the festival). They are on the calendar, and Continue stops at each, but time is not held up by them: the player can let one pass. A conversation is with someone in the contacts book, or with someone new (a sponsor that would have the garage, or a manufacturer), in a manner. *Warm* moves the relationship by 3 to 6 points; *direct* by −2 to 9; *bold* by 10 to 14, but goes wrong half the time (−6 to −10); *discreet* by 1 to 3, and one time in five the person introduces someone else, who joins the book at 5 points. Meeting someone new starts the relationship at the points earned plus 5. How a conversation goes comes from the career's seed, the occasion and the conversations before it, so it is the same for the same seed. Not built yet: the Healesville festival from 11 November, conversations changing with the person's personality, tips and introductions to drivers and candidates, troubles that spill into the story (needs the storyline engine, slice 7) and the garage's own parties.
 
 **Journalists and the press.** A few fictional journalists, each with an outlet, a taste (technical, gossip, results, human interest) and a view of the garage, write the headlines. Their view comes from the player's relationship with them: a warm one leans stories the garage's way and helps fan growth, a cold one finds the scandal. In an interview the player can be bold, humble or silent, with a risk and a reward in each, and a controversy (a rumoured sale, a driver spat) is a storyline for the press to run with.
 
 **Owners, boards and sponsors as people.** The investors on the cap table, a sponsor's marketing head, a manufacturer's racing director: each is a person with a personality and a stake, so a negotiation is also a conversation with someone with moods and a history with the player. Their patience, their pride and what they want from the garage (profit, glory, a legacy, a return of favours) decide what they ask for.
 
+**The press (built, first version).** Schema version 48 adds `headline`, and `data/press.json` holds six fictional journalists, each with an outlet and a taste (results, technical, gossip or human interest), and the four commentators write for the press as well (their role stands for their outlet and their first focus decides their taste: the driving analyst is technical, the lead commentator results, the road specialist human interest and the business analyst gossip). After every final one journalist writes a headline about the player's garage, from its best finish: a win, a podium, points or none. A taste for the result makes a journalist likelier to write it (results for wins and podiums, technical for points, gossip for a bad day), and the choice comes from the career's seed and the round. The journalist's *view* of the garage comes from the relationship score (warm at 30 or more, cold at −30 or less, fair between) and sets the tone of the headline; a warm headline wins the garage 120 fans and a cold one loses 80 (fans are worth $20 each in the valuation). Being written about makes the journalist an acquaintance, and the journalists are among the people the garage can meet at the paddock occasions, so a warm view is won there. The Staff panel's Press tab lists the headlines (with byline and fans) and how each journalist sees the garage. Not built yet: interviews (bold, humble or silent), journalists' own tastes shaping the wording, controversies as storylines (M7), headlines about other garages and drivers, and the press feeding the news strip.
+
 **Family and dynasty.** The owner and the people around them can have families. A character can form a *partnership* (and marry, if both wish) with another character, and have children, who appear in the game as characters from the age of 18 and are not shown before that. Children inherit a mix of their parents' traits and aptitudes, plus a share of upbringing (a mechanic's child grows up good with engines) and some chance, and can become drivers (their pace and potential follow the parents and the training they get), mechanics, executives, journalists or garage owners in their own right. The family name stays on the livery across generations; the almanac keeps a family tree and records dynasties ("third-generation champion"). When the owner dies or retires, an heir is the natural successor (see "Careers over time"), takes their shares (see "Ownership and the cap table") and inherits their relationships at a discount, and a family with several heirs may fight over the garage. Relationships can also end, and where they do, shares each partner holds stay with them.
 
-**Career paths.** The three modes (Garage owner, Owner-driver, Driver manager) are joined by a fourth, planned mode, the **Employed manager**: the character starts as a manager or executive on a computer garage's payroll, earns reputation and contacts on a salary, takes options and buys shares, and in time takes the garage over (a management buy-out), buys into another or leaves to found their own. It uses the executive roles, the cap table and the board, and the way back from a lost vote of confidence runs the same road in reverse (an owner who loses control becomes an employed manager of their own old garage). The mode is planned for M8 with the other modes and is not part of the first playable season.
+**Career paths.** The three modes (Garage owner, Owner-driver, Driver manager) are joined by a fourth, planned mode, the **Employed manager**: the character starts as a manager or executive on a computer garage's payroll, earns reputation and contacts on a salary, takes options and buys shares, and in time takes the garage over (a management buy-out), buys into another or leaves to found their own. It uses the executive roles, the cap table and the board, and the way back from a lost vote of confidence runs the same road in reverse (an owner who loses control becomes an employed manager of their own old garage). The mode is planned for M9 with the other modes and is not part of the first playable season.
 
 **Screens.** A People panel lists the garage's staff and executives with morale, a Contacts panel holds the book and what each person can do, a Social screen runs the events and conversations, a Press screen shows the journalists and how they see the garage, and a Family page holds the tree. Each person's page shows their personality words, traits, morale, relationships and history.
 
-**Data and build order.** Tables `person` (a unified record linking to the character, driver, staff or executive rows), `relationship_kind`, `contact`, `social_event`, `conversation`, `journalist` and `family_link`; text and balance in `data/people.json`. The layer is split between milestones. **M6 (depth)** gets the parts that change how the garage plays: morale, relationship kinds, contacts, social events and the press. **M8 (modes and release)** gets the parts that depend on all the modes and on the polished succession rules: family and dynasty (partners, children, heirs, the family tree) and the Employed manager mode. Within M6 the order is relationship kinds and morale, then contacts and events, then the press.
+**Data and build order.** Tables `person` (a unified record linking to the character, driver, staff or executive rows), `relationship_kind`, `contact`, `social_event`, `conversation`, `journalist` and `family_link`; text and balance in `data/people.json`. The layer is split between milestones. **M6 (depth)** gets the parts that change how the garage plays: morale, relationship kinds, contacts, social events and the press. **M9 (modes and release)** gets the parts that depend on all the modes and on the polished succession rules: family and dynasty (partners, children, heirs, the family tree) and the Employed manager mode. Within M6 the order is relationship kinds and morale, then contacts and events, then the press.
 
 ## Negotiations
 
@@ -831,7 +871,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 
 **Built so far (M4, negotiation).** The core rules and driver contracts are built. Every party has a hidden walk-away value `F × m` (or `F ÷ m` for a payer), with leverage capped at ±0.2, a relationship effect of ±10% and a rival effect of up to +20%. A party accepts at or past that value; otherwise it counters (asking 15%, then 7%, then 2% better) and loses a point of patience, or two or three for a lowball under 80% or 60% of its value, and it walks away when its patience runs out. A driver that has walked away will not negotiate with that garage again that year. A driver's contract is valued at the salary plus 5% for each extra year (they like security), so a longer deal can be cheaper per season, and the garage pays a release fee of half the salary per year left to the driver's old garage. Relationships are stored per pair (+5 for a kept deal, +10 for a renewal). In this part a driver can only be signed when they have no entry this season with another garage (the off-season move). Sponsors, suppliers, manufacturers, bonuses and rival interest come next.
 
-**Built so far (M4, sponsors).** Title sponsors are built on the same negotiation rules. Twelve fictional sponsors in four tiers (local, regional, national and global, in `data/sponsors.json`) each need a minimum garage prestige and carry their own weight. A garage asks a sponsor for a season fee and a length of 1 to 3 years; the sponsor's hidden walk-away fee is `F ÷ m`, where `F = $25,000 + $700 × prestige + $400 × the best driver's fame`, and a sponsor that is stronger than the garage pays less. It accepts an ask at or under its walk-away fee, counters with a lower fee, or walks away (and will not deal again that year). A garage can have one title sponsor at a time. Each round the sponsor pays a sixth of the season fee when the round is settled. Supplier, manufacturer and bonus terms come next.
+**Built so far (M4, sponsors).** Title sponsors are built on the same negotiation rules. Fifteen fictional sponsors in five tiers (local, regional, national, continental and global, in `data/sponsors.json`) each need a minimum garage prestige and carry their own weight. A garage asks a sponsor for a season fee and a length of 1 to 3 years; the sponsor's hidden walk-away fee is `F ÷ m`, where `F = $25,000 + $700 × prestige + $400 × the best driver's fame`, and a sponsor that is stronger than the garage pays less. It accepts an ask at or under its walk-away fee, counters with a lower fee, or walks away (and will not deal again that year). A garage can have one title sponsor at a time. Each round the sponsor pays a sixth of the season fee when the round is settled. Supplier, manufacturer and bonus terms come next.
 
 **Built so far (M4, supplier and manufacturer deals).** A garage can negotiate a discount from a part supplier (on its parts) or a manufacturer (on new cars) with the same rules as sponsors. The fair discount is 5% + 0.1% per prestige point for a supplier and 3% + 0.12% per point for a manufacturer, both capped at 15%. The party's hidden walk-away discount is `F ÷ m`, the garage asks for a discount and a length of 1 to 3 years, and the party accepts up to its walk-away discount, counters with a smaller one, or walks away (and will not deal again that year). A garage can have one deal at a time with each party. The discount is applied automatically: fitting a part from a supplier with a deal, and buying a new car from a manufacturer with a deal, cost less, and an explicit price given to the dealer still wins. Contingency bonuses, door spots, exclusivity, factory support and the right to match come next.
 
@@ -859,7 +899,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 
 ## Scouting and fog of war
 
-**Status: planned for M6 (Depth).** Today every rating in the game is shown exactly. This section is the design for hiding them behind a fog that the player clears by scouting.
+**Status: planned for M7 (story and fog of war).** Today every rating in the game is shown exactly. This section is the design for hiding them behind a fog that the player clears by scouting.
 
 **The idea.** What the player knows about anything outside their own garage is an estimate. With almost no information it is a plain description in words. As the player learns more it becomes a range of values, and the range gets tighter and tighter until it is exact. Better scouts, more scouts, a bigger name, more fans and more success all clear the fog faster, and so does simply watching someone race season after season. Things the player owns are always exact, and so is everything public: results, points, numbers, plates, titles and records (the Registry's facts). The fog covers the hidden numbers behind them.
 
@@ -1046,7 +1086,7 @@ Every driver has a **hometown** (where they grew up) and a **residence** (where 
 - **Places.** Hometown and residence are chosen from a places list (town or city, region or state, country, latitude and longitude). The planned source is the GeoNames cities dataset (CC BY 4.0, to be confirmed). The list is moddable.
 - **Hometown effects.** It sets the starting home road type (+10 affinity) and gives a fan bonus when a round is held in the driver's home state.
 - **Residence effects.** Daily roads near the residence slowly train that road type's affinity, delivery driving income depends on the local area, and the garage's travel cost is set by the distance from its base to each venue: `$2,000 + $1.00 per km`, about $3,500 on average. The base of an Owner-driver's garage is their residence.
-- **Daily life (built).** The days that are not part of a round are daily life, settled with each round (`settleDailyLife`, `src/db/daily.ts`; numbers in `data/balance.json`, `daily`). The days counted before a round are the three-day lead-in to the season for round 1, and for every other round the days between the last round's final and this round's first practice day (21 on the calendar, so 108 over a season, as the cost baseline assumes; a weather delay that pushes a final back shortens the next gap). In that time each entered car is driven on everyday and delivery roads: it earns **$250 a day** for the garage, times a **local-area factor** from the state where the driver lives (NSW and Victoria 1.1, the ACT 1.05, Queensland and WA 1.0, SA 0.95, Tasmania 0.85, the NT 0.8, anywhere else 1.0; ledger category `delivery`); it covers **60 km a day** of road, which wears the chassis (0.0004 a km times the tier factor) and every fitted part (with the crew and Technical Director savings), and adds to the car's road kilometres; and its driver gains **0.1 a day** of affinity on the kind of road around their home, up to a cap of 70 (a driver already above 70 keeps their rating). The road type of a place is set in the place data (`roadType`) or, if it gives none, picked by a fixed rule from the place's id, so it is always the same. The cars travel to a round by transporter (the travel bill covers it), so the trip adds no road kilometres. Delivery pay goes to the garage, not to the driver's own pocket. Only the player's garage is settled this way for now: computer garages' cars are not driven on the road in the model, and their sponsorship income already covers their costs.
+- **Daily life (built).** The days that are not part of a round are daily life, **settled a day at a time as the game date moves** (`settleDay`, `src/db/daily.ts`, called for each day by `moveDateTo`; numbers in `data/balance.json`, `daily`). A day counts when it is after the season starts (1 February) and before the last final, and no round is being held: a round's days run from its first practice day to its final. That is 162 days on the calendar (57 before round 1, then the days between a final and the next round's practice), against the 108 the cost baseline was built on, so the per-day numbers below are two thirds of the old ones and a season comes to about the same. The delivery income of a skip is written to the ledger as one line (`delivery`, "N days of delivery work"), so a week skipped is one line, and the total is the same however the days are skipped. On each such day each entered car is driven on everyday and delivery roads: it earns **$167 a day** for the garage, times a **local-area factor** from the state where the driver lives (NSW and Victoria 1.1, the ACT 1.05, Queensland and WA 1.0, SA 0.95, Tasmania 0.85, the NT 0.8, anywhere else 1.0; ledger category `delivery`); it covers **40 km a day** of road, which wears the chassis (0.0004 a km times the tier factor) and every fitted part (with the crew and Technical Director savings), and adds to the car's road kilometres; and its driver gains **0.067 a day** of affinity on the kind of road around their home, up to a cap of 70 (a driver already above 70 keeps their rating). The road type of a place is set in the place data (`roadType`) or, if it gives none, picked by a fixed rule from the place's id, so it is always the same. The cars travel to a round by transporter (the travel bill covers it), so the trip adds no road kilometres. Delivery pay goes to the garage, not to the driver's own pocket. Only the player's garage is settled this way for now: computer garages' cars are not driven on the road in the model, and their sponsorship income already covers their costs.
 - **Moving (built).** In the off-season (after the season ends and before the next starts) the Drivers panel's Daily life section lets the player book a move for any driver the garage entered last season, to any place in the list. It costs **$5,000** (ledger category `relocation`) from the garage, can be changed for free until the season starts, and takes effect when the next season starts (`applyMoves`), changing the driver's residence, the road they train on and their delivery pay. The panel shows where each driver lives, the roads around them and their rating, and the days and delivery pay to expect before the next round.
 - **Moving.** A driver can move in the off-season for $5,000. It takes effect from the next season.
 - **Pyra Drake.** Her hometown is **Healesville**, Victoria, and her residence is **Brisbane**, Queensland.
@@ -1105,15 +1145,15 @@ In 2036 the series adds a junior championship: **The Last Combustion of the Petr
   - **Extra crew.** Optional but beneficial.
 - **Every garage is based in Australia.** Its flag marks its headquarters (factory, founder, owner or executive office), not where it works (see "Garages and Field Size").
 - **A hard start.** The starter cars are brand new but Starter class (the slowest) and the starter drivers are below the field's average, so strength is earned over the first seasons (see "Starting conditions").
-- **Suppliers are national.** Every supplier serves all of Australia and only prestige gates them. A five-tier ladder for sponsors and suppliers (local, regional, national, continental, global) is planned (see "Garage operations").
+- **Suppliers are national.** Every supplier serves all of Australia and only prestige gates them. The five tiers (local, regional, national, continental, global) differ in prestige and strength only (see "Garage operations").
 - **Feedback goes to GitHub.** The Feedback button opens the game's issue form, for bugs, feature requests and the rest.
 - **Release flow.** M5 is 0.1.0, each later milestone is a release on its own branch, and the owner declares 1.0.0 (see `docs/RELEASING.md`).
-- **A garage is a business.** Mechanics (built), executives, facilities, utility, fuel and logistics suppliers (with a spot market, contracts and outages), a cap table with shares, funding rounds, a board and takeovers, and a social and family layer all belong to the design (see "Garage operations", "Ownership and the cap table" and "People and relationships"). They are staged in M6 and M8.
+- **A garage is a business.** Mechanics (built), executives, facilities, utility, fuel and logistics suppliers (with a spot market, contracts and outages), a cap table with shares, funding rounds, a board and takeovers, and a social and family layer all belong to the design (see "Garage operations", "Ownership and the cap table" and "People and relationships"). They are staged in M6 and M9.
 - **Family in the game.** Partners, marriage and children exist, and children appear as characters only from the age of 18.
-- **Employed manager.** A fourth, planned career mode: a manager or executive on a computer garage's payroll who earns options, buys shares and works towards owning the garage (M8).
+- **Employed manager.** A fourth, planned career mode: a manager or executive on a computer garage's payroll who earns options, buys shares and works towards owning the garage (M9).
 - **Cap tables.** Every computer garage has a full cap table, modelled like the player's.
-- **Listing.** Garages can be open, publicly traded companies on the Last Combustion Exchange, the player's and the computer garages' alike, and this ships in M8, as part of the feature set 1.0.0 needs.
-- **People layer staging.** Morale, relationship kinds, contacts, social events and the press are M6; family and dynasty and the Employed manager mode are M8.
+- **Listing.** Garages can be open, publicly traded companies on the Last Combustion Exchange, the player's and the computer garages' alike, and this ships in M9, as part of the feature set 1.0.0 needs.
+- **People layer staging.** Morale, relationship kinds, contacts, social events and the press are M6; family and dynasty and the Employed manager mode are M9.
 - **Telemetry stays anonymous.** Events about staff, suppliers, shares and people carry categories, counts and amounts only, never names (see "Telemetry"). A garage can hire extra mechanics for the Junior block. Each one speeds repairs and car changeovers between the two events and lowers the chance of setup errors. Without them the garage still runs both series by splitting its crew.
 
 ## Auction house and car trading
@@ -1169,7 +1209,7 @@ Cars change hands through dealers, private negotiation and the auction house. A 
 
 **Results and standings screens (built).** The Season panel has three tabs. Calendar lists the rounds. Results shows the full classification of any round of any season in the save: pick the season, the round and Prelims or Final. The prelims list every car that ran, fastest first, with its time, the gap to the pole, the pole mark, any retirement and the points a car below the final's size earns from its prelim place; the final lists every car in it in finishing order with its time, gap, points and prize money, or the reason it did not finish. Standings shows the whole of any of the five championship tables, not only the leaders: drivers (313), garages, manufacturers, and the drivers' and garages' nations, each with rank, points and wins. The player's own driver and garage are highlighted, and the tables scroll with a fixed header. They are read from the results on demand (`fullStandings` and `roundClassification`, `src/db/tables.ts`), so past seasons keep their tables.
 
-**Almanac screen (built).** The rail's Almanac panel has two tabs: Seasons (every finished season, newest first, with its drivers' champion, garages' champion and the awards) and Records (all-time and single-season records for drivers and garages: points, wins, poles, titles, points and wins in a season, and for garages wins, titles and points in a season). Records are read from the results (`recordBook`, `src/db/records.ts`); a tie goes to whoever set the record first. **Leaderboards (built).** Every record opens into a leaderboard of everyone who has a non-zero score in that category, best first, each name a link to their Registry profile. All-time records rank everyone who has scored; single-season records rank each driver or garage by their best season, with the year.
+**Almanac screen (built).** The rail's Almanac panel has two tabs: Seasons (every finished season, newest first, with its drivers' champion, garages' champion and the awards) and Records (all-time and single-season records for drivers and garages: points, wins, poles, titles, points and wins in a season, and for garages wins, titles and points in a season), then five rankings of how things stand today: the most fans for drivers, cars, garages and nations, and the highest prestige for garages. Records are read from the results (`recordBook`, `src/db/records.ts`); a tie goes to whoever set the record first. **Leaderboards (built).** Every record opens into a leaderboard of everyone who has a non-zero score in that category, best first, each name a link to their Registry profile (a car is shown by its plate, a nation by its flag). All-time records rank everyone who has scored; single-season records rank each driver or garage by their best season, with the year.
 
 The game keeps a permanent, detailed history of every race, driver, garage and car, so any career can be looked back on in full.
 
@@ -1182,6 +1222,8 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 
 **The Registry (built, first version).** The Registry is the game's register: a profile for every driver, every car, every garage, every round's prelims and every race (a round's final), reached from the rail's Registry button or by clicking almost anything that names one. It is not the garage's financial ledger (the books, see "The financial ledger"), only the record of who and what exists. Its profiles are read from the database on demand (`src/db/registry.ts`) and follow the record table above.
 
+**The paddock in the Registry (built, first version).** The Registry's index has one more tab, **Paddock**, rather than a tab for each kind of person who is not a driver. It holds the **executives** a garage has employed, its **staff** (the mechanics), every **shareholder**, and the **companies** (every sponsor, manufacturer, parts supplier and utility supplier), with the same search. A company has a profile too: what it is, where it is from, its reach (local to global), what a utility supplier sells, how it and the player's garage see each other (once they have dealt) and, for a sponsor or a manufacturer, the shares it holds in garages. A sponsor or a manufacturer that holds shares is listed once, as a company. People are grouped by **job** (A to Z, and by name within a job), not by how famous they are: the Paddock tab lists the people who are active now, and a second tab, **Ex-Paddock**, lists everyone who has left (an executive or staff member who has gone), grouped by job in the same way, each with the **years they were active** ("2031-2033", or just "2031" if they began and left in the same year). A profile gives an executive their role, garage, age, skill, salary, hire date, contract end and, if they left, when and why (the contract ran out, dismissal, retirement or a rival poaching them); a staff member their role, garage, skill, wage and dates; and a shareholder their kind of holder and every holding they have, in any garage, with the class, shares, share of the issued shares, what they paid, since when and what the holding is worth now (the stake of the garage's valuation). A shareholder with holdings in several garages is one person. The garage names on a profile link to the garage, and the names in the Ownership, Staff and Executives panels link to these profiles. The managers of computer garages get profiles in the same tab when they exist. The tab is built in the Registry now, ahead of 1.0.0, because it costs one tab; any other non-driver person the game comes to have (a scout, a head of scouting, a family member, a contact) belongs in the same tab.
+
 - **Index.** The Registry opens on an index with a tab each for drivers (flag, number, name, years active), cars (plate, model), garages and rounds (a Prelims and a Race button for each, newest first). A tab lists every entry, and the search box narrows the open tab. **Sections (built).** The drivers, cars and garages tabs are each split by the highest thing the entry has done: **Champions** (series champions: the Drivers' Championship winner, the car they drove that season, and Garage Championship winners), **Race winners** (anyone who won a race but never a title), **Active** (still racing or in the garage, with no win yet), **Retired** (retired drivers and cars, and folded garages, who scored at least a point) and **Obscure** (retired or folded without ever scoring a point). Empty sections are left out. Within a section drivers who hold a number this season come first, in number order, then everyone else alphabetically, and cars are ordered by state, then plate. **Years active (built).** Wherever the Registry index and the Almanac leaderboards list a driver, a garage or a car, its years active follow the link, such as `Riley Smith (2031-present) Understeer Engineering`, `Understeer Engineering (2031-present)`, `Alan Smithe (2031-2033)` or `Dark Night Racing (2036-2039)`: from the first season it entered to the season it retired or closed, or `present`. A car counts from its first entry (or its first owner if it never raced), and one that never raced has no years to show for a driver or garage. A single season shows as `(2033)`.
 - **Greylinks (built).** Everything Obscure is **greylinked**: it is listed apart in its own section at the end, and its links are grey everywhere in the game (results, tables, plates), but its profile still opens. A driver is greylinked once they retire never having scored, a car once it retires never having scored, and a garage once it folds before scoring. Scoring means at least one championship point in any prelim or final; a single point keeps an entry out of the Obscure section for good.
 - **Driver profile.** The number worn with its borders, age, flag, hometown and residence, described-as, preferred number, border and year earned, fans, career (points, wins, podiums, finals, poles, championships), skills, the driver's own trophies and shields (the right-rear decals, which follow them to any car) and earned titles, a season-by-season table (number, garage, car plate, points, wins, final rank) and contracts.
@@ -1193,7 +1235,7 @@ The game keeps a permanent, detailed history of every race, driver, garage and c
 - **Trophies and shields.** A trophy is a race win and a shield a championship, gold for the Super Series and silver for the Junior Series, shown as small icons on the driver's and the car's profiles with a count (hover or read the label for the year, round and course).
 - **Header decals and garage stars.** The same trophies and shields also sit at the right of the driver's and the car's profile headers, so a record shows at a glance; the sections below stay as they are. A garage's header shows a star for each Garage Championship it has won, and the garage page lists them with a count.
 - **Garage names that carry a place.** When a garage's name includes a town or city ("Canberra Engine Rebuilds"), that is where the garage is from: its base for an Australian garage, its headquarters for a foreign one.
-- Not built yet: garage and sponsor decals on a profile, a drawn livery, door logos, rivalries and storylines, family trees, owners' cap tables and a profile for each sponsor, supplier, executive and mechanic.
+- Not built yet: garage and sponsor decals on a profile, a drawn livery, door logos, rivalries and storylines, family trees, and a profile for each executive and mechanic. Manufacturers, suppliers and sponsors have company profiles in the Registry.
 
 - **The almanac.** The Registry holds every driver's and garage's career, so there is no separate per-person almanac any more (the older `almanac` module and its tests were removed). A driver's profile shows the year they debuted, whether they are active or retired, their points, wins, podiums, finals, poles and championships, the number of seasons in which they scored and the first and last of those years, and every season they raced. A garage's profile shows the year it was founded, whether it is active or closed, its championships, and the same scoring seasons. Someone who retired or folded before scoring has a profile with no points and is listed as Obscure (greylinked), and someone still active has no end year. Junior and Super points will be shown apart once the Junior Series exists.
 - **Leaderboards** are built from these records: season standings (drivers, garages, manufacturers and nations), course records for the fastest prelim run and race, and all-time tables (wins, titles, finals, points).
@@ -1217,15 +1259,18 @@ The full design is large, so development is staged. Each milestone must be playa
 | M3 Final race | A full 15-car final | Lap-by-lap sim, tyre life, mid-race incidents with pauses, overtakes, player calls, prize money, timing screens | Live map polish, drones |
 | M4 Garage and economy | The management loop | Car purchase (dealers, used market, auction house, private negotiation), upgrades, legality, the negotiation system (drivers, garages, sponsors, manufacturers, suppliers), finances, repairs | Rivalries, media |
 | M5 Full season (**vertical slice**) | Six rounds, off-season, rollover to 2032 | All 6 courses, fan counts, hometowns and residences, season end, awards, retirements and new entrants, records | 2036 expansion, Junior |
-| M6 Depth | Story and feedback, and the garage as a business | Attention flags, ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map; executives, supply contracts and the spot market, outages and facilities ("Garage operations"); the cap table, funding rounds, control and dividends ("Ownership and the cap table"); the financial ledger's yearly summaries per category, transactions list and balance sheet of assets held ("The financial ledger"); morale, relationship kinds, contacts, social events and the press ("People and relationships"); scouting and fog of war, with scouts, a Head of Scouting and ranges that tighten into exact values ("Scouting and fog of war"); a full cap table for every garage, funding rounds, control, dividends, holdings and takeovers | |
-| M7 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
-| M8 Modes and release | All career modes (three, and the planned Employed manager), polish, and the release of 0.4.0 (1.0.0 is declared separately) | Owner-driver, driver manager, the Employed manager mode, family and dynasty, listing garages on the exchange (open, publicly traded garages) with published accounts, credit ratings and loans from the financial ledger, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
+| M6 Depth | The garage as a business and its people | executives, supply contracts and the spot market, outages and facilities ("Garage operations"); the cap table, funding rounds, control and dividends ("Ownership and the cap table"); the financial ledger's yearly summaries per category and transactions list ("The financial ledger"); morale, relationship kinds, contacts, social events and the press ("People and relationships"); a full cap table for every garage, funding rounds, control, dividends, holdings and takeovers; computer garages run as businesses; the calendar and time controls ("Season calendar & Timeline") | The balance sheet, interviews, the other facilities and the other left-overs listed in [the M6 plan](M6_PLAN.md) |
+| M7 Story and fog of war | The story layer, feedback, and what the player knows | The ghost record, crash highlights, rivalries, storyline engine and event cards, media headlines, drone events, live map; scouting and fog of war, with scouts, a Head of Scouting and ranges that tighten into exact values ("Scouting and fog of war") | |
+| M8 2036 expansion | The era change | Super Series rebrand, 20-car final, Junior Series, mandatory promotion | |
+| M9 Modes and release | All career modes (three, and the planned Employed manager), polish, and the release of 0.5.0 (1.0.0 is declared separately) | Owner-driver, driver manager, the Employed manager mode, family and dynasty, listing garages on the exchange (open, publicly traded garages) with published accounts, credit ratings and loans from the financial ledger, tutorial, audio, Electron desktop builds, achievements and cloud-save export/sync, mod loader and mod browser, the hidden Founder's career, optional Steam module if the licence question allows | |
 
 **MVP definition (M5):** a player in Garage owner mode can start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season, and begin 2032 with all records saved.
 
-**Releases and milestone branches.** Finishing M5 is the first release for players, **version 0.1.0**, published with a set of branding and social assets and the first entry in the changelog (a plain list of the game's features; from then on the changelog follows Keep a Changelog). Each later milestone ends in a release too (confirmed: M6 0.2.0, M7 0.3.0, M8 0.4.0). From M6 on, every milestone runs on its own branch (`feature/0.2.x` for M6, `feature/0.3.x` for M7, and so on), made from `main`, so `main` is always the latest release and the web build, which deploys from it, never shows players unfinished work; a release pull request merges the milestone branch into `main` and `main` is tagged. **1.0.0 is not tied to a milestone**: the project owner declares it when the game is feature complete, whatever number of releases that takes. Saves from an earlier version must keep loading. The steps, the branch rules, the changelog rules and the list of branding and social assets are in `docs/RELEASING.md`.
+**Releases and milestone branches.** Finishing M5 is the first release for players, **version 0.1.0**, published with a set of branding and social assets and the first entry in the changelog (a plain list of the game's features; from then on the changelog follows Keep a Changelog). Each later milestone ends in a release too (M6 0.2.0, M7 0.3.0, M8 0.4.0, M9 0.5.0). From M6 on, every milestone runs on its own branch (`feature/0.2.x` for M6, `feature/0.3.x` for M7, and so on), made from `main`, so `main` is always the latest release and the web build, which deploys from it, never shows players unfinished work; a release pull request merges the milestone branch into `main` and `main` is tagged. **1.0.0 is not tied to a milestone**: the project owner declares it when the game is feature complete, whatever number of releases that takes. Saves from an earlier version must keep loading. The steps, the branch rules, the changelog rules and the list of branding and social assets are in `docs/RELEASING.md`.
 
 **Where M5 stands.** The first playable season is built: a Garage owner career from the title screen to the next season, with every system the MVP definition lists, plus supply contracts, daily life, season awards, the Almanac, the Registry and full results. A browser test plays a whole season (`e2e/season.spec.ts`). M5 was released as **0.1.0** on 2026-11-06, with the branding and social assets, a press kit (`docs/PRESS.md`) and the first changelog entry (see `docs/RELEASING.md`). Fixes after the release go out as 0.1.x patches.
+
+**Where M6 stands.** Every slice of M6 is built and has had its beta (0.2.0-beta1 to beta6): records and first impressions, garage operations, the ledger, ownership, people and relationships, and the calendar. What is left is the release itself (the documentation pass, the version bump and the release pull request, see `docs/RELEASING.md`). The release site already runs on Cloudflare. What each slice left over for later is listed in [the M6 plan](M6_PLAN.md).
 
 ## Technical architecture
 
@@ -1320,7 +1365,7 @@ The project follows common industry practice from the first commit (milestone M0
 - Node version pinned in `.nvmrc`, pnpm with a committed lockfile.
 - Vitest for unit tests (simulation coverage target 90%), fast-check for property tests and Playwright for end-to-end tests (all in use); React Testing Library for components and axe for accessibility checks are planned.
 - Accessibility target: WCAG 2.1 AA. Performance budgets: a prelim day of 300+ entries simulates in under 2 seconds in the worker, and the web bundle stays under an agreed size.
-- No accounts, no server of our own and no network calls other than optional mod downloads and the web build's telemetry (see "Telemetry"). Telemetry exists only on the web build hosted on GitHub Pages (`lc.nexxusdrako.au`): **GameAnalytics** is the primary tool and the **Google tag** (Google Analytics) the secondary one. Each is built in only when its keys are set (GitHub `github-pages` environment secrets `GA_GAME_KEY` and `GA_SECRET_KEY` for GameAnalytics and `GTAG_ID` for Google, never kept in the repository) and is loaded only after the visitor accepts the privacy prompt (declining stops both, removes the Google cookies, and a "Privacy settings" button reopens the choice). Local, test and desktop (Electron and Steam) builds carry no telemetry.
+- No accounts, no server of our own and no network calls other than optional mod downloads and the web build's telemetry (see "Telemetry"). Telemetry exists only on the web build hosted on Cloudflare (`lc.nexxusdrako.au`): **GameAnalytics** is the primary tool and the **Google tag** (Google Analytics) the secondary one. Each is built in only when its keys are set (build secrets on the Cloudflare Worker, `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY` for GameAnalytics and `VITE_GTAG_ID` for Google, never kept in the repository) and is loaded only after the visitor accepts the privacy prompt (declining stops both, removes the Google cookies, and a "Privacy settings" button reopens the choice). Local, test and desktop (Electron and Steam) builds carry no telemetry.
 
 **GitHub Actions workflows**
 
@@ -1332,7 +1377,6 @@ The project follows common industry practice from the first commit (milestone M0
 | `dependency-review.yml` | Pull request | Blocks vulnerable or GPL-incompatible new dependencies | Built |
 | `docs.yml` | Pull request | Markdown lint, writing style (`pnpm docs:style`) and the facts in the documents (`pnpm docs:check`: links, paths, commands, data files). API docs are planned | Built |
 | `release.yml` | Tag push `v*` | Runs the tests and build, zips the web build with checksums, and creates the GitHub Release with the changelog section as notes. Electron builds for Windows, macOS and Linux are planned | Built (web only) |
-| `pages.yml` | Push to `main`, release, manual | Deploy the web build to GitHub Pages at `lc.nexxusdrako.au` (a custom domain, so the build uses the root path) | Built |
 | `balance.yml` | Nightly, manual | Runs the headless multi-season sim and fails if balance statistics drift beyond set limits | Planned |
 
 Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with actions pinned to versions or commit hashes.
@@ -1350,7 +1394,7 @@ Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with 
 The web build can count how the game is used, to balance it and to find what breaks. It is anonymous, optional and off everywhere else.
 
 - **Tools.** **GameAnalytics** is the primary telemetry tool, through its open-source JavaScript SDK (MIT, loaded as a separate chunk only after consent). The **Google tag** (Google Analytics) is the secondary tool and gets the same events in a simpler shape. Both sit behind one `track()` function (`src/platform/telemetry.ts`) and one list of sinks, so a third tool, or dropping one, is a small change.
-- **Consent and builds.** A privacy prompt appears on the hosted web build when it has at least one tool's keys. Nothing is loaded, stored or sent before the visitor accepts; declining stops both tools (GameAnalytics event submission is switched off and the Google cookies are removed), and a "Privacy settings" button reopens the choice. The keys are build-time values taken from GitHub `github-pages` environment secrets or variables: `GA_GAME_KEY` and `GA_SECRET_KEY` (GameAnalytics, passed to the build as `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY`) and `GTAG_ID` (Google, `VITE_GTAG_ID`). They are never committed. A browser SDK has to ship its keys in the page, which is how GameAnalytics web games work, so the secret key identifies the game and is not a password. Local, test and desktop builds have none.
+- **Consent and builds.** A privacy prompt appears on the hosted web build when it has at least one tool's keys. Nothing is loaded, stored or sent before the visitor accepts; declining stops both tools (GameAnalytics event submission is switched off and the Google cookies are removed), and a "Privacy settings" button reopens the choice. The keys are build-time values taken from build secrets on the Cloudflare Worker: `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY` (GameAnalytics) and `VITE_GTAG_ID` (Google). A build that is not of `main` has them removed (`vite.telemetry.ts`), so a preview collects nothing. They are never committed. A browser SDK has to ship its keys in the page, which is how GameAnalytics web games work, so the secret key identifies the game and is not a password. Local, test and desktop builds have none.
 - **What is sent.** Categories, counts and amounts only: which panels and tabs are opened, which actions are taken (and how an offer ended), when a career, season or round starts and completes, how money moves, and errors the game raised. **Never** sent: owner, garage, driver or sponsor names, anything typed by the player, save contents, or the career seed. GameAnalytics assigns its own anonymous user id; the game does not set one.
 - **Events.**
 
@@ -1517,7 +1561,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 | Suppliers | New or replacement suppliers, categories, discounts and contingency terms |
 | Balance data | Coefficients in `balance.json`, such as the cost baseline and formula weights |
 
-**Package format.** A mod is a folder with `mod.json` (id, name, version, author, supported game versions, dependencies, load-order hint, list of the areas it touches), `data/` for the JSON files, `art/` for SVGs and `text/en.json` for any new text keys. The real-counterpart reference mapping is optional (`mod_mapping.json`, see "Fictional manufacturers and cars").
+**Package format.** A mod is a folder with `mod.json` (id, name, version, author, supported game versions, dependencies, load-order hint, list of the areas it touches), `data/` for the JSON files, `art/` for SVGs and `text/en.json` for any new text keys.
 
 **Rules**
 
@@ -1593,7 +1637,7 @@ The game is English-only at launch, but all text is externalised so translation 
 | Driver salary, unknown | $0–$20,000 per season (often paid in sponsor product) |
 | Driver salary, gold border | $60,000–$400,000 per season; champions higher |
 | Small title sponsor | $30,000–$80,000 per season |
-| Delivery driving | $250 per day on the 108 non-event days a season, per entered car, times a local-area factor (see "Driver origins: hometown and residence") |
+| Delivery driving | $167 per day on the 162 non-event days a season (the same as $250 on 108), per entered car, times a local-area factor (see "Driver origins: hometown and residence") |
 | Top-31 discount on parts | 30% |
 
 **Balance check (v1).** A solo Owner-driver with one Starter car spends about $68,000 a season over six rounds: entry fees $18,000, racing tyres $9,000, practice tyres $12,600, servicing $7,200 and travel $21,000. Income at zero points is about $67,000: roughly 108 non-event days of delivery driving at $250 ($27,000) plus a small sponsor ($40,000). So a one-car garage survives on delivery income and a small sponsor at zero points, earns a small surplus (about $12,000) from top-31 finishes through free tyres and discounts, and only profits meaningfully from finals. A Garage owner with two mechanics ($52,000 a year) and a hired driver runs about $63,000 in deficit until finals arrive, which gives roughly four seasons of runway on $250,000. Upgrades, supercars and crashes are paid for out of final prize money. **Bankruptcy:** cash below -$50,000 for 3 consecutive weeks ends the garage; in Garage owner mode the career ends with a retrospective screen, in Driver manager mode the driver is released and may sign elsewhere.
@@ -1665,14 +1709,16 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 ## Fictional manufacturers and cars
 
-The game ships only fictional manufacturers and models, so no licences are needed. Each one is also designed as a stand-in for a real counterpart, so modders can swap in real cars. The real names below are a reference for modders only: they never appear in the shipped game, its data files, store page or marketing.
+The game's manufacturers, models and people are entirely fictional, so no licences are needed. They are original designs. Nothing in the game, its data, these documents or the mods the game supports maps a fictional car or maker to a real one, and the game does not support mods that do: a mod may add or replace manufacturers and models, but with its own fictional ones.
+
+**Work of fiction.** The game says so plainly: the About screen, the README and the press kit carry a disclaimer that every manufacturer, car, company and character is invented and that any resemblance to real people, companies or events is coincidental, that generated names may by chance match a real person's, and that real towns and roads are used only to set the scene. Generated names are checked against a list of offensive names and words, not against real people.
 
 **Roster focus.** The series is a supercar showcase, with hypercars at the top and JDM, sports, Australian domestic and other cars mixed in.
 
-- **31 manufacturers and 96 models, with 2 to 5 models per manufacturer.** By category: 3 hypercar makers, 9 supercar makers, 6 sports-car makers, 7 JDM makers, 4 Australian domestic makers and 2 others. Each model is mapped to a specific real model.
+- **31 manufacturers and 96 models, with 2 to 5 models per manufacturer.** By category: 3 hypercar makers, 9 supercar makers, 6 sports-car makers, 7 JDM makers, 4 Australian domestic makers and 2 others.
 - **No era cut-off.** The list below is the launch lineup for 2031. Manufacturers keep their lineups moving after that (see "Manufacturer lineups").
 - **Field mix (Season 1, 313 cars):** 3% hypercars, 47% supercars (half the field), 22% JDM, 15% sports, 10% Australian domestic and 3% other. New garages and underdogs start in JDM, sports and domestic cars, and supercars are the aspiration.
-- **Stats are indicative.** Kerb weight and power are rounded starting values chosen to fit the game's balance, not exact real specifications. A mod that imports the real car replaces them. Max tyre width uses the Equalizer (`kg / 5 + 40`).
+- **Stats are indicative.** Kerb weight and power are rounded starting values chosen to fit the game's balance. Max tyre width uses the Equalizer (`kg / 5 + 40`).
 
 **Price tiers.** `price_new ≈ ($15,000 + $280 × PS) × tier multiplier`. Used cars sell at 40–70% of new depending on age, wear and provenance (see "Auction house and car trading").
 
@@ -1688,140 +1734,140 @@ The game ships only fictional manufacturers and models, so no licences are neede
 
 **Manufacturers**
 
-| Fictional | Home | Type | Character | Real counterpart (modding reference) |
-| --- | --- | --- | --- | --- |
-| Cavallo | Italy | Supercar | Passion and heritage, V8 and V12 | Ferrari |
-| Tauro | Italy | Supercar | Wide, loud, dramatic | Lamborghini |
-| Vento | Italy | Hypercar | Handbuilt carbon hypercars | Pagani |
-| Halberd | UK | Supercar | Lightweight carbon, technical | McLaren |
-| Ashford | UK | Supercar | Grand tourers to hypercars | Aston Martin |
-| Kessler | Germany | Supercar | Rear-engined precision | Porsche |
-| Stern | Germany | Supercar | Hand-built V8 power | Mercedes-AMG |
-| Rhein | Germany | Supercar | All-wheel-drive traction | Audi |
-| Montclair | France | Hypercar | Extreme power and top speed | Bugatti |
-| Vesper | Sweden | Hypercar | Record-chasing hypercars | Koenigsegg |
-| Dunmore | USA | Supercar | Big V8 muscle and supercars | Ford |
-| Marlowe | USA | Supercar | Front-engined V8 sports and supercars | Chevrolet |
-| Homura | Japan | JDM | Light sports cars, rotary specialist | Mazda |
-| Tsurugi | Japan | JDM | Turbo AWD coupes, tuner favourites | Subaru |
-| Raijin | Japan | JDM | Rear-drive coupes and grand tourers | Nissan |
-| Mitaka | Japan | JDM | Reliable, rally heritage | Toyota |
-| Hanabi | Japan | JDM | High-revving naturally aspirated | Honda |
-| Kestrel | UK | Sports | Light, agile, low power | Lotus |
-| Corvina | Italy | Sports | Stylish, sharp-handling, temperamental | Alfa Romeo |
-| Brandt | Germany | Sports | Precise, heavier, strong brakes | BMW |
-| Pennine | UK | Sports | Small, cheeky, great on tight roads | Mini |
-| Aurelian | Italy | Sports | Small turbo hatches, high revs, fragile | Abarth / Fiat |
-| Ardent | France | Sports | Soft, agile hot hatches | Renault |
-| Mizuho | Japan | JDM | Rally-bred turbo sedans and coupes | Mitsubishi |
-| Suzuri | Japan | JDM | Tiny, light and cheap | Suzuki |
-| Redback | Australia | Domestic | Utes and V8 sedans, cheap and tough | Holden |
-| Wattle | Australia | Domestic | Local muscle and turbo sixes | Ford Australia |
-| Bunyip | Australia | Domestic | Hemi-powered local classics | Chrysler Australia |
-| Banksia | Australia | Domestic | Lightweight local sports cars | Elfin / Bolwell |
-| Haeju | South Korea | Other | Value performance | Hyundai |
-| Skald | Sweden | Other | Turbo pioneers, quirky and safe | Saab |
+| Fictional | Home | Type | Character |
+| --- | --- | --- | --- |
+| Cavallo | Italy | Supercar | Passion and heritage, V8 and V12 |
+| Tauro | Italy | Supercar | Wide, loud, dramatic |
+| Vento | Italy | Hypercar | Handbuilt carbon hypercars |
+| Halberd | UK | Supercar | Lightweight carbon, technical |
+| Ashford | UK | Supercar | Grand tourers to hypercars |
+| Kessler | Germany | Supercar | Rear-engined precision |
+| Stern | Germany | Supercar | Hand-built V8 power |
+| Rhein | Germany | Supercar | All-wheel-drive traction |
+| Montclair | France | Hypercar | Extreme power and top speed |
+| Vesper | Sweden | Hypercar | Record-chasing hypercars |
+| Dunmore | USA | Supercar | Big V8 muscle and supercars |
+| Marlowe | USA | Supercar | Front-engined V8 sports and supercars |
+| Homura | Japan | JDM | Light sports cars, rotary specialist |
+| Tsurugi | Japan | JDM | Turbo AWD coupes, tuner favourites |
+| Raijin | Japan | JDM | Rear-drive coupes and grand tourers |
+| Mitaka | Japan | JDM | Reliable, rally heritage |
+| Hanabi | Japan | JDM | High-revving naturally aspirated |
+| Kestrel | UK | Sports | Light, agile, low power |
+| Corvina | Italy | Sports | Stylish, sharp-handling, temperamental |
+| Brandt | Germany | Sports | Precise, heavier, strong brakes |
+| Pennine | UK | Sports | Small, cheeky, great on tight roads |
+| Aurelian | Italy | Sports | Small turbo hatches, high revs, fragile |
+| Ardent | France | Sports | Soft, agile hot hatches |
+| Mizuho | Japan | JDM | Rally-bred turbo sedans and coupes |
+| Suzuri | Japan | JDM | Tiny, light and cheap |
+| Redback | Australia | Domestic | Utes and V8 sedans, cheap and tough |
+| Wattle | Australia | Domestic | Local muscle and turbo sixes |
+| Bunyip | Australia | Domestic | Hemi-powered local classics |
+| Banksia | Australia | Domestic | Lightweight local sports cars |
+| Haeju | South Korea | Other | Value performance |
+| Skald | Sweden | Other | Turbo pioneers, quirky and safe |
 
 **Models** (max tyre from the Equalizer)
 
-| Fictional model | Tier | Kerb kg | Max tyre | PS | Real counterpart (modding reference) |
-| --- | --- | --- | --- | --- | --- |
-| Cavallo Quaranta | Elite | 1,100 | 260 mm | 478 | Ferrari F40 |
-| Cavallo Tre-Cinque | Premium | 1,350 | 310 mm | 380 | Ferrari F355 |
-| Cavallo Otto | Elite | 1,380 | 316 mm | 570 | Ferrari 458 Italia |
-| Tauro Cuneo | Elite | 1,500 | 340 mm | 455 | Lamborghini Countach |
-| Tauro Piccolo | Premium | 1,400 | 320 mm | 520 | Lamborghini Gallardo |
-| Tauro Bravo | Elite | 1,800 | 400 mm | 700 | Lamborghini Aventador |
-| Vento Z | Elite | 1,230 | 286 mm | 650 | Pagani Zonda F |
-| Vento H | Hyper | 1,350 | 310 mm | 730 | Pagani Huayra |
-| Vento Utopia | Hyper | 1,280 | 296 mm | 864 | Pagani Utopia |
-| Halberd F1 | Hyper | 1,140 | 268 mm | 627 | McLaren F1 |
-| Halberd 570 | Premium | 1,440 | 328 mm | 570 | McLaren 570S |
-| Halberd 765 | Elite | 1,330 | 306 mm | 765 | McLaren 765LT |
-| Ashford Vantage | Premium | 1,530 | 346 mm | 510 | Aston Martin Vantage |
-| Ashford DB | Premium | 1,770 | 394 mm | 608 | Aston Martin DB11 |
-| Ashford Lance | Hyper | 1,030 | 246 mm | 1,160 | Aston Martin Valkyrie |
-| Kessler Heck | Premium | 1,360 | 312 mm | 450 | Porsche 911 GT3 RS (997) |
-| Kessler Rennen | Elite | 1,380 | 316 mm | 612 | Porsche Carrera GT |
-| Kessler Boxer | Mid | 1,340 | 308 mm | 385 | Porsche Cayman GT4 |
-| Stern GT Black | Elite | 1,540 | 348 mm | 730 | Mercedes-AMG GT Black Series |
-| Stern SLR | Elite | 1,768 | 394 mm | 626 | Mercedes-Benz SLR McLaren |
-| Stern 63 | Premium | 1,700 | 380 mm | 510 | Mercedes-AMG C63 S Coupé |
-| Rhein R8 | Premium | 1,620 | 364 mm | 525 | Audi R8 V10 |
-| Rhein Sport Quattro | Elite | 1,200 | 280 mm | 306 | Audi Sport Quattro |
-| Rhein TT RS | Mid | 1,450 | 330 mm | 400 | Audi TT RS |
-| Montclair EB | Elite | 1,620 | 364 mm | 612 | Bugatti EB110 SS |
-| Montclair Veyron | Hyper | 1,950 | 430 mm | 1,001 | Bugatti Veyron 16.4 |
-| Montclair Chiron | Hyper | 1,995 | 439 mm | 1,500 | Bugatti Chiron |
-| Vesper CCR | Elite | 1,180 | 276 mm | 806 | Koenigsegg CCR |
-| Vesper Agera | Hyper | 1,330 | 306 mm | 1,140 | Koenigsegg Agera R |
-| Vesper Jesko | Hyper | 1,420 | 324 mm | 1,280 | Koenigsegg Jesko |
-| Dunmore GT | Elite | 1,520 | 344 mm | 550 | Ford GT (2005) |
-| Dunmore GT-X | Elite | 1,385 | 317 mm | 656 | Ford GT (2017) |
-| Dunmore Stallion V8 | Premium | 1,650 | 370 mm | 450 | Ford Mustang GT |
-| Marlowe Vettura | Premium | 1,530 | 346 mm | 638 | Chevrolet Corvette ZR1 (C6) |
-| Marlowe Z | Premium | 1,600 | 360 mm | 650 | Chevrolet Corvette Z06 (C7) |
-| Marlowe Sprint | Mid | 1,700 | 380 mm | 455 | Chevrolet Camaro SS |
-| Homura Corsa 1.8 | Starter | 1,020 | 244 mm | 170 | Mazda MX-5 (NB) |
-| Homura Spirit R-7 | (not for sale) | 1,150 | 270 mm | 280 | Mazda RX-7 (FD) |
-| Homura Eclipse R-8 | Mid | 1,310 | 302 mm | 230 | Mazda RX-8 |
-| Tsurugi S2 | Mid | 1,180 | 276 mm | 220 | Subaru Impreza WRX (GC8) |
-| Tsurugi 22 | Premium | 1,270 | 294 mm | 280 | Subaru Impreza 22B STI |
-| Tsurugi Rex | Mid | 1,250 | 290 mm | 200 | Subaru BRZ |
-| Raijin 200S | Mid | 1,240 | 288 mm | 250 | Nissan Silvia (S15) |
-| Raijin GT-Line | Premium | 1,560 | 352 mm | 330 | Nissan Skyline GT-R (R34) |
-| Raijin R | Premium | 1,740 | 388 mm | 570 | Nissan GT-R (R35) |
-| Mitaka Sprinter | Starter | 940 | 228 mm | 130 | Toyota AE86 |
-| Mitaka Arrow | Mid | 1,500 | 340 mm | 330 | Toyota Supra (A80) |
-| Mitaka Halo | Elite | 1,480 | 336 mm | 560 | Lexus LFA |
-| Hanabi Type-R EK | Starter | 1,050 | 250 mm | 185 | Honda Civic Type R (EK9) |
-| Hanabi Roadster S | Mid | 1,260 | 292 mm | 240 | Honda S2000 |
-| Hanabi Mid-Tech | Premium | 1,350 | 310 mm | 280 | Honda NSX (NA1) |
-| Kestrel Swift 1.6 | Starter | 940 | 228 mm | 140 | Lotus Elise |
-| Kestrel Merlin | Mid | 980 | 236 mm | 240 | Lotus Exige |
-| Kestrel Harrier | Mid | 1,400 | 320 mm | 280 | Lotus Evora |
-| Corvina 4C | Mid | 895 | 219 mm | 240 | Alfa Romeo 4C |
-| Corvina 8C | Premium | 1,585 | 357 mm | 450 | Alfa Romeo 8C Competizione |
-| Corvina Giulia QV | Mid | 1,700 | 380 mm | 510 | Alfa Romeo Giulia Quadrifoglio |
-| Brandt M1 | Premium | 1,300 | 300 mm | 277 | BMW M1 |
-| Brandt M3 GTS | Premium | 1,530 | 346 mm | 450 | BMW M3 GTS (E92) |
-| Brandt 330 | Mid | 1,540 | 348 mm | 340 | BMW 335i (E92) |
-| Cavallo Fondatore | Hyper | 1,365 | 313 mm | 660 | Ferrari Enzo |
-| Pennine Mk I | Starter | 680 | 176 mm | 76 | Classic Mini Cooper |
-| Pennine Cooper S | Starter | 1,150 | 270 mm | 163 | Mini Cooper S (R53) |
-| Pennine GP | Mid | 1,200 | 280 mm | 218 | Mini John Cooper Works GP (R56) |
-| Aurelian Uno T | Starter | 850 | 210 mm | 105 | Fiat Uno Turbo |
-| Aurelian Lupa 1.4T | Starter | 1,050 | 250 mm | 190 | Abarth 595 Competizione |
-| Aurelian Spider 124 | Mid | 1,060 | 252 mm | 170 | Abarth 124 Spider |
-| Ardent 5 Turbo | Mid | 980 | 236 mm | 160 | Renault 5 Turbo |
-| Ardent Petite RS | Mid | 1,200 | 280 mm | 200 | Renault Clio RS 200 |
-| Ardent Trophy | Mid | 1,400 | 320 mm | 275 | Renault Mégane R.S. Trophy |
-| Mizuho Evo IX | Mid | 1,400 | 320 mm | 280 | Mitsubishi Lancer Evolution IX |
-| Mizuho Orion | Mid | 1,300 | 300 mm | 200 | Mitsubishi Starion |
-| Mizuho GTO | Mid | 1,700 | 380 mm | 280 | Mitsubishi 3000GT VR-4 |
-| Suzuri Cappu | Starter | 700 | 180 mm | 64 | Suzuki Cappuccino |
-| Suzuri Swift Sport | Starter | 1,000 | 240 mm | 136 | Suzuki Swift Sport |
-| Suzuri Works | Starter | 680 | 176 mm | 64 | Suzuki Alto Works |
-| Redback Torana | Mid | 1,100 | 260 mm | 200 | Holden Torana A9X |
-| Redback Sedan SS | Mid | 1,700 | 380 mm | 367 | Holden Commodore SS (VE) |
-| Redback Ute SS | Mid | 1,780 | 396 mm | 367 | Holden Commodore SS Ute (VE) |
-| Redback GTS-R | Premium | 1,900 | 420 mm | 636 | HSV GTSR W1 |
-| Wattle GT-HO | Elite | 1,430 | 326 mm | 300 | Ford Falcon GT-HO Phase III |
-| Wattle XR6 Turbo | Mid | 1,700 | 380 mm | 325 | Ford Falcon XR6 Turbo (BF) |
-| Wattle XR8 Ute | Mid | 1,800 | 400 mm | 395 | Ford Falcon XR8 Ute (FG) |
-| Wattle GT-F | Premium | 1,800 | 400 mm | 455 | Ford Falcon GT F |
-| Bunyip Charger E49 | Premium | 1,300 | 300 mm | 300 | Chrysler Valiant Charger E49 |
-| Bunyip Charger E55 | Mid | 1,350 | 310 mm | 250 | Chrysler Valiant Charger R/T E55 |
-| Bunyip Pacer | Mid | 1,350 | 310 mm | 245 | Chrysler Valiant Pacer |
-| Banksia Clubman | Starter | 640 | 168 mm | 150 | Elfin Clubman |
-| Banksia Nagari | Mid | 900 | 220 mm | 160 | Bolwell Nagari |
-| Banksia MS8 | Premium | 780 | 196 mm | 430 | Elfin MS8 Streamliner |
-| Haeju Veloce | Mid | 1,400 | 320 mm | 275 | Hyundai Veloster N |
-| Haeju i-Sprint | Mid | 1,450 | 330 mm | 280 | Hyundai i30 N |
-| Haeju Coupe 3.8 | Mid | 1,500 | 340 mm | 300 | Hyundai Genesis Coupe 3.8 |
-| Skald Sonett | Starter | 840 | 208 mm | 65 | Saab Sonett III |
-| Skald 900 Turbo | Mid | 1,200 | 280 mm | 175 | Saab 900 Turbo 16S |
-| Skald Viggen | Mid | 1,400 | 320 mm | 225 | Saab 9-3 Viggen |
+| Fictional model | Tier | Kerb kg | Max tyre | PS |
+| --- | --- | --- | --- | --- |
+| Cavallo Quaranta | Elite | 1,100 | 260 mm | 478 |
+| Cavallo Tre-Cinque | Premium | 1,350 | 310 mm | 380 |
+| Cavallo Otto | Elite | 1,380 | 316 mm | 570 |
+| Tauro Cuneo | Elite | 1,500 | 340 mm | 455 |
+| Tauro Piccolo | Premium | 1,400 | 320 mm | 520 |
+| Tauro Bravo | Elite | 1,800 | 400 mm | 700 |
+| Vento Z | Elite | 1,230 | 286 mm | 650 |
+| Vento H | Hyper | 1,350 | 310 mm | 730 |
+| Vento Utopia | Hyper | 1,280 | 296 mm | 864 |
+| Halberd F1 | Hyper | 1,140 | 268 mm | 627 |
+| Halberd 570 | Premium | 1,440 | 328 mm | 570 |
+| Halberd 765 | Elite | 1,330 | 306 mm | 765 |
+| Ashford Vantage | Premium | 1,530 | 346 mm | 510 |
+| Ashford DB | Premium | 1,770 | 394 mm | 608 |
+| Ashford Lance | Hyper | 1,030 | 246 mm | 1,160 |
+| Kessler Heck | Premium | 1,360 | 312 mm | 450 |
+| Kessler Rennen | Elite | 1,380 | 316 mm | 612 |
+| Kessler Boxer | Mid | 1,340 | 308 mm | 385 |
+| Stern GT Black | Elite | 1,540 | 348 mm | 730 |
+| Stern SLR | Elite | 1,768 | 394 mm | 626 |
+| Stern 63 | Premium | 1,700 | 380 mm | 510 |
+| Rhein R8 | Premium | 1,620 | 364 mm | 525 |
+| Rhein Sport Quattro | Elite | 1,200 | 280 mm | 306 |
+| Rhein TT RS | Mid | 1,450 | 330 mm | 400 |
+| Montclair EB | Elite | 1,620 | 364 mm | 612 |
+| Montclair Veyron | Hyper | 1,950 | 430 mm | 1,001 |
+| Montclair Chiron | Hyper | 1,995 | 439 mm | 1,500 |
+| Vesper CCR | Elite | 1,180 | 276 mm | 806 |
+| Vesper Agera | Hyper | 1,330 | 306 mm | 1,140 |
+| Vesper Jesko | Hyper | 1,420 | 324 mm | 1,280 |
+| Dunmore GT | Elite | 1,520 | 344 mm | 550 |
+| Dunmore GT-X | Elite | 1,385 | 317 mm | 656 |
+| Dunmore Stallion V8 | Premium | 1,650 | 370 mm | 450 |
+| Marlowe Vettura | Premium | 1,530 | 346 mm | 638 |
+| Marlowe Z | Premium | 1,600 | 360 mm | 650 |
+| Marlowe Sprint | Mid | 1,700 | 380 mm | 455 |
+| Homura Corsa 1.8 | Starter | 1,020 | 244 mm | 170 |
+| Homura Spirit R-7 | (not for sale) | 1,150 | 270 mm | 280 |
+| Homura Eclipse R-8 | Mid | 1,310 | 302 mm | 230 |
+| Tsurugi S2 | Mid | 1,180 | 276 mm | 220 |
+| Tsurugi 22 | Premium | 1,270 | 294 mm | 280 |
+| Tsurugi Rex | Mid | 1,250 | 290 mm | 200 |
+| Raijin 200S | Mid | 1,240 | 288 mm | 250 |
+| Raijin GT-Line | Premium | 1,560 | 352 mm | 330 |
+| Raijin R | Premium | 1,740 | 388 mm | 570 |
+| Mitaka Sprinter | Starter | 940 | 228 mm | 130 |
+| Mitaka Arrow | Mid | 1,500 | 340 mm | 330 |
+| Mitaka Halo | Elite | 1,480 | 336 mm | 560 |
+| Hanabi Type-R EK | Starter | 1,050 | 250 mm | 185 |
+| Hanabi Roadster S | Mid | 1,260 | 292 mm | 240 |
+| Hanabi Mid-Tech | Premium | 1,350 | 310 mm | 280 |
+| Kestrel Swift 1.6 | Starter | 940 | 228 mm | 140 |
+| Kestrel Merlin | Mid | 980 | 236 mm | 240 |
+| Kestrel Harrier | Mid | 1,400 | 320 mm | 280 |
+| Corvina 4C | Mid | 895 | 219 mm | 240 |
+| Corvina 8C | Premium | 1,585 | 357 mm | 450 |
+| Corvina Giulia QV | Mid | 1,700 | 380 mm | 510 |
+| Brandt M1 | Premium | 1,300 | 300 mm | 277 |
+| Brandt M3 GTS | Premium | 1,530 | 346 mm | 450 |
+| Brandt 330 | Mid | 1,540 | 348 mm | 340 |
+| Cavallo Fondatore | Hyper | 1,365 | 313 mm | 660 |
+| Pennine Mk I | Starter | 680 | 176 mm | 76 |
+| Pennine Cooper S | Starter | 1,150 | 270 mm | 163 |
+| Pennine GP | Mid | 1,200 | 280 mm | 218 |
+| Aurelian Uno T | Starter | 850 | 210 mm | 105 |
+| Aurelian Lupa 1.4T | Starter | 1,050 | 250 mm | 190 |
+| Aurelian Spider 124 | Mid | 1,060 | 252 mm | 170 |
+| Ardent 5 Turbo | Mid | 980 | 236 mm | 160 |
+| Ardent Petite RS | Mid | 1,200 | 280 mm | 200 |
+| Ardent Trophy | Mid | 1,400 | 320 mm | 275 |
+| Mizuho Evo IX | Mid | 1,400 | 320 mm | 280 |
+| Mizuho Orion | Mid | 1,300 | 300 mm | 200 |
+| Mizuho GTO | Mid | 1,700 | 380 mm | 280 |
+| Suzuri Cappu | Starter | 700 | 180 mm | 64 |
+| Suzuri Swift Sport | Starter | 1,000 | 240 mm | 136 |
+| Suzuri Works | Starter | 680 | 176 mm | 64 |
+| Redback Torana | Mid | 1,100 | 260 mm | 200 |
+| Redback Sedan SS | Mid | 1,700 | 380 mm | 367 |
+| Redback Ute SS | Mid | 1,780 | 396 mm | 367 |
+| Redback GTS-R | Premium | 1,900 | 420 mm | 636 |
+| Wattle GT-HO | Elite | 1,430 | 326 mm | 300 |
+| Wattle XR6 Turbo | Mid | 1,700 | 380 mm | 325 |
+| Wattle XR8 Ute | Mid | 1,800 | 400 mm | 395 |
+| Wattle GT-F | Premium | 1,800 | 400 mm | 455 |
+| Bunyip Charger E49 | Premium | 1,300 | 300 mm | 300 |
+| Bunyip Charger E55 | Mid | 1,350 | 310 mm | 250 |
+| Bunyip Pacer | Mid | 1,350 | 310 mm | 245 |
+| Banksia Clubman | Starter | 640 | 168 mm | 150 |
+| Banksia Nagari | Mid | 900 | 220 mm | 160 |
+| Banksia MS8 | Premium | 780 | 196 mm | 430 |
+| Haeju Veloce | Mid | 1,400 | 320 mm | 275 |
+| Haeju i-Sprint | Mid | 1,450 | 330 mm | 280 |
+| Haeju Coupe 3.8 | Mid | 1,500 | 340 mm | 300 |
+| Skald Sonett | Starter | 840 | 208 mm | 65 |
+| Skald 900 Turbo | Mid | 1,200 | 280 mm | 175 |
+| Skald Viggen | Mid | 1,400 | 320 mm | 225 |
 
 The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The starter cars a new garage can pick from are the Kestrel Swift 1.6, Homura Corsa 1.8 and Mitaka Sprinter. The starting field's 313 cars are drawn from these 96 models using the field mix above; supercars appear mostly in the hands of established, high-prestige garages.
 
@@ -1837,9 +1883,8 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 
 **Modding support**
 
-- **Mapping file.** `mod_mapping.json` is optional and ships separately from the game data. It links each fictional model ID to its real counterpart (make, model, generation, years) so a mod can replace names, stats and visuals together. It is not included in the base game.
 - **Replacement, not addition.** A mod replaces a fictional manufacturer or model entirely, including its name, logo, body shape and stats. Save files keep working because the game stores the stable internal ID, not the display name.
-- **Livery and art.** Real-car mods supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
+- **Livery and art.** Mods that add cars supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
 - **Mod loader.** See "Modding" for the package format, validation and load order.
 - **Legal.** The base game never ships real marks. Mods are covered by the hosting policy in "Modding": standard DMCA takedown, and no responsibility is claimed for modifications that private players make or apply.
 
@@ -2015,8 +2060,7 @@ Branding and social media are planned work for after the first playable season (
 - [ ] Consider a seventh round (a second Western Australian course, or the Northern Territory or Tasmania) if a good sealed loop under 80 km is found.
 - [ ] Legal review of the ODbL attribution for the saved course outlines.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
-- [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and the artwork of the Drake characters are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
-- [ ] Confirm the proposed release numbers for M6 (0.2.0), M7 (0.3.0) and M8 (0.4.0).
+- [ ] Confirm the proposed release numbers for M6 (0.2.0), M7 (0.3.0), M8 (0.4.0) and M9 (0.5.0).
 - [ ] A way to give feedback without a GitHub account.
 - [ ] Whether to pursue Steam at all, and if so the GPLv3 section 7 additional permission and contributor agreement (needs legal advice).

@@ -25,9 +25,13 @@ import {
   type SupplyRates,
 } from '../sim/supply';
 import { economyBalance, supplyData } from '../sim/worldgen/data';
+import { OUTAGE_CATEGORIES, outageChance, type OutageCategory } from '../sim/outages';
 import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
+import { garageFacilityBonuses } from './facilities';
+import { garageOutages, supplyReliability } from './outages';
+import { nextRoundNumber } from './prelims';
 import { adjustRelationship, relationshipScore, type Negotiation } from './negotiation';
 
 const careerOf = (db: Database) => {
@@ -97,12 +101,20 @@ export function supplyRates(
   year: number = yearOf(db),
 ): SupplyRates {
   const saving = 1 - garageBonuses(db, garageId).utilities;
+  // Solar panels, water tanks and a transporter fleet cut their own bills.
+  const own = garageFacilityBonuses(db, garageId);
+  const facilitySaving: Partial<Record<SupplyCategory, number>> = {
+    electricity: own.electricity,
+    water: own.water,
+    logistics: own.logistics,
+  };
   const contracts = activeContracts(db, garageId, year);
   const rates = { ...BASE_RATES };
   for (const category of SUPPLY_CATEGORIES) {
     const contract = contracts.find((c) => c.category === category);
     const base = contract ? contract.rate : categoryMarket(db, category, year).rate;
-    rates[category] = Math.round(base * saving * 10000) / 10000;
+    rates[category] =
+      Math.round(base * saving * (1 - (facilitySaving[category] ?? 0)) * 10000) / 10000;
   }
   return rates;
 }
@@ -128,6 +140,8 @@ export interface CategoryView {
   nextRound: number;
   contract: SupplyContract | undefined;
   suppliers: SupplierOption[];
+  /** The chance that this supply fails in a round, and whether it is down in the next round. Null for a category whose failure is not played out. */
+  outage: { chance: number; next: boolean } | null;
 }
 
 export interface SupplyView {
@@ -187,6 +201,8 @@ export function supplyView(db: Database, garageId: number): SupplyView {
     )[0]!.n,
   );
   const costs = forecast(db, garageId, rates, Math.max(1, entries));
+  const coming = nextRoundNumber(db);
+  const down = coming === null ? [] : garageOutages(db, garageId, coming, year);
   return {
     saving: garageBonuses(db, garageId).utilities,
     categories: SUPPLY_CATEGORIES.map((category) => {
@@ -198,6 +214,14 @@ export function supplyView(db: Database, garageId: number): SupplyView {
         rate: rates[category],
         nextRound: costs[category],
         contract: contracts.find((c) => c.category === category),
+        outage: (OUTAGE_CATEGORIES as readonly string[]).includes(category)
+          ? {
+              chance: outageChance(
+                supplyReliability(db, garageId, category as OutageCategory, year),
+              ),
+              next: down.includes(category as OutageCategory),
+            }
+          : null,
         suppliers: SUPPLIERS.filter((s) => s.category === category).map((s) => ({
           id: s.id,
           name: s.name,

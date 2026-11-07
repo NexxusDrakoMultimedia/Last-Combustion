@@ -11,13 +11,8 @@ import {
 } from '../../src/sim/worldgen';
 import { statesOfPlate } from '../../src/sim/plates';
 import { buildCalendar, addDays } from '../../src/sim/worldgen/calendar';
-import {
-  AUSTRALIAN_STATES,
-  carModels,
-  manufacturers,
-  nameLists,
-  places,
-} from '../../src/sim/worldgen/data';
+import { isOffensiveName } from '../../src/sim/worldgen/names';
+import { AUSTRALIAN_STATES, carModels, manufacturers, places } from '../../src/sim/worldgen/data';
 
 const world = generateWorld('2031');
 const model = (id: string) => carModels.find((m) => m.id === id)!;
@@ -273,8 +268,8 @@ describe('drivers', () => {
     expect(share((d) => country(d.hometownPlaceId) !== d.flag)).toBeGreaterThan(0);
   });
 
-  it('have names that are not on the deny list of famous people', () => {
-    for (const d of world.drivers) expect(nameLists.denyFullNames).not.toContain(d.name);
+  it('have names that are not offensive', () => {
+    for (const d of world.drivers) expect(isOffensiveName(d.name)).toBe(false);
   });
 });
 

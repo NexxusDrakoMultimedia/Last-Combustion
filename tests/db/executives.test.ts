@@ -10,6 +10,7 @@ import {
   executiveCapacity,
   expireExecutives,
   garageExecutives,
+  recentDepartures,
   offerExecutiveContract,
   openExecutiveNegotiation,
   roundSalaries,
@@ -18,6 +19,7 @@ import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
 import { openDriverNegotiation } from '../../src/db/negotiation';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
+import { refreshPlayerPrestige } from '../../src/db/prestige';
 import { playPrelims } from '../../src/db/prelims';
 import { partConditions, wearParts } from '../../src/db/repairs';
 import { createNewDatabase, packDatabase, unpackDatabase } from '../../src/db/session';
@@ -168,6 +170,65 @@ describe('paying and letting go', () => {
     expect(expireExecutives(db, 2033)).toBe(0);
     expect(expireExecutives(db, 2034)).toBe(1);
     expect(garageExecutives(db, garageId)).toEqual([]);
+  });
+});
+
+describe('retirement and poaching', () => {
+  const leftBecause = (db: Database) =>
+    scalar(db, "SELECT left_reason FROM executive WHERE status = 'left' ORDER BY id DESC LIMIT 1");
+
+  it('sends an executive home once they reach their retirement age, and says so', () => {
+    const { db, garageId } = fresh('executives-retire');
+    appoint(db, garageId, 'finance_director');
+    db.run('UPDATE executive SET birth_year = 1940, end_year = 2040');
+    expect(expireExecutives(db, 2031)).toBe(1);
+    expect(leftBecause(db)).toBe('retired');
+    expect(recentDepartures(db, garageId)).toEqual([
+      { name: 'Test Person', role: 'finance_director', reason: 'retired' },
+    ]);
+  });
+
+  it('keeps a young executive until a rival poaches them, long before they retire', () => {
+    const { db, garageId } = fresh('executives-poach');
+    appoint(db, garageId, 'technical_director');
+    db.run('UPDATE executive SET birth_year = 2000, end_year = 2200');
+    let year = 2031;
+    while (garageExecutives(db, garageId).length > 0 && year < 2090) expireExecutives(db, year++);
+    expect(leftBecause(db)).toBe('poached');
+    expect(year).toBeLessThan(2060);
+  });
+
+  it('starts the same way for the same seed', () => {
+    const years = ['a', 'b'].map(() => {
+      const { db, garageId } = fresh('executives-poach');
+      appoint(db, garageId, 'technical_director');
+      db.run('UPDATE executive SET birth_year = 2000, end_year = 2200');
+      let year = 2031;
+      while (garageExecutives(db, garageId).length > 0 && year < 2090) expireExecutives(db, year++);
+      return year;
+    });
+    expect(years[0]).toBe(years[1]);
+  });
+
+  it('records a dismissal as one', () => {
+    const { db, garageId } = fresh('executives-dismiss');
+    appoint(db, garageId, 'finance_director');
+    dismissExecutive(db, garageId, garageExecutives(db, garageId)[0]!.id);
+    expect(leftBecause(db)).toBe('dismissed');
+  });
+});
+
+describe('a Chief Executive and prestige', () => {
+  it('makes the prestige a garage has earned count for more', () => {
+    const { db, garageId } = fresh('executives-prestige');
+    // A championship won is worth 5 points of prestige above the base.
+    db.run('UPDATE season SET champion_driver_garage_id = ?', [garageId]);
+    const plain = refreshPlayerPrestige(db)!;
+    expect(plain).toBeGreaterThan(1);
+    appoint(db, garageId, 'chief_executive', 100);
+    const boosted = refreshPlayerPrestige(db)!;
+    expect(boosted).toBeGreaterThan(plain);
+    expect(boosted).toBe(1 + Math.round((plain - 1) * 1.25));
   });
 });
 

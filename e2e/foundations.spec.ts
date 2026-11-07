@@ -1,7 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import messages from '../locales/en.json' with { type: 'json' };
+
+/** Presses Continue until it is the button that runs the given step (it skips past the days and occasions between). */
+async function continueTo(page: Page, label: string): Promise<void> {
+  const primary = page.getByRole('button', {
+    name: new RegExp(`^(${messages['calendar.continue']}|${label})$`),
+  });
+  for (let i = 0; i < 12; i++) {
+    await expect(primary).toBeEnabled();
+    if ((await primary.textContent())?.trim() === label) return;
+    await primary.click();
+  }
+  throw new Error(`Never reached "${label}".`);
+}
 
 test('starts a career, runs a round, saves and reloads in the browser', async ({ page }) => {
   await page.goto('/');
@@ -92,8 +105,15 @@ test('starts a career, runs a round, saves and reloads in the browser', async ({
   await expect(page.getByText(messages['money.cash'], { exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
 
+  // The calendar lists what is coming.
+  await page.getByRole('button', { name: messages['rail.calendar'] }).click();
+  await expect(page.getByRole('heading', { name: messages['calendar.upcoming'] })).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  await continueTo(page, messages['hub.runPrelims']);
   await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
   await expect(page.getByText(/Round 1 prelims: \d+ set a time/)).toBeVisible();
+  await continueTo(page, messages['hub.runFinal']);
   await page.getByRole('button', { name: messages['hub.runFinal'] }).click();
   await expect(page.getByText(/Round 1 final: \d+ finished/)).toBeVisible();
   await page.getByRole('button', { name: messages['rail.season'] }).click();

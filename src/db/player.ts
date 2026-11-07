@@ -3,6 +3,8 @@
 import type { Database } from 'sql.js';
 import type { Identity } from '../sim/worldgen/types';
 import { AUSTRALIAN_STATES } from '../sim/worldgen/data';
+import { readCareer } from './career';
+import { setSoleOwner } from './equity';
 import { all } from './entries';
 
 export interface OwnerSetup {
@@ -85,6 +87,8 @@ export function foundPlayerGarage(db: Database, setup: OwnerSetup): number {
       setup.identity,
       setup.birthDate,
     ]);
+    // The owner starts with every share of the garage.
+    setSoleOwner(db, id, owner, readCareer(db)?.gameDate ?? `${setup.birthDate.slice(0, 4)}-02-01`);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');

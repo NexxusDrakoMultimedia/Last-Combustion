@@ -11,6 +11,9 @@ import {
   type Standing,
 } from '../sim/standings';
 import { fanBalance, seasonBalance } from '../sim/worldgen/data';
+import { recordValuations, reviewBoard } from './equity';
+import { updateMorale } from './morale';
+import { closeLedgerYear } from './ledger';
 import { garageBonuses } from './bonuses';
 import { awardSeason, type AwardWon } from './awards';
 import { all } from './entries';
@@ -218,6 +221,23 @@ export function endSeason(db: Database): SeasonEnd {
     );
     const awards = awardSeason(db, seasonId, year, tables);
     refreshPlayerPrestige(db);
+    // The financial year closes with the season: keep every garage's summary for good.
+    closeLedgerYear(db, year);
+    recordValuations(db, date);
+    // The board reviews the player's season against its target.
+    const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+    if (player)
+      reviewBoard(
+        db,
+        player.id as number,
+        year,
+        tables.garages.find((g) => g.id === (player.id as number))?.rank ?? null,
+      );
+    // Everyone's morale moves with the season's results.
+    updateMorale(db, (garageId) => {
+      const rank = tables.garages.find((g) => g.id === garageId)?.rank;
+      return rank ? { rank, of: tables.garages.length } : null;
+    });
     db.exec('COMMIT');
     return {
       year,

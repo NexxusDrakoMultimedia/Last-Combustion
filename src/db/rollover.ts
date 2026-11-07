@@ -17,6 +17,9 @@ import { all } from './entries';
 import { applyMoves } from './daily';
 import { retireOldCars } from './carage';
 import { createUsedCar } from './market';
+import { ensureBusinesses, settleBusinesses } from './business';
+import { ensureCapTables } from './equity';
+import { leaveUnhappy } from './morale';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
@@ -70,6 +73,7 @@ export function startNextSeason(db: Database): Rollover {
   try {
     // Garages that stayed broke close; their entries are not carried over.
     const closedGarages = new Set(settleGarages(db, lastId, year));
+    settleBusinesses(db, year);
     const openEntries = allEntries.filter((e) => !closedGarages.has(e.garage_id as number));
 
     // Cars past the oldest age for their tier that never scored a point retire. A computer garage
@@ -213,7 +217,19 @@ export function startNextSeason(db: Database): Rollover {
         year,
         last.era as string,
         last.final_size as number,
-        Math.round((last.series_fans as number) * (1 + seriesGrowth(year))),
+        Math.round(
+          (last.series_fans as number) *
+            (1 +
+              seriesGrowth(
+                year,
+                Number(
+                  db.exec(
+                    `SELECT COUNT(*) FROM event_log ev JOIN round ro ON ro.id = ev.round_id
+                      WHERE ro.season_id = ${String(last.id)} AND ev.type = 'attention'`,
+                  )[0]!.values[0]![0],
+                ),
+              )),
+        ),
         'scheduled',
       ],
     );
@@ -304,7 +320,11 @@ export function startNextSeason(db: Database): Rollover {
         identityRng.chance(workBalance.driver.nonBinaryShare) ? 'non_binary' : rolled,
     });
     refurbishAiGear(db, seasonId, year);
+    // New garages come with their owners.
+    ensureCapTables(db);
     expireExecutives(db, year);
+    ensureBusinesses(db, year);
+    leaveUnhappy(db, year);
     refreshPlayerPrestige(db);
     const worldChanges = applyWorldChanges(db, year);
     // Drivers who booked a move in the off-season now live in their new homes.

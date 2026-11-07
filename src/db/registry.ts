@@ -8,8 +8,15 @@ import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
 import { readCareer } from './career';
 import { all } from './entries';
+import {
+  peopleIndex,
+  personProfile,
+  type PersonKind,
+  type PersonProfile,
+  type PersonRef,
+} from './people';
+import { businessView, ensureBusinesses, type BusinessView } from './business';
 import { computeStandings } from './season';
-import { roundClassification, type ResultRow } from './tables';
 import { titlesOf } from './titles';
 
 const gameYear = (db: Database): number => {
@@ -48,6 +55,36 @@ export function decalsOf(db: Database, owner: 'driver' | 'car', id: number): Dec
     year: r.year as number,
     round: (r.round as number | null) ?? null,
     course: (r.course as string | null) ?? null,
+  }));
+}
+
+/** One attention flag a driver (or one of a garage's drivers) raised. */
+export interface AttentionMark {
+  year: number;
+  round: number;
+  course: string;
+  /** Where it was raised: in the prelims or in the final. */
+  scope: 'prelim' | 'final';
+  /** How many standard deviations above the field the run was. */
+  z: number;
+}
+
+/** The attention flags raised by a driver, or by any driver in a garage's cars, oldest first. */
+export function attentionOf(db: Database, owner: 'driver' | 'garage', id: number): AttentionMark[] {
+  return all(
+    db,
+    `SELECT s.year, ro.number AS round, c.name AS course, ev.scope, ev.payload
+       FROM event_log ev JOIN entry e ON e.id = ev.entry_id AND e.series = 'main'
+       JOIN round ro ON ro.id = ev.round_id JOIN season s ON s.id = ro.season_id
+       JOIN course c ON c.id = ro.course_id
+      WHERE ev.type = 'attention' AND e.${owner}_id = ? ORDER BY s.year, ro.number, ev.id`,
+    [id],
+  ).map((r) => ({
+    year: r.year as number,
+    round: r.round as number,
+    course: r.course as string,
+    scope: r.scope === 'final' ? 'final' : 'prelim',
+    z: Number((JSON.parse(String(r.payload)) as { z?: number }).z ?? 0),
   }));
 }
 
@@ -165,6 +202,8 @@ export interface DriverProfile {
   contracts: { garage: Ref; startYear: number; endYear: number; salary: number }[];
   titles: { name: string; year: number }[];
   decals: Decal[];
+  /** The attention flags the driver has raised. */
+  attention: AttentionMark[];
 }
 
 /** The profile of a driver: who they are, the number and borders they carry, their record, season by season, and their decals. */
@@ -278,6 +317,7 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
     })),
     titles: titlesOf(db, driverId).map((t) => ({ name: t.name, year: t.year })),
     decals: decalsOf(db, 'driver', driverId),
+    attention: attentionOf(db, 'driver', driverId),
   };
 }
 
@@ -438,9 +478,13 @@ export interface GarageProfile {
   championships: number[];
   /** A star for each Garage Championship won. */
   decals: Decal[];
+  /** The attention flags raised by the garage's drivers while racing for it. */
+  attention: AttentionMark[];
   /** The seasons with at least a point, and the first and last of them. */
   scoring: ScoringSpan;
   drivers: (Ref & { years: string })[];
+  /** The executives, facilities, sponsor and supplier of a computer garage; null for the player's. */
+  business: BusinessView | null;
 }
 
 /** The profile of a garage: where it is, who and what it races now, its seasons, its cars and its past drivers. */
@@ -473,6 +517,9 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     [garageId],
   );
   const player = g.is_player === 1;
+  // A garage from an older save, or a new one, is given its business the first time it is looked at.
+  const career = readCareer(db);
+  if (career && !player) ensureBusinesses(db, Number(career.gameDate.slice(0, 4)));
   return {
     id: garageId,
     name: g.name as string,
@@ -522,6 +569,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
       garageId,
     ]).map((s) => s.year as number),
     decals: garageStars(db, garageId),
+    attention: attentionOf(db, 'garage', garageId),
     scoring: scoringSpan(
       seasonRows.map((s) => ({ year: s.year as number, points: Number(s.points) })),
     ),
@@ -536,75 +584,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
       name: d.name as string,
       years: d.first === d.last ? String(d.first) : `${d.first as number}-${d.last as number}`,
     })),
-  };
-}
-
-export type SessionKind = 'prelim' | 'race';
-
-export interface RoundProfile {
-  kind: SessionKind;
-  year: number;
-  round: number;
-  course: string;
-  status: string;
-  /** The dates: the first practice day, the first prelim day and the final. */
-  practiceStart: string;
-  prelimStart: string;
-  finalDate: string;
-  /** The weather and temperature of each day of the round, once the prelims have been run. */
-  days: { date: string; kind: string; weather: string; temperatureC: number }[];
-  pole: Ref | null;
-  winner: Ref | null;
-  rows: ResultRow[];
-}
-
-/** The days of a round's schedule from its saved log (empty before the prelims are run). */
-function parseDays(log: string): RoundProfile['days'] {
-  try {
-    return (JSON.parse(log) as Record<string, unknown>[]).map((d) => ({
-      date: String(d.date),
-      kind: String(d.kind),
-      weather: String(d.weather),
-      temperatureC: Number(d.temperatureC),
-    }));
-  } catch {
-    return [];
-  }
-}
-
-/** The profile of a round's prelims or of its race (the final): the conditions and the full classification. */
-export function roundProfile(
-  db: Database,
-  kind: SessionKind,
-  year: number,
-  roundNumber: number,
-): RoundProfile {
-  const c = roundClassification(db, year, roundNumber);
-  const round = all(
-    db,
-    `SELECT r.practice_start, r.prelim_start, r.weather_log FROM round r JOIN season s ON s.id = r.season_id
-      WHERE s.year = ? AND r.number = ?`,
-    [year, roundNumber],
-  )[0]!;
-  const list = kind === 'race' ? c.final : c.prelims;
-  const pole = c.prelims.find((r) => r.pole);
-  const winner = c.final.find((r) => r.position === 1);
-  const ref = (r: ResultRow | undefined): Ref | null =>
-    r ? { id: r.driverId, name: r.driver } : null;
-  const days = parseDays(String(round.weather_log ?? '[]'));
-  return {
-    kind,
-    year,
-    round: roundNumber,
-    course: c.course,
-    status: c.status,
-    practiceStart: round.practice_start as string,
-    prelimStart: round.prelim_start as string,
-    finalDate: c.finalDate,
-    days,
-    pole: ref(pole),
-    winner: ref(winner),
-    rows: list,
+    business: player ? null : businessView(db, garageId),
   };
 }
 
@@ -693,7 +673,8 @@ export interface RegistryIndex {
   }[];
   cars: (CarRef & { status: RegistryStatus })[];
   garages: (Ref & { status: RegistryStatus })[];
-  rounds: { year: number; round: number; course: string; status: string }[];
+  /** Executives, staff and shareholders. */
+  people: PersonRef[];
 }
 
 export function registryIndex(db: Database): RegistryIndex {
@@ -734,16 +715,7 @@ export function registryIndex(db: Database): RegistryIndex {
         status: status.garage.get(g.id as number) ?? 'active',
       }),
     ),
-    rounds: all(
-      db,
-      `SELECT s.year, r.number, c.name AS course, r.status FROM round r JOIN season s ON s.id = r.season_id
-         JOIN course c ON c.id = r.course_id ORDER BY s.year DESC, r.number`,
-    ).map((r) => ({
-      year: r.year as number,
-      round: r.number as number,
-      course: r.course as string,
-      status: r.status as string,
-    })),
+    people: peopleIndex(db),
   };
 }
 
@@ -751,7 +723,7 @@ export function registryIndex(db: Database): RegistryIndex {
 export type RegistryTarget =
   | { kind: 'index' }
   | { kind: 'driver' | 'car' | 'garage'; id: number }
-  | { kind: SessionKind; year: number; round: number };
+  | { kind: 'person'; person: PersonKind; id: number };
 
 /** A page of the Registry, loaded from the database. */
 export type RegistryPage =
@@ -759,7 +731,7 @@ export type RegistryPage =
   | { kind: 'driver'; data: DriverProfile }
   | { kind: 'car'; data: CarProfile }
   | { kind: 'garage'; data: GarageProfile }
-  | { kind: SessionKind; data: RoundProfile };
+  | { kind: 'person'; data: PersonProfile };
 
 /** Loads the page for a target. */
 export function registryPage(db: Database, target: RegistryTarget): RegistryPage {
@@ -772,10 +744,7 @@ export function registryPage(db: Database, target: RegistryTarget): RegistryPage
       return { kind: 'car', data: carProfile(db, target.id) };
     case 'garage':
       return { kind: 'garage', data: garageProfile(db, target.id) };
-    default:
-      return {
-        kind: target.kind,
-        data: roundProfile(db, target.kind, target.year, target.round),
-      };
+    case 'person':
+      return { kind: 'person', data: personProfile(db, target.person, target.id) };
   }
 }

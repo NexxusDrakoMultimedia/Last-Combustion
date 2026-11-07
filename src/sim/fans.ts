@@ -12,6 +12,8 @@ export interface FanMoment {
   overtakes: number;
   /** The round was held in the driver's home state. */
   home: boolean;
+  /** How many attention flags the driver raised in the round. */
+  attention?: number;
 }
 
 /** The fans a driver gains from a round: shares of the series audience `S` (see the GDD, "Fans"). */
@@ -24,6 +26,7 @@ export function driverFanGain(audience: number, m: FanMoment): number {
   else if (m.points > 0) share += g.pointsScorer;
   if (m.pole) share += g.pole;
   share += m.overtakes * g.overtake;
+  share += (m.attention ?? 0) * g.attention;
   const gain = audience * share;
   return Math.round(m.home ? gain * g.hometownMultiplier : gain);
 }
@@ -33,9 +36,14 @@ export function capFans(fans: number, audience: number): number {
   return Math.min(Math.round(fans), Math.round(audience * fanBalance.capShare));
 }
 
-/** How much the series audience grows when it enters a season: 25% a year at first, then 8%, plus 1% for the festival. */
-export function seriesGrowth(year: number): number {
+/**
+ * How much the series audience grows when it enters a season: 25% a year at first, then 8%, plus 1% for
+ * the festival and 0.5% for each attention flag raised in the season that has just ended.
+ */
+export function seriesGrowth(year: number, attentionFlags = 0): number {
   const s = fanBalance.series;
   const early = year - s.firstYear <= s.earlyYears;
-  return (early ? s.earlyGrowth : s.lateGrowth) + s.festivalGrowth;
+  return (
+    (early ? s.earlyGrowth : s.lateGrowth) + s.festivalGrowth + attentionFlags * s.attentionGrowth
+  );
 }

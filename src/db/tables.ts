@@ -165,6 +165,8 @@ export interface ResultRow {
   /** Why the car did not finish (for example "crash"), or null. */
   dnf: string | null;
   mine: boolean;
+  /** The series' computer flagged this run for pace well beyond what the car should manage. */
+  attention: boolean;
 }
 
 export interface RoundClassification {
@@ -173,6 +175,11 @@ export interface RoundClassification {
   course: string;
   finalDate: string;
   status: string;
+  /** The dates: the first practice day, the first prelim day and the final. */
+  practiceStart: string;
+  prelimStart: string;
+  /** The weather and temperature of each day of the round, once the prelims have been run. */
+  days: { date: string; kind: string; weather: string; temperatureC: number }[];
   /** Every car that ran the prelims, fastest first, then those with no time. */
   prelims: ResultRow[];
   /** Every car that started the final, in finishing order, then those that did not finish. */
@@ -190,7 +197,7 @@ export function roundClassification(
 ): RoundClassification {
   const round = all(
     db,
-    `SELECT r.id, r.final_date, r.status, c.name AS course
+    `SELECT r.id, r.final_date, r.status, r.practice_start, r.prelim_start, r.weather_log, c.name AS course
        FROM round r JOIN course c ON c.id = r.course_id JOIN season s ON s.id = r.season_id
       WHERE s.year = ? AND r.number = ?`,
     [year, roundNumber],
@@ -198,7 +205,7 @@ export function roundClassification(
   if (!round) throw new Error(`There is no round ${roundNumber} in ${year}.`);
   const rows = all(
     db,
-    `SELECT r.prelim_pos, r.prelim_time_ms, r.final_pos, r.final_time_ms, r.points, r.prize, r.pole,
+    `SELECT r.entry_id, r.prelim_pos, r.prelim_time_ms, r.final_pos, r.final_time_ms, r.points, r.prize, r.pole,
             r.dnf_reason, e.race_number, e.driver_id, e.garage_id, e.car_id, c.plate, c.plate_state, d.name AS driver, g.name AS garage, g.is_player, m.name AS car
        FROM result r
        JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
@@ -209,8 +216,14 @@ export function roundClassification(
       WHERE r.round_id = ?`,
     [round.id as number],
   );
+  const flagged = all(
+    db,
+    "SELECT entry_id, scope FROM event_log WHERE round_id = ? AND type = 'attention'",
+    [round.id as number],
+  );
   const toRow = (
     r: (typeof rows)[number],
+    scope: 'prelim' | 'final',
     position: number | null,
     timeMs: number | null,
     leaderMs: number | null,
@@ -234,6 +247,7 @@ export function roundClassification(
     pole: r.pole === 1,
     dnf: (r.dnf_reason as string | null) ?? null,
     mine: r.is_player === 1,
+    attention: flagged.some((f) => f.entry_id === r.entry_id && f.scope === scope),
   });
 
   const badges = badgesFor(db, year);
@@ -250,6 +264,7 @@ export function roundClassification(
   const prelims = prelimRows.map((r) =>
     toRow(
       r,
+      'prelim',
       r.prelim_pos as number | null,
       r.prelim_time_ms as number | null,
       r.prelim_pos === null ? null : prelimLeader,
@@ -266,6 +281,7 @@ export function roundClassification(
   const final = finalRows.map((r) =>
     toRow(
       r,
+      'final',
       r.final_time_ms === null ? null : (r.final_pos as number),
       r.final_time_ms as number | null,
       finalLeader,
@@ -279,7 +295,24 @@ export function roundClassification(
     course: round.course as string,
     finalDate: round.final_date as string,
     status: round.status as string,
+    practiceStart: round.practice_start as string,
+    prelimStart: round.prelim_start as string,
+    days: parseDays(String(round.weather_log ?? '[]')),
     prelims,
     final,
   };
+}
+
+/** The days of a round's schedule from its saved log (empty before the prelims are run). */
+function parseDays(log: string): RoundClassification['days'] {
+  try {
+    return (JSON.parse(log) as Record<string, unknown>[]).map((d) => ({
+      date: String(d.date),
+      kind: String(d.kind),
+      weather: String(d.weather),
+      temperatureC: Number(d.temperatureC),
+    }));
+  } catch {
+    return [];
+  }
 }

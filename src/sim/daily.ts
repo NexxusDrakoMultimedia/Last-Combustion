@@ -6,24 +6,38 @@ import { ROAD_TYPES, type RoadType } from './worldgen/types';
 
 const cfg = () => dailyBalance as typeof dailyBalance & { areaFactor: Record<string, number> };
 
-/** Whole days from one ISO date to a later one. */
-function daysBetween(from: string, to: string): number {
-  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86_400_000);
+export interface RoundSpan {
+  practiceStart: string;
+  finalDate: string;
 }
 
 /**
- * The days a round's settlement counts as daily life: the non-event days before it. For round 1 that
- * is the lead-in to the season, and for any other round the days between the last round's final and
- * this round's first practice day (a three-week gap on the calendar). Weather delays that push a
- * final back shorten the gap.
+ * Whether a date is a day of daily life: a day of the running season (after it starts and before the
+ * last final) on which no round is being held. The days of a round, from its first practice day to
+ * its final, are race days; every other day the cars are on everyday and delivery roads.
  */
-export function daysBefore(
-  round: number,
-  practiceStart: string,
-  previousFinal: string | null,
+export function isDailyLifeDay(
+  date: string,
+  seasonStart: string,
+  rounds: readonly RoundSpan[],
+): boolean {
+  if (rounds.length === 0 || date <= seasonStart) return false;
+  const lastFinal = rounds.reduce((m, r) => (r.finalDate > m ? r.finalDate : m), '');
+  if (date >= lastFinal) return false;
+  return !rounds.some((r) => r.practiceStart <= date && date <= r.finalDate);
+}
+
+/** How many days of daily life there are after one date and before another (neither counted). */
+export function dailyLifeDaysBetween(
+  after: string,
+  before: string,
+  seasonStart: string,
+  rounds: readonly RoundSpan[],
 ): number {
-  if (round <= 1 || previousFinal === null) return cfg().leadInDays;
-  return Math.max(0, daysBetween(addDays(previousFinal, 0), practiceStart) - 1);
+  let n = 0;
+  for (let d = addDays(after, 1); d < before; d = addDays(d, 1))
+    if (isDailyLifeDay(d, seasonStart, rounds)) n++;
+  return n;
 }
 
 /** The local-area factor for delivery work in a region (a state code such as `Vic`), 1 where the region is not listed. */
@@ -31,7 +45,7 @@ export function areaFactor(region: string): number {
   return cfg().areaFactor[region] ?? cfg().defaultAreaFactor;
 }
 
-/** What a car earns from delivery driving over some days: $250 a day times the local-area factor. */
+/** What a car earns from delivery driving over some days: $167 a day times the local-area factor. */
 export function deliveryIncome(days: number, region: string): number {
   return Math.round(days * cfg().deliveryPerDay * areaFactor(region));
 }

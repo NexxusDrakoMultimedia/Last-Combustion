@@ -1,0 +1,68 @@
+{
+  "source": "The press for the people layer (see the GDD, 'People and relationships'). Every journalist is fictional. 'taste' is what they like to write about. After each final one journalist writes a headline about the player's garage, chosen by the garage's best finish: 'weights' says how much more likely a taste is to cover a result of that kind (1 for the rest). Their view of the garage comes from the relationship score: warm at 'warm' or more, cold at 'cold' or less, otherwise fair. A warm headline wins the garage 'fans.warm' fans, a cold one loses 'fans.cold'. The commentators in 'commentators.json' also write for the press: their first 'focus' decides their taste through 'focusTaste' and their role stands for the outlet.",
+  "warm": 30,
+  "cold": -30,
+  "fans": {
+    "warm": 120,
+    "fair": 0,
+    "cold": -80
+  },
+  "weights": {
+    "win": {
+      "results": 4
+    },
+    "podium": {
+      "results": 3
+    },
+    "points": {
+      "technical": 3
+    },
+    "nopoints": {
+      "gossip": 4
+    }
+  },
+  "journalists": [
+    {
+      "id": 1,
+      "name": "Odette Marchbanks",
+      "outlet": "The Bitumen Bulletin",
+      "taste": "results"
+    },
+    {
+      "id": 2,
+      "name": "Reuben Tilbrook",
+      "outlet": "Roadside Weekly",
+      "taste": "technical"
+    },
+    {
+      "id": 3,
+      "name": "Lowanna Prestwick",
+      "outlet": "Paddock Whispers",
+      "taste": "gossip"
+    },
+    {
+      "id": 4,
+      "name": "Callum Fenwick-Dray",
+      "outlet": "The Gravel Gazette",
+      "taste": "human_interest"
+    },
+    {
+      "id": 5,
+      "name": "Hettie Ashgrove",
+      "outlet": "Late Apex",
+      "taste": "technical"
+    },
+    {
+      "id": 6,
+      "name": "Barnaby Quill",
+      "outlet": "The Chequered Courier",
+      "taste": "gossip"
+    }
+  ],
+  "focusTaste": {
+    "driving": "technical",
+    "play_by_play": "results",
+    "roads": "human_interest",
+    "money": "gossip"
+  }
+}

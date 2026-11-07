@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useEffect, useState } from 'react';
-import { formatGap, formatLapTime, formatMoney, formatPoints, t } from '../../i18n';
+import { formatDate, formatGap, formatLapTime, formatMoney, formatPoints, t } from '../../i18n';
 import { TABLE_KINDS, type ResultRow, type TableKind } from '../../db/tables';
 import { useCareerStore } from '../../state/career.store';
+import { AttnFlag } from '../AttnFlag';
 import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
@@ -151,12 +152,15 @@ const timeCell = (r: ResultRow): string =>
 export function ResultsPanel() {
   const { hub, classificationView, standingsView, loadClassification, loadStandings } =
     useCareerStore();
-  const [year, setYear] = useState(hub?.year ?? 0);
+  // A link to a round's results (from the calendar) lands here on that round and session.
+  const focus = useCareerStore((s) => s.resultsFocus);
+  const [year, setYear] = useState(focus?.year ?? hub?.year ?? 0);
   const [round, setRound] = useState(() => {
+    if (focus) return focus.round;
     const done = hub?.rounds.filter((r) => r.status !== 'scheduled') ?? [];
     return done.length > 0 ? done[done.length - 1]!.number : 1;
   });
-  const [session, setSession] = useState<'prelims' | 'final'>('final');
+  const [session, setSession] = useState<'prelims' | 'final'>(focus?.session ?? 'final');
   useEffect(() => {
     if (year > 0) {
       loadStandings(year);
@@ -201,12 +205,34 @@ export function ResultsPanel() {
         </div>
       </div>
       {ready && (
-        <p className="text-lc-dim">
-          {t('tables.roundLine', { round: c.round, course: c.course, count: rows.length })}{' '}
-          <RegistryLink to={{ kind: session === 'final' ? 'race' : 'prelim', year, round }}>
-            {t('tables.openProfile')}
-          </RegistryLink>
-        </p>
+        <div className="space-y-2">
+          <p className="text-lc-dim">
+            {t('tables.roundLine', { round: c.round, course: c.course, count: rows.length })}
+          </p>
+          <p className="text-lc-dim">
+            {t('tables.roundDates', {
+              practice: formatDate(c.practiceStart),
+              prelims: formatDate(c.prelimStart),
+              final: formatDate(c.finalDate),
+            })}
+          </p>
+          {c.days.length > 0 && (
+            <ul className="flex flex-wrap gap-2" aria-label={t('tables.conditions')}>
+              {c.days.map((d) => (
+                <li key={d.date} className="border border-lc-line p-2">
+                  <span className="lc-num block">{formatDate(d.date)}</span>
+                  <span className="text-lc-dim">
+                    {t('tables.dayLine', {
+                      kind: t(`tables.day.${d.kind}` as never),
+                      weather: t(`tables.weather.${d.weather}` as never),
+                      temp: Math.round(d.temperatureC),
+                    })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
       {ready && rows.length === 0 ? (
         <p className="text-lc-dim">{t('tables.notRun')}</p>
@@ -217,9 +243,12 @@ export function ResultsPanel() {
             <thead className="lc-display sticky top-0 bg-lc-panel text-xs text-lc-dim">
               <tr>
                 <th scope="col">{t('tables.pos')}</th>
-                <th scope="col">{t('tables.driver')}</th>
-                <th scope="col">{t('tables.garage')}</th>
-                <th scope="col">{t('tables.car')}</th>
+                <th scope="col" className="w-2/5">
+                  {t('tables.entry')}
+                </th>
+                <th scope="col" className="w-1/4">
+                  {t('tables.car')}
+                </th>
                 <th scope="col">{t('tables.time')}</th>
                 <th scope="col">{t('tables.gap')}</th>
                 <th scope="col" className="text-right">
@@ -238,31 +267,44 @@ export function ResultsPanel() {
                   key={`${r.raceNumber}`}
                   className={`border-t border-lc-line ${r.mine ? mine : ''}`}
                 >
-                  <td className="lc-num py-1">{r.position ?? t('tables.none')}</td>
-                  <td>
-                    <span className="inline-flex items-center gap-2">
+                  <td className="lc-num py-1 align-middle">{r.position ?? t('tables.none')}</td>
+                  <td className="align-middle">
+                    <span className="flex items-center gap-2">
                       <RaceNumber number={r.raceNumber} badge={r.badge} />
-                      <RegistryLink to={{ kind: 'driver', id: r.driverId }}>
-                        {r.driver}
-                      </RegistryLink>
-                      {r.pole && session === 'prelims' && ` ${t('tables.pole')}`}
+                      <span className="flex flex-col">
+                        <span className="flex items-center gap-2">
+                          <RegistryLink to={{ kind: 'driver', id: r.driverId }}>
+                            {r.driver}
+                          </RegistryLink>
+                          {r.attention && <AttnFlag />}
+                        </span>
+                        <span className="text-lc-dim">
+                          <RegistryLink to={{ kind: 'garage', id: r.garageId }}>
+                            {r.garage}
+                          </RegistryLink>
+                        </span>
+                      </span>
                     </span>
                   </td>
-                  <td className="text-lc-dim">
-                    <RegistryLink to={{ kind: 'garage', id: r.garageId }}>{r.garage}</RegistryLink>
+                  <td className="align-middle">
+                    <span className="flex flex-col text-lc-dim">
+                      <span>{r.car}</span>
+                      <span>
+                        <Plate plate={r.plate} state={r.plateState} carId={r.carId} />
+                      </span>
+                    </span>
                   </td>
-                  <td className="text-lc-dim">
-                    <Plate plate={r.plate} state={r.plateState} carId={r.carId} /> {r.car}
-                  </td>
-                  <td className="lc-num">{timeCell(r)}</td>
-                  <td className="lc-num">
+                  <td className="lc-num align-middle">{timeCell(r)}</td>
+                  <td className="lc-num align-middle">
                     {r.gapMs !== null && r.gapMs > 0 ? formatGap(r.gapMs) : ''}
                   </td>
-                  <td className="lc-num text-right">
+                  <td className="lc-num text-right align-middle">
                     {r.points > 0 ? formatPoints(r.points) : ''}
                   </td>
                   {session === 'final' && (
-                    <td className="lc-num text-right">{r.prize > 0 ? formatMoney(r.prize) : ''}</td>
+                    <td className="lc-num text-right align-middle">
+                      {r.prize > 0 ? formatMoney(r.prize) : ''}
+                    </td>
                   )}
                 </tr>
               ))}

@@ -1,0 +1,61 @@
+{
+  "source": "Social occasions for the people layer (see the GDD, 'People and relationships'). Each occasion has a date and stays open for 'days' days: 'on' is a month and day of the season's year, and 'afterFinal' puts it 'plusDays' days after the final of that round. At each the player has 'conversations' to spend. A conversation with a manner moves a relationship by a number of points drawn from 'delta'; a 'bold' one may go wrong ('goesWrong' is its chance, with the points in 'trouble'); a 'discreet' one may also lead to an introduction ('introduces' is its chance). Meeting someone new starts a relationship at the points the conversation earns, plus 'newAcquaintance'.",
+  "conversations": 3,
+  "newAcquaintance": 5,
+  "occasions": [
+    {
+      "id": "season_opening",
+      "on": "03-31",
+      "days": 3
+    },
+    {
+      "id": "sponsor_dinner",
+      "afterFinal": 2,
+      "plusDays": 10,
+      "days": 3
+    },
+    {
+      "id": "press_day",
+      "afterFinal": 3,
+      "plusDays": 10,
+      "days": 3
+    },
+    {
+      "id": "paddock_party",
+      "afterFinal": 4,
+      "plusDays": 10,
+      "days": 3
+    },
+    {
+      "id": "closing_ceremony",
+      "on": "11-11",
+      "days": 7
+    }
+  ],
+  "manners": {
+    "warm": {
+      "delta": [3, 6],
+      "goesWrong": 0,
+      "trouble": [0, 0],
+      "introduces": 0
+    },
+    "direct": {
+      "delta": [-2, 9],
+      "goesWrong": 0,
+      "trouble": [0, 0],
+      "introduces": 0
+    },
+    "bold": {
+      "delta": [10, 14],
+      "goesWrong": 0.5,
+      "trouble": [-10, -6],
+      "introduces": 0
+    },
+    "discreet": {
+      "delta": [1, 3],
+      "goesWrong": 0,
+      "trouble": [0, 0],
+      "introduces": 0.2
+    }
+  }
+}

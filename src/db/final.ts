@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { writeHeadline } from './press';
 import type { Database } from 'sql.js';
 import { FinalRace, type Call, type FinalEntry } from '../sim/final/engine';
 import { createRng } from '../sim/rng';
@@ -286,10 +287,12 @@ export function playFinal(
         chassisWear(entry.roadKm, raceKmTotal, entry.tier, entry.wearOffset, entry.restorations),
         entry.carId,
       ]);
-      wearParts(db, entry.carId, c.km, 'race', entry.tier);
+      wearParts(db, entry.carId, c.km, 'race', entry.tier, roundId);
       wearGear(db, entry.driver.id, c.km);
     }
     db.run("UPDATE round SET status = 'complete' WHERE id = ?", [roundId]);
+    // The press writes about the player's garage.
+    writeHeadline(db, roundId);
     // Reaching a final earns gold borders, which lift the player's garage.
     refreshPlayerPrestige(db);
     db.exec('COMMIT');

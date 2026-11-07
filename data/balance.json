@@ -108,6 +108,9 @@
     "partFailureFrom": 85
   },
   "sim": {
+    "attention": {
+      "zThreshold": 2.5
+    },
     "kc": 0.12,
     "kd": 0.09,
     "powerToWeight": {
@@ -243,11 +246,10 @@
     "classifiedShare": 0.5
   },
   "daily": {
-    "deliveryPerDay": 250,
-    "dailyKm": 60,
-    "leadInDays": 3,
+    "deliveryPerDay": 167,
+    "dailyKm": 40,
     "relocationCost": 5000,
-    "affinityPerDay": 0.1,
+    "affinityPerDay": 0.067,
     "affinityCap": 70,
     "defaultAreaFactor": 1,
     "areaFactor": {
@@ -378,6 +380,7 @@
       "finalRest": 0.001,
       "pointsScorer": 0.0001,
       "pole": 0.003,
+      "attention": 0.006,
       "overtake": 0.0002,
       "hometownMultiplier": 1.2
     },
@@ -395,7 +398,8 @@
       "earlyYears": 5,
       "earlyGrowth": 0.25,
       "lateGrowth": 0.08,
-      "festivalGrowth": 0.01
+      "festivalGrowth": 0.01,
+      "attentionGrowth": 0.005
     }
   },
   "staff": {
@@ -469,7 +473,14 @@
     "servicingShare": 0.25,
     "restoration": {
       "costStep": 0.25,
-      "floorStep": { "starter": 5, "mid": 6, "premium": 10, "elite": 8, "hyper": 16, "unique": 8 },
+      "floorStep": {
+        "starter": 5,
+        "mid": 6,
+        "premium": 10,
+        "elite": 8,
+        "hyper": 16,
+        "unique": 8
+      },
       "floorCap": 60,
       "retireAbove": 50,
       "keepShare": 0.1,
@@ -480,7 +491,10 @@
   "season": {
     "championPrize": 10000000,
     "garageChampionPrize": 10000000,
-    "garageChampionPrizeFrom2036": { "super": 15000000, "junior": 10000000 },
+    "garageChampionPrizeFrom2036": {
+      "super": 15000000,
+      "junior": 10000000
+    },
     "bestResultsPerRound": 2,
     "rounds": 6,
     "retirementStartAge": 36,
@@ -523,13 +537,52 @@
     },
     "training": {
       "levels": [
-        { "cost": 0, "growth": 0, "decline": 0, "overshoot": 0 },
-        { "cost": 20000, "growth": 0.25, "decline": 0.3, "overshoot": 2 },
-        { "cost": 60000, "growth": 0.5, "decline": 0.6, "overshoot": 4 },
-        { "cost": 150000, "growth": 0.8, "decline": 0.9, "overshoot": 6 }
+        {
+          "cost": 0,
+          "growth": 0,
+          "decline": 0,
+          "overshoot": 0
+        },
+        {
+          "cost": 20000,
+          "growth": 0.25,
+          "decline": 0.3,
+          "overshoot": 2
+        },
+        {
+          "cost": 60000,
+          "growth": 0.5,
+          "decline": 0.6,
+          "overshoot": 4
+        },
+        {
+          "cost": 150000,
+          "growth": 0.8,
+          "decline": 0.9,
+          "overshoot": 6
+        }
       ],
       "aiPrestigePerLevel": 20,
       "aiCashMultiple": 3
     }
+  },
+  "morale": {
+    "source": "Morale of mechanics and executives, 0 to 100 (see the GDD, 'People and relationships'). Each season's end moves it 'step' of the way to a target: 50 plus the pay against the market (up to 'pay' points either way), the results (up to 'results' points either way), the facilities ('perFacilityLevel' a level, up to 'facilities') and, for mechanics, the workload (up to 'workload' points off when the crew is stretched). Performance moves by up to 'performance' either way (morale 0 to 100), and a mechanic whose morale is below 'quitBelow' leaves with a chance that grows by 'quitPerPoint' for every point below it.",
+    "start": 50,
+    "step": 0.4,
+    "pay": 20,
+    "results": 10,
+    "facilities": 10,
+    "perFacilityLevel": 1.5,
+    "workload": 20,
+    "performance": 0.05,
+    "quitBelow": 25,
+    "quitPerPoint": 0.012
+  },
+  "relationshipKinds": {
+    "source": "The kind a relationship score earns (see the GDD, 'People and relationships'): a friend from 'friend' up, a rival at 'rival' or below, an enemy at 'enemy' or below, and an acquaintance in between.",
+    "friend": 50,
+    "rival": -20,
+    "enemy": -60
   }
 }

@@ -9,7 +9,7 @@ import type { Tier } from '../sim/worldgen/types';
 import { all } from './entries';
 import { crashRepairCost } from './repairs';
 import { roundSalaries } from './executives';
-import { settleDailyLife } from './daily';
+import { roundFacilityCost } from './facilities';
 import { garageCrewStrength, roundWages } from './staff';
 import { supplyRates } from './supply';
 
@@ -100,7 +100,7 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         entries
           .filter((e) => e.dnf_reason === 'crash')
           .reduce((sum, e) => sum + crashRepairCost(e.price_new as number), 0) *
-          repairFactor(garageCrewStrength(db, garageId)),
+          repairFactor(garageCrewStrength(db, garageId, roundId)),
       );
       if (repairs > 0) {
         lines.push(['repairs', repairs]);
@@ -118,6 +118,12 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         lines.push(['salaries', salaries]);
         costs.total += salaries;
       }
+      // The upkeep of the garage's facilities.
+      const facilityUpkeep = roundFacilityCost(db, garageId);
+      if (facilityUpkeep > 0) {
+        lines.push(['facilities', facilityUpkeep]);
+        costs.total += facilityUpkeep;
+      }
       for (const [category, amount] of lines) {
         db.run(
           'INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, ?, ?, ?, ?, ?)',
@@ -125,8 +131,6 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         );
       }
       db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [costs.total, garageId]);
-      // The player's cars spend the days before the round on everyday and delivery roads.
-      if (first.is_player === 1) settleDailyLife(db, garageId, roundId, roundNumber, date);
       // The title sponsor pays a share of its season fee each round.
       const deal = all(
         db,

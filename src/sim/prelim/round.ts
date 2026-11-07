@@ -4,10 +4,16 @@ import { createRng } from '../rng';
 import type { Sector } from '../courses/sectors';
 import { simBalance } from '../worldgen/data';
 import type { CourseData, Driver } from '../worldgen/types';
+import {
+  attentionFlags,
+  predictedSectorMs,
+  type AttentionFlag,
+  type AttentionRun,
+} from './attention';
 import { classifyPrelims, POLE_BONUS, type Classified } from './classify';
 import { simulateLap } from './lap';
 import { buildRunningOrder } from './order';
-import { simulatePractice, type SimEvent } from './practice';
+import { simulatePractice, type PracticeEffect, type SimEvent } from './practice';
 import type { CarSpec } from './ratings';
 import { planRoundDays, type RoundSchedule } from './weather';
 
@@ -30,6 +36,8 @@ export interface RoundInput {
   practiceStart: string;
   finalSize: number;
   entries: readonly PrelimEntry[];
+  /** Entries held back in practice by a supply outage. */
+  practiceHandicaps?: ReadonlyMap<number, PracticeEffect>;
 }
 
 export interface PrelimRound {
@@ -40,6 +48,8 @@ export interface PrelimRound {
   raceKm: Map<number, number>;
   poleEntryId: number | null;
   poleBonus: number;
+  /** The runs the series' computer flagged for pace well beyond what their car should manage, best first. */
+  attentionFlags: AttentionFlag[];
 }
 
 /**
@@ -58,6 +68,7 @@ export function simulateRoundPrelims(input: RoundInput): PrelimRound {
     schedule.days,
     input.course.lapKm,
     stream('practice'),
+    input.practiceHandicaps,
   );
   const order = buildRunningOrder(entries, simBalance.prelims.days, stream('order'));
   const dayOf = new Map(
@@ -67,6 +78,7 @@ export function simulateRoundPrelims(input: RoundInput): PrelimRound {
   const raceKm = new Map(practice.raceKm);
   const byEntry = new Map(entries.map((e) => [e.entryId, e]));
 
+  const attentionRuns: AttentionRun[] = [];
   const outcomes = order.map((run) => {
     const entry = byEntry.get(run.entryId) as PrelimEntry;
     const day = dayOf.get(run.day) as RoundSchedule['days'][number];
@@ -81,6 +93,18 @@ export function simulateRoundPrelims(input: RoundInput): PrelimRound {
     );
     const bonus = practice.setupBonus.get(entry.entryId) ?? 0;
     const timeMs = lap.timeMs === null ? null : Math.round(lap.timeMs * (1 - bonus));
+    const predicted = predictedSectorMs(
+      entry.car,
+      input.sectors,
+      input.course.altitudeM,
+      day.temperatureBias,
+    );
+    attentionRuns.push({
+      entryId: entry.entryId,
+      predictedMs: Math.round(predicted.reduce((a, b) => a + b, 0) * (1 - bonus)),
+      actualMs: timeMs,
+      sectorGainMs: predicted.map((p, i) => p - (lap.sectorMs[i] ?? p)),
+    });
     const ranKm =
       lap.dnfReason === 'crash'
         ? (lap.incidents.find((i) => i.kind === 'crash')?.km ?? input.course.lapKm)
@@ -124,6 +148,20 @@ export function simulateRoundPrelims(input: RoundInput): PrelimRound {
     }
   });
 
+  const flags = attentionFlags(attentionRuns);
+  for (const flag of flags) {
+    const run = outcomes.find((o) => o.entryId === flag.entryId) as (typeof outcomes)[number];
+    const sector = input.sectors[flag.sector];
+    events.push({
+      scope: 'prelim',
+      date: (dayOf.get(run.day) as RoundSchedule['days'][number]).date,
+      km: sector ? Math.round((sector.startKm + sector.lengthM / 2000) * 100) / 100 : null,
+      type: 'attention',
+      entryId: flag.entryId,
+      payload: { z: flag.z, gainMs: flag.gainMs, sector: flag.sector },
+    });
+  }
+
   const results = classifyPrelims(outcomes, input.finalSize);
   const pole = results.find((r) => r.pole) ?? null;
   if (pole) {
@@ -143,5 +181,6 @@ export function simulateRoundPrelims(input: RoundInput): PrelimRound {
     raceKm,
     poleEntryId: pole?.entryId ?? null,
     poleBonus: POLE_BONUS(),
+    attentionFlags: flags,
   };
 }

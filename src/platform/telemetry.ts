@@ -108,6 +108,11 @@ export const LEDGER_CATEGORIES = [
   'training',
   'wages',
   'salaries',
+  'facilities',
+  'share_issue',
+  'dividends',
+  'buyback',
+  'acquisitions',
   'car_purchase',
   'car_sale',
   'parts',
@@ -127,6 +132,11 @@ const ITEM_GROUP: Readonly<Record<string, string>> = {
   repairs: 'servicing',
   restoration: 'servicing',
   relocation: 'travel',
+  facilities: 'utilities',
+  share_issue: 'equity',
+  dividends: 'equity',
+  buyback: 'equity',
+  acquisitions: 'equity',
 };
 
 const groupOf = (category: string): string => ITEM_GROUP[category] ?? category;

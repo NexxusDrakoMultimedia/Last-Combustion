@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { moraleFactor } from '../sim/morale';
 import { createRng } from '../sim/rng';
+import { garageFacilityBonuses } from './facilities';
+import { crewOutageFactor } from './outages';
 import { crewStrength, mechanicOffers, wagePerRound, type MechanicOffer } from '../sim/staff';
 import { staffBalance } from '../sim/worldgen/data';
 import { readCareer } from './career';
@@ -15,13 +18,15 @@ export interface Mechanic {
   /** What the mechanic costs the garage for one round. */
   wagePerRound: number;
   hiredOn: string;
+  /** 0 to 100; it moves the mechanic's work a few points either way. */
+  morale: number;
 }
 
 /** The mechanics a garage employs now. */
 export function garageStaff(db: Database, garageId: number): Mechanic[] {
   return all(
     db,
-    `SELECT id, name, skill, wage_per_week, hired_on FROM staff
+    `SELECT id, name, skill, wage_per_week, hired_on, morale FROM staff
       WHERE garage_id = ? AND left_on IS NULL ORDER BY id`,
     [garageId],
   ).map((r) => ({
@@ -31,11 +36,12 @@ export function garageStaff(db: Database, garageId: number): Mechanic[] {
     wagePerWeek: r.wage_per_week as number,
     wagePerRound: wagePerRound(r.wage_per_week as number),
     hiredOn: r.hired_on as string,
+    morale: r.morale as number,
   }));
 }
 
 /** How well a garage's mechanics cover its entries this season (0 to 1). */
-export function garageCrewStrength(db: Database, garageId: number): number {
+export function garageCrewStrength(db: Database, garageId: number, roundId?: number): number {
   const entries = Number(
     all(
       db,
@@ -44,10 +50,13 @@ export function garageCrewStrength(db: Database, garageId: number): number {
       [garageId],
     )[0]!.n,
   );
-  return crewStrength(
-    garageStaff(db, garageId).map((m) => m.skill),
+  const strength = crewStrength(
+    garageStaff(db, garageId).map((m) => m.skill * moraleFactor(m.morale)),
     entries,
+    garageFacilityBonuses(db, garageId).crewCover,
   );
+  // In a round with an electricity outage the crew is idle part of the time.
+  return roundId === undefined ? strength : strength * crewOutageFactor(db, garageId, roundId);
 }
 
 /** What a garage pays its mechanics for one round. */

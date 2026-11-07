@@ -2,12 +2,39 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
+import type { BoardRow } from '../../db/records';
+import { Flag } from '../Flag';
+import { Plate } from '../Plate';
 import { RegistryLink, YearsActive } from '../RegistryLink';
 
 const recordValue = (r: { value: number; year?: number }) =>
   r.year === undefined
     ? t('almanac.recordValue', { value: r.value })
     : t('almanac.recordValueYear', { value: r.value, year: r.year });
+
+/** Who or what is on a leaderboard row: a driver, a garage, a car (by plate) or a nation (by flag). */
+function Subject({ row }: { row: BoardRow }) {
+  if (row.subjectType === 'nation')
+    return (
+      <span className="inline-flex items-center gap-1">
+        {row.flag && <Flag code={row.flag} />}
+        {row.name}
+      </span>
+    );
+  if (row.subjectType === 'car')
+    return (
+      <span className="inline-flex flex-wrap items-center gap-2">
+        <Plate plate={row.plate ?? ''} state={row.plateState ?? ''} carId={row.subjectId} />
+        {row.name}
+      </span>
+    );
+  return (
+    <>
+      <RegistryLink to={{ kind: row.subjectType, id: row.subjectId }}>{row.name}</RegistryLink>{' '}
+      <YearsActive kind={row.subjectType} id={row.subjectId} />
+    </>
+  );
+}
 
 /** The almanac: every finished season's champions and awards, and the record book. */
 export function AlmanacPanel({ tab }: { tab: string }) {
@@ -28,21 +55,15 @@ export function AlmanacPanel({ tab }: { tab: string }) {
               </span>
             </summary>
             <div className="space-y-1 border-t border-lc-line p-2">
-              <p className="lc-display text-xs text-lc-dim">
-                {t('almanac.leaderboard', { count: r.board.length })}
-              </p>
               <ol className="space-y-1">
                 {r.board.map((row, i) => (
                   <li
-                    key={`${row.subjectId}`}
+                    key={`${row.subjectType}:${row.subjectId}:${row.flag ?? ''}`}
                     className="flex flex-wrap items-baseline justify-between gap-2"
                   >
                     <span>
                       <span className="lc-num inline-block w-8 text-lc-dim">{i + 1}</span>
-                      <RegistryLink to={{ kind: row.subjectType, id: row.subjectId }}>
-                        {row.name}
-                      </RegistryLink>{' '}
-                      <YearsActive kind={row.subjectType} id={row.subjectId} />
+                      <Subject row={row} />
                     </span>
                     <span className="lc-num">{recordValue(row)}</span>
                   </li>

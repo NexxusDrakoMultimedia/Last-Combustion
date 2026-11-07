@@ -20,7 +20,6 @@ path = [
   ".prettierrc.json",
   ".husky/**",
   ".github/CODEOWNERS",
-  "public/CNAME",
   "pnpm-lock.yaml",
 ]
 precedence = "aggregate"

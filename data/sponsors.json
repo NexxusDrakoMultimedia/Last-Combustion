@@ -95,6 +95,30 @@
       "tier": "global",
       "minPrestige": 75,
       "strength": 95
+    },
+    {
+      "id": "tasman-motors",
+      "name": "Tasman Motors",
+      "homeCountry": "NZ",
+      "tier": "continental",
+      "minPrestige": 58,
+      "strength": 80
+    },
+    {
+      "id": "pacific-reserve-bank",
+      "name": "Pacific Reserve Bank",
+      "homeCountry": "SG",
+      "tier": "continental",
+      "minPrestige": 60,
+      "strength": 82
+    },
+    {
+      "id": "southern-skies-airlines",
+      "name": "Southern Skies Airlines",
+      "homeCountry": "AU",
+      "tier": "continental",
+      "minPrestige": 62,
+      "strength": 85
     }
   ]
 }

@@ -11,7 +11,10 @@ import { Panel } from './Panel';
 import { AuctionSection } from './AuctionSection';
 import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
-import { MoneyPanel } from './MoneyPanel';
+import { LedgerPanel } from './LedgerPanel';
+import { InvestmentsSection } from './InvestmentsSection';
+import { OwnershipPanel } from './OwnershipPanel';
+import { TransactionsSection } from './TransactionsSection';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { About, FeedbackLink } from '../About';
@@ -22,9 +25,14 @@ import { RegistryLink } from '../RegistryLink';
 import { AlmanacPanel } from './AlmanacPanel';
 import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
+import { CalendarPanel } from './CalendarPanel';
+import { ContactsSection } from './ContactsSection';
+import { PressSection } from './PressSection';
+import { SocialSection } from './SocialSection';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
+import { FacilitiesSection } from './FacilitiesSection';
 import { ConditionBar, MenuActions, OwnedCars, SeasonCalendar, UsedMarket } from './panels';
 
 type PanelId =
@@ -39,6 +47,8 @@ type PanelId =
   | 'almanac'
   | 'registry'
   | 'money'
+  | 'ownership'
+  | 'calendar'
   | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
@@ -53,32 +63,30 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'almanac', label: 'rail.almanac' },
   { id: 'registry', label: 'rail.registry' },
   { id: 'money', label: 'rail.money' },
+  { id: 'ownership', label: 'rail.ownership' },
+  { id: 'calendar', label: 'rail.calendar' },
 ];
 
 /** The game shell: a top bar, a rail of panels, the garage floor and the news strip. */
 export function Shell() {
   const s = useCareerStore();
-  const {
-    hub,
-    starter,
-    status,
-    nextRound,
-    nextFinal,
-    prelims,
-    final,
-    seasonEnd,
-    rollover,
-    notice,
-  } = s;
+  const { hub, starter, status, prelims, final, seasonEnd, rollover, notice } = s;
   const [openPanel, setPanel] = useState<PanelId | null>(null);
   // A profile opened from anywhere (a plate, a name, a number) shows the Registry over whatever is open.
-  const open = s.registryPage ? 'registry' : openPanel;
-  const [seasonTab, setSeason] = useState('calendar');
+  // A link to a round's results shows them on the Season panel's Results tab.
+  const focus = s.resultsFocus;
+  const open = s.registryPage ? 'registry' : focus ? 'season' : openPanel;
+  const [seasonTabState, setSeason] = useState('calendar');
+  const seasonTab = focus ? 'results' : seasonTabState;
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
+  const [operationsTab, setOperationsTab] = useState('suppliers');
+  const [ledgerTab, setLedger] = useState('summary');
+  const [ownershipTab, setOwnershipTab] = useState('mine');
   const [almanacTab, setAlmanac] = useState('seasons');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
+    s.clearResultsFocus();
     if (id !== null) trackDesign(undefined, 'Panel', 'Open', id);
     if (id === 'registry') {
       s.openRegistry({ kind: 'index' });
@@ -88,8 +96,13 @@ export function Shell() {
     setPanel(id);
   };
   const setSeasonTab = (tab: string) => {
+    s.clearResultsFocus();
     trackDesign(undefined, 'Panel', 'Tab', 'season', tab);
     setSeason(tab);
+  };
+  const setLedgerTab = (tab: string) => {
+    trackDesign(undefined, 'Panel', 'Tab', 'money', tab);
+    setLedger(tab);
   };
   const setStaffTab = (tab: string) => {
     trackDesign(undefined, 'Panel', 'Tab', 'staff', tab);
@@ -106,23 +119,23 @@ export function Shell() {
   if (!hub) return null;
 
   const busy = status === 'busy';
-  const allDone = hub.rounds.every((r) => r.status === 'complete');
-  const ended = hub.seasonStatus === 'complete';
   const next = hub.rounds.find((r) => r.status !== 'complete');
 
-  // The one thing to do next, as a single button in the top bar.
+  // Continue: run what is due today, or skip on to the next thing that needs the player.
+  const due = s.calendar?.due ?? null;
+  const dueLabel: Record<string, MessageKey> = {
+    prelims: 'hub.runPrelims',
+    final: 'hub.runFinal',
+    end_season: 'hub.endSeason',
+    new_season: 'hub.nextSeason',
+  };
   const action: { label: MessageKey; run: () => void } | null =
-    starter !== undefined
+    starter !== undefined || !s.calendar
       ? null
-      : nextFinal !== null
-        ? { label: 'hub.runFinal', run: () => void s.runNextFinal() }
-        : nextRound !== null
-          ? { label: 'hub.runPrelims', run: () => void s.runNextPrelims() }
-          : allDone && !ended
-            ? { label: 'hub.endSeason', run: () => void s.finishSeason() }
-            : ended
-              ? { label: 'hub.nextSeason', run: () => void s.newSeason() }
-              : null;
+      : {
+          label: due ? (dueLabel[due.kind] ?? 'calendar.continue') : 'calendar.continue',
+          run: () => void s.continueTime(),
+        };
 
   const player = hub.player;
   const locked = starter !== undefined;
@@ -195,6 +208,40 @@ export function Shell() {
               : t('shell.noRounds')}
           </p>
         </div>
+        {s.calendar && starter === undefined && (
+          <div className="text-right">
+            <p className="lc-display text-xs text-lc-dim">{t('shell.date')}</p>
+            <p className="lc-num text-sm">{formatDate(s.calendar.date)}</p>
+          </div>
+        )}
+        {s.calendar && starter === undefined && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className={quiet}
+              disabled={busy || due !== null}
+              onClick={() => void s.skipTime('day')}
+            >
+              {t('calendar.day')}
+            </button>
+            <button
+              type="button"
+              className={quiet}
+              disabled={busy || due !== null}
+              onClick={() => void s.skipTime('week')}
+            >
+              {t('calendar.week')}
+            </button>
+            <button
+              type="button"
+              className={quiet}
+              disabled={busy || due !== null}
+              onClick={() => void s.skipTime('event')}
+            >
+              {t('calendar.event')}
+            </button>
+          </div>
+        )}
         {action && (
           <button type="button" className={button} disabled={busy} onClick={action.run}>
             {t(action.label)}
@@ -304,7 +351,9 @@ export function Shell() {
           {seasonTab === 'calendar' ? (
             <SeasonCalendar />
           ) : seasonTab === 'results' ? (
-            <ResultsPanel />
+            <ResultsPanel
+              key={focus ? `${focus.year}-${focus.round}-${focus.session}` : 'results'}
+            />
           ) : (
             <StandingsPanel />
           )}
@@ -375,12 +424,28 @@ export function Shell() {
           tabs={[
             { id: 'mechanics', label: t('staff.mechanicsTab') },
             { id: 'executives', label: t('executive.tab') },
+            { id: 'contacts', label: t('contacts.tab') },
+            { id: 'social', label: t('social.tab') },
+            { id: 'press', label: t('press.tab') },
           ]}
           tab={staffTab}
           onTab={setStaffTab}
           onClose={() => setOpen(null)}
         >
-          {staffTab === 'mechanics' ? <StaffPanel /> : <ExecutivesSection />}
+          {staffTab === 'mechanics' && <StaffPanel />}
+          {staffTab === 'executives' && <ExecutivesSection />}
+          {staffTab === 'contacts' && <ContactsSection />}
+          {staffTab === 'social' && <SocialSection />}
+          {staffTab === 'press' && <PressSection />}
+        </Panel>
+      )}
+      {!locked && open === 'calendar' && (
+        <Panel
+          title={t('rail.calendar')}
+          subtitle={t('calendar.intro')}
+          onClose={() => setOpen(null)}
+        >
+          <CalendarPanel />
         </Panel>
       )}
       {!locked && open === 'almanac' && (
@@ -406,10 +471,16 @@ export function Shell() {
       {!locked && open === 'operations' && (
         <Panel
           title={t('rail.operations')}
-          subtitle={t('supply.intro')}
+          subtitle={operationsTab === 'suppliers' ? t('supply.intro') : t('facilities.intro')}
+          tabs={[
+            { id: 'suppliers', label: t('operations.supplyTab') },
+            { id: 'facilities', label: t('operations.facilitiesTab') },
+          ]}
+          tab={operationsTab}
+          onTab={setOperationsTab}
           onClose={() => setOpen(null)}
         >
-          <SupplyPanel />
+          {operationsTab === 'suppliers' ? <SupplyPanel /> : <FacilitiesSection />}
         </Panel>
       )}
       {!locked && open === 'sponsors' && (
@@ -421,9 +492,34 @@ export function Shell() {
           <SponsorsPanel />
         </Panel>
       )}
+      {!locked && open === 'ownership' && (
+        <Panel
+          title={t('rail.ownership')}
+          subtitle={t('ownership.intro')}
+          tabs={[
+            { id: 'mine', label: t('ownership.tab.mine') },
+            { id: 'investments', label: t('ownership.tab.investments') },
+          ]}
+          tab={ownershipTab}
+          onTab={setOwnershipTab}
+          onClose={() => setOpen(null)}
+        >
+          {ownershipTab === 'mine' ? <OwnershipPanel /> : <InvestmentsSection />}
+        </Panel>
+      )}
       {!locked && open === 'money' && (
-        <Panel title={t('rail.money')} subtitle={t('money.intro')} onClose={() => setOpen(null)}>
-          <MoneyPanel />
+        <Panel
+          title={t('rail.money')}
+          subtitle={t('money.intro')}
+          tabs={[
+            { id: 'summary', label: t('ledger.tab.summary') },
+            { id: 'transactions', label: t('ledger.tab.transactions') },
+          ]}
+          tab={ledgerTab}
+          onTab={setLedgerTab}
+          onClose={() => setOpen(null)}
+        >
+          {ledgerTab === 'summary' ? <LedgerPanel /> : <TransactionsSection />}
         </Panel>
       )}
       {open === 'menu' && (

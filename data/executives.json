@@ -1,5 +1,5 @@
 {
-  "source": "Executive roles for the garage-operations design (see the GDD, 'Garage operations'). 'max' is the effect at skill 100; the effect grows in proportion to skill. A role with built = false is not offered until what it affects exists.",
+  "source": "Executive roles for the garage-operations design (see the GDD, 'Garage operations'). 'max' is the effect at skill 100; the effect grows in proportion to skill. A role with built = false is not offered until what it affects exists. 'poach' is the yearly chance that a rival garage poaches an employed executive: base plus perSkill times skill/100, multiplied by 2 minus the ratio of their pay to the market pay for their skill, kept within payRange.",
   "salaryBase": 40000,
   "salaryPerSkill": 1200,
   "skill": [35, 90],
@@ -12,43 +12,71 @@
     "chief_executive": {
       "name": "Chief Executive",
       "built": true,
-      "max": { "othersBonus": 0.1 }
+      "max": {
+        "othersBonus": 0.1,
+        "prestige": 0.25
+      }
     },
     "commercial_director": {
       "name": "Commercial Director",
       "built": true,
-      "max": { "sponsorFee": 0.2, "sponsorPrestige": 10 }
+      "max": {
+        "sponsorFee": 0.2,
+        "sponsorPrestige": 10
+      }
     },
     "contracts_director": {
       "name": "Contracts Director",
       "built": true,
-      "max": { "leverage": 0.05 },
+      "max": {
+        "leverage": 0.05
+      },
       "extraPatienceFromSkill": 80
     },
     "head_of_marketing": {
       "name": "Head of Marketing",
       "built": true,
-      "max": { "fans": 0.25, "merchandise": 0.3 }
+      "max": {
+        "fans": 0.25,
+        "merchandise": 0.3
+      }
     },
     "operations_director": {
       "name": "Operations Director",
       "built": true,
-      "max": { "utilities": 0.15 }
+      "max": {
+        "utilities": 0.15,
+        "outageLength": 0.3
+      }
     },
     "finance_director": {
       "name": "Finance Director",
       "built": true,
-      "max": { "auctionPremium": 0.03, "auctionFee": 0.02 }
+      "max": {
+        "auctionPremium": 0.03,
+        "auctionFee": 0.02
+      }
     },
     "technical_director": {
       "name": "Technical Director",
       "built": true,
-      "max": { "partPrice": 0.1, "partWear": 0.15 }
+      "max": {
+        "partPrice": 0.1,
+        "partWear": 0.15
+      }
     },
     "sporting_director": {
       "name": "Sporting Director",
       "built": true,
-      "max": { "training": 0.25, "gearCost": 0.2 }
+      "max": {
+        "training": 0.25,
+        "gearCost": 0.2
+      }
     }
+  },
+  "poach": {
+    "base": 0.04,
+    "perSkill": 0.08,
+    "payRange": [0.25, 2]
   }
 }

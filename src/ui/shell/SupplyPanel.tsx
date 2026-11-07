@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
+import { OUTAGE_EFFECTS } from '../../sim/outages';
 import { supplyData } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 import { button, field, quiet } from '../styles';
@@ -117,6 +118,26 @@ export function SupplyPanel() {
               {t('supply.nextRound', { amount: formatMoney(c.nextRound) })}
             </span>
           </p>
+          {c.outage && (
+            <p className="text-lc-dim">
+              {t('supply.risk', { percent: pct(c.outage.chance) })}
+              {c.outage.next && (
+                <strong className="text-lc-bad">
+                  {' '}
+                  {c.category === 'electricity' &&
+                    t('supply.outage.electricity', {
+                      cover: Math.round((1 - OUTAGE_EFFECTS.crewCoverLoss) * 100),
+                    })}
+                  {c.category === 'race_fuel' &&
+                    t('supply.outage.race_fuel', {
+                      laps: Math.round(OUTAGE_EFFECTS.lapShare * 100),
+                    })}
+                  {c.category === 'logistics' &&
+                    t('supply.outage.logistics', { days: OUTAGE_EFFECTS.daysLost })}
+                </strong>
+              )}
+            </p>
+          )}
           {!c.contract && (
             <ul className="space-y-1">
               {c.suppliers.map((s) => (
