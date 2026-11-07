@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState, type ReactNode } from 'react';
-import { formatDate, formatGap, formatLapTime, formatMoney, formatPoints, t } from '../../i18n';
+import {
+  formatDate,
+  formatGap,
+  formatLapTime,
+  formatMoney,
+  formatPoints,
+  hasText,
+  t,
+} from '../../i18n';
+import type { PersonKind, PersonProfile } from '../../db/people';
 import type {
   CarProfile,
   DriverProfile,
@@ -615,7 +624,7 @@ function ByStatus<T extends { status: RegistryStatus }>({
   );
 }
 
-const INDEX_TABS = ['drivers', 'cars', 'garages', 'rounds'] as const;
+const INDEX_TABS = ['drivers', 'cars', 'garages', 'paddock', 'rounds'] as const;
 type IndexTab = (typeof INDEX_TABS)[number];
 
 /** Every driver, car, garage and round in its own tab, with a search that narrows the open tab. */
@@ -629,11 +638,13 @@ function IndexPage({ data }: { data: RegistryIndex }) {
   const drivers = data.drivers.filter((d) => match(d.name, d.number, d.garage));
   const cars = data.cars.filter((c) => match(c.plate, c.model, c.plateState));
   const garages = data.garages.filter((g) => match(g.name));
+  const paddock = data.people.filter((p) => match(p.name, p.garage, personRole(p.kind, p.role)));
   const rounds = data.rounds.filter((r) => match(r.year, r.course, `round ${r.round}`));
   const counts: Record<IndexTab, number> = {
     drivers: drivers.length,
     cars: cars.length,
     garages: garages.length,
+    paddock: paddock.length,
     rounds: rounds.length,
   };
   return (
@@ -705,6 +716,35 @@ function IndexPage({ data }: { data: RegistryIndex }) {
             )}
           />
         )}
+        {tab === 'paddock' && (
+          <div className="space-y-6">
+            {(['executive', 'staff', 'shareholder'] as const).map((kind) => {
+              const group = paddock.filter((p) => p.kind === kind);
+              if (group.length === 0) return null;
+              return (
+                <section key={kind} className="space-y-2">
+                  <h3 className="lc-display text-sm text-lc-dim">
+                    {t(`registry.paddock.${kind}s` as never)}
+                  </h3>
+                  <ByStatus
+                    items={group}
+                    render={(p) => (
+                      <li key={`${p.kind}-${p.id}`}>
+                        <RegistryLink to={{ kind: 'person', person: p.kind, id: p.id }}>
+                          {p.name}
+                        </RegistryLink>{' '}
+                        <span className="text-lc-dim">
+                          {personRole(p.kind, p.role)}
+                          {p.garage ? `, ${p.garage}` : ''}
+                        </span>
+                      </li>
+                    )}
+                  />
+                </section>
+              );
+            })}
+          </div>
+        )}
         {tab === 'rounds' && (
           <ul className="space-y-1">
             {rounds.map((r) => (
@@ -736,6 +776,125 @@ function IndexPage({ data }: { data: RegistryIndex }) {
   );
 }
 
+/** What a person's role is called: an executive's role, a staff member's, or a shareholder's kind of holder. */
+function personRole(kind: PersonKind, role: string): string {
+  const key =
+    kind === 'executive'
+      ? `executive.role.${role}`
+      : kind === 'staff'
+        ? `person.role.${role}`
+        : `ownership.type.${role}`;
+  return hasText(key) ? t(key as never) : role;
+}
+
+function PersonPage({ p }: { p: PersonProfile }) {
+  if (p.kind === 'executive')
+    return (
+      <div className="space-y-5 text-sm">
+        <h2 className="lc-display text-lg">{p.name}</h2>
+        <Facts
+          items={[
+            [t('person.role'), personRole('executive', p.role)],
+            [
+              t('person.garage'),
+              <RegistryLink key="g" to={{ kind: 'garage', id: p.garage.id }}>
+                {p.garage.name}
+              </RegistryLink>,
+            ],
+            [t('person.age'), p.age],
+            [t('person.skill'), p.skill],
+            [t('person.salary'), formatMoney(p.salary)],
+            [
+              t('person.status'),
+              p.employed
+                ? t('person.employed')
+                : t('person.left', { date: p.leftOn ? formatDate(p.leftOn) : '' }),
+            ],
+            [t('person.hiredOn'), p.hiredOn ? formatDate(p.hiredOn) : t('registry.none')],
+            [t('person.contractEnds'), p.contractEnds ?? t('registry.none')],
+          ]}
+        />
+        {p.leftReason && (
+          <p className="text-lc-dim">{t(`person.reason.${p.leftReason}` as never)}</p>
+        )}
+      </div>
+    );
+  if (p.kind === 'staff')
+    return (
+      <div className="space-y-5 text-sm">
+        <h2 className="lc-display text-lg">{p.name}</h2>
+        <Facts
+          items={[
+            [t('person.role'), personRole('staff', p.role)],
+            [
+              t('person.garage'),
+              <RegistryLink key="g" to={{ kind: 'garage', id: p.garage.id }}>
+                {p.garage.name}
+              </RegistryLink>,
+            ],
+            [t('person.skill'), p.skill],
+            [t('person.wage'), formatMoney(p.wagePerWeek)],
+            [t('person.hiredOn'), formatDate(p.hiredOn)],
+            [
+              t('person.status'),
+              p.leftOn ? t('person.left', { date: formatDate(p.leftOn) }) : t('person.employed'),
+            ],
+          ]}
+        />
+      </div>
+    );
+  return (
+    <div className="space-y-5 text-sm">
+      <h2 className="lc-display text-lg">{p.name}</h2>
+      <Facts items={[[t('person.holderType'), personRole('shareholder', p.holderType)]]} />
+      <Section title={t('person.holdings')}>
+        {p.holdings.length === 0 ? (
+          <p className="text-lc-dim">{t('person.noHoldings')}</p>
+        ) : (
+          <table className={dataTable}>
+            <thead>
+              <tr>
+                <th scope="col">{t('person.garage')}</th>
+                <th scope="col">{t('person.class')}</th>
+                <th scope="col" className="text-right">
+                  {t('person.shares')}
+                </th>
+                <th scope="col" className="text-right">
+                  {t('person.stake')}
+                </th>
+                <th scope="col" className="text-right">
+                  {t('person.paid')}
+                </th>
+                <th scope="col" className="text-right">
+                  {t('person.worth')}
+                </th>
+                <th scope="col">{t('person.since')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {p.holdings.map((h) => (
+                <tr key={`${h.garage.id}-${h.class}-${h.since}`}>
+                  <td>
+                    <RegistryLink to={{ kind: 'garage', id: h.garage.id }}>
+                      {h.garage.name}
+                    </RegistryLink>
+                  </td>
+                  <td>{t(`ownership.class.${h.class}` as never)}</td>
+                  <td className="lc-num text-right">{h.shares.toLocaleString('en-AU')}</td>
+                  <td className="lc-num text-right">{`${Math.round(h.stake * 1000) / 10}%`}</td>
+                  <td className="lc-num text-right">{formatMoney(h.paid)}</td>
+                  <td className="lc-num text-right">{formatMoney(h.worth)}</td>
+                  <td className="lc-num">{formatDate(h.since)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Section>
+    </div>
+  );
+}
+
 /** The Registry: a profile of every driver, car, garage, round's prelims and race, with links between them. */
 export function RegistryPanel() {
   const { registryPage, registryTrail, registryBack, openRegistry } = useCareerStore();
@@ -759,6 +918,7 @@ export function RegistryPanel() {
       {registryPage.kind === 'driver' && <DriverPage p={registryPage.data} />}
       {registryPage.kind === 'car' && <CarPage p={registryPage.data} />}
       {registryPage.kind === 'garage' && <GaragePage p={registryPage.data} />}
+      {registryPage.kind === 'person' && <PersonPage p={registryPage.data} />}
       {(registryPage.kind === 'prelim' || registryPage.kind === 'race') && (
         <RoundPage p={registryPage.data} />
       )}

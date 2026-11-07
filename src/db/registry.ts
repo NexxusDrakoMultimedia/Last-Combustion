@@ -8,6 +8,13 @@ import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
 import { readCareer } from './career';
 import { all } from './entries';
+import {
+  peopleIndex,
+  personProfile,
+  type PersonKind,
+  type PersonProfile,
+  type PersonRef,
+} from './people';
 import { computeStandings } from './season';
 import { roundClassification, type ResultRow } from './tables';
 import { titlesOf } from './titles';
@@ -730,6 +737,8 @@ export interface RegistryIndex {
   cars: (CarRef & { status: RegistryStatus })[];
   garages: (Ref & { status: RegistryStatus })[];
   rounds: { year: number; round: number; course: string; status: string }[];
+  /** Executives, staff and shareholders. */
+  people: PersonRef[];
 }
 
 export function registryIndex(db: Database): RegistryIndex {
@@ -780,6 +789,7 @@ export function registryIndex(db: Database): RegistryIndex {
       course: r.course as string,
       status: r.status as string,
     })),
+    people: peopleIndex(db),
   };
 }
 
@@ -787,6 +797,7 @@ export function registryIndex(db: Database): RegistryIndex {
 export type RegistryTarget =
   | { kind: 'index' }
   | { kind: 'driver' | 'car' | 'garage'; id: number }
+  | { kind: 'person'; person: PersonKind; id: number }
   | { kind: SessionKind; year: number; round: number };
 
 /** A page of the Registry, loaded from the database. */
@@ -795,6 +806,7 @@ export type RegistryPage =
   | { kind: 'driver'; data: DriverProfile }
   | { kind: 'car'; data: CarProfile }
   | { kind: 'garage'; data: GarageProfile }
+  | { kind: 'person'; data: PersonProfile }
   | { kind: SessionKind; data: RoundProfile };
 
 /** Loads the page for a target. */
@@ -808,6 +820,8 @@ export function registryPage(db: Database, target: RegistryTarget): RegistryPage
       return { kind: 'car', data: carProfile(db, target.id) };
     case 'garage':
       return { kind: 'garage', data: garageProfile(db, target.id) };
+    case 'person':
+      return { kind: 'person', data: personProfile(db, target.person, target.id) };
     default:
       return {
         kind: target.kind,

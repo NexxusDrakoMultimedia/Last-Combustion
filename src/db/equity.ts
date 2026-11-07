@@ -131,8 +131,24 @@ export function recordValuations(db: Database, date: string): void {
     ]);
 }
 
+/** The Registry profile id of the shareholder a holding belongs to (the first holding they have). */
+export function shareholderProfileId(db: Database, holdingId: number): number {
+  return Number(
+    all(
+      db,
+      `SELECT MIN(b.id) AS id FROM shareholding a JOIN shareholding b
+         ON b.holder_type = a.holder_type AND b.holder_name = a.holder_name
+        AND COALESCE(b.holder_id, -1) = COALESCE(a.holder_id, -1)
+      WHERE a.id = ?`,
+      [holdingId],
+    )[0]?.id ?? holdingId,
+  );
+}
+
 export interface HolderView {
   id: number;
+  /** The id of the holder's profile in the Registry. */
+  profileId: number;
   type: HolderType | 'executive' | 'driver' | 'garage' | 'bank' | 'public';
   name: string;
   class: ShareClass;
@@ -188,6 +204,7 @@ export function ownershipView(db: Database, garageId: number): OwnershipView {
     issued: totals.outstanding,
     holders: rows.map((r) => ({
       ...r,
+      profileId: shareholderProfileId(db, r.id),
       stake: r.class === 'option' || totals.outstanding === 0 ? 0 : r.shares / totals.outstanding,
       diluted: totals.diluted === 0 ? 0 : r.shares / totals.diluted,
       votes: votes === 0 ? 0 : votesOf(r) / votes,

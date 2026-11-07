@@ -5,6 +5,7 @@ import { formatMoney, t } from '../../i18n';
 import { executiveBonuses, salaryPerRound, type ExecutiveRole } from '../../sim/executives';
 import { executiveData } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
+import { RegistryLink } from '../RegistryLink';
 import { button, field, quiet } from '../styles';
 
 const pct = (x: number): number => Math.round(x * 1000) / 10;
@@ -182,7 +183,11 @@ export function ExecutivesSection() {
             <li key={e.id} className="space-y-1 border border-lc-line p-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span>
-                  <span className="font-medium">{e.name}</span>{' '}
+                  <span className="font-medium">
+                    <RegistryLink to={{ kind: 'person', person: 'executive', id: e.id }}>
+                      {e.name}
+                    </RegistryLink>
+                  </span>{' '}
                   <span className="text-lc-dim">
                     {t('executive.who', {
                       role: t(`executive.role.${e.role}` as never),
