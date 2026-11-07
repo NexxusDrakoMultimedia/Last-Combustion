@@ -17,6 +17,7 @@ import { all } from './entries';
 import { applyMoves } from './daily';
 import { retireOldCars } from './carage';
 import { createUsedCar } from './market';
+import { ensureBusinesses, settleBusinesses } from './business';
 import { ensureCapTables } from './equity';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
@@ -71,6 +72,7 @@ export function startNextSeason(db: Database): Rollover {
   try {
     // Garages that stayed broke close; their entries are not carried over.
     const closedGarages = new Set(settleGarages(db, lastId, year));
+    settleBusinesses(db, year);
     const openEntries = allEntries.filter((e) => !closedGarages.has(e.garage_id as number));
 
     // Cars past the oldest age for their tier that never scored a point retire. A computer garage
@@ -320,6 +322,7 @@ export function startNextSeason(db: Database): Rollover {
     // New garages come with their owners.
     ensureCapTables(db);
     expireExecutives(db, year);
+    ensureBusinesses(db, year);
     refreshPlayerPrestige(db);
     const worldChanges = applyWorldChanges(db, year);
     // Drivers who booked a move in the off-season now live in their new homes.

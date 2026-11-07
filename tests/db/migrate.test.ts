@@ -98,6 +98,7 @@ describe('migrate', () => {
       'share_events',
       'board',
       'investments',
+      'business',
     ]);
   });
 
@@ -378,7 +379,7 @@ describe('investments (schema version 44)', () => {
     );
     db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-02-01', 'round')");
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(44);
+    expect(getSchemaVersion(db)).toBe(45);
     expect(db.exec('PRAGMA table_info(garage)')[0]!.values.map((v) => v[1])).toContain(
       'acquired_by',
     );
@@ -399,5 +400,19 @@ describe('investments (schema version 44)', () => {
     expect(() =>
       db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-03-01', 'heist')"),
     ).toThrow();
+  });
+});
+
+describe('business (schema version 45)', () => {
+  it('records a sponsor and a supplier for each garage', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(45);
+    expect(db.exec('PRAGMA table_info(business)')[0]!.values.map((v) => v[1])).toEqual([
+      'garage_id',
+      'sponsor_id',
+      'supplier_id',
+      'since_year',
+    ]);
   });
 });

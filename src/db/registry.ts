@@ -15,6 +15,7 @@ import {
   type PersonProfile,
   type PersonRef,
 } from './people';
+import { businessView, ensureBusinesses, type BusinessView } from './business';
 import { computeStandings } from './season';
 import { roundClassification, type ResultRow } from './tables';
 import { titlesOf } from './titles';
@@ -483,6 +484,8 @@ export interface GarageProfile {
   /** The seasons with at least a point, and the first and last of them. */
   scoring: ScoringSpan;
   drivers: (Ref & { years: string })[];
+  /** The executives, facilities, sponsor and supplier of a computer garage; null for the player's. */
+  business: BusinessView | null;
 }
 
 /** The profile of a garage: where it is, who and what it races now, its seasons, its cars and its past drivers. */
@@ -515,6 +518,9 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     [garageId],
   );
   const player = g.is_player === 1;
+  // A garage from an older save, or a new one, is given its business the first time it is looked at.
+  const career = readCareer(db);
+  if (career && !player) ensureBusinesses(db, Number(career.gameDate.slice(0, 4)));
   return {
     id: garageId,
     name: g.name as string,
@@ -579,6 +585,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
       name: d.name as string,
       years: d.first === d.last ? String(d.first) : `${d.first as number}-${d.last as number}`,
     })),
+    business: player ? null : businessView(db, garageId),
   };
 }
 

@@ -390,6 +390,47 @@ function GaragePage({ p }: { p: GarageProfile }) {
       <Section title={t('registry.attention')}>
         <AttentionList marks={p.attention} />
       </Section>
+      {p.business && (
+        <Section title={t('registry.business')}>
+          <dl className="space-y-1">
+            <div>
+              <dt className="inline text-lc-dim">{t('registry.business.sponsor')} </dt>
+              <dd className="inline">{p.business.sponsor ?? t('registry.none')}</dd>
+            </div>
+            <div>
+              <dt className="inline text-lc-dim">{t('registry.business.supplier')} </dt>
+              <dd className="inline">{p.business.supplier ?? t('registry.none')}</dd>
+            </div>
+            <div>
+              <dt className="inline text-lc-dim">{t('registry.business.facilities')} </dt>
+              <dd className="inline">
+                {p.business.facilities.length === 0
+                  ? t('registry.none')
+                  : p.business.facilities
+                      .map((f) =>
+                        t('registry.business.facility', {
+                          name: t(`facility.name.${f.kind}` as never),
+                          level: f.level,
+                        }),
+                      )
+                      .join(', ')}
+              </dd>
+            </div>
+          </dl>
+          {p.business.executives.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {p.business.executives.map((e) => (
+                <li key={e.id}>
+                  <RegistryLink to={{ kind: 'person', person: 'executive', id: e.id }}>
+                    {e.name}
+                  </RegistryLink>{' '}
+                  <span className="text-lc-dim">{t(`executive.role.${e.role}` as never)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      )}
       <Section title={t('registry.entries')}>
         {p.entries.length === 0 ? (
           <p className="text-lc-dim">{t('registry.noEntries')}</p>

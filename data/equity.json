@@ -59,5 +59,12 @@
     },
     "takeoverVotes": 0.5,
     "maxPremium": 1
+  },
+  "business": {
+    "source": "Computer garages run as businesses. Each has executives (as many as its prestige allows), facilities (one level for every 'prestigePerLevel' points of prestige), a sponsor and an electricity supplier. Its sponsor covers the running of the executives and facilities. A garage with cash above 'dividendMinCash' pays 'dividendShare' of its last closed year's operating profit to its holders each year, never taking it below that cash.",
+    "prestigePerLevel": 12,
+    "dividendShare": 0.5,
+    "dividendMinCash": 150000,
+    "roundsPerYear": 6
   }
 }
