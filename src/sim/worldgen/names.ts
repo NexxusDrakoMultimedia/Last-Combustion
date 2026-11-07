@@ -43,7 +43,20 @@ export function pickForeignNationality(rng: RandomStream): string {
   );
 }
 
-/** A person's name from a nationality's pools that is not on the deny list of famous names. */
+const DENY_FULL = new Set(nameLists.denyFullNames.map((n) => n.toLowerCase()));
+const DENY_WORDS = new Set(nameLists.denyWords.map((w) => w.toLowerCase()));
+
+/**
+ * Whether a name is one the game will not generate: the name of an infamous person, or a name with an
+ * offensive word as a part. A name that happens to match a real person who is not on the list is fine.
+ */
+export function isOffensiveName(name: string): boolean {
+  const lower = name.toLowerCase();
+  if (DENY_FULL.has(lower)) return true;
+  return lower.split(/[\s-]+/).some((part) => DENY_WORDS.has(part));
+}
+
+/** A person's name from a nationality's pools that is not an offensive one. */
 export function personName(
   rng: RandomStream,
   nationality: string,
@@ -53,7 +66,7 @@ export function personName(
   if (!pools) throw new Error(`No name lists for nationality "${nationality}"`);
   for (;;) {
     const name = `${rng.pick(gender === 'male' ? pools.male : pools.female)} ${rng.pick(pools.surnames)}`;
-    if (!nameLists.denyFullNames.includes(name)) return name;
+    if (!isOffensiveName(name)) return name;
   }
 }
 

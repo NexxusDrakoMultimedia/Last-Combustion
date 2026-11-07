@@ -70,7 +70,10 @@ export const excludedFlags = new Set(flagsJson.excluded);
 export interface NameLists {
   nationalityWeights: Record<string, number>;
   byNationality: Record<string, { male: string[]; female: string[]; surnames: string[] }>;
+  /** Infamous people, whose full names are never generated. */
   denyFullNames: string[];
+  /** Offensive words: a name with any of them as a part is never generated. */
+  denyWords: string[];
   /** Chance that a driver's or garage's nation is picked uniformly instead of by weight. */
   wildcardNationShare: number;
   /** Chance that a new driver has a nickname. */
