@@ -38,12 +38,14 @@ export function mechanicOffers(rng: RandomStream): MechanicOffer[] {
 
 /**
  * How well the crew covers the garage's entries: the mechanics' skill added up (as shares of a
- * full-skill mechanic) per entry, never more than 1. One expert per entry is a full crew.
+ * full-skill mechanic) per entry, never more than 1 (a little more with workshop bays). One expert
+ * per entry is a full crew.
  */
-export function crewStrength(skills: readonly number[], entries: number): number {
+export function crewStrength(skills: readonly number[], entries: number, lift = 0): number {
   if (entries <= 0) return 0;
   const total = skills.reduce((sum, s) => sum + Math.max(0, Math.min(100, s)) / 100, 0);
-  return Math.min(1, total / entries);
+  // Workshop bays lift the cover, and the most it can reach, by the same share.
+  return Math.min(1 + lift, (total / entries) * (1 + lift));
 }
 
 /** What multiplies a car's part wear: a full crew saves a quarter of it. */

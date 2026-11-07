@@ -7,6 +7,7 @@ import { chassisWear } from '../sim/wear';
 import { courses } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { all, loadEntries, type Row } from './entries';
+import { garageFacilityBonuses } from './facilities';
 import { garageOutages, practiceHandicaps, recordOutages } from './outages';
 import { wearGear, wearParts } from './repairs';
 import { scrutineerCar } from './upgrades';
@@ -116,6 +117,7 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
     practiceHandicaps: practiceHandicaps(
       outages,
       loaded.filter((e) => e.garageId === playerGarage).map((e) => e.entryId),
+      playerGarage === undefined ? 0 : garageFacilityBonuses(db, playerGarage).breakthrough,
     ),
   });
 

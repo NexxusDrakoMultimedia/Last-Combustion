@@ -10,6 +10,7 @@ import { all } from './entries';
 import { crashRepairCost } from './repairs';
 import { roundSalaries } from './executives';
 import { settleDailyLife } from './daily';
+import { roundFacilityCost } from './facilities';
 import { garageCrewStrength, roundWages } from './staff';
 import { supplyRates } from './supply';
 
@@ -117,6 +118,12 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
       if (salaries > 0) {
         lines.push(['salaries', salaries]);
         costs.total += salaries;
+      }
+      // The upkeep of the garage's facilities.
+      const facilityUpkeep = roundFacilityCost(db, garageId);
+      if (facilityUpkeep > 0) {
+        lines.push(['facilities', facilityUpkeep]);
+        costs.total += facilityUpkeep;
       }
       for (const [category, amount] of lines) {
         db.run(

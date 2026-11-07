@@ -91,6 +91,7 @@ describe('migrate', () => {
       'garage_champions',
       'car_retirement',
       'continental_tier',
+      'facilities',
     ]);
   });
 
@@ -263,7 +264,7 @@ describe('the continental tier (schema version 37)', () => {
       "INSERT INTO sponsor VALUES (1, 'wattle-hardware', 'Wattle Hardware Co.', 'AU', 'local', 1, 30)",
     );
     db.exec('INSERT INTO sponsor_deal VALUES (1, 1, 1, 2031, 2032, 40000, 1)');
-    migrate(db);
+    migrate(db, migrations.slice(0, 37));
     expect(getSchemaVersion(db)).toBe(37);
     expect(tierRows(db)).toHaveLength(3);
     expect(db.exec('SELECT sponsor_id FROM sponsor_deal')[0]!.values[0]![0]).toBe(1);
@@ -276,5 +277,17 @@ describe('the continental tier (schema version 37)', () => {
     const db = openDatabase(SQL);
     migrate(db);
     expect(db.exec('SELECT COUNT(*) FROM sponsor')[0]!.values[0]![0]).toBe(0);
+  });
+});
+
+describe('facilities (schema version 38)', () => {
+  it('adds a table of facilities that holds a level from 1 to 5', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 37));
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(38);
+    const columns = db.exec('PRAGMA table_info(facility)')[0]!.values.map((v) => v[1]);
+    expect(columns).toEqual(['garage_id', 'kind', 'level']);
+    expect(() => db.exec("INSERT INTO facility VALUES (1, 'data_room', 6)")).toThrow();
   });
 });
