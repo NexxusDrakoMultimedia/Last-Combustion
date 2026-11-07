@@ -2,10 +2,12 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { relationshipKind, type RelationshipKind } from '../sim/relationships';
+import { journalistById } from '../sim/press';
 import { supplierById } from '../sim/supply';
 import { all } from './entries';
 
-export type ContactType = 'sponsor' | 'utility' | 'supplier' | 'manufacturer' | 'executive';
+export type ContactType =
+  'sponsor' | 'utility' | 'supplier' | 'manufacturer' | 'executive' | 'journalist';
 
 export interface Contact {
   type: ContactType;
@@ -16,7 +18,7 @@ export interface Contact {
   kind: RelationshipKind;
 }
 
-const NAME_SQL: Record<Exclude<ContactType, 'utility'>, string> = {
+const NAME_SQL: Record<Exclude<ContactType, 'utility' | 'journalist'>, string> = {
   sponsor: 'SELECT name FROM sponsor WHERE id = ?',
   supplier: 'SELECT name FROM part_supplier WHERE id = ?',
   manufacturer: 'SELECT name FROM manufacturer WHERE id = ?',
@@ -26,7 +28,8 @@ const NAME_SQL: Record<Exclude<ContactType, 'utility'>, string> = {
 /** The name of a party, or undefined when it cannot be found. */
 export function partyName(db: Database, type: string, id: number): string | undefined {
   if (type === 'utility') return supplierById(id)?.name;
-  const sql = NAME_SQL[type as Exclude<ContactType, 'utility'>];
+  if (type === 'journalist') return journalistById(id)?.name;
+  const sql = NAME_SQL[type as Exclude<ContactType, 'utility' | 'journalist'>];
   return sql ? (all(db, sql, [id])[0]?.name as string | undefined) : undefined;
 }
 

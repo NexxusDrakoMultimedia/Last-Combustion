@@ -26,6 +26,7 @@ import { AlmanacPanel } from './AlmanacPanel';
 import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
 import { ContactsSection } from './ContactsSection';
+import { PressSection } from './PressSection';
 import { SocialSection } from './SocialSection';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
@@ -392,6 +393,7 @@ export function Shell() {
             { id: 'executives', label: t('executive.tab') },
             { id: 'contacts', label: t('contacts.tab') },
             { id: 'social', label: t('social.tab') },
+            { id: 'press', label: t('press.tab') },
           ]}
           tab={staffTab}
           onTab={setStaffTab}
@@ -401,6 +403,7 @@ export function Shell() {
           {staffTab === 'executives' && <ExecutivesSection />}
           {staffTab === 'contacts' && <ContactsSection />}
           {staffTab === 'social' && <SocialSection />}
+          {staffTab === 'press' && <PressSection />}
         </Panel>
       )}
       {!locked && open === 'almanac' && (

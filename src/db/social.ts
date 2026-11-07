@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { JOURNALISTS } from '../sim/press';
 import { createRng } from '../sim/rng';
 import {
   CONVERSATIONS,
@@ -59,7 +60,7 @@ function seasonNow(db: Database): SeasonNow | undefined {
   return { id: s.id as number, status: s.status as string, complete };
 }
 
-/** Who the garage has not met: sponsors that would have it, and manufacturers. */
+/** Who the garage has not met: sponsors that would have it, manufacturers and journalists. */
 function strangersOf(db: Database, garageId: number): { type: ContactType; id: number }[] {
   const prestige = Number(
     all(db, 'SELECT prestige FROM garage WHERE id = ?', [garageId])[0]?.prestige ?? 0,
@@ -76,6 +77,7 @@ function strangersOf(db: Database, garageId: number): { type: ContactType; id: n
     out.push({ type: 'sponsor', id: r.id as number });
   for (const r of all(db, 'SELECT id FROM manufacturer ORDER BY id'))
     out.push({ type: 'manufacturer', id: r.id as number });
+  for (const j of JOURNALISTS) out.push({ type: 'journalist', id: j.id });
   return out.filter((p) => !met.has(`${p.type}:${p.id}`));
 }
 
