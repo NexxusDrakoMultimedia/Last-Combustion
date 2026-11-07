@@ -28,6 +28,7 @@ import {
 } from './data';
 import {
   garageName,
+  placeInName,
   nickname,
   nicknameThemesFor,
   personName,
@@ -211,6 +212,19 @@ function homeName(placeId: string): string {
 }
 
 /**
+ * Where a garage is from, given its name: the place the name carries if it carries one, otherwise
+ * the flag and headquarters it was drawn with.
+ */
+function homeOf(
+  name: string,
+  flag: string,
+  hqPlaceId: string,
+): { flag: string; hqPlaceId: string } {
+  const named = placeInName(name);
+  return named ? { flag: named.country, hqPlaceId: named.id } : { flag, hqPlaceId };
+}
+
+/**
  * A new computer garage for a season after the first: a one-car team founded that year, with a
  * name, nation, base and colours drawn the same way as the first field's garages.
  */
@@ -229,14 +243,18 @@ export function makeNewGarage(
   const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
   // The flag is where the garage's main factory, founder, owner or executive office is. To race in
   // the series the garage must be based in an Australian state or territory.
-  const hqPlaceId = founder?.hqPlaceId ?? placeIn(rng, flag);
-  const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(rng, HOST_COUNTRY);
+  const drawnHq = founder?.hqPlaceId ?? placeIn(rng, flag);
+  const name = garageName(rng, nationality, usedNames, homeName(drawnHq));
+  // A garage named for a place is from that place: its flag and headquarters are there.
+  const home = homeOf(name, flag, drawnHq);
+  const hqPlaceId = home.hqPlaceId;
+  const basePlaceId = home.flag === HOST_COUNTRY ? hqPlaceId : placeIn(rng, HOST_COUNTRY);
   const [primary, secondary] = rng.pick(COLOUR_PAIRS);
   const prestige = seasonBalance.garages.newPrestige;
   return {
     id,
-    name: garageName(rng, nationality, usedNames, homeName(hqPlaceId)),
-    flag,
+    name,
+    flag: home.flag,
     basePlaceId,
     hqPlaceId,
     homeState: (placeById.get(basePlaceId) as { region: string }).region,
@@ -339,8 +357,12 @@ export function generateWorld(seed: string | number): World {
     const flag = hostFlag ? HOST_COUNTRY : pickForeignNationality(gRng);
     const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
     const prestige = clamp(cfg.garage.prestigeBase + cfg.garage.prestigePerEntry * size, 1, 100);
-    const hqPlaceId = placeIn(gRng, flag);
-    const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(bRng, HOST_COUNTRY);
+    const drawnHq = placeIn(gRng, flag);
+    const name = garageName(gRng, nationality, usedNames, homeName(drawnHq));
+    // A garage named for a place is from that place: its flag and headquarters are there.
+    const home = homeOf(name, flag, drawnHq);
+    const hqPlaceId = home.hqPlaceId;
+    const basePlaceId = home.flag === HOST_COUNTRY ? hqPlaceId : placeIn(bRng, HOST_COUNTRY);
     const [primary, secondary] = gRng.pick(COLOUR_PAIRS);
     const profile: AiProfile =
       size === 1 && gRng.chance(0.6)
@@ -351,8 +373,8 @@ export function generateWorld(seed: string | number): World {
           );
     return {
       id: index + 1,
-      name: garageName(gRng, nationality, usedNames, homeName(hqPlaceId)),
-      flag,
+      name,
+      flag: home.flag,
       basePlaceId,
       hqPlaceId,
       homeState: (placeById.get(basePlaceId) as { region: string }).region,

@@ -97,6 +97,22 @@ export function garageName(
   ).name;
 }
 
+const PLACES_LONGEST_FIRST = [...places].sort((a, b) => b.name.length - a.name.length);
+
+/**
+ * The place a garage name carries, if it has one in it ("Mount Barker Coast Tuning" carries Mount
+ * Barker): the longest place name that stands as whole words in the name. A garage named for a place
+ * is from that place, so its flag and headquarters follow it.
+ */
+export function placeInName(name: string): (typeof places)[number] | undefined {
+  return PLACES_LONGEST_FIRST.find((p) =>
+    new RegExp(
+      `(^|[^\\p{L}])${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}])`,
+      'u',
+    ).test(name),
+  );
+}
+
 /** A model name for a car of a category (hypercar, supercar, jdm, sports, domestic or other). */
 export function carModelName(rng: RandomStream, category: string, used: Set<string>): string {
   const theme = carCategories[category] ?? carCategories.other;

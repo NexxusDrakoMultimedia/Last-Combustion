@@ -11,7 +11,7 @@ import {
 } from '../../src/sim/worldgen';
 import { statesOfPlate } from '../../src/sim/plates';
 import { buildCalendar, addDays } from '../../src/sim/worldgen/calendar';
-import { isOffensiveName } from '../../src/sim/worldgen/names';
+import { isOffensiveName, placeInName } from '../../src/sim/worldgen/names';
 import { AUSTRALIAN_STATES, carModels, manufacturers, places } from '../../src/sim/worldgen/data';
 
 const world = generateWorld('2031');
@@ -185,6 +185,29 @@ describe('garages', () => {
     expect(new Set(world.garages.map((g) => g.name)).size).toBe(96);
     expect(world.garages.some((g) => g.name === DRAKE_MOTORSPORTS)).toBe(false);
     expect(world.officials.map((o) => o.role)).toEqual(['technical', 'interpersonal']);
+  });
+
+  it('that carry a place name are from that place: its flag and its headquarters', () => {
+    const seen = { named: 0 };
+    for (const seed of ['place-a', 'place-b', 'place-c', 'place-d']) {
+      const w = generateWorld(seed);
+      for (const g of w.garages) {
+        const place = placeInName(g.name);
+        if (!place) continue;
+        seen.named++;
+        expect(g.hqPlaceId, g.name).toBe(place.id);
+        expect(g.flag, g.name).toBe(place.country);
+        // Whatever the flag, it still races from an Australian base.
+        expect(places.find((p) => p.id === g.basePlaceId)!.country).toBe('AU');
+      }
+    }
+    expect(seen.named).toBeGreaterThan(20);
+  });
+
+  it('are found in a name only as whole words', () => {
+    expect(placeInName('Mount Barker Coast Tuning')?.name).toBe('Mount Barker');
+    expect(placeInName('Fox & Kingi')).toBeUndefined();
+    expect(placeInName('Corkscrew Racing')).toBeUndefined();
   });
 
   it('are not the player', () => {
