@@ -2,10 +2,14 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import {
+  filterRows,
   groupOfCategory,
   summariseYear,
+  withBalances,
   type CategoryTotals,
+  type LedgerFilter,
   type LedgerGroup,
+  type LedgerRow,
   type YearSummary,
 } from '../sim/ledger';
 import { all } from './entries';
@@ -108,5 +112,50 @@ export function ledgerSummary(db: Database, garageId: number, year: number): Led
       previousNet: previousNet(l.category),
     })),
     previous: before ? summariseYear(before) : null,
+  };
+}
+
+export interface TransactionsView {
+  /** The lines that match the filter, oldest first, each with the cash after it. */
+  rows: LedgerRow[];
+  /** All the garage's lines before filtering. */
+  total: number;
+  /** The categories the garage has lines in, for the filter. */
+  categories: string[];
+}
+
+/** Every line of a garage's ledger in the order it happened, with the running cash balance. */
+export function garageLedgerRows(db: Database, garageId: number): LedgerRow[] {
+  const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]?.cash ?? 0);
+  return withBalances(
+    all(
+      db,
+      `SELECT l.id, l.date, r.number AS round, l.category, l.amount, l.note
+         FROM ledger l LEFT JOIN round r ON r.id = l.round_id
+        WHERE l.garage_id = ? ORDER BY l.date, l.id`,
+      [garageId],
+    ).map((r) => ({
+      id: r.id as number,
+      date: r.date as string,
+      round: r.round === null ? null : (r.round as number),
+      category: r.category as string,
+      amount: r.amount as number,
+      note: r.note as string,
+    })),
+    cash,
+  );
+}
+
+/** A garage's ledger lines that match a filter. */
+export function transactions(
+  db: Database,
+  garageId: number,
+  filter: LedgerFilter = {},
+): TransactionsView {
+  const all_ = garageLedgerRows(db, garageId);
+  return {
+    rows: filterRows(all_, filter),
+    total: all_.length,
+    categories: [...new Set(all_.map((r) => r.category))].sort(),
   };
 }

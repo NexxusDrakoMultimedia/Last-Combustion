@@ -55,3 +55,81 @@ export function summariseYear(lines: readonly CategoryTotals[]): YearSummary {
     netCashMovement: groups.reduce((sum, g) => sum + g.net, 0),
   };
 }
+
+export interface LedgerRow {
+  id: number;
+  date: string;
+  /** The round number the line belongs to, or null for a line outside a round. */
+  round: number | null;
+  category: string;
+  amount: number;
+  /** The garage's cash after this line. */
+  balance: number;
+  note: string;
+}
+
+export interface LedgerFilter {
+  /** The financial year (the season's year). */
+  year?: number;
+  category?: string;
+  round?: number;
+  /** Inclusive dates, as YYYY-MM-DD. */
+  from?: string;
+  to?: string;
+  /** Matched anywhere in the note, ignoring case. */
+  text?: string;
+}
+
+/**
+ * Puts a running cash balance on lines in the order they happened, working back from the cash the
+ * garage holds now (every movement of cash is a ledger line, so the last line ends on the cash).
+ */
+export function withBalances(
+  rows: readonly Omit<LedgerRow, 'balance'>[],
+  cashNow: number,
+): LedgerRow[] {
+  let balance = cashNow;
+  const out: LedgerRow[] = [];
+  for (let i = rows.length - 1; i >= 0; i--) {
+    out.push({ ...rows[i]!, balance });
+    balance -= rows[i]!.amount;
+  }
+  return out.reverse();
+}
+
+/** The lines that match every part of a filter that is set. */
+export function filterRows(rows: readonly LedgerRow[], filter: LedgerFilter): LedgerRow[] {
+  const text = filter.text?.trim().toLowerCase();
+  return rows.filter(
+    (r) =>
+      (filter.year === undefined || financialYear(r.date) === filter.year) &&
+      (filter.category === undefined || r.category === filter.category) &&
+      (filter.round === undefined || r.round === filter.round) &&
+      (!filter.from || r.date >= filter.from) &&
+      (!filter.to || r.date <= filter.to) &&
+      (!text || r.note.toLowerCase().includes(text)),
+  );
+}
+
+/** One CSV field: quoted when it needs to be, and never read by a spreadsheet as a formula. */
+function csvField(value: string): string {
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+}
+
+/** The lines as a CSV file: date, round, category, amount, balance and note, oldest first. */
+export function ledgerCsv(rows: readonly LedgerRow[]): string {
+  const lines = ['Date,Round,Category,Amount,Balance,Note'];
+  for (const r of rows)
+    lines.push(
+      [
+        r.date,
+        r.round === null ? '' : String(r.round),
+        csvField(r.category),
+        String(r.amount),
+        String(r.balance),
+        csvField(r.note),
+      ].join(','),
+    );
+  return lines.join('\r\n') + '\r\n';
+}

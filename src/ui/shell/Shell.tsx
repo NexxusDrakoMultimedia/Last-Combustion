@@ -12,6 +12,7 @@ import { AuctionSection } from './AuctionSection';
 import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
 import { LedgerPanel } from './LedgerPanel';
+import { TransactionsSection } from './TransactionsSection';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { About, FeedbackLink } from '../About';
@@ -78,6 +79,7 @@ export function Shell() {
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
   const [operationsTab, setOperationsTab] = useState('suppliers');
+  const [ledgerTab, setLedger] = useState('summary');
   const [almanacTab, setAlmanac] = useState('seasons');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
@@ -92,6 +94,10 @@ export function Shell() {
   const setSeasonTab = (tab: string) => {
     trackDesign(undefined, 'Panel', 'Tab', 'season', tab);
     setSeason(tab);
+  };
+  const setLedgerTab = (tab: string) => {
+    trackDesign(undefined, 'Panel', 'Tab', 'money', tab);
+    setLedger(tab);
   };
   const setStaffTab = (tab: string) => {
     trackDesign(undefined, 'Panel', 'Tab', 'staff', tab);
@@ -430,8 +436,18 @@ export function Shell() {
         </Panel>
       )}
       {!locked && open === 'money' && (
-        <Panel title={t('rail.money')} subtitle={t('money.intro')} onClose={() => setOpen(null)}>
-          <LedgerPanel />
+        <Panel
+          title={t('rail.money')}
+          subtitle={t('money.intro')}
+          tabs={[
+            { id: 'summary', label: t('ledger.tab.summary') },
+            { id: 'transactions', label: t('ledger.tab.transactions') },
+          ]}
+          tab={ledgerTab}
+          onTab={setLedgerTab}
+          onClose={() => setOpen(null)}
+        >
+          {ledgerTab === 'summary' ? <LedgerPanel /> : <TransactionsSection />}
         </Panel>
       )}
       {open === 'menu' && (

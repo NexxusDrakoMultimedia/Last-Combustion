@@ -80,7 +80,14 @@ import {
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
-import { ledgerSummary, ledgerYears, type LedgerSummary } from '../db/ledger';
+import {
+  ledgerSummary,
+  ledgerYears,
+  transactions,
+  type LedgerSummary,
+  type TransactionsView,
+} from '../db/ledger';
+import { ledgerCsv, type LedgerFilter } from '../sim/ledger';
 import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
 import type { FacilityKind } from '../sim/facilities';
 import {
@@ -239,6 +246,9 @@ interface CareerState {
   /** The financial years the player's garage has books for (newest first), and the summary of the one being looked at. */
   ledgerYears: number[];
   ledgerView: LedgerSummary | undefined;
+  /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
+  transactionsFilter: LedgerFilter | undefined;
+  transactionsView: TransactionsView | undefined;
   /** The mechanics the garage employs, the ones on offer, and how well they cover its entries (0 to 1). */
   staff: Mechanic[];
   staffOffers: MechanicOffer[];
@@ -316,6 +326,8 @@ interface CareerState {
   registryBack(): void;
   closeRegistry(): void;
   loadLedger(year: number): void;
+  loadTransactions(filter: LedgerFilter): void;
+  exportLedger(): Promise<void>;
   loadStandings(year: number): void;
   loadClassification(year: number, round: number): void;
   dismissExecutive(executiveId: number): Promise<void>;
@@ -383,6 +395,10 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
       ledgerYears: playerGarageId(db) === null ? [] : ledgerYears(db, playerGarageId(db)!),
       // The summary on show moves on when money does.
+      transactionsView:
+        playerGarageId(db) === null || !get().transactionsFilter
+          ? undefined
+          : transactions(db, playerGarageId(db)!, get().transactionsFilter),
       ledgerView:
         playerGarageId(db) === null ||
         !get().ledgerView ||
@@ -464,6 +480,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     money: undefined,
     ledgerYears: [],
     ledgerView: undefined,
+    transactionsFilter: undefined,
+    transactionsView: undefined,
     executives: [],
     executiveDepartures: [],
     executiveCapacity: { slots: 0, used: 0 },
@@ -825,6 +843,28 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       const garageId = openDb ? playerGarageId(openDb) : null;
       if (openDb && garageId !== null) set({ ledgerView: ledgerSummary(openDb, garageId, year) });
     },
+
+    loadTransactions: (filter) => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null)
+        set({
+          transactionsFilter: filter,
+          transactionsView: transactions(openDb, garageId, filter),
+        });
+    },
+
+    exportLedger: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        const rows = transactions(openDb, garageId, get().transactionsFilter ?? {}).rows;
+        await getServices().platform.files.exportFile(
+          'ledger.csv',
+          new TextEncoder().encode(ledgerCsv(rows)),
+        );
+        return undefined;
+      }, 'ExportLedger'),
 
     loadStandings: (year) => {
       if (openDb) set({ standingsView: fullStandings(openDb, year) });

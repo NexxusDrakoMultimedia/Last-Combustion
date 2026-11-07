@@ -3,7 +3,15 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import { LEDGER_CATEGORIES } from '../../src/platform/telemetry';
-import { LEDGER_GROUPS, financialYear, groupOfCategory, summariseYear } from '../../src/sim/ledger';
+import {
+  LEDGER_GROUPS,
+  filterRows,
+  financialYear,
+  groupOfCategory,
+  ledgerCsv,
+  summariseYear,
+  withBalances,
+} from '../../src/sim/ledger';
 
 describe('ledger groups', () => {
   it('put every ledger category in exactly one group', () => {
@@ -66,5 +74,78 @@ describe('a year’s summary', () => {
         },
       ),
     );
+  });
+});
+
+const lines = [
+  {
+    id: 1,
+    date: '2031-02-01',
+    round: null,
+    category: 'salaries',
+    amount: -1000,
+    note: 'Notice pay',
+  },
+  { id: 2, date: '2031-03-10', round: 1, category: 'sponsor', amount: 5000, note: 'Round 1' },
+  { id: 3, date: '2031-03-11', round: 1, category: 'entry_fee', amount: -2200, note: 'Round 1' },
+  {
+    id: 4,
+    date: '2031-12-31',
+    round: null,
+    category: 'training',
+    amount: -900,
+    note: 'Training, "driver" 7',
+  },
+];
+
+describe('ledger lines with a running balance', () => {
+  it('end on the cash the garage holds and work back from it', () => {
+    const rows = withBalances(lines, 10_000);
+    expect(rows[3]!.balance).toBe(10_000);
+    expect(rows[2]!.balance).toBe(10_900);
+    expect(rows[1]!.balance).toBe(13_100);
+    expect(rows[0]!.balance).toBe(8_100);
+  });
+
+  it('keep each line’s balance when the lines are filtered', () => {
+    const rows = withBalances(lines, 10_000);
+    const sponsor = filterRows(rows, { category: 'sponsor' });
+    expect(sponsor).toHaveLength(1);
+    expect(sponsor[0]!.balance).toBe(13_100);
+  });
+
+  it('filter by year, round, dates and note text together', () => {
+    const rows = withBalances(lines, 10_000);
+    expect(filterRows(rows, { year: 2031 }).map((r) => r.id)).toEqual([1, 2, 3]);
+    expect(filterRows(rows, { year: 2032 }).map((r) => r.id)).toEqual([4]);
+    expect(filterRows(rows, { round: 1 }).map((r) => r.id)).toEqual([2, 3]);
+    expect(filterRows(rows, { from: '2031-03-11', to: '2031-12-31' }).map((r) => r.id)).toEqual([
+      3, 4,
+    ]);
+    expect(filterRows(rows, { text: 'NOTICE' }).map((r) => r.id)).toEqual([1]);
+    expect(filterRows(rows, { round: 1, category: 'sponsor' }).map((r) => r.id)).toEqual([2]);
+    expect(filterRows(rows, {})).toHaveLength(4);
+  });
+});
+
+describe('the CSV export', () => {
+  it('has a header, one row a line, quotes where needed and CRLF line ends', () => {
+    const csv = ledgerCsv(withBalances(lines, 10_000));
+    const rows = csv.split('\r\n');
+    expect(rows[0]).toBe('Date,Round,Category,Amount,Balance,Note');
+    expect(rows[2]).toBe('2031-03-10,1,sponsor,5000,13100,Round 1');
+    expect(rows[4]).toBe('2031-12-31,,training,-900,10000,"Training, ""driver"" 7"');
+    expect(csv.endsWith('\r\n')).toBe(true);
+    expect(rows).toHaveLength(6);
+  });
+
+  it('stops a spreadsheet reading a note as a formula', () => {
+    const csv = ledgerCsv(
+      withBalances(
+        [{ id: 1, date: '2031-01-01', round: null, category: 'gear', amount: -1, note: '=1+1' }],
+        0,
+      ),
+    );
+    expect(csv).toContain("'=1+1");
   });
 });

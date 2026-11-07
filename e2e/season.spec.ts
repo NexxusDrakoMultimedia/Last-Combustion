@@ -75,6 +75,12 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await expect(page.getByLabel(messages['ledger.year'])).toHaveValue('2031');
   await expect(page.getByText(messages['ledger.operating'])).toBeVisible();
   await expect(page.getByText(messages['ledger.running'])).toBeVisible();
+  await page.getByRole('tab', { name: messages['ledger.tab.transactions'] }).click();
+  await expect(page.getByRole('button', { name: messages['transactions.export'] })).toBeEnabled();
+  await page.getByLabel(messages['transactions.category']).selectOption('delivery');
+  await expect(
+    page.getByRole('cell', { name: messages['money.category.delivery'] }).first(),
+  ).toBeVisible();
   await page.keyboard.press('Escape');
 
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();

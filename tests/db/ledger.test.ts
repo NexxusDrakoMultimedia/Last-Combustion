@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
 import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
-import { closeLedgerYear, ledgerSummary, ledgerYears } from '../../src/db/ledger';
+import { closeLedgerYear, garageLedgerRows, ledgerSummary, ledgerYears } from '../../src/db/ledger';
 import { getSchemaVersion, migrate } from '../../src/db/migrate';
 import { migrations } from '../../src/db/migrations';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
@@ -150,4 +150,33 @@ describe('the ledger year migration (schema version 40)', () => {
       [2031, 'sponsor', 40000, 0],
     ]);
   });
+});
+
+describe('the transactions list', () => {
+  it('starts from the cash the garage founded with and ends on the cash it holds now', () => {
+    const db = createNewDatabase(SQL);
+    createCareer(db, {
+      mode: 'garage_owner',
+      masterSeed: 'ledger-tx',
+      startYear: 2031,
+      difficulty: 'standard',
+    });
+    persistWorld(db, generateWorld('ledger-tx'));
+    const garageId = foundPlayerGarage(db, setup);
+    createStarterOffers(db);
+    const founded = Number(scalar(db, `SELECT cash FROM garage WHERE id = ${garageId}`));
+    for (let n = 1; n <= 2; n++) {
+      playPrelims(db, n);
+      playFinal(db, n);
+      settleRound(db, n);
+    }
+    const rows = garageLedgerRows(db, garageId);
+    expect(rows.length).toBeGreaterThan(10);
+    expect(rows[rows.length - 1]!.balance).toBe(
+      Number(scalar(db, `SELECT cash FROM garage WHERE id = ${garageId}`)),
+    );
+    // Every movement of cash is a ledger line, so working back from today reaches the founding cash.
+    expect(rows[0]!.balance - rows[0]!.amount).toBe(founded);
+    expect(rows.every((r, i) => i === 0 || r.date >= rows[i - 1]!.date)).toBe(true);
+  }, 120_000);
 });
