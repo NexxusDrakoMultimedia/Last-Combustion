@@ -3,7 +3,7 @@
 import sponsorsJson from '../../data/sponsors.json';
 import { sponsorBalance } from './worldgen/data';
 
-export type SponsorTier = 'local' | 'regional' | 'national' | 'global';
+export type SponsorTier = 'local' | 'regional' | 'national' | 'continental' | 'global';
 
 export interface SponsorData {
   id: string;

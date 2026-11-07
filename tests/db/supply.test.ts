@@ -172,7 +172,7 @@ describe('paying for a round', () => {
     for (const c of view.categories) {
       expect(c.nextRound).toBeGreaterThan(0);
       expect(c.contract).toBeUndefined();
-      expect(c.suppliers).toHaveLength(3);
+      expect(c.suppliers).toHaveLength(4);
     }
     const electricity = view.categories.find((c) => c.category === 'electricity')!;
     expect(electricity.suppliers.find((s) => s.id === electricityGlobal.id)!.eligible).toBe(false);

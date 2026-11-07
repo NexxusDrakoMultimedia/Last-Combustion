@@ -1,24 +1,64 @@
 {
   "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). Every supplier serves all of Australia for now, so only prestige (its tier) gates them. A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year.",
   "maxYears": 3,
-  "discount": { "base": 0.04, "perPrestige": 0.001, "cap": 0.15 },
+  "discount": {
+    "base": 0.04,
+    "perPrestige": 0.001,
+    "cap": 0.15
+  },
   "tiers": {
-    "local": { "minPrestige": 0, "strength": 35 },
-    "regional": { "minPrestige": 10, "strength": 50 },
-    "national": { "minPrestige": 30, "strength": 65 },
-    "global": { "minPrestige": 50, "strength": 80 }
+    "local": {
+      "minPrestige": 0,
+      "strength": 35
+    },
+    "regional": {
+      "minPrestige": 10,
+      "strength": 50
+    },
+    "national": {
+      "minPrestige": 30,
+      "strength": 65
+    },
+    "continental": {
+      "minPrestige": 40,
+      "strength": 72
+    },
+    "global": {
+      "minPrestige": 50,
+      "strength": 80
+    }
   },
   "categories": {
-    "electricity": { "trend": 0.0, "volatility": 0.07, "shockChance": 0.08, "shock": [0.2, 0.45] },
-    "water": { "trend": 0.01, "volatility": 0.05, "shockChance": 0.05, "shock": [0.15, 0.35] },
-    "race_fuel": { "trend": 0.03, "volatility": 0.06, "shockChance": 0.1, "shock": [0.2, 0.5] },
+    "electricity": {
+      "trend": 0.0,
+      "volatility": 0.07,
+      "shockChance": 0.08,
+      "shock": [0.2, 0.45]
+    },
+    "water": {
+      "trend": 0.01,
+      "volatility": 0.05,
+      "shockChance": 0.05,
+      "shock": [0.15, 0.35]
+    },
+    "race_fuel": {
+      "trend": 0.03,
+      "volatility": 0.06,
+      "shockChance": 0.1,
+      "shock": [0.2, 0.5]
+    },
     "travel_fuel": {
       "trend": 0.015,
       "volatility": 0.07,
       "shockChance": 0.08,
       "shock": [0.15, 0.4]
     },
-    "logistics": { "trend": 0.01, "volatility": 0.05, "shockChance": 0.06, "shock": [0.15, 0.35] }
+    "logistics": {
+      "trend": 0.01,
+      "volatility": 0.05,
+      "shockChance": 0.06,
+      "shock": [0.15, 0.35]
+    }
   },
   "suppliers": [
     {
@@ -154,6 +194,51 @@
       "tier": "global",
       "priceIndex": 0.87,
       "reliability": 0.98,
+      "states": null
+    },
+    {
+      "id": 16,
+      "name": "Southern Hemisphere Power",
+      "category": "electricity",
+      "tier": "continental",
+      "priceIndex": 0.93,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 17,
+      "name": "Pacific Rim Water",
+      "category": "water",
+      "tier": "continental",
+      "priceIndex": 0.94,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 18,
+      "name": "Austral Reserve Fuels",
+      "category": "race_fuel",
+      "tier": "continental",
+      "priceIndex": 0.96,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 19,
+      "name": "Trans-Tasman Biofuels",
+      "category": "travel_fuel",
+      "tier": "continental",
+      "priceIndex": 0.93,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 20,
+      "name": "Coral Sea Freight",
+      "category": "logistics",
+      "tier": "continental",
+      "priceIndex": 0.92,
+      "reliability": 0.97,
       "states": null
     }
   ]
