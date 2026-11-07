@@ -53,7 +53,7 @@ Before you commit, run at least `pnpm lint && pnpm typecheck && pnpm test`. CI r
 - **File headers.** New source files start with `SPDX-License-Identifier: GPL-3.0-or-later` and `SPDX-FileCopyrightText: Nexxus Drako Multimedia`.
 - **Dragon-blooded drivers.** Twelve dragon-blooded driver characters live in `data/easter_drivers.json`. In the game they show a dragon mark (🐉) with a cryptic hint; do not explain them in player-facing text, and do not copy their names into other code, tests or docs apart from the GDD.
 - **Easter egg.** Do not write the Founder's career unlock details into code, comments, tests or logs in plain text, and do not mention it in player-facing text (see the GDD).
-- **Real brands.** Cars, manufacturers and people in the shipped data are fictional. Real counterparts belong only in the GDD and the optional mod mapping, never in `data/`.
+- **Real brands.** Cars, manufacturers, suppliers, sponsors and people in the game are fictional, with no mapping to real ones anywhere: not in `data/`, the GDD, the docs or a mod mapping. Do not add real brands, models or counterparts (the deny list of names in `data/names/cars.json` is there to keep generated names clear of real ones).
 - **Writing style.** Plain, direct, human prose. No em dashes (use a comma, colon, full stop or brackets), and an en dash only in a number range; `pnpm docs:style` checks the Markdown, `locales/` and `data/`. Every release gets a full documentation pass first (see `docs/RELEASING.md`).
 - **Real people.** Do not add real surnames or personal details of real individuals anywhere.
 - **Arc numbers.** 31, 96, 313 and 31396 are called "arc numbers" in the game and are not explained to players.

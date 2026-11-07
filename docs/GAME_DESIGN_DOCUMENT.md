@@ -685,6 +685,8 @@ Each supplier is a fictional company with a category, the states it serves (a ga
 
 **Computer garages are businesses too (built, first version).** Schema version 45 adds a `business` table (a sponsor and an electricity supplier for each computer garage). Every open computer garage now has executives for as many roles as its prestige allows (the same rules as the player's: one role from prestige 10 and one more for every 10, hired on one- to three-year contracts and retiring or poached by the same yearly draws, with a vacancy filled by a new hire at the start of the next season), facilities (one level for every 12 points of prestige, built after what each needs), a sponsor (one of the three strongest that will have a garage of that prestige) and an electricity supplier, all drawn from the career's seed (`business:<garage>:<year>`); garages in older saves are given theirs when the save opens, and a garage's Registry page shows its business, with each executive linking to their profile in the Paddock. *Keeping the economy unchanged:* each year the sponsor covers what the executives and facilities cost to run (ledger lines for salaries, facilities and sponsorship that net to nothing), so a garage's cash is the same as before, and the executives' and facilities' effects are not applied to the computer garages yet. *Dividends:* a computer garage with more than $150,000 of cash pays half of its last closed year's operating profit to its holders each year, never taking it below that cash. The owner's share is paid into their own cash, so holding shares in a garage now pays. Not built yet: mechanics crews for computer garages, supply contracts and outages for them, their effects, computer garages raising money or trading shares among themselves, a board for each, and what the board approves. Design direction as before: every computer garage should have what the player's garage has,  Every computer garage should have what the player's garage has, not only an owner: a crew of mechanics and managers, executives for the roles its prestige allows (hired, retiring and poached by the same rules), a title sponsor, supply contracts or spot-market supply with their outages, and facilities. They are drawn for the starting world from the career's seed, in line with each garage's prestige and profile, kept up through the seasons by the same rules, and paid for out of their own books. Their effects (a better crew saving wear, a Commercial Director raising a sponsor's fee, a facility cutting a bill) apply to them as they do to the player, and the starting prestige, cash and sponsorship income are rebalanced so that the world's economy is no richer or poorer than it is now. Still to come: a crew of mechanics, supply contracts with outages and the effects of all of it.
 
+**Manufacturers, suppliers and sponsors are businesses too (design direction, to come).** The companies the garage deals with should be run like garages: each has a cap table with shareholders (founders, families, investors, banks, and other companies, garages and the player), can be bought into or taken over by the same rules, pays dividends, raises money and can fail. They also start up and wind down: new fictional manufacturers, suppliers and sponsors appear as the years pass (a founder with a name, a base and a first product), and companies that stay unprofitable close, merge or are bought, their contracts ending by the rules for a closed garage. The starting world stays as it is, with 31 manufacturers and 96 models; changes come only as the seasons run. Today the Registry lists every company with a profile (and the shares a sponsor or manufacturer holds in garages), but companies themselves have no owners, accounts, start-ups or closures.
+
 *How it enters the economy.* The cost baseline is re-split rather than raised, so the economy keeps its balance at a market index of 1.0: race fuel and utilities come out of the entry fee and the servicing bill, and travel is split into fuel, logistics and accommodation (see "Cost baseline"). What changes is that each part now has a price the player can influence by shopping around, signing contracts and employing the right executives. Computer garages do not model each bill; their sponsorship income already covers their costs, and their efficiency stands in for the choices a player makes.
 
 *Screens.* The Staff panel has two tabs (mechanics and executives). A new Operations panel lists each category with the garage's spot and contract prices, the expected cost for the next round, the contract and its terms, and a Negotiate button; and the Money panel breaks the bills down by category with a forecast for the next round. Suppliers' and executives' names appear on the garage's trucks and doors.
@@ -1545,7 +1547,7 @@ The game is data-driven, so mods are packages of the same JSON and SVG files the
 | Suppliers | New or replacement suppliers, categories, discounts and contingency terms |
 | Balance data | Coefficients in `balance.json`, such as the cost baseline and formula weights |
 
-**Package format.** A mod is a folder with `mod.json` (id, name, version, author, supported game versions, dependencies, load-order hint, list of the areas it touches), `data/` for the JSON files, `art/` for SVGs and `text/en.json` for any new text keys. The real-counterpart reference mapping is optional (`mod_mapping.json`, see "Fictional manufacturers and cars").
+**Package format.** A mod is a folder with `mod.json` (id, name, version, author, supported game versions, dependencies, load-order hint, list of the areas it touches), `data/` for the JSON files, `art/` for SVGs and `text/en.json` for any new text keys.
 
 **Rules**
 
@@ -1693,14 +1695,16 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 ## Fictional manufacturers and cars
 
-The game ships only fictional manufacturers and models, so no licences are needed. Each one is also designed as a stand-in for a real counterpart, so modders can swap in real cars. The real names below are a reference for modders only: they never appear in the shipped game, its data files, store page or marketing.
+The game's manufacturers, models and people are entirely fictional, so no licences are needed. They are original designs. Nothing in the game, its data, these documents or the mods the game supports maps a fictional car or maker to a real one, and the game does not support mods that do: a mod may add or replace manufacturers and models, but with its own fictional ones.
+
+**Work of fiction.** The game says so plainly: the About screen, the README and the press kit carry a disclaimer that every manufacturer, car, company and character is invented and that any resemblance to real people, companies or events is coincidental, that generated names may by chance match a real person's, and that real towns and roads are used only to set the scene. Generated names are checked against a list of offensive names and words, not against real people.
 
 **Roster focus.** The series is a supercar showcase, with hypercars at the top and JDM, sports, Australian domestic and other cars mixed in.
 
-- **31 manufacturers and 96 models, with 2 to 5 models per manufacturer.** By category: 3 hypercar makers, 9 supercar makers, 6 sports-car makers, 7 JDM makers, 4 Australian domestic makers and 2 others. Each model is mapped to a specific real model.
+- **31 manufacturers and 96 models, with 2 to 5 models per manufacturer.** By category: 3 hypercar makers, 9 supercar makers, 6 sports-car makers, 7 JDM makers, 4 Australian domestic makers and 2 others.
 - **No era cut-off.** The list below is the launch lineup for 2031. Manufacturers keep their lineups moving after that (see "Manufacturer lineups").
 - **Field mix (Season 1, 313 cars):** 3% hypercars, 47% supercars (half the field), 22% JDM, 15% sports, 10% Australian domestic and 3% other. New garages and underdogs start in JDM, sports and domestic cars, and supercars are the aspiration.
-- **Stats are indicative.** Kerb weight and power are rounded starting values chosen to fit the game's balance, not exact real specifications. A mod that imports the real car replaces them. Max tyre width uses the Equalizer (`kg / 5 + 40`).
+- **Stats are indicative.** Kerb weight and power are rounded starting values chosen to fit the game's balance. Max tyre width uses the Equalizer (`kg / 5 + 40`).
 
 **Price tiers.** `price_new ≈ ($15,000 + $280 × PS) × tier multiplier`. Used cars sell at 40–70% of new depending on age, wear and provenance (see "Auction house and car trading").
 
@@ -1716,140 +1720,140 @@ The game ships only fictional manufacturers and models, so no licences are neede
 
 **Manufacturers**
 
-| Fictional | Home | Type | Character | Real counterpart (modding reference) |
-| --- | --- | --- | --- | --- |
-| Cavallo | Italy | Supercar | Passion and heritage, V8 and V12 | Ferrari |
-| Tauro | Italy | Supercar | Wide, loud, dramatic | Lamborghini |
-| Vento | Italy | Hypercar | Handbuilt carbon hypercars | Pagani |
-| Halberd | UK | Supercar | Lightweight carbon, technical | McLaren |
-| Ashford | UK | Supercar | Grand tourers to hypercars | Aston Martin |
-| Kessler | Germany | Supercar | Rear-engined precision | Porsche |
-| Stern | Germany | Supercar | Hand-built V8 power | Mercedes-AMG |
-| Rhein | Germany | Supercar | All-wheel-drive traction | Audi |
-| Montclair | France | Hypercar | Extreme power and top speed | Bugatti |
-| Vesper | Sweden | Hypercar | Record-chasing hypercars | Koenigsegg |
-| Dunmore | USA | Supercar | Big V8 muscle and supercars | Ford |
-| Marlowe | USA | Supercar | Front-engined V8 sports and supercars | Chevrolet |
-| Homura | Japan | JDM | Light sports cars, rotary specialist | Mazda |
-| Tsurugi | Japan | JDM | Turbo AWD coupes, tuner favourites | Subaru |
-| Raijin | Japan | JDM | Rear-drive coupes and grand tourers | Nissan |
-| Mitaka | Japan | JDM | Reliable, rally heritage | Toyota |
-| Hanabi | Japan | JDM | High-revving naturally aspirated | Honda |
-| Kestrel | UK | Sports | Light, agile, low power | Lotus |
-| Corvina | Italy | Sports | Stylish, sharp-handling, temperamental | Alfa Romeo |
-| Brandt | Germany | Sports | Precise, heavier, strong brakes | BMW |
-| Pennine | UK | Sports | Small, cheeky, great on tight roads | Mini |
-| Aurelian | Italy | Sports | Small turbo hatches, high revs, fragile | Abarth / Fiat |
-| Ardent | France | Sports | Soft, agile hot hatches | Renault |
-| Mizuho | Japan | JDM | Rally-bred turbo sedans and coupes | Mitsubishi |
-| Suzuri | Japan | JDM | Tiny, light and cheap | Suzuki |
-| Redback | Australia | Domestic | Utes and V8 sedans, cheap and tough | Holden |
-| Wattle | Australia | Domestic | Local muscle and turbo sixes | Ford Australia |
-| Bunyip | Australia | Domestic | Hemi-powered local classics | Chrysler Australia |
-| Banksia | Australia | Domestic | Lightweight local sports cars | Elfin / Bolwell |
-| Haeju | South Korea | Other | Value performance | Hyundai |
-| Skald | Sweden | Other | Turbo pioneers, quirky and safe | Saab |
+| Fictional | Home | Type | Character |
+| --- | --- | --- | --- |
+| Cavallo | Italy | Supercar | Passion and heritage, V8 and V12 |
+| Tauro | Italy | Supercar | Wide, loud, dramatic |
+| Vento | Italy | Hypercar | Handbuilt carbon hypercars |
+| Halberd | UK | Supercar | Lightweight carbon, technical |
+| Ashford | UK | Supercar | Grand tourers to hypercars |
+| Kessler | Germany | Supercar | Rear-engined precision |
+| Stern | Germany | Supercar | Hand-built V8 power |
+| Rhein | Germany | Supercar | All-wheel-drive traction |
+| Montclair | France | Hypercar | Extreme power and top speed |
+| Vesper | Sweden | Hypercar | Record-chasing hypercars |
+| Dunmore | USA | Supercar | Big V8 muscle and supercars |
+| Marlowe | USA | Supercar | Front-engined V8 sports and supercars |
+| Homura | Japan | JDM | Light sports cars, rotary specialist |
+| Tsurugi | Japan | JDM | Turbo AWD coupes, tuner favourites |
+| Raijin | Japan | JDM | Rear-drive coupes and grand tourers |
+| Mitaka | Japan | JDM | Reliable, rally heritage |
+| Hanabi | Japan | JDM | High-revving naturally aspirated |
+| Kestrel | UK | Sports | Light, agile, low power |
+| Corvina | Italy | Sports | Stylish, sharp-handling, temperamental |
+| Brandt | Germany | Sports | Precise, heavier, strong brakes |
+| Pennine | UK | Sports | Small, cheeky, great on tight roads |
+| Aurelian | Italy | Sports | Small turbo hatches, high revs, fragile |
+| Ardent | France | Sports | Soft, agile hot hatches |
+| Mizuho | Japan | JDM | Rally-bred turbo sedans and coupes |
+| Suzuri | Japan | JDM | Tiny, light and cheap |
+| Redback | Australia | Domestic | Utes and V8 sedans, cheap and tough |
+| Wattle | Australia | Domestic | Local muscle and turbo sixes |
+| Bunyip | Australia | Domestic | Hemi-powered local classics |
+| Banksia | Australia | Domestic | Lightweight local sports cars |
+| Haeju | South Korea | Other | Value performance |
+| Skald | Sweden | Other | Turbo pioneers, quirky and safe |
 
 **Models** (max tyre from the Equalizer)
 
-| Fictional model | Tier | Kerb kg | Max tyre | PS | Real counterpart (modding reference) |
-| --- | --- | --- | --- | --- | --- |
-| Cavallo Quaranta | Elite | 1,100 | 260 mm | 478 | Ferrari F40 |
-| Cavallo Tre-Cinque | Premium | 1,350 | 310 mm | 380 | Ferrari F355 |
-| Cavallo Otto | Elite | 1,380 | 316 mm | 570 | Ferrari 458 Italia |
-| Tauro Cuneo | Elite | 1,500 | 340 mm | 455 | Lamborghini Countach |
-| Tauro Piccolo | Premium | 1,400 | 320 mm | 520 | Lamborghini Gallardo |
-| Tauro Bravo | Elite | 1,800 | 400 mm | 700 | Lamborghini Aventador |
-| Vento Z | Elite | 1,230 | 286 mm | 650 | Pagani Zonda F |
-| Vento H | Hyper | 1,350 | 310 mm | 730 | Pagani Huayra |
-| Vento Utopia | Hyper | 1,280 | 296 mm | 864 | Pagani Utopia |
-| Halberd F1 | Hyper | 1,140 | 268 mm | 627 | McLaren F1 |
-| Halberd 570 | Premium | 1,440 | 328 mm | 570 | McLaren 570S |
-| Halberd 765 | Elite | 1,330 | 306 mm | 765 | McLaren 765LT |
-| Ashford Vantage | Premium | 1,530 | 346 mm | 510 | Aston Martin Vantage |
-| Ashford DB | Premium | 1,770 | 394 mm | 608 | Aston Martin DB11 |
-| Ashford Lance | Hyper | 1,030 | 246 mm | 1,160 | Aston Martin Valkyrie |
-| Kessler Heck | Premium | 1,360 | 312 mm | 450 | Porsche 911 GT3 RS (997) |
-| Kessler Rennen | Elite | 1,380 | 316 mm | 612 | Porsche Carrera GT |
-| Kessler Boxer | Mid | 1,340 | 308 mm | 385 | Porsche Cayman GT4 |
-| Stern GT Black | Elite | 1,540 | 348 mm | 730 | Mercedes-AMG GT Black Series |
-| Stern SLR | Elite | 1,768 | 394 mm | 626 | Mercedes-Benz SLR McLaren |
-| Stern 63 | Premium | 1,700 | 380 mm | 510 | Mercedes-AMG C63 S Coupé |
-| Rhein R8 | Premium | 1,620 | 364 mm | 525 | Audi R8 V10 |
-| Rhein Sport Quattro | Elite | 1,200 | 280 mm | 306 | Audi Sport Quattro |
-| Rhein TT RS | Mid | 1,450 | 330 mm | 400 | Audi TT RS |
-| Montclair EB | Elite | 1,620 | 364 mm | 612 | Bugatti EB110 SS |
-| Montclair Veyron | Hyper | 1,950 | 430 mm | 1,001 | Bugatti Veyron 16.4 |
-| Montclair Chiron | Hyper | 1,995 | 439 mm | 1,500 | Bugatti Chiron |
-| Vesper CCR | Elite | 1,180 | 276 mm | 806 | Koenigsegg CCR |
-| Vesper Agera | Hyper | 1,330 | 306 mm | 1,140 | Koenigsegg Agera R |
-| Vesper Jesko | Hyper | 1,420 | 324 mm | 1,280 | Koenigsegg Jesko |
-| Dunmore GT | Elite | 1,520 | 344 mm | 550 | Ford GT (2005) |
-| Dunmore GT-X | Elite | 1,385 | 317 mm | 656 | Ford GT (2017) |
-| Dunmore Stallion V8 | Premium | 1,650 | 370 mm | 450 | Ford Mustang GT |
-| Marlowe Vettura | Premium | 1,530 | 346 mm | 638 | Chevrolet Corvette ZR1 (C6) |
-| Marlowe Z | Premium | 1,600 | 360 mm | 650 | Chevrolet Corvette Z06 (C7) |
-| Marlowe Sprint | Mid | 1,700 | 380 mm | 455 | Chevrolet Camaro SS |
-| Homura Corsa 1.8 | Starter | 1,020 | 244 mm | 170 | Mazda MX-5 (NB) |
-| Homura Spirit R-7 | (not for sale) | 1,150 | 270 mm | 280 | Mazda RX-7 (FD) |
-| Homura Eclipse R-8 | Mid | 1,310 | 302 mm | 230 | Mazda RX-8 |
-| Tsurugi S2 | Mid | 1,180 | 276 mm | 220 | Subaru Impreza WRX (GC8) |
-| Tsurugi 22 | Premium | 1,270 | 294 mm | 280 | Subaru Impreza 22B STI |
-| Tsurugi Rex | Mid | 1,250 | 290 mm | 200 | Subaru BRZ |
-| Raijin 200S | Mid | 1,240 | 288 mm | 250 | Nissan Silvia (S15) |
-| Raijin GT-Line | Premium | 1,560 | 352 mm | 330 | Nissan Skyline GT-R (R34) |
-| Raijin R | Premium | 1,740 | 388 mm | 570 | Nissan GT-R (R35) |
-| Mitaka Sprinter | Starter | 940 | 228 mm | 130 | Toyota AE86 |
-| Mitaka Arrow | Mid | 1,500 | 340 mm | 330 | Toyota Supra (A80) |
-| Mitaka Halo | Elite | 1,480 | 336 mm | 560 | Lexus LFA |
-| Hanabi Type-R EK | Starter | 1,050 | 250 mm | 185 | Honda Civic Type R (EK9) |
-| Hanabi Roadster S | Mid | 1,260 | 292 mm | 240 | Honda S2000 |
-| Hanabi Mid-Tech | Premium | 1,350 | 310 mm | 280 | Honda NSX (NA1) |
-| Kestrel Swift 1.6 | Starter | 940 | 228 mm | 140 | Lotus Elise |
-| Kestrel Merlin | Mid | 980 | 236 mm | 240 | Lotus Exige |
-| Kestrel Harrier | Mid | 1,400 | 320 mm | 280 | Lotus Evora |
-| Corvina 4C | Mid | 895 | 219 mm | 240 | Alfa Romeo 4C |
-| Corvina 8C | Premium | 1,585 | 357 mm | 450 | Alfa Romeo 8C Competizione |
-| Corvina Giulia QV | Mid | 1,700 | 380 mm | 510 | Alfa Romeo Giulia Quadrifoglio |
-| Brandt M1 | Premium | 1,300 | 300 mm | 277 | BMW M1 |
-| Brandt M3 GTS | Premium | 1,530 | 346 mm | 450 | BMW M3 GTS (E92) |
-| Brandt 330 | Mid | 1,540 | 348 mm | 340 | BMW 335i (E92) |
-| Cavallo Fondatore | Hyper | 1,365 | 313 mm | 660 | Ferrari Enzo |
-| Pennine Mk I | Starter | 680 | 176 mm | 76 | Classic Mini Cooper |
-| Pennine Cooper S | Starter | 1,150 | 270 mm | 163 | Mini Cooper S (R53) |
-| Pennine GP | Mid | 1,200 | 280 mm | 218 | Mini John Cooper Works GP (R56) |
-| Aurelian Uno T | Starter | 850 | 210 mm | 105 | Fiat Uno Turbo |
-| Aurelian Lupa 1.4T | Starter | 1,050 | 250 mm | 190 | Abarth 595 Competizione |
-| Aurelian Spider 124 | Mid | 1,060 | 252 mm | 170 | Abarth 124 Spider |
-| Ardent 5 Turbo | Mid | 980 | 236 mm | 160 | Renault 5 Turbo |
-| Ardent Petite RS | Mid | 1,200 | 280 mm | 200 | Renault Clio RS 200 |
-| Ardent Trophy | Mid | 1,400 | 320 mm | 275 | Renault Mégane R.S. Trophy |
-| Mizuho Evo IX | Mid | 1,400 | 320 mm | 280 | Mitsubishi Lancer Evolution IX |
-| Mizuho Orion | Mid | 1,300 | 300 mm | 200 | Mitsubishi Starion |
-| Mizuho GTO | Mid | 1,700 | 380 mm | 280 | Mitsubishi 3000GT VR-4 |
-| Suzuri Cappu | Starter | 700 | 180 mm | 64 | Suzuki Cappuccino |
-| Suzuri Swift Sport | Starter | 1,000 | 240 mm | 136 | Suzuki Swift Sport |
-| Suzuri Works | Starter | 680 | 176 mm | 64 | Suzuki Alto Works |
-| Redback Torana | Mid | 1,100 | 260 mm | 200 | Holden Torana A9X |
-| Redback Sedan SS | Mid | 1,700 | 380 mm | 367 | Holden Commodore SS (VE) |
-| Redback Ute SS | Mid | 1,780 | 396 mm | 367 | Holden Commodore SS Ute (VE) |
-| Redback GTS-R | Premium | 1,900 | 420 mm | 636 | HSV GTSR W1 |
-| Wattle GT-HO | Elite | 1,430 | 326 mm | 300 | Ford Falcon GT-HO Phase III |
-| Wattle XR6 Turbo | Mid | 1,700 | 380 mm | 325 | Ford Falcon XR6 Turbo (BF) |
-| Wattle XR8 Ute | Mid | 1,800 | 400 mm | 395 | Ford Falcon XR8 Ute (FG) |
-| Wattle GT-F | Premium | 1,800 | 400 mm | 455 | Ford Falcon GT F |
-| Bunyip Charger E49 | Premium | 1,300 | 300 mm | 300 | Chrysler Valiant Charger E49 |
-| Bunyip Charger E55 | Mid | 1,350 | 310 mm | 250 | Chrysler Valiant Charger R/T E55 |
-| Bunyip Pacer | Mid | 1,350 | 310 mm | 245 | Chrysler Valiant Pacer |
-| Banksia Clubman | Starter | 640 | 168 mm | 150 | Elfin Clubman |
-| Banksia Nagari | Mid | 900 | 220 mm | 160 | Bolwell Nagari |
-| Banksia MS8 | Premium | 780 | 196 mm | 430 | Elfin MS8 Streamliner |
-| Haeju Veloce | Mid | 1,400 | 320 mm | 275 | Hyundai Veloster N |
-| Haeju i-Sprint | Mid | 1,450 | 330 mm | 280 | Hyundai i30 N |
-| Haeju Coupe 3.8 | Mid | 1,500 | 340 mm | 300 | Hyundai Genesis Coupe 3.8 |
-| Skald Sonett | Starter | 840 | 208 mm | 65 | Saab Sonett III |
-| Skald 900 Turbo | Mid | 1,200 | 280 mm | 175 | Saab 900 Turbo 16S |
-| Skald Viggen | Mid | 1,400 | 320 mm | 225 | Saab 9-3 Viggen |
+| Fictional model | Tier | Kerb kg | Max tyre | PS |
+| --- | --- | --- | --- | --- |
+| Cavallo Quaranta | Elite | 1,100 | 260 mm | 478 |
+| Cavallo Tre-Cinque | Premium | 1,350 | 310 mm | 380 |
+| Cavallo Otto | Elite | 1,380 | 316 mm | 570 |
+| Tauro Cuneo | Elite | 1,500 | 340 mm | 455 |
+| Tauro Piccolo | Premium | 1,400 | 320 mm | 520 |
+| Tauro Bravo | Elite | 1,800 | 400 mm | 700 |
+| Vento Z | Elite | 1,230 | 286 mm | 650 |
+| Vento H | Hyper | 1,350 | 310 mm | 730 |
+| Vento Utopia | Hyper | 1,280 | 296 mm | 864 |
+| Halberd F1 | Hyper | 1,140 | 268 mm | 627 |
+| Halberd 570 | Premium | 1,440 | 328 mm | 570 |
+| Halberd 765 | Elite | 1,330 | 306 mm | 765 |
+| Ashford Vantage | Premium | 1,530 | 346 mm | 510 |
+| Ashford DB | Premium | 1,770 | 394 mm | 608 |
+| Ashford Lance | Hyper | 1,030 | 246 mm | 1,160 |
+| Kessler Heck | Premium | 1,360 | 312 mm | 450 |
+| Kessler Rennen | Elite | 1,380 | 316 mm | 612 |
+| Kessler Boxer | Mid | 1,340 | 308 mm | 385 |
+| Stern GT Black | Elite | 1,540 | 348 mm | 730 |
+| Stern SLR | Elite | 1,768 | 394 mm | 626 |
+| Stern 63 | Premium | 1,700 | 380 mm | 510 |
+| Rhein R8 | Premium | 1,620 | 364 mm | 525 |
+| Rhein Sport Quattro | Elite | 1,200 | 280 mm | 306 |
+| Rhein TT RS | Mid | 1,450 | 330 mm | 400 |
+| Montclair EB | Elite | 1,620 | 364 mm | 612 |
+| Montclair Veyron | Hyper | 1,950 | 430 mm | 1,001 |
+| Montclair Chiron | Hyper | 1,995 | 439 mm | 1,500 |
+| Vesper CCR | Elite | 1,180 | 276 mm | 806 |
+| Vesper Agera | Hyper | 1,330 | 306 mm | 1,140 |
+| Vesper Jesko | Hyper | 1,420 | 324 mm | 1,280 |
+| Dunmore GT | Elite | 1,520 | 344 mm | 550 |
+| Dunmore GT-X | Elite | 1,385 | 317 mm | 656 |
+| Dunmore Stallion V8 | Premium | 1,650 | 370 mm | 450 |
+| Marlowe Vettura | Premium | 1,530 | 346 mm | 638 |
+| Marlowe Z | Premium | 1,600 | 360 mm | 650 |
+| Marlowe Sprint | Mid | 1,700 | 380 mm | 455 |
+| Homura Corsa 1.8 | Starter | 1,020 | 244 mm | 170 |
+| Homura Spirit R-7 | (not for sale) | 1,150 | 270 mm | 280 |
+| Homura Eclipse R-8 | Mid | 1,310 | 302 mm | 230 |
+| Tsurugi S2 | Mid | 1,180 | 276 mm | 220 |
+| Tsurugi 22 | Premium | 1,270 | 294 mm | 280 |
+| Tsurugi Rex | Mid | 1,250 | 290 mm | 200 |
+| Raijin 200S | Mid | 1,240 | 288 mm | 250 |
+| Raijin GT-Line | Premium | 1,560 | 352 mm | 330 |
+| Raijin R | Premium | 1,740 | 388 mm | 570 |
+| Mitaka Sprinter | Starter | 940 | 228 mm | 130 |
+| Mitaka Arrow | Mid | 1,500 | 340 mm | 330 |
+| Mitaka Halo | Elite | 1,480 | 336 mm | 560 |
+| Hanabi Type-R EK | Starter | 1,050 | 250 mm | 185 |
+| Hanabi Roadster S | Mid | 1,260 | 292 mm | 240 |
+| Hanabi Mid-Tech | Premium | 1,350 | 310 mm | 280 |
+| Kestrel Swift 1.6 | Starter | 940 | 228 mm | 140 |
+| Kestrel Merlin | Mid | 980 | 236 mm | 240 |
+| Kestrel Harrier | Mid | 1,400 | 320 mm | 280 |
+| Corvina 4C | Mid | 895 | 219 mm | 240 |
+| Corvina 8C | Premium | 1,585 | 357 mm | 450 |
+| Corvina Giulia QV | Mid | 1,700 | 380 mm | 510 |
+| Brandt M1 | Premium | 1,300 | 300 mm | 277 |
+| Brandt M3 GTS | Premium | 1,530 | 346 mm | 450 |
+| Brandt 330 | Mid | 1,540 | 348 mm | 340 |
+| Cavallo Fondatore | Hyper | 1,365 | 313 mm | 660 |
+| Pennine Mk I | Starter | 680 | 176 mm | 76 |
+| Pennine Cooper S | Starter | 1,150 | 270 mm | 163 |
+| Pennine GP | Mid | 1,200 | 280 mm | 218 |
+| Aurelian Uno T | Starter | 850 | 210 mm | 105 |
+| Aurelian Lupa 1.4T | Starter | 1,050 | 250 mm | 190 |
+| Aurelian Spider 124 | Mid | 1,060 | 252 mm | 170 |
+| Ardent 5 Turbo | Mid | 980 | 236 mm | 160 |
+| Ardent Petite RS | Mid | 1,200 | 280 mm | 200 |
+| Ardent Trophy | Mid | 1,400 | 320 mm | 275 |
+| Mizuho Evo IX | Mid | 1,400 | 320 mm | 280 |
+| Mizuho Orion | Mid | 1,300 | 300 mm | 200 |
+| Mizuho GTO | Mid | 1,700 | 380 mm | 280 |
+| Suzuri Cappu | Starter | 700 | 180 mm | 64 |
+| Suzuri Swift Sport | Starter | 1,000 | 240 mm | 136 |
+| Suzuri Works | Starter | 680 | 176 mm | 64 |
+| Redback Torana | Mid | 1,100 | 260 mm | 200 |
+| Redback Sedan SS | Mid | 1,700 | 380 mm | 367 |
+| Redback Ute SS | Mid | 1,780 | 396 mm | 367 |
+| Redback GTS-R | Premium | 1,900 | 420 mm | 636 |
+| Wattle GT-HO | Elite | 1,430 | 326 mm | 300 |
+| Wattle XR6 Turbo | Mid | 1,700 | 380 mm | 325 |
+| Wattle XR8 Ute | Mid | 1,800 | 400 mm | 395 |
+| Wattle GT-F | Premium | 1,800 | 400 mm | 455 |
+| Bunyip Charger E49 | Premium | 1,300 | 300 mm | 300 |
+| Bunyip Charger E55 | Mid | 1,350 | 310 mm | 250 |
+| Bunyip Pacer | Mid | 1,350 | 310 mm | 245 |
+| Banksia Clubman | Starter | 640 | 168 mm | 150 |
+| Banksia Nagari | Mid | 900 | 220 mm | 160 |
+| Banksia MS8 | Premium | 780 | 196 mm | 430 |
+| Haeju Veloce | Mid | 1,400 | 320 mm | 275 |
+| Haeju i-Sprint | Mid | 1,450 | 330 mm | 280 |
+| Haeju Coupe 3.8 | Mid | 1,500 | 340 mm | 300 |
+| Skald Sonett | Starter | 840 | 208 mm | 65 |
+| Skald 900 Turbo | Mid | 1,200 | 280 mm | 175 |
+| Skald Viggen | Mid | 1,400 | 320 mm | 225 |
 
 The Homura Spirit R-7 is Pyra Drake's #313 benchmark and is not for sale. The starter cars a new garage can pick from are the Kestrel Swift 1.6, Homura Corsa 1.8 and Mitaka Sprinter. The starting field's 313 cars are drawn from these 96 models using the field mix above; supercars appear mostly in the hands of established, high-prestige garages.
 
@@ -1865,9 +1869,8 @@ Manufacturers do not stand still. Each one refreshes its lineup about every five
 
 **Modding support**
 
-- **Mapping file.** `mod_mapping.json` is optional and ships separately from the game data. It links each fictional model ID to its real counterpart (make, model, generation, years) so a mod can replace names, stats and visuals together. It is not included in the base game.
 - **Replacement, not addition.** A mod replaces a fictional manufacturer or model entirely, including its name, logo, body shape and stats. Save files keep working because the game stores the stable internal ID, not the display name.
-- **Livery and art.** Real-car mods supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
+- **Livery and art.** Mods that add cars supply their own body-shape SVG with the standard livery slots (front quarter, doors, rear quarters, number, flag).
 - **Mod loader.** See "Modding" for the package format, validation and load order.
 - **Legal.** The base game never ships real marks. Mods are covered by the hosting policy in "Modding": standard DMCA takedown, and no responsibility is claimed for modifications that private players make or apply.
 
@@ -2043,7 +2046,6 @@ Branding and social media are planned work for after the first playable season (
 - [ ] Consider a seventh round (a second Western Australian course, or the Northern Territory or Tasmania) if a good sealed loop under 80 km is found.
 - [ ] Legal review of the ODbL attribution for the saved course outlines.
 - [ ] Re-verify the v1 balance numbers with the real TypeScript simulation at M2 and across 10 seasons at M5.
-- [ ] Legal review of the real-counterpart mapping in `mod_mapping.json`.
 - [ ] Legal review of `TRADEMARKS.md`, and how the logo and the artwork of the Drake characters are separated from the GPL grant (section 7 covers trademarks, not copyright in artwork).
 - [ ] Confirm the proposed release numbers for M6 (0.2.0), M7 (0.3.0) and M8 (0.4.0).
 - [ ] A way to give feedback without a GitHub account.

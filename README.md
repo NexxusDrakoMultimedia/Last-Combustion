@@ -91,6 +91,10 @@ The game is TypeScript, React, Tailwind CSS and Zustand, with SQLite (SQL.js) ru
 
 The game has no accounts and no server of its own. The web build asks before it collects anonymous usage data (which buttons are used, counts and money moved, never names or save contents). Say no and nothing is sent. Local and test builds send nothing.
 
+## Disclaimer
+
+Last Combustion is a work of fiction. The manufacturers, cars, sponsors, suppliers, garages, drivers, executives, journalists and every other character are invented, and any resemblance to real people, living or dead, or to real companies, products, brands or events is purely coincidental. Names are made up from lists and may by chance match a real person's. Real towns and roads are used only to set the scene. No real person, brand or organisation has endorsed this game or has any connection with it.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versioning](https://semver.org/), starts its [changelog](CHANGELOG.md) at the first release, and uses Conventional Commits.
