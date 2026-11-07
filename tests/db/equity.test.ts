@@ -29,6 +29,7 @@ import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { createStarterOffers } from '../../src/db/starter';
 import { persistWorld } from '../../src/db/world';
 import { FOUNDING_SHARES } from '../../src/sim/equity';
+import { nameLists } from '../../src/sim/worldgen/data';
 import { generateWorld } from '../../src/sim/worldgen';
 
 let SQL: SqlJsStatic;
@@ -59,6 +60,23 @@ function world(seed: string): Database {
   persistWorld(db, generateWorld(seed));
   return db;
 }
+
+describe('owners of a garage named for a family', () => {
+  it('share the name: the founder and the family carry the surname in the garage’s name', () => {
+    const db = world('equity-names');
+    const surname = nameLists.byNationality.AU!.surnames[3]!;
+    const id = Number(
+      scalar(db, "SELECT id FROM garage WHERE kind = 'racing' ORDER BY id LIMIT 1"),
+    );
+    db.run("UPDATE garage SET name = ?, flag = 'AU' WHERE id = ?", [`${surname} Dyno Works`, id]);
+    ensureCapTables(db);
+    const holders = db.exec(
+      `SELECT holder_name, holder_type FROM shareholding WHERE garage_id = ${id} AND holder_type IN ('owner', 'family')`,
+    )[0]!.values as [string, string][];
+    expect(holders.length).toBeGreaterThan(0);
+    for (const [name] of holders) expect(name.endsWith(surname), name).toBe(true);
+  });
+});
 
 describe('who owns each garage', () => {
   it('gives every racing garage its owners, adding up to the founding shares', () => {

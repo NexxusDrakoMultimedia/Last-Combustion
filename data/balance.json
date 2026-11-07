@@ -564,6 +564,10 @@
       ],
       "aiPrestigePerLevel": 20,
       "aiCashMultiple": 3
+    },
+    "deaths": {
+      "chancePerYear": 0.0015,
+      "causes": ["road", "illness", "fall", "fire", "water"]
     }
   },
   "morale": {

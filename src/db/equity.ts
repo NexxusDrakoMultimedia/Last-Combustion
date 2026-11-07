@@ -30,7 +30,7 @@ import {
 import { financialYear } from '../sim/ledger';
 import { createRng } from '../sim/rng';
 import { equityData, nameLists } from '../sim/worldgen/data';
-import { pickNationality, personName } from '../sim/worldgen/names';
+import { ownerSurname, pickNationality, personName } from '../sim/worldgen/names';
 import { readCareer } from './career';
 import { all } from './entries';
 import { closedYearProfits } from './ledger';
@@ -81,7 +81,7 @@ export function ensureCapTables(db: Database): void {
   if (!career) return;
   const missing = all(
     db,
-    `SELECT g.id, g.flag, g.is_player, o.name AS owner FROM garage g LEFT JOIN owner o ON o.garage_id = g.id
+    `SELECT g.id, g.name, g.flag, g.is_player, o.name AS owner FROM garage g LEFT JOIN owner o ON o.garage_id = g.id
       WHERE g.kind = 'racing' AND g.acquired_by IS NULL
         AND NOT EXISTS (SELECT 1 FROM shareholding s WHERE s.garage_id = g.id)
       ORDER BY g.id`,
@@ -108,7 +108,14 @@ export function ensureCapTables(db: Database): void {
       : pickNationality(stream);
     const person = (nationality: string) =>
       personName(stream, nationality, stream.chance(0.5) ? 'male' : 'female');
-    const founder = person(home);
+    const drawn = person(home);
+    // A garage with a family name in its name belongs to someone with that name.
+    const shared = ownerSurname(
+      rng.stream(`capname:${garageId}`),
+      g.name as string,
+      nameLists.byNationality[g.flag as string] ? (g.flag as string) : home,
+    );
+    const founder = shared ? `${drawn.split(' ')[0] as string} ${shared}` : drawn;
     const holders = drawCapTable(stream, {
       founder,
       surname: founder.split(' ').slice(1).join(' '),

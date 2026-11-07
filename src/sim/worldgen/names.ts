@@ -97,6 +97,34 @@ export function garageName(
   ).name;
 }
 
+/** The words of a name that are family names of a nation, leaving out the words of a place the name carries. */
+export function surnamesInName(name: string, nationality: string): string[] {
+  const pools = nameLists.byNationality[nationality];
+  if (!pools) return [];
+  const known = new Set(pools.surnames);
+  const place = placeInName(name)?.name ?? '';
+  const inPlace = new Set(place.split(/[^\p{L}]+/u));
+  const words = name.split(/[^\p{L}'’]+/u).filter((w) => w.length > 1);
+  return [...new Set(words.filter((w) => known.has(w) && !inPlace.has(w)))];
+}
+
+/**
+ * The surname a garage's owners share, if its name carries a family name: the one name, or when it
+ * carries two or more, one of them or a double-barrelled pair, chosen from the seed. Undefined when
+ * the name carries no family name.
+ */
+export function ownerSurname(
+  rng: RandomStream,
+  name: string,
+  nationality: string,
+): string | undefined {
+  const found = surnamesInName(name, nationality);
+  if (found.length === 0) return undefined;
+  if (found.length === 1) return found[0];
+  if (rng.chance(1 / 3)) return found.slice(0, 2).join('-');
+  return rng.pick(found);
+}
+
 const PLACES_LONGEST_FIRST = [...places].sort((a, b) => b.name.length - a.name.length);
 
 /**

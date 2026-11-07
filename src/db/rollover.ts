@@ -19,6 +19,7 @@ import { retireOldCars } from './carage';
 import { createUsedCar } from './market';
 import { ensureBusinesses, settleBusinesses } from './business';
 import { ensureCapTables } from './equity';
+import { recordDeaths, rollDeaths, type Death } from './deaths';
 import { leaveUnhappy } from './morale';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
@@ -35,6 +36,8 @@ export interface Rollover {
   garagesOpened: number;
   trainingSpent: number;
   worldChanges: AppliedChange[];
+  /** People who died in the year just gone, in something that had nothing to do with racing. */
+  deaths: Death[];
 }
 
 /**
@@ -61,6 +64,10 @@ export function startNextSeason(db: Database): Rollover {
   const identityRng = rng.stream(`rollover:${year}:identity`);
   const growthRng = rng.stream(`rollover:${year}:growth`);
 
+  // Last year's deaths are rolled first, so a driver who died is not carried into the new season.
+  const deaths = rollDeaths(db, career.masterSeed, year - 1);
+  const dead = new Set(deaths.filter((d) => d.kind === 'driver').map((d) => d.id));
+
   const allEntries = all(
     db,
     `SELECT e.id, e.garage_id, e.driver_id, e.car_id, e.race_number, d.birth_date, d.retired_year, g.is_player
@@ -72,6 +79,7 @@ export function startNextSeason(db: Database): Rollover {
   db.exec('BEGIN');
   try {
     // Garages that stayed broke close; their entries are not carried over.
+    recordDeaths(db, deaths, year - 1);
     const closedGarages = new Set(settleGarages(db, lastId, year));
     settleBusinesses(db, year);
     const openEntries = allEntries.filter((e) => !closedGarages.has(e.garage_id as number));
@@ -98,8 +106,10 @@ export function startNextSeason(db: Database): Rollover {
     const placeIds = placeIdMap(db);
     for (const e of entries) {
       const age = ageOn(e.birth_date as string, `${year}-01-01`);
-      if (e.retired_year !== null || e.is_player === 1 || !retires(retireRng, age)) continue;
       const driverId = e.driver_id as number;
+      const died = dead.has(driverId);
+      if (!died && (e.retired_year !== null || e.is_player === 1 || !retires(retireRng, age)))
+        continue;
       db.run('UPDATE driver SET retired_year = ? WHERE id = ?', [year - 1, driverId]);
       // A dragon-blooded driver who retires founds a garage in their home nation.
       const dragon = all(
@@ -108,7 +118,7 @@ export function startNextSeason(db: Database): Rollover {
           WHERE d.id = ? AND d.easter_egg = 1`,
         [driverId],
       )[0];
-      if (dragon) {
+      if (dragon && !died) {
         founders.push({
           flag: dragon.nationality as string,
           hqPlaceId: dragon.stable_id as string,
@@ -341,6 +351,7 @@ export function startNextSeason(db: Database): Rollover {
       garagesOpened,
       trainingSpent: training.spent,
       worldChanges,
+      deaths,
     };
   } catch (error) {
     db.exec('ROLLBACK');
