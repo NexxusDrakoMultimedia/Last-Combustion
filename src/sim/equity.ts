@@ -350,3 +350,78 @@ export function noConfidence(missesNewestFirst: readonly boolean[], ownerVotes: 
     ownerVotes <= equityData.control.majority
   );
 }
+
+// ---- Holdings in other garages, and takeovers ----
+
+/** How much more than its share of the garage a holding is worth a holder asks to sell it: drawn once per holding. */
+export function reservePremium(holderType: string, stream: RandomStream): number {
+  const range = (equityData.holdings.reserve as Record<string, number[]>)[holderType] ?? [0, 0.4];
+  return Math.round(stream.float(range[0] as number, range[1] as number) * 100) / 100;
+}
+
+export interface TakeoverHolder {
+  id: number;
+  type: string;
+  name: string;
+  shares: number;
+  class: ShareClass;
+  /** The premium over their share's value at which they will sell. */
+  reserve: number;
+  /** Whether the shares are the bidder's own already. */
+  mine: boolean;
+}
+
+export interface TakeoverQuote {
+  pricePerShare: number;
+  /** The holdings (not the bidder's own) that accept at this premium. */
+  accepting: number[];
+  /** The share of all the votes that will have accepted, the bidder's own included. */
+  votes: number;
+  /** Whether the bid carries: over half the votes have accepted. */
+  success: boolean;
+  /** What the rest of the garage costs: every holding that is not the bidder's, at the offered price. */
+  cost: number;
+  /** Whether the founders and the directors (the board) are among those who accept. */
+  boardSupports: boolean;
+}
+
+/**
+ * A bid for a whole garage at a premium over its valuation. Every holder whose reserve is at or below
+ * the premium accepts. The bid carries when the acceptors and the bidder's own shares hold over half the
+ * votes; then the holders who did not accept are bought out at the same price.
+ */
+export function takeoverQuote(
+  holders: readonly TakeoverHolder[],
+  valuation: number,
+  premium: number,
+): TakeoverQuote {
+  const issued = shareTotals(holders).outstanding;
+  const price = issued === 0 ? 0 : (Math.max(0, valuation) * (1 + premium)) / issued;
+  const totalVotes = holders.reduce((sum, h) => sum + votesOf(h), 0);
+  const accepting = holders.filter((h) => !h.mine && h.reserve <= premium);
+  const voting = holders
+    .filter((h) => h.mine || h.reserve <= premium)
+    .reduce((sum, h) => sum + votesOf(h), 0);
+  const votes = totalVotes === 0 ? 0 : voting / totalVotes;
+  const cost = holders
+    .filter((h) => !h.mine && h.class !== 'option')
+    .reduce((sum, h) => sum + Math.round(price * h.shares), 0);
+  // The board is the founder and any outside holder with a tenth of the issued shares.
+  const board = holders.filter(
+    (h) =>
+      !h.mine &&
+      h.class !== 'option' &&
+      (h.type === 'owner' || (issued > 0 && h.shares / issued >= equityData.control.directorStake)),
+  );
+  return {
+    pricePerShare: price,
+    accepting: accepting.map((h) => h.id),
+    votes,
+    success: votes > equityData.holdings.takeoverVotes,
+    cost,
+    boardSupports: board.length === 0 || board.every((h) => h.reserve <= premium),
+  };
+}
+
+/** The most a bid can offer over a garage's valuation. */
+export const MAX_PREMIUM = equityData.holdings.maxPremium;

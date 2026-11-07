@@ -334,6 +334,25 @@ function Events() {
                   amount: formatMoney(num(e.detail.amount)),
                   owner: formatMoney(num(e.detail.owner)),
                 })}
+              {e.kind === 'stake' &&
+                t(
+                  e.detail.action === 'sell'
+                    ? 'ownership.event.stake.sell'
+                    : 'ownership.event.stake.buy',
+                  {
+                    shares: num(e.detail.shares).toLocaleString('en-AU'),
+                    garage: str(e.detail.garage),
+                    price: formatMoney(num(e.detail.price)),
+                  },
+                )}
+              {e.kind === 'takeover' &&
+                t('ownership.event.takeover', {
+                  garage: str(e.detail.garage),
+                  premium: Math.round(num(e.detail.premium) * 100),
+                  cost: formatMoney(num(e.detail.cost)),
+                  cars: num(e.detail.cars),
+                  drivers: num(e.detail.drivers),
+                })}
               {e.kind === 'buyback' &&
                 t(
                   e.detail.by === 'owner'
