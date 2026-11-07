@@ -26,19 +26,19 @@ Press **Start career**. You then choose a **starter car** from three brand-new S
 - **The news strip** reports what has just happened.
 - **The rail** on the right opens the panels:
 
-| Panel      | What it is for                                                                             |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| Season     | The calendar, full results of every round (prelims and final) and every championship table |
-| Cars       | The cars you own, their wear and value, full restorations, and your entries                |
-| Market     | Used cars, new cars from dealers, the auction house                                        |
-| Upgrades   | Fitting and servicing parts, and the road-legality score                                   |
-| Drivers    | Free agents to sign, driver training, gear, daily life and moving home                     |
-| Staff      | Mechanics and executives                                                                   |
-| Operations | The suppliers of electricity, water and fuel, and their contracts                          |
-| Sponsors   | Your title sponsor                                                                         |
-| Almanac    | Champions and awards for every season, and the record book with leaderboards               |
-| Registry   | A profile for every driver, car, garage, prelim and race                                   |
-| Money      | Your cash, income and spending by category                                                 |
+| Panel      | What it is for                                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------------------------- |
+| Season     | The calendar, full results of every round (prelims and final) and every championship table                    |
+| Cars       | The cars you own, their wear and value, full restorations, and your entries                                   |
+| Market     | Used cars, new cars from dealers, the auction house                                                           |
+| Upgrades   | Fitting and servicing parts, and the road-legality score                                                      |
+| Drivers    | Free agents to sign, driver training, gear, daily life and moving home                                        |
+| Staff      | Mechanics and executives                                                                                      |
+| Operations | The suppliers of electricity, water and fuel, and their contracts                                             |
+| Sponsors   | Your title sponsor                                                                                            |
+| Almanac    | Champions and awards for every season, and the record book with leaderboards, including who has the most fans |
+| Registry   | A profile for every driver, car, garage, prelim and race                                                      |
+| Money      | Your cash, income and spending by category                                                                    |
 
 Names, licence plates, race numbers, garages and rounds are links almost everywhere. Click one to open its profile in the Registry.
 

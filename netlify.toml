@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: Nexxus Drako Multimedia
+#
+# Netlify builds the game for two sites from this repository:
+#
+# - the release site (lc.nexxusdrako.au), whose production branch is `main`;
+# - the beta site (beta.lc.nexxusdrako.au), whose production branch is `beta`, which is moved to the
+#   commit of each `v0.2.0-beta*` tag (see docs/RELEASING.md, "Beta releases").
+#
+# Telemetry keys are not in this file. The release site's Google tag and GameAnalytics keys are
+# environment variables set in Netlify (VITE_GTAG_ID, VITE_GA_GAME_KEY, VITE_GA_SECRET_KEY); the beta
+# site has none, so it collects nothing.
+
+[build]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Served from the root of a custom domain, not a sub-path.
+  BASE_URL = "/"
+
+# A beta, a branch deploy or a pull request preview is for testing, so keep it out of search engines.
+[context.beta]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm build && printf '/*\\n  X-Robots-Tag: noindex\\n' > dist/_headers"
+
+[context.branch-deploy]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm build && printf '/*\\n  X-Robots-Tag: noindex\\n' > dist/_headers"
+
+[context.deploy-preview]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm build && printf '/*\\n  X-Robots-Tag: noindex\\n' > dist/_headers"
