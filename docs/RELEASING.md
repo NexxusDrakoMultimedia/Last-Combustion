@@ -67,23 +67,15 @@ From M6 on, each slice of a milestone ends in a beta, so there is something to p
 
 1. Bump `version` in `package.json` and `APP_VERSION` in `src/db/session.ts` to the beta (for example `0.2.0-beta1`), and add a `[0.2.0-beta1]` section to `CHANGELOG.md` from what is under `[Unreleased]`. This is a pull request into the milestone branch.
 2. Tag the merge commit `v0.2.0-beta1`. A tag with a hyphen is published as a GitHub pre-release by the release workflow, with the web build zipped and checksummed.
-3. Move the `beta` branch to that commit. Netlify builds it and serves it at `beta.lc.nexxusdrako.au` (see `netlify.toml`). The beta site carries no telemetry keys and asks search engines to stay away.
+3. Players try the beta by downloading the web build from the pre-release's assets and serving it locally, or by playing from source. There is no hosted beta site.
 
 The release site (`lc.nexxusdrako.au`, GitHub Pages) deploys from `main` only, so players there never see a beta. A beta may change rules and add features, but a save from the last release still has to load.
 
 ## Hosting
 
-Netlify builds the game for both sites from `netlify.toml`: the release site (`lc.nexxusdrako.au`, production branch `main`) and the beta site (`beta.lc.nexxusdrako.au`, production branch `beta`). Until the release site is switched over, it is still served by GitHub Pages (`.github/workflows/pages.yml`), and only the beta is on Netlify.
-
-**Switching the release site from GitHub Pages to Netlify.** Do this in order, so the site is never down:
-
-1. In Netlify, add a second site from this repository with the production branch `main`. Its build settings come from `netlify.toml`.
-2. In that site's environment variables, set `VITE_GTAG_ID`, `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY` to the same values as the `GTAG_ID`, `GA_GAME_KEY` and `GA_SECRET_KEY` secrets used by the Pages workflow. Never write them in a file or an issue. Without them the build collects nothing.
-3. Check the build on its `.netlify.app` address, including the privacy prompt.
-4. Add the domain `lc.nexxusdrako.au` to the Netlify site, then change its DNS `CNAME` from GitHub Pages to the Netlify address, and wait for Netlify's HTTPS certificate.
-5. Once the Netlify site is serving, a pull request removes `.github/workflows/pages.yml` and `public/CNAME`, turns off GitHub Pages in the repository settings, and updates this page and the Security section of `AGENTS.md`.
-
-Releases then deploy on every push to `main`, as they do now. The release workflow (zip, checksums, GitHub Release) is unchanged.
+- **The release site** (`lc.nexxusdrako.au`) is served by GitHub Pages and deploys from `main` through `.github/workflows/pages.yml`. Its telemetry keys are the `GTAG_ID`, `GA_GAME_KEY` and `GA_SECRET_KEY` secrets there.
+- **There is no beta site.** A beta is a GitHub pre-release with the web build attached.
+- **The checks** (lint, types, tests, browser tests, documentation checks, REUSE, CodeQL and the dependency review) all run on GitHub, on every pull request.
 
 ## The documentation pass
 
