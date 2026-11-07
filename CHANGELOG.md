@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Supply outages: a supplier that is not reliable can fail. A power cut idles part of the crew for a round (20% less cover), a fuel shortage halves the practice laps, and late transport costs the cars their first practice day. A garage buying on the spot market (or from a local firm) is hit about one round in ten per supply; a reliable global supplier almost never. The Operations panel shows the chance and warns before a round, and an Operations Director makes outages less likely to run on into a second round.
 - A continental tier of sponsors and suppliers, between national and global: three continental title sponsors (prestige 58 to 62) and a continental supplier for each of electricity, water, race fuel, travel fuel and logistics (prestige 40). Careers started in earlier versions gain the new sponsors when they load.
 
 ## [0.2.0-beta1] - 2026-11-07

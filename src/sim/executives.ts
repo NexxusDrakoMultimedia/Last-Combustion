@@ -82,6 +82,8 @@ export interface ExecutiveBonuses {
   gearCost: number;
   /** Share off utility, fuel and logistics bills (for when suppliers are built). */
   utilities: number;
+  /** Share off the chance that a supply outage runs on into a second round. */
+  outages: number;
 }
 
 export const NO_BONUSES: ExecutiveBonuses = {
@@ -98,6 +100,7 @@ export const NO_BONUSES: ExecutiveBonuses = {
   training: 0,
   gearCost: 0,
   utilities: 0,
+  outages: 0,
 };
 
 /**
@@ -130,6 +133,7 @@ export function executiveBonuses(
         break;
       case 'operations_director':
         out.utilities = get(roles.operations_director.max.utilities);
+        out.outages = get(roles.operations_director.max.outageLength);
         break;
       case 'finance_director':
         out.auctionPremium = get(roles.finance_director.max.auctionPremium);

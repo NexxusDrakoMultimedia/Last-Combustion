@@ -13,6 +13,14 @@ export interface SimEvent {
   payload: Record<string, unknown>;
 }
 
+/** What a supply outage does to an entry's practice week. */
+export interface PracticeHandicap {
+  /** The share of each day's laps that are still run (1 for all of them). */
+  lapShare: number;
+  /** The practice days missed at the start of the week. */
+  daysLost: number;
+}
+
 export interface PracticeResult {
   events: SimEvent[];
   /** Kilometres each car covered in practice. They count as racing kilometres. */
@@ -31,15 +39,21 @@ export function simulatePractice(
   days: readonly DayPlan[],
   lapKm: number,
   rng: RandomStream,
+  handicaps: ReadonlyMap<number, PracticeHandicap> = new Map(),
 ): PracticeResult {
   const cfg = simBalance.practice;
   const events: SimEvent[] = [];
   const raceKm = new Map<number, number>();
   const setupBonus = new Map<number, number>();
 
-  for (const day of days.filter((d) => d.kind !== 'prelim')) {
+  const practiceDays = days.filter((d) => d.kind !== 'prelim');
+  for (const [dayNo, day] of practiceDays.entries()) {
     for (const entry of entries) {
-      const laps = rng.int(cfg.lapsPerDay[0] as number, cfg.lapsPerDay[1] as number);
+      const handicap = handicaps.get(entry.entryId);
+      // A car held up in transport is not at the circuit yet.
+      if (handicap && dayNo < handicap.daysLost) continue;
+      const drawn = rng.int(cfg.lapsPerDay[0] as number, cfg.lapsPerDay[1] as number);
+      const laps = handicap ? Math.max(1, Math.floor(drawn * handicap.lapShare)) : drawn;
       let covered = 0;
       let outForDay = false;
       for (let lap = 0; lap < laps && !outForDay; lap++) {

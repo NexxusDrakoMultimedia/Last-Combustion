@@ -286,7 +286,7 @@ export function playFinal(
         chassisWear(entry.roadKm, raceKmTotal, entry.tier, entry.wearOffset, entry.restorations),
         entry.carId,
       ]);
-      wearParts(db, entry.carId, c.km, 'race', entry.tier);
+      wearParts(db, entry.carId, c.km, 'race', entry.tier, roundId);
       wearGear(db, entry.driver.id, c.km);
     }
     db.run("UPDATE round SET status = 'complete' WHERE id = ?", [roundId]);

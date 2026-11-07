@@ -13,7 +13,7 @@ import {
 import { classifyPrelims, POLE_BONUS, type Classified } from './classify';
 import { simulateLap } from './lap';
 import { buildRunningOrder } from './order';
-import { simulatePractice, type SimEvent } from './practice';
+import { simulatePractice, type PracticeHandicap, type SimEvent } from './practice';
 import type { CarSpec } from './ratings';
 import { planRoundDays, type RoundSchedule } from './weather';
 
@@ -36,6 +36,8 @@ export interface RoundInput {
   practiceStart: string;
   finalSize: number;
   entries: readonly PrelimEntry[];
+  /** Entries held back in practice by a supply outage. */
+  practiceHandicaps?: ReadonlyMap<number, PracticeHandicap>;
 }
 
 export interface PrelimRound {
@@ -66,6 +68,7 @@ export function simulateRoundPrelims(input: RoundInput): PrelimRound {
     schedule.days,
     input.course.lapKm,
     stream('practice'),
+    input.practiceHandicaps,
   );
   const order = buildRunningOrder(entries, simBalance.prelims.days, stream('order'));
   const dayOf = new Map(
