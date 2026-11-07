@@ -11,10 +11,10 @@ M7 is built on `feature/0.3.x`, made from `main` once 0.2.0 is out. It follows t
 
 ## The slices, in order
 
-| #   | Slice                   | What it holds                                                                                                                                                                           | Why here                                                                              |
-| --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1   | Story and feedback      | Rivalries, the storyline engine and event cards, media headlines beyond the garage's own, crash highlights, drone events and the live map ("Story and feedback" in the design document) | The people layer, the press and the calendar it reads from are built in M6            |
-| 2   | Scouting and fog of war | Scouts, the Head of Scouting, and descriptions and ranges that tighten into exact values on every screen that shows a rating ("Scouting and fog of war")                                | It hides ratings on every screen, so it comes after the screens, and the story, exist |
+| #   | Slice                   | What it holds                                                                                                                                                                                             | Why here                                                                              |
+| --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1   | Story and feedback      | Rivalries, the storyline engine and event cards, media headlines beyond the garage's own, crash highlights, the ghost record, drone events and the live map ("Story and feedback" in the design document) | The people layer, the press and the calendar it reads from are built in M6            |
+| 2   | Scouting and fog of war | Scouts, the Head of Scouting, and descriptions and ranges that tighten into exact values on every screen that shows a rating ("Scouting and fog of war")                                                  | It hides ratings on every screen, so it comes after the screens, and the story, exist |
 
 Slice 1 is planned in detail when M7 starts.
 
