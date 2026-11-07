@@ -19,18 +19,21 @@ It is a management game first: as much a garage simulation as a racing one. The 
 
 ## Where it is
 
-The game is being built in milestones (M0 to M9, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is built and released as **0.1.0**. It is an early version: it has one career mode and leaves out a lot of the design, so expect rough edges (see [what the first release does not have](docs/HOW_TO_PLAY.md#what-the-first-release-does-not-have)). Bugs and ideas are welcome through the Feedback button in the game or the [issue form](https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose).
+The game is being built in milestones (M0 to M9, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is released as **0.1.0**. Milestone M6, depth, is built on its own branch and comes out as **0.2.0**, with betas along the way. It is an early version with one career mode, so expect rough edges (see [what the game does not have yet](docs/HOW_TO_PLAY.md#what-the-game-does-not-have-yet)). Bugs and ideas are welcome through the Feedback button in the game or the [issue form](https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose).
 
 You can already:
 
 - start a Garage owner career with your own garage, flag, base state and colours, and pick a starter car and driver;
-- race six rounds a season (seven days of prelims, then a final), end the season and begin the next, for as many seasons as you like;
+- play six rounds a season on a calendar with a date, moving on with **Continue**, **+1 day**, **+1 week** or **Next event**, then end the season and begin the next, for as many seasons as you like;
 - buy cars from dealers, the used market and the auction house, fit upgrade parts, and restore a worn chassis;
-- sign drivers, train them, hire mechanics and executives, and negotiate with a title sponsor and with the suppliers of electricity, water and fuel;
-- follow the standings, full race results, season awards and records, and look up any driver, car, garage or race in the Registry;
+- sign drivers, train them, hire mechanics and executives, build the garage's facilities, and negotiate with sponsors and with the suppliers of electricity, water and fuel, in five tiers from local to global, with outages and a spot market;
+- earn delivery money and train your drivers on the roads between rounds, and watch the other garages run as businesses of their own;
+- read the ledger by year and category, and follow each garage's cap table, valuation, dividends, board and takeovers in Ownership;
+- keep your people happy, make contacts, go to the season's social occasions and read what the press says about you;
+- follow the standings, full race results, season awards and records, and look up any driver, car, garage, company or race in the Registry;
 - save, load and export your career.
 
-Still to come are the story and press layer, ownership and the cap table, facilities, the Junior Series and more career modes. The Game Design Document lists what is built and what is planned, section by section.
+Still to come are the story and feedback layer and scouting (0.3.0), the 2036 expansion with the Junior Series and the other career modes. The Game Design Document lists what is built and what is planned, section by section.
 
 ## Screenshots
 

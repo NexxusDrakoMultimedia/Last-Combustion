@@ -1,6 +1,6 @@
 # How to play
 
-This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for the first release. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
+This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for 0.2.0. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
 
 ## The idea
 
@@ -33,12 +33,14 @@ Press **Start career**. You then choose a **starter car** from three brand-new S
 | Market     | Used cars, new cars from dealers, the auction house                                                                                        |
 | Upgrades   | Fitting and servicing parts, and the road-legality score                                                                                   |
 | Drivers    | Free agents to sign, driver training, gear, daily life and moving home                                                                     |
-| Staff      | Mechanics and executives                                                                                                                   |
-| Operations | The suppliers of electricity, water and fuel, and their contracts                                                                          |
+| Staff      | Mechanics and executives, your contacts, the season's social occasions and the press                                                       |
+| Operations | The suppliers of electricity, water and fuel, their contracts and the spot market, outages, and the garage's facilities                    |
 | Sponsors   | Your title sponsor                                                                                                                         |
 | Almanac    | Champions and awards for every season, and the record book with leaderboards, including who has the most fans and the most attention flags |
 | Registry   | A profile for every driver, car, garage, prelim and race                                                                                   |
-| Money      | Your cash, income and spending by category                                                                                                 |
+| Ledger     | Your cash, income and spending by category and year, with a list of every transaction                                                      |
+| Ownership  | Who owns each garage, its valuation, dividends, the board and takeovers                                                                    |
+| Calendar   | The dates of what is coming: prelims, finals, social occasions and the end of the season                                                   |
 
 Names, licence plates, race numbers, garages and rounds are links almost everywhere. Click one to open its profile in the Registry.
 
@@ -57,13 +59,13 @@ Points come from the final for the top 15 and from the prelims for 16th to 31st.
 
 After six rounds, press **End the season**. The champion's prize is paid, the season awards are given out and everything is recorded. Then press **Start next season**: some drivers retire and rookies take their seats, contracts roll over, a few new garages open and a few fold, and the calendar starts again.
 
-## Money
+## The ledger
 
 **Coming in:** prize money (the final's top finishers), your title sponsor, merchandise from your fans, delivery driving on the days between rounds (each of your cars earns about $167 a day that passes, more in a busy state), and the champion's prize.
 
 **Going out:** each round, an entry fee, tyres, servicing, travel to the venue, electricity, water and race fuel; wages for mechanics; salaries for executives; driver training; crash repairs. Buying and fitting cars and parts is spending too.
 
-The Money panel breaks it down by category. Suppliers charge the market rate unless you sign a contract in Operations, which fixes the price for one to three years at a discount the supplier agrees to.
+The Ledger panel breaks it down by category. Suppliers charge the market rate unless you sign a contract in Operations, which fixes the price for one to three years at a discount the supplier agrees to.
 
 ## Looking after the car
 
@@ -92,9 +94,9 @@ Open **Menu** and press **Save to slot 1**. The save is kept in your browser. **
 
 Last Combustion is built for a computer: a desktop or laptop with a mouse and a screen of at least about 1024 pixels across (a tall 1080 by 1920 screen works too). It is not meant for phones or tablets, and on one the game says so once, with a button to carry on anyway.
 
-## What the first release does not have
+## What the game does not have yet
 
-Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no ownership or cap table, no facilities, no outages, no story or press layer, and computer garages do not shop around for suppliers. The Game Design Document lists all of it, built and planned.
+Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no story or interviews, no scouting or fog of war (every profile is open), and companies do not yet start up or wind down. The Game Design Document lists all of it, built and planned.
 
 ## Words you will see
 
