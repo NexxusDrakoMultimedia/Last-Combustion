@@ -3,6 +3,9 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import { dropTelemetryKeysOffMain } from './vite.telemetry';
+
+dropTelemetryKeysOffMain();
 
 export default defineConfig({
   base: process.env.BASE_URL ?? '/',

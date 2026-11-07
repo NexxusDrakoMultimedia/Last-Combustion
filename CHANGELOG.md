@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+### Changed
+
+- Builds on Cloudflare drop the telemetry keys unless the branch is `main`, ready for the release site to move there.
+
 ## [0.2.0-beta6] - 2026-11-07
 
 A beta of the 0.2.0 release (M6, depth): the sixth slice, the calendar and time controls. Saves from 0.1.x still load; the game date moves from where the save left it, and the new per-day delivery pay and wear take over from the old lump before each round.
