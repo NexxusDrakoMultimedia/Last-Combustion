@@ -11,6 +11,7 @@ import {
   type Standing,
 } from '../sim/standings';
 import { fanBalance, seasonBalance } from '../sim/worldgen/data';
+import { closeLedgerYear } from './ledger';
 import { garageBonuses } from './bonuses';
 import { awardSeason, type AwardWon } from './awards';
 import { all } from './entries';
@@ -218,6 +219,8 @@ export function endSeason(db: Database): SeasonEnd {
     );
     const awards = awardSeason(db, seasonId, year, tables);
     refreshPlayerPrestige(db);
+    // The financial year closes with the season: keep every garage's summary for good.
+    closeLedgerYear(db, year);
     db.exec('COMMIT');
     return {
       year,
