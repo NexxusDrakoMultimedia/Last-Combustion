@@ -19,6 +19,7 @@ import { retireOldCars } from './carage';
 import { createUsedCar } from './market';
 import { ensureBusinesses, settleBusinesses } from './business';
 import { ensureCapTables } from './equity';
+import { leaveUnhappy } from './morale';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
@@ -323,6 +324,7 @@ export function startNextSeason(db: Database): Rollover {
     ensureCapTables(db);
     expireExecutives(db, year);
     ensureBusinesses(db, year);
+    leaveUnhappy(db, year);
     refreshPlayerPrestige(db);
     const worldChanges = applyWorldChanges(db, year);
     // Drivers who booked a move in the off-season now live in their new homes.

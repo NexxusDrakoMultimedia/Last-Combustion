@@ -12,6 +12,7 @@ import {
 } from '../sim/standings';
 import { fanBalance, seasonBalance } from '../sim/worldgen/data';
 import { recordValuations, reviewBoard } from './equity';
+import { updateMorale } from './morale';
 import { closeLedgerYear } from './ledger';
 import { garageBonuses } from './bonuses';
 import { awardSeason, type AwardWon } from './awards';
@@ -232,6 +233,11 @@ export function endSeason(db: Database): SeasonEnd {
         year,
         tables.garages.find((g) => g.id === (player.id as number))?.rank ?? null,
       );
+    // Everyone's morale moves with the season's results.
+    updateMorale(db, (garageId) => {
+      const rank = tables.garages.find((g) => g.id === garageId)?.rank;
+      return rank ? { rank, of: tables.garages.length } : null;
+    });
     db.exec('COMMIT');
     return {
       year,

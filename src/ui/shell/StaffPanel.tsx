@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { moraleText } from '../moraleText';
 import { formatMoney, t } from '../../i18n';
 import { partWearFactor, repairFactor, wagePerRound } from '../../sim/staff';
 import { useCareerStore } from '../../state/career.store';
@@ -53,7 +54,8 @@ export function StaffPanel() {
                     {m.name}
                   </RegistryLink>
                 </span>{' '}
-                <span className="text-lc-dim">{t('staff.skill', { skill: m.skill })}</span>
+                <span className="text-lc-dim">{t('staff.skill', { skill: m.skill })}</span>{' '}
+                <span className="text-lc-dim">{moraleText(m.morale)}</span>
               </span>
               <span className="flex items-center gap-2">
                 <span className="lc-num text-lc-dim">
