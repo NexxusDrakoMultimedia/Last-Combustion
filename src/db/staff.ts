@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { moraleFactor } from '../sim/morale';
 import { createRng } from '../sim/rng';
 import { garageFacilityBonuses } from './facilities';
 import { crewOutageFactor } from './outages';
@@ -17,13 +18,15 @@ export interface Mechanic {
   /** What the mechanic costs the garage for one round. */
   wagePerRound: number;
   hiredOn: string;
+  /** 0 to 100; it moves the mechanic's work a few points either way. */
+  morale: number;
 }
 
 /** The mechanics a garage employs now. */
 export function garageStaff(db: Database, garageId: number): Mechanic[] {
   return all(
     db,
-    `SELECT id, name, skill, wage_per_week, hired_on FROM staff
+    `SELECT id, name, skill, wage_per_week, hired_on, morale FROM staff
       WHERE garage_id = ? AND left_on IS NULL ORDER BY id`,
     [garageId],
   ).map((r) => ({
@@ -33,6 +36,7 @@ export function garageStaff(db: Database, garageId: number): Mechanic[] {
     wagePerWeek: r.wage_per_week as number,
     wagePerRound: wagePerRound(r.wage_per_week as number),
     hiredOn: r.hired_on as string,
+    morale: r.morale as number,
   }));
 }
 
@@ -47,7 +51,7 @@ export function garageCrewStrength(db: Database, garageId: number, roundId?: num
     )[0]!.n,
   );
   const strength = crewStrength(
-    garageStaff(db, garageId).map((m) => m.skill),
+    garageStaff(db, garageId).map((m) => m.skill * moraleFactor(m.morale)),
     entries,
     garageFacilityBonuses(db, garageId).crewCover,
   );

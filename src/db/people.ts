@@ -90,6 +90,8 @@ export interface ExecutiveProfile {
   contractEnds: number | null;
   leftOn: string | null;
   leftReason: string | null;
+  /** Morale now, 0 to 100, or null once they have left. */
+  morale: number | null;
 }
 
 export interface StaffProfile {
@@ -102,6 +104,8 @@ export interface StaffProfile {
   wagePerWeek: number;
   hiredOn: string;
   leftOn: string | null;
+  /** Morale now, 0 to 100, or null once they have left. */
+  morale: number | null;
 }
 
 export interface HoldingLine {
@@ -148,6 +152,7 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       contractEnds: (r.end_year as number | null) ?? null,
       leftOn: (r.left_on as string | null) ?? null,
       leftReason: (r.left_reason as string | null) ?? null,
+      morale: r.status === 'employed' ? (r.morale as number) : null,
     };
   }
   if (kind === 'staff') {
@@ -167,6 +172,7 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       wagePerWeek: r.wage_per_week as number,
       hiredOn: r.hired_on as string,
       leftOn: (r.left_on as string | null) ?? null,
+      morale: r.left_on === null ? (r.morale as number) : null,
     };
   }
   ensureCapTables(db);

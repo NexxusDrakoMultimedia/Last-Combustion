@@ -37,6 +37,8 @@ export interface Executive {
   salary: number;
   salaryPerRound: number;
   endYear: number;
+  /** 0 to 100; it moves the executive's effect a few points either way. */
+  morale: number;
 }
 
 const yearOf = (db: Database): number => {
@@ -50,7 +52,7 @@ export function garageExecutives(db: Database, garageId: number): Executive[] {
   const year = yearOf(db);
   return all(
     db,
-    `SELECT id, role, name, birth_year, skill, salary, end_year FROM executive
+    `SELECT id, role, name, birth_year, skill, salary, end_year, morale FROM executive
       WHERE garage_id = ? AND status = 'employed' ORDER BY id`,
     [garageId],
   ).map((r) => ({
@@ -62,6 +64,7 @@ export function garageExecutives(db: Database, garageId: number): Executive[] {
     salary: r.salary as number,
     salaryPerRound: salaryPerRound(r.salary as number),
     endYear: r.end_year as number,
+    morale: r.morale as number,
   }));
 }
 

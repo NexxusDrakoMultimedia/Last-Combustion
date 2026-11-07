@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { moraleText } from '../moraleText';
 import { useState, type ReactNode } from 'react';
 import {
   formatDate,
@@ -853,6 +854,9 @@ function PersonPage({ p }: { p: PersonProfile }) {
             ],
             [t('person.hiredOn'), p.hiredOn ? formatDate(p.hiredOn) : t('registry.none')],
             [t('person.contractEnds'), p.contractEnds ?? t('registry.none')],
+            ...(p.morale !== null
+              ? ([[t('person.morale'), moraleText(p.morale)]] as [string, ReactNode][])
+              : []),
           ]}
         />
         {p.leftReason && (
@@ -880,6 +884,9 @@ function PersonPage({ p }: { p: PersonProfile }) {
               t('person.status'),
               p.leftOn ? t('person.left', { date: formatDate(p.leftOn) }) : t('person.employed'),
             ],
+            ...(p.morale !== null
+              ? ([[t('person.morale'), moraleText(p.morale)]] as [string, ReactNode][])
+              : []),
           ]}
         />
       </div>

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { moraleText } from '../moraleText';
 import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
 import { executiveBonuses, salaryPerRound, type ExecutiveRole } from '../../sim/executives';
@@ -194,7 +195,8 @@ export function ExecutivesSection() {
                       age: e.age,
                       skill: e.skill,
                     })}
-                  </span>
+                  </span>{' '}
+                  <span className="text-lc-dim">{moraleText(e.morale)}</span>
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="lc-num text-lc-dim">
