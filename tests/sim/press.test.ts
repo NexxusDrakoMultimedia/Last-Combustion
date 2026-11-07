@@ -12,9 +12,20 @@ describe('the press', () => {
     expect(toneOf(0)).toBe('fair');
     expect(toneOf(-29)).toBe('fair');
     expect(toneOf(-30)).toBe('cold');
-    expect(fansFor('warm')).toBeGreaterThan(0);
-    expect(fansFor('fair')).toBe(0);
-    expect(fansFor('cold')).toBeLessThan(0);
+    expect(fansFor('warm', 'nopoints')).toBeGreaterThan(0);
+    expect(fansFor('cold', 'win')).toBeLessThan(0);
+  });
+
+  it('moves the fans even when the view is fair: a good day wins them and a bad one loses them', () => {
+    expect(fansFor('fair', 'win')).toBeGreaterThan(fansFor('fair', 'podium'));
+    expect(fansFor('fair', 'podium')).toBeGreaterThan(0);
+    expect(fansFor('fair', 'points')).toBeGreaterThan(0);
+    expect(fansFor('fair', 'nopoints')).toBeLessThan(0);
+    // A cold view is worse than a fair one on any day, and a warm one better.
+    for (const kind of ['win', 'podium', 'points', 'nopoints'] as const) {
+      expect(fansFor('cold', kind)).toBeLessThan(fansFor('fair', kind));
+      expect(fansFor('warm', kind)).toBeGreaterThan(fansFor('fair', kind));
+    }
   });
 
   it('names the kind of result from the best finish', () => {

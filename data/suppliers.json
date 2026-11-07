@@ -240,6 +240,186 @@
       "priceIndex": 0.92,
       "reliability": 0.97,
       "states": null
+    },
+    {
+      "id": 21,
+      "name": "Wattle Valley Electric",
+      "category": "electricity",
+      "tier": "local",
+      "priceIndex": 1.07,
+      "reliability": 0.89,
+      "states": null
+    },
+    {
+      "id": 22,
+      "name": "Snowy Ridge Hydro",
+      "category": "electricity",
+      "tier": "regional",
+      "priceIndex": 0.96,
+      "reliability": 0.95,
+      "states": null
+    },
+    {
+      "id": 23,
+      "name": "Nullarbor Solar Co-op",
+      "category": "electricity",
+      "tier": "national",
+      "priceIndex": 0.91,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 24,
+      "name": "Equinox Grid Partners",
+      "category": "electricity",
+      "tier": "global",
+      "priceIndex": 0.87,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 25,
+      "name": "Billy Tea Bore Water",
+      "category": "water",
+      "tier": "local",
+      "priceIndex": 1.12,
+      "reliability": 0.9,
+      "states": null
+    },
+    {
+      "id": 26,
+      "name": "Coolgardie Pipeline Co",
+      "category": "water",
+      "tier": "regional",
+      "priceIndex": 0.97,
+      "reliability": 0.94,
+      "states": null
+    },
+    {
+      "id": 27,
+      "name": "Reef Desal Partners",
+      "category": "water",
+      "tier": "national",
+      "priceIndex": 0.91,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 28,
+      "name": "Glacier Meltwater Supply",
+      "category": "water",
+      "tier": "global",
+      "priceIndex": 0.89,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 29,
+      "name": "Jerrycan Allocation",
+      "category": "race_fuel",
+      "tier": "local",
+      "priceIndex": 1.15,
+      "reliability": 0.88,
+      "states": null
+    },
+    {
+      "id": 30,
+      "name": "Hightail Fuels",
+      "category": "race_fuel",
+      "tier": "regional",
+      "priceIndex": 1.05,
+      "reliability": 0.93,
+      "states": null
+    },
+    {
+      "id": 31,
+      "name": "Meridian Octane",
+      "category": "race_fuel",
+      "tier": "national",
+      "priceIndex": 0.97,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 32,
+      "name": "Zenith Reserve Petroleum",
+      "category": "race_fuel",
+      "tier": "global",
+      "priceIndex": 0.85,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 33,
+      "name": "Truckstop Diesel Co-op",
+      "category": "travel_fuel",
+      "tier": "local",
+      "priceIndex": 1.1,
+      "reliability": 0.92,
+      "states": null
+    },
+    {
+      "id": 34,
+      "name": "Bitumen Biofuels",
+      "category": "travel_fuel",
+      "tier": "regional",
+      "priceIndex": 0.98,
+      "reliability": 0.94,
+      "states": null
+    },
+    {
+      "id": 35,
+      "name": "Horizon Renewable Fuels",
+      "category": "travel_fuel",
+      "tier": "continental",
+      "priceIndex": 0.92,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 36,
+      "name": "Equator Energy Fuels",
+      "category": "travel_fuel",
+      "tier": "global",
+      "priceIndex": 0.89,
+      "reliability": 0.98,
+      "states": null
+    },
+    {
+      "id": 37,
+      "name": "Dusty Boots Haulage",
+      "category": "logistics",
+      "tier": "local",
+      "priceIndex": 1.12,
+      "reliability": 0.87,
+      "states": null
+    },
+    {
+      "id": 38,
+      "name": "Stockroute Freight",
+      "category": "logistics",
+      "tier": "regional",
+      "priceIndex": 0.99,
+      "reliability": 0.93,
+      "states": null
+    },
+    {
+      "id": 39,
+      "name": "Meridian Road Train",
+      "category": "logistics",
+      "tier": "national",
+      "priceIndex": 0.95,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 40,
+      "name": "Southern Cross Air Freight",
+      "category": "logistics",
+      "tier": "continental",
+      "priceIndex": 0.91,
+      "reliability": 0.97,
+      "states": null
     }
   ],
   "outages": {

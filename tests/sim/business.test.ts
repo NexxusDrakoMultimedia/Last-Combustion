@@ -38,8 +38,10 @@ describe('computer garage businesses', () => {
     );
   });
 
-  it('adds up the yearly upkeep of the executives and facilities', () => {
-    expect(yearlyUpkeep([100, 200], {})).toEqual({ salaries: 300, facilities: 0 });
+  it('adds up the yearly upkeep of the executives, the mechanics and the facilities', () => {
+    expect(yearlyUpkeep([100, 200], {})).toEqual({ salaries: 300, wages: 0, facilities: 0 });
+    // A mechanic's wage is weekly, and is paid for every week of the year.
+    expect(yearlyUpkeep([], {}, [500, 700]).wages).toBe(1200 * 52);
     expect(yearlyUpkeep([], { workshop_bays: 2 }).facilities).toBe(2 * 600 * 6);
   });
 

@@ -3,7 +3,9 @@
 import type { Database } from 'sql.js';
 import {
   businessDividend,
+  crewSize,
   drawExecutive,
+  drawMechanic,
   drawSponsor,
   drawSupplier,
   nextFacility,
@@ -18,6 +20,8 @@ import { supplierById } from '../sim/supply';
 import { readCareer } from './career';
 import { all } from './entries';
 import { garageFacilities } from './facilities';
+import { marketExecutives } from './executives';
+import { marketMechanics } from './staff';
 import { closedYearProfits } from './ledger';
 
 /** The computer garages that are still open and have not been taken over. */
@@ -42,6 +46,17 @@ export function ensureBusinesses(db: Database, year: number): void {
       strength: r.strength as number,
     }),
   );
+  // The job market is read once and used up as people are taken on, best first.
+  const mechanicMarket = marketMechanics(db).sort((a, b) => b.skill - a.skill || a.id - b.id);
+  const executiveMarkets = new Map<ExecutiveRole, ReturnType<typeof marketExecutives>>();
+  const executiveMarket = (role: ExecutiveRole) => {
+    if (!executiveMarkets.has(role))
+      executiveMarkets.set(
+        role,
+        marketExecutives(db, role).sort((a, b) => b.skill - a.skill || a.id - b.id),
+      );
+    return executiveMarkets.get(role)!;
+  };
   for (const g of all(db, COMPUTER_GARAGES)) {
     const id = g.id as number;
     const prestige = g.prestige as number;
@@ -53,6 +68,17 @@ export function ensureBusinesses(db: Database, year: number): void {
     ).map((r) => r.role as ExecutiveRole);
     for (const role of vacantRoles(prestige, filled)) {
       const e = drawExecutive(stream, role);
+      // Now and then the seat goes to someone on the job market: the same person, on a new contract.
+      const market = executiveMarket(role);
+      if (market.length > 0 && stream.chance(0.5)) {
+        const rehired = market.shift()!;
+        db.run(
+          `UPDATE executive SET status = 'employed', garage_id = ?, left_on = NULL, left_reason = NULL,
+                  start_year = ?, end_year = ?, hired_on = ? WHERE id = ?`,
+          [id, year, year + e.years, `${year}-02-01`, rehired.id],
+        );
+        continue;
+      }
       db.run(
         `INSERT INTO executive (garage_id, role, name, birth_year, skill, status, salary, start_year, end_year, hired_on)
          VALUES (?, ?, ?, ?, ?, 'employed', ?, ?, ?, ?)`,
@@ -76,6 +102,35 @@ export function ensureBusinesses(db: Database, year: number): void {
         [id, sponsor?.id ?? null, supplier?.id ?? null, year],
       );
     }
+    // A crew for the cars it enters. These draws come last, so what was drawn before them is as it was.
+    const entries = Number(
+      all(
+        db,
+        `SELECT COUNT(*) AS n FROM entry
+          WHERE garage_id = ? AND series = 'main' AND season_id = (SELECT MAX(id) FROM season)`,
+        [id],
+      )[0]!.n,
+    );
+    const crew = Number(
+      all(db, 'SELECT COUNT(*) AS n FROM staff WHERE garage_id = ? AND left_on IS NULL', [id])[0]!
+        .n,
+    );
+    for (let i = crew; i < crewSize(entries); i++) {
+      // Half the time a vacancy goes to someone on the job market, who is the same person again.
+      if (mechanicMarket.length > 0 && stream.chance(0.5)) {
+        const rehired = mechanicMarket.shift()!;
+        db.run(
+          'UPDATE staff SET garage_id = ?, left_on = NULL, left_reason = NULL, hired_on = ? WHERE id = ?',
+          [id, `${year}-02-01`, rehired.id],
+        );
+        continue;
+      }
+      const m = drawMechanic(stream, prestige);
+      db.run(
+        `INSERT INTO staff (garage_id, role, name, skill, wage_per_week, hired_on) VALUES (?, 'mechanic', ?, ?, ?, ?)`,
+        [id, m.name, m.skill, m.wagePerWeek, `${year}-02-01`],
+      );
+    }
   }
 }
 
@@ -96,8 +151,11 @@ export function settleBusinesses(db: Database, year: number): number {
         (r) => r.salary as number,
       ),
       garageFacilities(db, id),
+      all(db, 'SELECT wage_per_week FROM staff WHERE garage_id = ? AND left_on IS NULL', [id]).map(
+        (r) => r.wage_per_week as number,
+      ),
     );
-    const total = upkeep.salaries + upkeep.facilities;
+    const total = upkeep.salaries + upkeep.wages + upkeep.facilities;
     const line = (category: string, amount: number, note: string) => {
       if (amount === 0) return;
       db.run(
@@ -106,6 +164,7 @@ export function settleBusinesses(db: Database, year: number): number {
       );
     };
     line('salaries', -upkeep.salaries, `${year - 1} executives`);
+    line('wages', -upkeep.wages, `${year - 1} mechanics`);
     line('facilities', -upkeep.facilities, `${year - 1} facilities`);
     line('sponsor', total, `${year - 1} sponsor covers the running of the garage`);
 
@@ -149,6 +208,7 @@ export function settleBusinesses(db: Database, year: number): number {
 
 export interface BusinessView {
   executives: { id: number; role: ExecutiveRole; name: string; skill: number }[];
+  mechanics: { id: number; name: string; skill: number }[];
   facilities: { kind: FacilityKind; level: number }[];
   sponsor: string | null;
   supplier: string | null;
@@ -175,6 +235,11 @@ export function businessView(db: Database, garageId: number): BusinessView | nul
       name: r.name as string,
       skill: r.skill as number,
     })),
+    mechanics: all(
+      db,
+      'SELECT id, name, skill FROM staff WHERE garage_id = ? AND left_on IS NULL ORDER BY id',
+      [garageId],
+    ).map((r) => ({ id: r.id as number, name: r.name as string, skill: r.skill as number })),
     facilities: Object.entries(garageFacilities(db, garageId)).map(([kind, level]) => ({
       kind: kind as FacilityKind,
       level: level as number,

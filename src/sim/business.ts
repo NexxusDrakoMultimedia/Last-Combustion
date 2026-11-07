@@ -11,7 +11,9 @@ import {
   type FacilityLevels,
 } from './facilities';
 import { SUPPLIERS, canDealWith, type Supplier } from './supply';
-import { equityData, executiveData } from './worldgen/data';
+import { wageFor, type MechanicOffer } from './staff';
+import { equityData, executiveData, staffBalance } from './worldgen/data';
+import { personName } from './worldgen/names';
 
 const cfg = () => equityData.business;
 
@@ -82,13 +84,35 @@ export function drawSponsor<T extends { minPrestige: number; strength: number; i
   return options.length === 0 ? null : rng.pick(options);
 }
 
-/** What the executives and facilities of a computer garage cost to run for a year. */
+/** How many mechanics a computer garage keeps: some for each car it enters, never more than a garage may have. */
+export function crewSize(entries: number): number {
+  return Math.min(staffBalance.maxPerGarage, Math.max(0, entries) * cfg().mechanicsPerEntry);
+}
+
+/**
+ * A mechanic for a computer garage: as good as its prestige, give or take, at the wage that skill asks.
+ * They are named as a local (Australians work in the series' garages).
+ */
+export function drawMechanic(rng: RandomStream, prestige: number): MechanicOffer {
+  const [lo, hi] = staffBalance.skill as [number, number];
+  const base = lo + ((hi - lo) * Math.max(0, Math.min(100, prestige))) / 100;
+  const skill = Math.max(lo, Math.min(hi, Math.round(base + rng.normal(0, (hi - lo) / 8))));
+  return {
+    name: personName(rng, 'AU', rng.chance(0.5) ? 'male' : 'female'),
+    skill,
+    wagePerWeek: wageFor(skill),
+  };
+}
+
+/** What the executives, the mechanics and the facilities of a computer garage cost to run for a year. */
 export function yearlyUpkeep(
   salaries: readonly number[],
   facilities: FacilityLevels,
-): { salaries: number; facilities: number } {
+  wagesPerWeek: readonly number[] = [],
+): { salaries: number; wages: number; facilities: number } {
   return {
     salaries: salaries.reduce((s, x) => s + x, 0),
+    wages: wagesPerWeek.reduce((s, x) => s + x, 0) * staffBalance.weeksPerYear,
     facilities:
       FACILITY_KINDS.reduce((s, k) => s + runningCost(k, facilities[k] ?? 0), 0) *
       cfg().roundsPerYear,

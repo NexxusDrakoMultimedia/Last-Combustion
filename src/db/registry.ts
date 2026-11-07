@@ -9,8 +9,10 @@ export { badgesFor, NO_BADGE, type NumberBadge };
 import { readCareer } from './career';
 import { all } from './entries';
 import {
+  driverHoldings,
   peopleIndex,
   personProfile,
+  type HoldingLine,
   type PersonKind,
   type PersonProfile,
   type PersonRef,
@@ -204,6 +206,10 @@ export interface DriverProfile {
   decals: Decal[];
   /** The attention flags the driver has raised. */
   attention: AttentionMark[];
+  /** The stakes in garages they have bought with their winnings. */
+  holdings: HoldingLine[];
+  /** When and how they died, if they have (a death outside racing). */
+  died: { date: string; cause: string } | null;
 }
 
 /** The profile of a driver: who they are, the number and borders they carry, their record, season by season, and their decals. */
@@ -318,6 +324,15 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
     titles: titlesOf(db, driverId).map((t) => ({ name: t.name, year: t.year })),
     decals: decalsOf(db, 'driver', driverId),
     attention: attentionOf(db, 'driver', driverId),
+    holdings: driverHoldings(db, driverId),
+    died: (() => {
+      const r = all(
+        db,
+        "SELECT date, cause FROM death WHERE person_type = 'driver' AND person_id = ?",
+        [driverId],
+      )[0];
+      return r ? { date: r.date as string, cause: r.cause as string } : null;
+    })(),
   };
 }
 

@@ -8,7 +8,8 @@ import {
   respond,
   walkAwayValue,
 } from '../sim/negotiation';
-import { eligibleSponsors, titleSponsorFee } from '../sim/sponsors';
+import { titleSponsorFee } from '../sim/sponsors';
+import { ensureSponsors, sponsorOffers } from './companies';
 import { sponsorBalance } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
@@ -29,7 +30,8 @@ export function approachableSponsors(
   const garage = all(db, 'SELECT prestige FROM garage WHERE id = ?', [garageId])[0];
   if (!garage) throw new Error(`There is no garage ${garageId}.`);
   const reach = (garage.prestige as number) + garageBonuses(db, garageId).sponsorPrestige;
-  return eligibleSponsors(reach).map((s) => ({
+  // Three at random, weighted by tier, prestige and relationship, and sorted by tier then name.
+  return sponsorOffers(db, garageId, reach).map((s) => ({
     stableId: s.id,
     name: s.name,
     tier: s.tier,
@@ -69,6 +71,7 @@ export function openSponsorNegotiation(
   sponsorStableId: string,
 ): Negotiation {
   const year = yearOf(db);
+  ensureSponsors(db);
   const garage = all(db, 'SELECT prestige, kind FROM garage WHERE id = ?', [garageId])[0];
   if (!garage || garage.kind !== 'racing')
     throw new Error(`There is no racing garage ${garageId}.`);

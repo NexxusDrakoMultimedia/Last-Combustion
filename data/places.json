@@ -1406,5 +1406,661 @@
     "country": "LI",
     "lat": 47.14,
     "lon": 9.52
+  },
+  {
+    "id": "mx-mexico-city",
+    "name": "Mexico City",
+    "region": "Mexico City",
+    "country": "MX",
+    "lat": 19.43,
+    "lon": -99.13
+  },
+  {
+    "id": "mx-guadalajara",
+    "name": "Guadalajara",
+    "region": "Jalisco",
+    "country": "MX",
+    "lat": 20.67,
+    "lon": -103.35
+  },
+  {
+    "id": "ar-buenos-aires",
+    "name": "Buenos Aires",
+    "region": "Buenos Aires",
+    "country": "AR",
+    "lat": -34.6,
+    "lon": -58.38
+  },
+  {
+    "id": "ar-cordoba",
+    "name": "Córdoba",
+    "region": "Córdoba",
+    "country": "AR",
+    "lat": -31.42,
+    "lon": -64.18
+  },
+  {
+    "id": "cl-santiago",
+    "name": "Santiago",
+    "region": "Santiago Metropolitan",
+    "country": "CL",
+    "lat": -33.45,
+    "lon": -70.67
+  },
+  {
+    "id": "cl-valparaiso",
+    "name": "Valparaíso",
+    "region": "Valparaíso",
+    "country": "CL",
+    "lat": -33.05,
+    "lon": -71.62
+  },
+  {
+    "id": "co-bogota",
+    "name": "Bogotá",
+    "region": "Bogotá",
+    "country": "CO",
+    "lat": 4.71,
+    "lon": -74.07
+  },
+  {
+    "id": "co-medellin",
+    "name": "Medellín",
+    "region": "Antioquia",
+    "country": "CO",
+    "lat": 6.24,
+    "lon": -75.58
+  },
+  {
+    "id": "pe-lima",
+    "name": "Lima",
+    "region": "Lima",
+    "country": "PE",
+    "lat": -12.05,
+    "lon": -77.04
+  },
+  {
+    "id": "pe-arequipa",
+    "name": "Arequipa",
+    "region": "Arequipa",
+    "country": "PE",
+    "lat": -16.41,
+    "lon": -71.54
+  },
+  {
+    "id": "pt-lisbon",
+    "name": "Lisbon",
+    "region": "Lisbon",
+    "country": "PT",
+    "lat": 38.72,
+    "lon": -9.14
+  },
+  {
+    "id": "pt-porto",
+    "name": "Porto",
+    "region": "Porto",
+    "country": "PT",
+    "lat": 41.15,
+    "lon": -8.61
+  },
+  {
+    "id": "pl-warsaw",
+    "name": "Warsaw",
+    "region": "Masovia",
+    "country": "PL",
+    "lat": 52.23,
+    "lon": 21.01
+  },
+  {
+    "id": "pl-krakow",
+    "name": "Kraków",
+    "region": "Lesser Poland",
+    "country": "PL",
+    "lat": 50.06,
+    "lon": 19.94
+  },
+  {
+    "id": "cz-prague",
+    "name": "Prague",
+    "region": "Prague",
+    "country": "CZ",
+    "lat": 50.08,
+    "lon": 14.44
+  },
+  {
+    "id": "cz-brno",
+    "name": "Brno",
+    "region": "South Moravia",
+    "country": "CZ",
+    "lat": 49.2,
+    "lon": 16.61
+  },
+  {
+    "id": "hu-budapest",
+    "name": "Budapest",
+    "region": "Budapest",
+    "country": "HU",
+    "lat": 47.5,
+    "lon": 19.04
+  },
+  {
+    "id": "hu-debrecen",
+    "name": "Debrecen",
+    "region": "Hajdú-Bihar",
+    "country": "HU",
+    "lat": 47.53,
+    "lon": 21.63
+  },
+  {
+    "id": "ro-bucharest",
+    "name": "Bucharest",
+    "region": "Bucharest",
+    "country": "RO",
+    "lat": 44.43,
+    "lon": 26.1
+  },
+  {
+    "id": "ro-cluj-napoca",
+    "name": "Cluj-Napoca",
+    "region": "Cluj",
+    "country": "RO",
+    "lat": 46.77,
+    "lon": 23.6
+  },
+  {
+    "id": "gr-athens",
+    "name": "Athens",
+    "region": "Attica",
+    "country": "GR",
+    "lat": 37.98,
+    "lon": 23.73
+  },
+  {
+    "id": "gr-thessaloniki",
+    "name": "Thessaloniki",
+    "region": "Central Macedonia",
+    "country": "GR",
+    "lat": 40.64,
+    "lon": 22.94
+  },
+  {
+    "id": "tr-istanbul",
+    "name": "Istanbul",
+    "region": "Istanbul",
+    "country": "TR",
+    "lat": 41.01,
+    "lon": 28.98
+  },
+  {
+    "id": "tr-ankara",
+    "name": "Ankara",
+    "region": "Ankara",
+    "country": "TR",
+    "lat": 39.93,
+    "lon": 32.86
+  },
+  {
+    "id": "ru-moscow",
+    "name": "Moscow",
+    "region": "Moscow",
+    "country": "RU",
+    "lat": 55.76,
+    "lon": 37.62
+  },
+  {
+    "id": "ru-kazan",
+    "name": "Kazan",
+    "region": "Tatarstan",
+    "country": "RU",
+    "lat": 55.79,
+    "lon": 49.12
+  },
+  {
+    "id": "fi-helsinki",
+    "name": "Helsinki",
+    "region": "Uusimaa",
+    "country": "FI",
+    "lat": 60.17,
+    "lon": 24.94
+  },
+  {
+    "id": "fi-tampere",
+    "name": "Tampere",
+    "region": "Pirkanmaa",
+    "country": "FI",
+    "lat": 61.5,
+    "lon": 23.76
+  },
+  {
+    "id": "no-oslo",
+    "name": "Oslo",
+    "region": "Oslo",
+    "country": "NO",
+    "lat": 59.91,
+    "lon": 10.75
+  },
+  {
+    "id": "no-bergen",
+    "name": "Bergen",
+    "region": "Vestland",
+    "country": "NO",
+    "lat": 60.39,
+    "lon": 5.32
+  },
+  {
+    "id": "dk-copenhagen",
+    "name": "Copenhagen",
+    "region": "Capital Region",
+    "country": "DK",
+    "lat": 55.68,
+    "lon": 12.57
+  },
+  {
+    "id": "dk-aarhus",
+    "name": "Aarhus",
+    "region": "Central Jutland",
+    "country": "DK",
+    "lat": 56.16,
+    "lon": 10.2
+  },
+  {
+    "id": "at-vienna",
+    "name": "Vienna",
+    "region": "Vienna",
+    "country": "AT",
+    "lat": 48.21,
+    "lon": 16.37
+  },
+  {
+    "id": "at-graz",
+    "name": "Graz",
+    "region": "Styria",
+    "country": "AT",
+    "lat": 47.07,
+    "lon": 15.44
+  },
+  {
+    "id": "ch-zurich",
+    "name": "Zürich",
+    "region": "Zürich",
+    "country": "CH",
+    "lat": 47.38,
+    "lon": 8.54
+  },
+  {
+    "id": "ch-geneva",
+    "name": "Geneva",
+    "region": "Geneva",
+    "country": "CH",
+    "lat": 46.2,
+    "lon": 6.14
+  },
+  {
+    "id": "be-brussels",
+    "name": "Brussels",
+    "region": "Brussels",
+    "country": "BE",
+    "lat": 50.85,
+    "lon": 4.35
+  },
+  {
+    "id": "be-antwerp",
+    "name": "Antwerp",
+    "region": "Flanders",
+    "country": "BE",
+    "lat": 51.22,
+    "lon": 4.4
+  },
+  {
+    "id": "hr-zagreb",
+    "name": "Zagreb",
+    "region": "Zagreb",
+    "country": "HR",
+    "lat": 45.81,
+    "lon": 15.98
+  },
+  {
+    "id": "hr-split",
+    "name": "Split",
+    "region": "Split-Dalmatia",
+    "country": "HR",
+    "lat": 43.51,
+    "lon": 16.44
+  },
+  {
+    "id": "is-reykjavik",
+    "name": "Reykjavík",
+    "region": "Capital Region",
+    "country": "IS",
+    "lat": 64.15,
+    "lon": -21.94
+  },
+  {
+    "id": "is-akureyri",
+    "name": "Akureyri",
+    "region": "Northeast",
+    "country": "IS",
+    "lat": 65.69,
+    "lon": -18.1
+  },
+  {
+    "id": "cn-beijing",
+    "name": "Beijing",
+    "region": "Beijing",
+    "country": "CN",
+    "lat": 39.9,
+    "lon": 116.41
+  },
+  {
+    "id": "cn-shanghai",
+    "name": "Shanghai",
+    "region": "Shanghai",
+    "country": "CN",
+    "lat": 31.23,
+    "lon": 121.47
+  },
+  {
+    "id": "tw-taipei",
+    "name": "Taipei",
+    "region": "Taipei",
+    "country": "TW",
+    "lat": 25.03,
+    "lon": 121.57
+  },
+  {
+    "id": "tw-taichung",
+    "name": "Taichung",
+    "region": "Taichung",
+    "country": "TW",
+    "lat": 24.15,
+    "lon": 120.67
+  },
+  {
+    "id": "th-bangkok",
+    "name": "Bangkok",
+    "region": "Bangkok",
+    "country": "TH",
+    "lat": 13.76,
+    "lon": 100.5
+  },
+  {
+    "id": "th-chiang-mai",
+    "name": "Chiang Mai",
+    "region": "Chiang Mai",
+    "country": "TH",
+    "lat": 18.79,
+    "lon": 98.99
+  },
+  {
+    "id": "id-jakarta",
+    "name": "Jakarta",
+    "region": "Jakarta",
+    "country": "ID",
+    "lat": -6.21,
+    "lon": 106.85
+  },
+  {
+    "id": "id-surabaya",
+    "name": "Surabaya",
+    "region": "East Java",
+    "country": "ID",
+    "lat": -7.25,
+    "lon": 112.75
+  },
+  {
+    "id": "my-kuala-lumpur",
+    "name": "Kuala Lumpur",
+    "region": "Kuala Lumpur",
+    "country": "MY",
+    "lat": 3.14,
+    "lon": 101.69
+  },
+  {
+    "id": "my-penang",
+    "name": "George Town",
+    "region": "Penang",
+    "country": "MY",
+    "lat": 5.41,
+    "lon": 100.33
+  },
+  {
+    "id": "ph-manila",
+    "name": "Manila",
+    "region": "Metro Manila",
+    "country": "PH",
+    "lat": 14.6,
+    "lon": 120.98
+  },
+  {
+    "id": "ph-cebu",
+    "name": "Cebu City",
+    "region": "Central Visayas",
+    "country": "PH",
+    "lat": 10.32,
+    "lon": 123.89
+  },
+  {
+    "id": "vn-hanoi",
+    "name": "Hanoi",
+    "region": "Hanoi",
+    "country": "VN",
+    "lat": 21.03,
+    "lon": 105.85
+  },
+  {
+    "id": "vn-ho-chi-minh-city",
+    "name": "Ho Chi Minh City",
+    "region": "Ho Chi Minh City",
+    "country": "VN",
+    "lat": 10.82,
+    "lon": 106.63
+  },
+  {
+    "id": "in-mumbai",
+    "name": "Mumbai",
+    "region": "Maharashtra",
+    "country": "IN",
+    "lat": 19.08,
+    "lon": 72.88
+  },
+  {
+    "id": "in-bengaluru",
+    "name": "Bengaluru",
+    "region": "Karnataka",
+    "country": "IN",
+    "lat": 12.97,
+    "lon": 77.59
+  },
+  {
+    "id": "pk-karachi",
+    "name": "Karachi",
+    "region": "Sindh",
+    "country": "PK",
+    "lat": 24.86,
+    "lon": 67.0
+  },
+  {
+    "id": "pk-lahore",
+    "name": "Lahore",
+    "region": "Punjab",
+    "country": "PK",
+    "lat": 31.55,
+    "lon": 74.34
+  },
+  {
+    "id": "sa-riyadh",
+    "name": "Riyadh",
+    "region": "Riyadh",
+    "country": "SA",
+    "lat": 24.71,
+    "lon": 46.68
+  },
+  {
+    "id": "sa-jeddah",
+    "name": "Jeddah",
+    "region": "Makkah",
+    "country": "SA",
+    "lat": 21.54,
+    "lon": 39.17
+  },
+  {
+    "id": "ae-dubai",
+    "name": "Dubai",
+    "region": "Dubai",
+    "country": "AE",
+    "lat": 25.2,
+    "lon": 55.27
+  },
+  {
+    "id": "ae-abu-dhabi",
+    "name": "Abu Dhabi",
+    "region": "Abu Dhabi",
+    "country": "AE",
+    "lat": 24.45,
+    "lon": 54.38
+  },
+  {
+    "id": "eg-cairo",
+    "name": "Cairo",
+    "region": "Cairo",
+    "country": "EG",
+    "lat": 30.04,
+    "lon": 31.24
+  },
+  {
+    "id": "eg-alexandria",
+    "name": "Alexandria",
+    "region": "Alexandria",
+    "country": "EG",
+    "lat": 31.2,
+    "lon": 29.92
+  },
+  {
+    "id": "ma-casablanca",
+    "name": "Casablanca",
+    "region": "Casablanca-Settat",
+    "country": "MA",
+    "lat": 33.57,
+    "lon": -7.59
+  },
+  {
+    "id": "ma-marrakesh",
+    "name": "Marrakesh",
+    "region": "Marrakesh-Safi",
+    "country": "MA",
+    "lat": 31.63,
+    "lon": -8.01
+  },
+  {
+    "id": "ng-lagos",
+    "name": "Lagos",
+    "region": "Lagos",
+    "country": "NG",
+    "lat": 6.52,
+    "lon": 3.38
+  },
+  {
+    "id": "ng-abuja",
+    "name": "Abuja",
+    "region": "Federal Capital Territory",
+    "country": "NG",
+    "lat": 9.08,
+    "lon": 7.4
+  },
+  {
+    "id": "ke-nairobi",
+    "name": "Nairobi",
+    "region": "Nairobi",
+    "country": "KE",
+    "lat": -1.29,
+    "lon": 36.82
+  },
+  {
+    "id": "ke-mombasa",
+    "name": "Mombasa",
+    "region": "Mombasa",
+    "country": "KE",
+    "lat": -4.04,
+    "lon": 39.67
+  },
+  {
+    "id": "gh-accra",
+    "name": "Accra",
+    "region": "Greater Accra",
+    "country": "GH",
+    "lat": 5.6,
+    "lon": -0.19
+  },
+  {
+    "id": "gh-kumasi",
+    "name": "Kumasi",
+    "region": "Ashanti",
+    "country": "GH",
+    "lat": 6.69,
+    "lon": -1.62
+  },
+  {
+    "id": "et-addis-ababa",
+    "name": "Addis Ababa",
+    "region": "Addis Ababa",
+    "country": "ET",
+    "lat": 9.03,
+    "lon": 38.74
+  },
+  {
+    "id": "et-dire-dawa",
+    "name": "Dire Dawa",
+    "region": "Dire Dawa",
+    "country": "ET",
+    "lat": 9.6,
+    "lon": 41.86
+  },
+  {
+    "id": "il-jerusalem",
+    "name": "Jerusalem",
+    "region": "Jerusalem",
+    "country": "IL",
+    "lat": 31.77,
+    "lon": 35.22
+  },
+  {
+    "id": "il-tel-aviv",
+    "name": "Tel Aviv",
+    "region": "Tel Aviv",
+    "country": "IL",
+    "lat": 32.09,
+    "lon": 34.78
+  },
+  {
+    "id": "fj-suva",
+    "name": "Suva",
+    "region": "Central",
+    "country": "FJ",
+    "lat": -18.14,
+    "lon": 178.44
+  },
+  {
+    "id": "fj-nadi",
+    "name": "Nadi",
+    "region": "Western",
+    "country": "FJ",
+    "lat": -17.8,
+    "lon": 177.42
+  },
+  {
+    "id": "ws-apia",
+    "name": "Apia",
+    "region": "Tuamasaga",
+    "country": "WS",
+    "lat": -13.83,
+    "lon": -171.76
+  },
+  {
+    "id": "ws-salelologa",
+    "name": "Salelologa",
+    "region": "Savai'i",
+    "country": "WS",
+    "lat": -13.7,
+    "lon": -172.2
   }
 ]

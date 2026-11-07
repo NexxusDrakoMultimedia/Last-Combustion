@@ -5,6 +5,7 @@ import { formatDate, formatGap, formatLapTime, formatMoney, formatPoints, t } fr
 import { TABLE_KINDS, type ResultRow, type TableKind } from '../../db/tables';
 import { useCareerStore } from '../../state/career.store';
 import { AttnFlag } from '../AttnFlag';
+import { Flag } from '../Flag';
 import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
@@ -83,7 +84,7 @@ export function StandingsPanel() {
       {!scored ? (
         <p className="text-lc-dim">{t('hub.tableEmpty')}</p>
       ) : (
-        <div className="max-h-[60vh] overflow-auto">
+        <div>
           <table className={dataTable}>
             <caption className="sr-only">{t(`tables.kind.${kind}` as never)}</caption>
             <thead className="lc-display sticky top-0 bg-lc-panel text-xs text-lc-dim">
@@ -118,6 +119,11 @@ export function StandingsPanel() {
                       </span>
                     ) : r.garageId > 0 && kind === 'garages' ? (
                       <RegistryLink to={{ kind: 'garage', id: r.garageId }}>{r.name}</RegistryLink>
+                    ) : r.flag ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Flag code={r.flag} />
+                        {r.name}
+                      </span>
                     ) : (
                       r.name
                     )}
@@ -237,7 +243,7 @@ export function ResultsPanel() {
       {ready && rows.length === 0 ? (
         <p className="text-lc-dim">{t('tables.notRun')}</p>
       ) : (
-        <div className="max-h-[60vh] overflow-auto">
+        <div>
           <table className={dataTable}>
             <caption className="sr-only">{t(`tables.session.${session}` as never)}</caption>
             <thead className="lc-display sticky top-0 bg-lc-panel text-xs text-lc-dim">
@@ -286,8 +292,8 @@ export function ResultsPanel() {
                       </span>
                     </span>
                   </td>
-                  <td className="align-middle">
-                    <span className="flex flex-col text-lc-dim">
+                  <td className="min-w-28 py-2 align-middle">
+                    <span className="flex flex-col gap-1 text-lc-dim">
                       <span>{r.car}</span>
                       <span>
                         <Plate plate={r.plate} state={r.plateState} carId={r.carId} />

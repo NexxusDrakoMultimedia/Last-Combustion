@@ -13,7 +13,7 @@ The game is a single-player application with no accounts and no server of its ow
 - the handling of mod files (which must be data only, with sanitised SVG);
 - save files (`.lcsave`) and any other file a player imports;
 - the Markdown reader behind the About screen's Changelog and Credits tabs, which sanitises what it shows;
-- the web build's telemetry: it loads only after the visitor accepts the privacy prompt and sends categories, counts and amounts, never names, free text or save contents.
+- the web build's telemetry: it runs unless the visitor opts out (the notice on a first visit has the button) and sends categories, counts and amounts, and error reports with the error and where it happened, never names, free text or save contents.
 
 ## Supported versions
 

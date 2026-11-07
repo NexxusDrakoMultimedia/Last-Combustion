@@ -119,6 +119,174 @@
       "tier": "continental",
       "minPrestige": 62,
       "strength": 85
+    },
+    {
+      "id": "bunyip-brewing",
+      "name": "Bunyip Brewing Co.",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 1,
+      "strength": 32
+    },
+    {
+      "id": "coolabah-tyres",
+      "name": "Coolabah Tyres",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 3,
+      "strength": 34
+    },
+    {
+      "id": "billabong-bakehouse",
+      "name": "Billabong Bakehouse",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 2,
+      "strength": 30
+    },
+    {
+      "id": "spinifex-signs",
+      "name": "Spinifex Signs",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 6,
+      "strength": 36
+    },
+    {
+      "id": "wombat-welding",
+      "name": "Wombat Welding Supplies",
+      "homeCountry": "AU",
+      "tier": "local",
+      "minPrestige": 8,
+      "strength": 38
+    },
+    {
+      "id": "gippsland-dairy",
+      "name": "Gippsland Dairy Co-op",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 15,
+      "strength": 48
+    },
+    {
+      "id": "pilbara-plant-hire",
+      "name": "Pilbara Plant Hire",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 22,
+      "strength": 52
+    },
+    {
+      "id": "daintree-coffee",
+      "name": "Daintree Coffee Roasters",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 18,
+      "strength": 49
+    },
+    {
+      "id": "tamar-valley-wines",
+      "name": "Tamar Valley Wines",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 24,
+      "strength": 53
+    },
+    {
+      "id": "whitsunday-charters",
+      "name": "Whitsunday Charters",
+      "homeCountry": "AU",
+      "tier": "regional",
+      "minPrestige": 28,
+      "strength": 56
+    },
+    {
+      "id": "anzac-mutual",
+      "name": "Anzac Mutual Insurance",
+      "homeCountry": "AU",
+      "tier": "national",
+      "minPrestige": 38,
+      "strength": 66
+    },
+    {
+      "id": "great-southern-rail",
+      "name": "Great Southern Rail",
+      "homeCountry": "AU",
+      "tier": "national",
+      "minPrestige": 45,
+      "strength": 72
+    },
+    {
+      "id": "kestrel-steel",
+      "name": "Kestrel Steel",
+      "homeCountry": "AU",
+      "tier": "national",
+      "minPrestige": 52,
+      "strength": 74
+    },
+    {
+      "id": "banksia-super",
+      "name": "Banksia Superannuation",
+      "homeCountry": "AU",
+      "tier": "national",
+      "minPrestige": 54,
+      "strength": 76
+    },
+    {
+      "id": "pacific-heritage-hotels",
+      "name": "Pacific Heritage Hotels",
+      "homeCountry": "NZ",
+      "tier": "continental",
+      "minPrestige": 56,
+      "strength": 78
+    },
+    {
+      "id": "oceania-container-lines",
+      "name": "Oceania Container Lines",
+      "homeCountry": "SG",
+      "tier": "continental",
+      "minPrestige": 59,
+      "strength": 81
+    },
+    {
+      "id": "harbour-light-energy",
+      "name": "Harbour Light Energy",
+      "homeCountry": "AU",
+      "tier": "continental",
+      "minPrestige": 64,
+      "strength": 86
+    },
+    {
+      "id": "vantage-aerospace",
+      "name": "Vantage Aerospace",
+      "homeCountry": "GB",
+      "tier": "global",
+      "minPrestige": 66,
+      "strength": 88
+    },
+    {
+      "id": "nova-pharma",
+      "name": "Nova Pharma",
+      "homeCountry": "DE",
+      "tier": "global",
+      "minPrestige": 70,
+      "strength": 91
+    },
+    {
+      "id": "kiso-electronics",
+      "name": "Kiso Electronics",
+      "homeCountry": "JP",
+      "tier": "global",
+      "minPrestige": 74,
+      "strength": 94
+    },
+    {
+      "id": "atlas-mobility",
+      "name": "Atlas Mobility Group",
+      "homeCountry": "US",
+      "tier": "global",
+      "minPrestige": 78,
+      "strength": 96
     }
   ]
 }

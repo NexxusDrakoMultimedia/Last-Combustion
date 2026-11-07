@@ -30,7 +30,7 @@ import {
 import { financialYear } from '../sim/ledger';
 import { createRng } from '../sim/rng';
 import { equityData, nameLists } from '../sim/worldgen/data';
-import { pickNationality, personName } from '../sim/worldgen/names';
+import { ownerSurname, pickNationality, personName } from '../sim/worldgen/names';
 import { readCareer } from './career';
 import { all } from './entries';
 import { closedYearProfits } from './ledger';
@@ -81,7 +81,7 @@ export function ensureCapTables(db: Database): void {
   if (!career) return;
   const missing = all(
     db,
-    `SELECT g.id, g.flag, g.is_player, o.name AS owner FROM garage g LEFT JOIN owner o ON o.garage_id = g.id
+    `SELECT g.id, g.name, g.flag, g.is_player, o.name AS owner FROM garage g LEFT JOIN owner o ON o.garage_id = g.id
       WHERE g.kind = 'racing' AND g.acquired_by IS NULL
         AND NOT EXISTS (SELECT 1 FROM shareholding s WHERE s.garage_id = g.id)
       ORDER BY g.id`,
@@ -108,7 +108,14 @@ export function ensureCapTables(db: Database): void {
       : pickNationality(stream);
     const person = (nationality: string) =>
       personName(stream, nationality, stream.chance(0.5) ? 'male' : 'female');
-    const founder = person(home);
+    const drawn = person(home);
+    // A garage with a family name in its name belongs to someone with that name.
+    const shared = ownerSurname(
+      rng.stream(`capname:${garageId}`),
+      g.name as string,
+      nameLists.byNationality[g.flag as string] ? (g.flag as string) : home,
+    );
+    const founder = shared ? `${drawn.split(' ')[0] as string} ${shared}` : drawn;
     const holders = drawCapTable(stream, {
       founder,
       surname: founder.split(' ').slice(1).join(' '),
@@ -422,17 +429,9 @@ export function suggestedDividend(db: Database, garageId: number): number {
 /**
  * Pays a dividend to the holders of ordinary and preferred shares in proportion to their shares. The
  * garage pays all of it; the owner's part goes to their personal cash. One a financial year, and never
- * more than the garage holds.
+ * more than the garage holds. It does not open a transaction, so it can run inside the season's end.
  */
-export function declareDividend(db: Database, garageId: number, amount: number): void {
-  playerGarage(db, garageId);
-  ensureCapTables(db);
-  amount = Math.round(amount);
-  if (!(amount > 0)) throw new Error('A dividend must be more than nothing.');
-  const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!.cash);
-  if (amount > cash) throw new Error('The garage cannot pay more than it holds.');
-  if (doneThisYear(db, garageId, 'dividend'))
-    throw new Error('The garage has already paid a dividend this year.');
+function payDividend(db: Database, garageId: number, amount: number): void {
   const holdings = all(
     db,
     'SELECT id, holder_type, shares, class FROM shareholding WHERE garage_id = ?',
@@ -448,22 +447,82 @@ export function declareDividend(db: Database, garageId: number, amount: number):
     .filter((h) => h.type === 'owner')
     .reduce((sum, h) => sum + (parts.get(h.id) ?? 0), 0);
   const date = gameDate(db);
+  db.run(
+    "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'dividends', ?, ?)",
+    [garageId, date, -amount, `Dividend ${financialYear(date)}`],
+  );
+  db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [amount, garageId]);
+  db.run('UPDATE owner SET personal_cash = personal_cash + ? WHERE garage_id = ?', [
+    ownerPart,
+    garageId,
+  ]);
+  db.run("INSERT INTO share_event (garage_id, date, kind, detail) VALUES (?, ?, 'dividend', ?)", [
+    garageId,
+    date,
+    JSON.stringify({ amount, owner: ownerPart, others: amount - ownerPart }),
+  ]);
+}
+
+/** Pays a dividend of a chosen amount in a transaction of its own (the season's end pays one by itself). */
+export function declareDividend(db: Database, garageId: number, amount: number): void {
+  playerGarage(db, garageId);
+  ensureCapTables(db);
+  amount = Math.round(amount);
+  if (!(amount > 0)) throw new Error('A dividend must be more than nothing.');
+  const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!.cash);
+  if (amount > cash) throw new Error('The garage cannot pay more than it holds.');
+  if (doneThisYear(db, garageId, 'dividend'))
+    throw new Error('The garage has already paid a dividend this year.');
   db.exec('BEGIN');
   try {
+    payDividend(db, garageId, amount);
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
+/**
+ * The year's dividend, paid by itself as the season closes (inside the season's own transaction): what
+ * the board suggests, half of the year's operating profit, within the garage's cash. Nothing is paid
+ * after a loss, or if one has already gone out this year. Returns what was paid.
+ */
+export function payAnnualDividend(db: Database, garageId: number): number {
+  playerGarage(db, garageId);
+  ensureCapTables(db);
+  if (doneThisYear(db, garageId, 'dividend')) return 0;
+  const amount = suggestedDividend(db, garageId);
+  if (!(amount > 0)) return 0;
+  payDividend(db, garageId, amount);
+  return amount;
+}
+
+/**
+ * The owner puts some of their own cash into the garage as capital. It leaves their personal cash,
+ * joins the garage's cash and is written in the ledger under `capital` (no shares change hands, so
+ * nobody is diluted). It cannot be more than the owner holds.
+ */
+export function injectCapital(db: Database, garageId: number, amount: number): void {
+  playerGarage(db, garageId);
+  amount = Math.round(amount);
+  if (!(amount > 0)) throw new Error('Capital must be more than nothing.');
+  const personal = Number(
+    all(db, 'SELECT personal_cash FROM owner WHERE garage_id = ?', [garageId])[0]?.personal_cash ??
+      0,
+  );
+  if (amount > personal) throw new Error('You cannot put in more than your own cash.');
+  db.exec('BEGIN');
+  try {
+    db.run('UPDATE owner SET personal_cash = personal_cash - ? WHERE garage_id = ?', [
+      amount,
+      garageId,
+    ]);
+    db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [amount, garageId]);
     db.run(
-      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'dividends', ?, ?)",
-      [garageId, date, -amount, `Dividend ${financialYear(date)}`],
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'capital', ?, 'Capital from the owner')",
+      [garageId, gameDate(db), amount],
     );
-    db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [amount, garageId]);
-    db.run('UPDATE owner SET personal_cash = personal_cash + ? WHERE garage_id = ?', [
-      ownerPart,
-      garageId,
-    ]);
-    db.run("INSERT INTO share_event (garage_id, date, kind, detail) VALUES (?, ?, 'dividend', ?)", [
-      garageId,
-      date,
-      JSON.stringify({ amount, owner: ownerPart, others: amount - ownerPart }),
-    ]);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');

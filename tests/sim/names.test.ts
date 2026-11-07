@@ -3,7 +3,12 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../../src/sim/rng';
 import { flagNames, nameLists } from '../../src/sim/worldgen/data';
-import { isOffensiveName, personName } from '../../src/sim/worldgen/names';
+import {
+  isOffensiveName,
+  ownerSurname,
+  personName,
+  surnamesInName,
+} from '../../src/sim/worldgen/names';
 
 describe('the name lists', () => {
   const codes = Object.keys(nameLists.byNationality);
@@ -67,5 +72,34 @@ describe('offensive names', () => {
       ]!;
       expect(isOffensiveName(personName(rng, code, i % 2 ? 'male' : 'female'))).toBe(false);
     }
+  });
+});
+
+describe('family names in a garage name', () => {
+  const [a, b] = nameLists.byNationality.AU!.surnames as [string, string];
+
+  it('are found as whole words, and nothing else is', () => {
+    expect(surnamesInName(`${a} Dyno Works`, 'AU')).toEqual([a]);
+    expect(surnamesInName(`${a} & ${b}`, 'AU')).toEqual([a, b]);
+    expect(surnamesInName('Silent Dyno Works', 'AU')).toEqual([]);
+    expect(surnamesInName(`${a} Dyno Works`, 'nowhere')).toEqual([]);
+  });
+
+  it('leave out the words of a place the name carries', () => {
+    // "Mount Barker" is a place: its Barker is the town's, not a person's.
+    expect(surnamesInName('Mount Barker Coast Tuning', 'AU')).not.toContain('Barker');
+  });
+
+  it('are shared by the owners: the name itself, or for two or more, one or both chosen by the seed', () => {
+    expect(ownerSurname(createRng('x').stream('s'), `${a} Dyno Works`, 'AU')).toBe(a);
+    expect(ownerSurname(createRng('x').stream('s'), 'Silent Dyno Works', 'AU')).toBeUndefined();
+    const seen = new Set<string>();
+    for (let i = 0; i < 40; i++)
+      seen.add(ownerSurname(createRng(`seed-${i}`).stream('s'), `${a} & ${b}`, 'AU')!);
+    // One of the two, or both with a hyphen, and each of those turns up.
+    expect(seen).toEqual(new Set([a, b, `${a}-${b}`]));
+    expect(ownerSurname(createRng('same').stream('s'), `${a} & ${b}`, 'AU')).toBe(
+      ownerSurname(createRng('same').stream('s'), `${a} & ${b}`, 'AU'),
+    );
   });
 });

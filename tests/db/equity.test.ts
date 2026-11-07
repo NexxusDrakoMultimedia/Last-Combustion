@@ -7,7 +7,9 @@ import {
   declareDividend,
   ensureCapTables,
   garageValuation,
+  injectCapital,
   issueShares,
+  payAnnualDividend,
   ownershipView,
   previewRound,
   boardTargets,
@@ -17,6 +19,7 @@ import {
   reviewBoard,
   roundInvestors,
 } from '../../src/db/equity';
+import { closeLedgerYear } from '../../src/db/ledger';
 import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
@@ -27,6 +30,7 @@ import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { createStarterOffers } from '../../src/db/starter';
 import { persistWorld } from '../../src/db/world';
 import { FOUNDING_SHARES } from '../../src/sim/equity';
+import { nameLists } from '../../src/sim/worldgen/data';
 import { generateWorld } from '../../src/sim/worldgen';
 
 let SQL: SqlJsStatic;
@@ -57,6 +61,23 @@ function world(seed: string): Database {
   persistWorld(db, generateWorld(seed));
   return db;
 }
+
+describe('owners of a garage named for a family', () => {
+  it('share the name: the founder and the family carry the surname in the garage’s name', () => {
+    const db = world('equity-names');
+    const surname = nameLists.byNationality.AU!.surnames[3]!;
+    const id = Number(
+      scalar(db, "SELECT id FROM garage WHERE kind = 'racing' ORDER BY id LIMIT 1"),
+    );
+    db.run("UPDATE garage SET name = ?, flag = 'AU' WHERE id = ?", [`${surname} Dyno Works`, id]);
+    ensureCapTables(db);
+    const holders = db.exec(
+      `SELECT holder_name, holder_type FROM shareholding WHERE garage_id = ${id} AND holder_type IN ('owner', 'family')`,
+    )[0]!.values as [string, string][];
+    expect(holders.length).toBeGreaterThan(0);
+    for (const [name] of holders) expect(name.endsWith(surname), name).toBe(true);
+  });
+});
 
 describe('who owns each garage', () => {
   it('gives every racing garage its owners, adding up to the founding shares', () => {
@@ -275,6 +296,59 @@ describe('paying a dividend', () => {
     const { db, id } = playerWorld('dividend-limits', 50_000);
     expect(() => declareDividend(db, id, 0)).toThrow(/more than nothing/);
     expect(() => declareDividend(db, id, 60_000)).toThrow(/cannot pay more/);
+  });
+});
+
+describe('the annual dividend', () => {
+  /** Books an income (positive) or a loss (negative) in the 2031 financial year and closes it. */
+  const bookYear = (db: Database, id: number, amount: number) => {
+    db.run(
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, '2031-06-01', ?, ?, 'test')",
+      [id, amount >= 0 ? 'sponsor' : 'wages', amount],
+    );
+    closeLedgerYear(db, 2031);
+  };
+
+  it('is paid by itself after a profit: half of it, to the holders, once a year', () => {
+    const { db, id } = playerWorld('dividend-auto');
+    bookYear(db, id, 400_000);
+    const before = cashOf(db, id);
+    expect(payAnnualDividend(db, id)).toBe(200_000);
+    expect(cashOf(db, id)).toBe(before - 200_000);
+    expect(ownershipView(db, id).ownerCash).toBe(200_000);
+    expect(payAnnualDividend(db, id)).toBe(0);
+    expect(cashOf(db, id)).toBe(before - 200_000);
+  });
+
+  it('is nothing after a loss, and never more than the garage holds', () => {
+    const loss = playerWorld('dividend-loss');
+    bookYear(loss.db, loss.id, -100_000);
+    expect(payAnnualDividend(loss.db, loss.id)).toBe(0);
+    const poor = playerWorld('dividend-poor', 50_000);
+    bookYear(poor.db, poor.id, 400_000);
+    expect(payAnnualDividend(poor.db, poor.id)).toBe(50_000);
+    expect(cashOf(poor.db, poor.id)).toBe(0);
+  });
+});
+
+describe('putting in capital', () => {
+  it('moves the owner’s own cash into the garage and writes it in the ledger', () => {
+    const { db, id } = playerWorld('capital');
+    db.run('UPDATE owner SET personal_cash = 500000');
+    const before = cashOf(db, id);
+    injectCapital(db, id, 200_000);
+    expect(cashOf(db, id)).toBe(before + 200_000);
+    expect(ownershipView(db, id).ownerCash).toBe(300_000);
+    expect(
+      scalar(db, `SELECT amount FROM ledger WHERE category = 'capital' AND garage_id = ${id}`),
+    ).toBe(200_000);
+  });
+
+  it('refuses nothing, or more than the owner holds', () => {
+    const { db, id } = playerWorld('capital-limits');
+    db.run('UPDATE owner SET personal_cash = 1000');
+    expect(() => injectCapital(db, id, 0)).toThrow(/more than nothing/);
+    expect(() => injectCapital(db, id, 5000)).toThrow(/own cash/);
   });
 });
 

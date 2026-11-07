@@ -66,7 +66,8 @@ describe('headlines', () => {
     const h = writeHeadline(db, roundOne(db))!;
     expect(h.kind).toBe('win');
     expect(h.tone).toBe('fair');
-    expect(h.fans).toBe(0);
+    // A fair view still moves the fans: a win wins some.
+    expect(h.fans).toBe(60);
     expect(JOURNALISTS.map((j) => j.id)).toContain(h.journalist.id);
     expect(pressView(db, id).headlines).toHaveLength(1);
     // Being written about makes the journalist an acquaintance.

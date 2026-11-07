@@ -20,5 +20,27 @@
     "directory": "./dist",
     "not_found_handling": "single-page-application"
   },
+  // Traces and logs go to Better Stack (the destinations are set up in the Cloudflare dashboard) and
+  // are not kept in Cloudflare.
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "traces": {
+      "enabled": true,
+      "destinations": ["betterstack"],
+      "head_sampling_rate": 1,
+      "persist": false
+    },
+    "logs": {
+      "enabled": true,
+      "destinations": ["betterstack-logs"],
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": false
+    },
+    "issue_detection": {
+      "enabled": true
+    }
+  },
   "previews": {}
 }

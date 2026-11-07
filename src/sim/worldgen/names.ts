@@ -97,6 +97,68 @@ export function garageName(
   ).name;
 }
 
+/**
+ * The nations whose name lists have this person's name: both the given name and the surname if any
+ * do, otherwise any with the surname. Empty when none does.
+ */
+export function nationsOfName(name: string): string[] {
+  const space = name.indexOf(' ');
+  const first = space < 0 ? name : name.slice(0, space);
+  const last = space < 0 ? '' : name.slice(space + 1).split('-')[0]!;
+  const both: string[] = [];
+  const family: string[] = [];
+  for (const [code, pools] of Object.entries(nameLists.byNationality)) {
+    if (!pools.surnames.includes(last)) continue;
+    family.push(code);
+    if (pools.male.includes(first) || pools.female.includes(first)) both.push(code);
+  }
+  return both.length > 0 ? both : family;
+}
+
+/** The words of a name that are family names of a nation, leaving out the words of a place the name carries. */
+export function surnamesInName(name: string, nationality: string): string[] {
+  const pools = nameLists.byNationality[nationality];
+  if (!pools) return [];
+  const known = new Set(pools.surnames);
+  const place = placeInName(name)?.name ?? '';
+  const inPlace = new Set(place.split(/[^\p{L}]+/u));
+  const words = name.split(/[^\p{L}'’]+/u).filter((w) => w.length > 1);
+  return [...new Set(words.filter((w) => known.has(w) && !inPlace.has(w)))];
+}
+
+/**
+ * The surname a garage's owners share, if its name carries a family name: the one name, or when it
+ * carries two or more, one of them or a double-barrelled pair, chosen from the seed. Undefined when
+ * the name carries no family name.
+ */
+export function ownerSurname(
+  rng: RandomStream,
+  name: string,
+  nationality: string,
+): string | undefined {
+  const found = surnamesInName(name, nationality);
+  if (found.length === 0) return undefined;
+  if (found.length === 1) return found[0];
+  if (rng.chance(1 / 3)) return found.slice(0, 2).join('-');
+  return rng.pick(found);
+}
+
+const PLACES_LONGEST_FIRST = [...places].sort((a, b) => b.name.length - a.name.length);
+
+/**
+ * The place a garage name carries, if it has one in it ("Mount Barker Coast Tuning" carries Mount
+ * Barker): the longest place name that stands as whole words in the name. A garage named for a place
+ * is from that place, so its flag and headquarters follow it.
+ */
+export function placeInName(name: string): (typeof places)[number] | undefined {
+  return PLACES_LONGEST_FIRST.find((p) =>
+    new RegExp(
+      `(^|[^\\p{L}])${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}])`,
+      'u',
+    ).test(name),
+  );
+}
+
 /** A model name for a car of a category (hypercar, supercar, jdm, sports, domestic or other). */
 export function carModelName(rng: RandomStream, category: string, used: Set<string>): string {
   const theme = carCategories[category] ?? carCategories.other;

@@ -225,11 +225,9 @@ function Raise() {
 }
 
 function Pay() {
-  const { ownership, status, declareDividend, buyBackShares } = useCareerStore();
-  const [dividend, setDividend] = useState('');
+  const { ownership, status, buyBackShares } = useCareerStore();
   if (!ownership) return null;
   const d = ownership.dividend;
-  const value = dividend === '' ? d.suggested : Number(dividend);
   const outside = ownership.holders.filter((h) => h.type !== 'owner' && h.class !== 'option');
   return (
     <section className="space-y-3">
@@ -238,33 +236,12 @@ function Pay() {
       <p className="lc-num">
         {t('ownership.ownerCash', { amount: formatMoney(ownership.ownerCash) })}
       </p>
-      {!d.available ? (
-        <p>{t('ownership.dividend.done')}</p>
-      ) : (
-        <div className="space-y-2">
-          <p className="text-lc-dim">
-            {t('ownership.dividend.suggested', { amount: formatMoney(d.suggested) })}
-          </p>
-          <label className="block space-y-1" htmlFor="dividend-amount">
-            {t('ownership.dividend.amount')}
-            <input
-              id="dividend-amount"
-              className={field}
-              inputMode="numeric"
-              value={dividend === '' ? String(d.suggested) : dividend}
-              onChange={(e) => setDividend(e.target.value.replace(/[^0-9]/g, ''))}
-            />
-          </label>
-          <button
-            type="button"
-            className={button}
-            disabled={status === 'busy' || !(value > 0) || value > d.cash}
-            onClick={() => void declareDividend(value)}
-          >
-            {t('ownership.dividend.button', { amount: formatMoney(value) })}
-          </button>
-        </div>
-      )}
+      <p>
+        {d.available
+          ? t('ownership.dividend.next', { amount: formatMoney(d.suggested) })
+          : t('ownership.dividend.done')}
+      </p>
+      <Capital />
       {outside.length > 0 && (
         <div className="space-y-2">
           <h4 className="lc-display text-xs text-lc-dim">{t('ownership.buyback')}</h4>
@@ -438,5 +415,44 @@ function Governance() {
         <p className="text-lc-bad">{t('ownership.target.vote', { year: called.year, votes })}</p>
       )}
     </section>
+  );
+}
+
+/** The owner puts some of their own cash into the garage. */
+function Capital() {
+  const { ownership, status, injectCapital } = useCareerStore();
+  const [amount, setAmount] = useState('');
+  if (!ownership) return null;
+  const value = Math.round(Number(amount) || 0);
+  return (
+    <div className="space-y-2">
+      <h4 className="lc-display text-xs text-lc-dim">{t('ownership.capital')}</h4>
+      <p className="text-lc-dim">{t('ownership.capital.explain')}</p>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="space-y-1" htmlFor="capital-amount">
+          {t('ownership.capital.amount')}
+          <input
+            id="capital-amount"
+            type="number"
+            min={0}
+            step={1000}
+            className={field}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </label>
+        <button
+          type="button"
+          className={button}
+          disabled={status === 'busy' || value <= 0 || value > ownership.ownerCash}
+          onClick={() => {
+            void injectCapital(value);
+            setAmount('');
+          }}
+        >
+          {t('ownership.capital.go', { amount: formatMoney(value) })}
+        </button>
+      </div>
+    </div>
   );
 }

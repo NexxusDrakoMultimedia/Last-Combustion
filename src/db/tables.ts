@@ -25,6 +25,8 @@ export interface TableRow {
   name: string;
   /** The garage for a driver, the home country for a manufacturer; empty otherwise. */
   detail: string;
+  /** The flag code of a nation row; empty otherwise. */
+  flag: string;
   /** A driver's race number, or 0. */
   raceNumber: number;
   points: number;
@@ -95,6 +97,7 @@ export function fullStandings(db: Database, year: number): FullStandings {
     driverId: 0,
     garageId: 0,
     detail: '',
+    flag: '',
     raceNumber: 0,
     mine: false,
     rank: s.rank,
@@ -134,8 +137,12 @@ export function fullStandings(db: Database, year: number): FullStandings {
         const m = makers.get(s.id as number);
         return row(s, { name: String(m?.name ?? ''), detail: String(m?.home_country ?? '') });
       }),
-      driverNations: standings.driverNations.map((s) => row(s, { name: flagName(String(s.id)) })),
-      garageNations: standings.garageNations.map((s) => row(s, { name: flagName(String(s.id)) })),
+      driverNations: standings.driverNations.map((s) =>
+        row(s, { name: flagName(String(s.id)), flag: String(s.id) }),
+      ),
+      garageNations: standings.garageNations.map((s) =>
+        row(s, { name: flagName(String(s.id)), flag: String(s.id) }),
+      ),
     },
   };
 }

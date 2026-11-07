@@ -1,10 +1,15 @@
 {
-  "source": "The press for the people layer (see the GDD, 'People and relationships'). Every journalist is fictional. 'taste' is what they like to write about. After each final one journalist writes a headline about the player's garage, chosen by the garage's best finish: 'weights' says how much more likely a taste is to cover a result of that kind (1 for the rest). Their view of the garage comes from the relationship score: warm at 'warm' or more, cold at 'cold' or less, otherwise fair. A warm headline wins the garage 'fans.warm' fans, a cold one loses 'fans.cold'. The commentators in 'commentators.json' also write for the press: their first 'focus' decides their taste through 'focusTaste' and their role stands for the outlet.",
+  "source": "The press for the people layer (see the GDD, 'People and relationships'). Every journalist is fictional. 'taste' is what they like to write about. After each final one journalist writes a headline about the player's garage, chosen by the garage's best finish: 'weights' says how much more likely a taste is to cover a result of that kind (1 for the rest). Their view of the garage comes from the relationship score: warm at 'warm' or more, cold at 'cold' or less, otherwise fair. A warm headline wins the garage 'fans.warm' fans and a cold one loses 'fans.cold'. A fair one (a journalist who does not know the garage well, or does not mind it) reports the result as it is: 'fans.fair' says how many fans each kind of result wins or loses, so the press moves the fans whatever the relationship. The commentators in 'commentators.json' also write for the press: their first 'focus' decides their taste through 'focusTaste' and their role stands for the outlet.",
   "warm": 30,
   "cold": -30,
   "fans": {
     "warm": 120,
-    "fair": 0,
+    "fair": {
+      "win": 60,
+      "podium": 30,
+      "points": 10,
+      "nopoints": -20
+    },
     "cold": -80
   },
   "weights": {
