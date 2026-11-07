@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { beforeAll, describe, expect, it } from 'vitest';
+import { bringForwardTo, moveDateTo } from '../../src/db/calendar';
 import { createCareer } from '../../src/db/career';
 import { dailyLifeView, moveDriver } from '../../src/db/daily';
 import { playFinal } from '../../src/db/final';
@@ -13,7 +14,8 @@ import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { createStarterOffers } from '../../src/db/starter';
 import { persistWorld } from '../../src/db/world';
-import { roadTypeOfPlace } from '../../src/sim/daily';
+import { isDailyLifeDay, roadTypeOfPlace } from '../../src/sim/daily';
+import { addDays } from '../../src/sim/worldgen/calendar';
 import { generateWorld } from '../../src/sim/worldgen';
 
 let SQL: SqlJsStatic;
@@ -48,39 +50,69 @@ function fresh(seed: string): { db: Database; garageId: number } {
   return { db, garageId };
 }
 
+/** Plays a round the way the calendar does: the date moves to the prelims, then the final, each day of daily life on the way. */
 const playRound = (db: Database, n: number) => {
+  bringForwardTo(db, 'prelims', n);
   playPrelims(db, n);
+  bringForwardTo(db, 'final', n);
   playFinal(db, n);
   settleRound(db, n);
 };
 
+/** The days of daily life up to a date, counted from the rounds in the database. */
+const lifeDays = (db: Database, upTo: string): number => {
+  const rounds = db
+    .exec('SELECT practice_start, final_date FROM round ORDER BY number')[0]!
+    .values.map((r) => ({ practiceStart: r[0] as string, finalDate: r[1] as string }));
+  let n = 0;
+  for (let d = addDays('2031-02-01', 1); d <= upTo; d = addDays(d, 1))
+    if (isDailyLifeDay(d, '2031-02-01', rounds)) n++;
+  return n;
+};
+
 describe('daily life between rounds', () => {
-  it('pays delivery income for the days before each round, per entered car', () => {
+  it('pays delivery income for each day that passes, per entered car, and only to the player', () => {
     const { db, garageId } = fresh('daily-income');
     const entries = Number(
       scalar(db, `SELECT COUNT(*) FROM entry WHERE garage_id = ${garageId} AND series = 'main'`),
     );
     playRound(db, 1);
     playRound(db, 2);
-    const paid = (round: number) =>
-      Number(
-        scalar(
-          db,
-          `SELECT amount FROM ledger WHERE garage_id = ${garageId} AND category = 'delivery'
-             AND round_id = (SELECT id FROM round WHERE number = ${round} AND season_id = 1)`,
-        ),
-      );
-    // Round 1 has the three-day lead-in; round 2 the three-week gap.
-    expect(paid(1)).toBeGreaterThanOrEqual(entries * 3 * 250 * 0.8);
-    expect(paid(1)).toBeLessThanOrEqual(entries * 3 * 250 * 1.1);
-    expect(paid(2)).toBeGreaterThanOrEqual(entries * 21 * 250 * 0.8);
-    expect(paid(2)).toBeLessThanOrEqual(entries * 21 * 250 * 1.1);
+    const date = String(scalar(db, 'SELECT game_date FROM career'));
+    const days = lifeDays(db, date);
+    expect(days).toBeGreaterThan(70);
+    const paid = Number(
+      scalar(
+        db,
+        `SELECT SUM(amount) FROM ledger WHERE garage_id = ${garageId} AND category = 'delivery'`,
+      ),
+    );
+    expect(paid).toBeGreaterThanOrEqual(entries * days * 167 * 0.8);
+    expect(paid).toBeLessThanOrEqual(entries * days * 167 * 1.12);
     expect(
       scalar(
         db,
         "SELECT COUNT(*) FROM ledger WHERE category = 'delivery' AND garage_id <> " + garageId,
       ),
     ).toBe(0);
+  });
+
+  it('pays the same however the days are skipped', () => {
+    const run = (steps: string[]) => {
+      const { db, garageId } = fresh('daily-steps');
+      for (const to of steps) moveDateTo(db, to);
+      return Number(
+        scalar(
+          db,
+          `SELECT SUM(amount) FROM ledger WHERE garage_id = ${garageId} AND category = 'delivery'`,
+        ),
+      );
+    };
+    const once = run(['2031-03-20']);
+    const daily: string[] = [];
+    for (let d = addDays('2031-02-01', 1); d <= '2031-03-20'; d = addDays(d, 1)) daily.push(d);
+    expect(run(daily)).toBe(once);
+    expect(once).toBeGreaterThan(0);
   });
 
   it('puts the road kilometres on the car, wears it, and leaves computer garages alone', () => {
@@ -99,7 +131,8 @@ describe('daily life between rounds', () => {
     playRound(db, 2);
     const after = db.exec(`SELECT road_km, race_km, wear FROM car WHERE id = ${player[0]}`)[0]!
       .values[0]! as number[];
-    expect(after[0]! - player[1]!).toBe((3 + 21) * 60);
+    const date = String(scalar(db, 'SELECT game_date FROM career'));
+    expect(after[0]! - player[1]!).toBe(lifeDays(db, date) * 40);
     expect(after[2]!).toBeGreaterThan(player[2]!);
     expect(
       Number(
@@ -144,7 +177,7 @@ describe('daily life between rounds', () => {
     expect(view.drivers.length).toBeGreaterThan(0);
     expect(view.drivers[0]!.residence).toMatch(/, /);
     expect(view.canMove).toBe(false);
-    expect(view.nextGap).toMatchObject({ round: 1, days: 3 });
+    expect(view.nextGap).toMatchObject({ round: 1, days: 57 });
     expect(view.nextGap!.income).toBeGreaterThan(0);
   });
 });

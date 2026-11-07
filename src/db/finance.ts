@@ -9,7 +9,6 @@ import type { Tier } from '../sim/worldgen/types';
 import { all } from './entries';
 import { crashRepairCost } from './repairs';
 import { roundSalaries } from './executives';
-import { settleDailyLife } from './daily';
 import { roundFacilityCost } from './facilities';
 import { garageCrewStrength, roundWages } from './staff';
 import { supplyRates } from './supply';
@@ -132,8 +131,6 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         );
       }
       db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [costs.total, garageId]);
-      // The player's cars spend the days before the round on everyday and delivery roads.
-      if (first.is_player === 1) settleDailyLife(db, garageId, roundId, roundNumber, date);
       // The title sponsor pays a share of its season fee each round.
       const deal = all(
         db,

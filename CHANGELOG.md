@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Changed
 
+- Daily life is settled a day at a time as the date moves, not in one lump before each round: your cars earn delivery pay, pick up road wear and train their drivers on every day that is not a race day, so skipping days and weeks now matters. The per-day numbers are two thirds of the old ones ($167 and 40 km a day for 162 days instead of $250 and 60 km for 108), so a season comes to about the same. The ledger gets one delivery line for each skip.
 - The Run next prelims, Run next final, End the season and Start next season buttons now appear in place of Continue on the day each is due. The browser tests and the how-to-play guide follow.
 
 ## [0.2.0-beta5] - 2026-11-07

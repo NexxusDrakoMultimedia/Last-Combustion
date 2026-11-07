@@ -246,11 +246,10 @@
     "classifiedShare": 0.5
   },
   "daily": {
-    "deliveryPerDay": 250,
-    "dailyKm": 60,
-    "leadInDays": 3,
+    "deliveryPerDay": 167,
+    "dailyKm": 40,
     "relocationCost": 5000,
-    "affinityPerDay": 0.1,
+    "affinityPerDay": 0.067,
     "affinityCap": 70,
     "defaultAreaFactor": 1,
     "areaFactor": {
