@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+### Added
+
+- A work-of-fiction disclaimer in the About screen, the README and the press kit: every manufacturer, car, company and character is invented, and any resemblance to real people or companies is coincidental.
+- The Registry's Paddock tab groups people by job, and a new Ex-Paddock tab lists everyone who has left, by job, with the years they were active. The Paddock also lists every sponsor, manufacturer, parts supplier and utility supplier, each with a profile: where it is from, how far its reach goes, how it sees your garage and, for sponsors and manufacturers, the shares it holds.
+- The press: six fictional journalists and the four commentators write a headline about the garage after every final, in a tone set by how they see you. A warm view wins fans and a cold one loses them. The Staff panel has a Press tab with the headlines and the journalists, and you can meet the journalists at the paddock occasions.
+- Social occasions: the Staff panel's new Social tab opens at the season opening, the sponsor dinner, press day, the paddock party and the closing ceremony, with three conversations at each. Talk to someone the garage knows, or meet someone new, in a warm, direct, bold or discreet manner: relationships move, a bold approach may go wrong, and a discreet one may lead to an introduction.
+- The Staff panel has a Contacts tab: everyone the garage has dealt with (sponsors, suppliers, manufacturers and executives), the best relationship first, with the score and what it makes them to you: a friend, an acquaintance, a rival or an enemy.
+- Morale: mechanics and executives each have a morale from 0 to 100, shown in the Staff and Executives panels and on their pages in the Paddock. It moves each season with their pay, the garage's results, its facilities and (for mechanics) the workload, changes their work by up to 5%, and an unhappy mechanic may leave.
+
+### Changed
+
+- The game is fully fictional with no mapping to real cars or makers anywhere: the real-counterpart columns and the optional `mod_mapping.json` are gone from the design document. The starting roster is unchanged, at 31 manufacturers and 96 models.
+
 ## [0.2.0-beta4] - 2026-11-07
 
 A beta of the 0.2.0 release (M6, depth): the fourth slice, ownership and the cap table. Saves from 0.1.x still load; every garage is given its owners, and every computer garage its business, when the save opens.

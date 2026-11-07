@@ -165,6 +165,7 @@ export function About() {
             <p>{t('about.describe2')}</p>
             <p>{t('about.describe3')}</p>
             <p className="lc-num">{t('about.version', { version: APP_VERSION })}</p>
+            <p className="text-lc-dim">{t('about.fiction')}</p>
             <p>{t('about.maker')}</p>
             <section className="space-y-2">
               <h3 className="lc-display text-sm text-lc-dim">{t('about.findUs')}</h3>

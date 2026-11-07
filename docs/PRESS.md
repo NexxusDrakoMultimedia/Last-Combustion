@@ -68,6 +68,10 @@ The logo and the name are trademarks of Nexxus Drako Multimedia. You may use the
 
 The colours are maroon `#a3203a`, off-white `#e6ebf0` and near-black `#0d1116`. The lettering is outlined, so the files look the same without any font. The logo is made by `tools/brand/build_logo.py` and the images by `scripts/brand.mjs`.
 
+## Disclaimer
+
+Last Combustion is a work of fiction. The manufacturers, cars, sponsors, suppliers, garages, drivers, executives, journalists and every other character are invented, and any resemblance to real people, living or dead, or to real companies, products, brands or events is purely coincidental. Names are made up from lists and may by chance match a real person's. Real towns and roads are used only to set the scene. No real person, brand or organisation has endorsed this game or has any connection with it.
+
 ## Using the name and logo
 
 Please write about the game, review it, stream it and make videos of it: no permission is needed. Please do not use the name, the logo, or the characters we reserve in the name or branding of another product, or suggest that something is made or approved by Nexxus Drako Multimedia. The full policy is in [TRADEMARKS.md](../TRADEMARKS.md).

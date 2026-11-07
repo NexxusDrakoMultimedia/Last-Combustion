@@ -3,8 +3,8 @@
 # SPDX-FileCopyrightText: Nexxus Drako Multimedia
 """Builds data/manufacturers.json and data/car_models.json from the tables in the GDD.
 
-Real-world counterparts are deliberately left out: they belong only in the optional
-mod_mapping.json (see the GDD, "Fictional manufacturers and cars").
+Everything is fictional: the tables carry no real-world counterparts, and neither does anything else
+(see the GDD, "Fictional manufacturers and cars").
 Each manufacturer must have 2 to 5 models.
 Usage: python3 tools/data/build_cars.py
 """
@@ -66,13 +66,13 @@ def table_rows(heading, first_cell):
     return rows
 
 manufacturers = []
-for name, home, mtype, character, _real in table_rows('**Manufacturers**', '| Fictional |'):
+for name, home, mtype, character in table_rows('**Manufacturers**', '| Fictional |'):
     manufacturers.append({'id': slug(name), 'name': name, 'homeCountry': COUNTRY[home],
                           'type': TYPE[mtype], 'character': character})
 by_name = {m['name']: m for m in manufacturers}
 
 models = []
-for name, tier, kg, tyre, ps, _real in table_rows('**Models** (max tyre', '| Fictional model |'):
+for name, tier, kg, tyre, ps in table_rows('**Models** (max tyre', '| Fictional model |'):
     maker = by_name[name.split(' ')[0]]
     kerb = int(kg.replace(',', ''))
     max_tyre = int(tyre.replace(' mm', ''))
