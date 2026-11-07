@@ -46,6 +46,17 @@ export function ensureBusinesses(db: Database, year: number): void {
       strength: r.strength as number,
     }),
   );
+  // The job market is read once and used up as people are taken on, best first.
+  const mechanicMarket = marketMechanics(db).sort((a, b) => b.skill - a.skill || a.id - b.id);
+  const executiveMarkets = new Map<ExecutiveRole, ReturnType<typeof marketExecutives>>();
+  const executiveMarket = (role: ExecutiveRole) => {
+    if (!executiveMarkets.has(role))
+      executiveMarkets.set(
+        role,
+        marketExecutives(db, role).sort((a, b) => b.skill - a.skill || a.id - b.id),
+      );
+    return executiveMarkets.get(role)!;
+  };
   for (const g of all(db, COMPUTER_GARAGES)) {
     const id = g.id as number;
     const prestige = g.prestige as number;
@@ -58,12 +69,13 @@ export function ensureBusinesses(db: Database, year: number): void {
     for (const role of vacantRoles(prestige, filled)) {
       const e = drawExecutive(stream, role);
       // Now and then the seat goes to someone on the job market: the same person, on a new contract.
-      const market = marketExecutives(db, role).sort((a, b) => b.skill - a.skill || a.id - b.id);
+      const market = executiveMarket(role);
       if (market.length > 0 && stream.chance(0.5)) {
+        const rehired = market.shift()!;
         db.run(
           `UPDATE executive SET status = 'employed', garage_id = ?, left_on = NULL, left_reason = NULL,
                   start_year = ?, end_year = ?, hired_on = ? WHERE id = ?`,
-          [id, year, year + e.years, `${year}-02-01`, market[0]!.id],
+          [id, year, year + e.years, `${year}-02-01`, rehired.id],
         );
         continue;
       }
@@ -105,11 +117,11 @@ export function ensureBusinesses(db: Database, year: number): void {
     );
     for (let i = crew; i < crewSize(entries); i++) {
       // Half the time a vacancy goes to someone on the job market, who is the same person again.
-      const market = marketMechanics(db).sort((a, b) => b.skill - a.skill || a.id - b.id);
-      if (market.length > 0 && stream.chance(0.5)) {
+      if (mechanicMarket.length > 0 && stream.chance(0.5)) {
+        const rehired = mechanicMarket.shift()!;
         db.run(
           'UPDATE staff SET garage_id = ?, left_on = NULL, left_reason = NULL, hired_on = ? WHERE id = ?',
-          [id, `${year}-02-01`, market[0]!.id],
+          [id, `${year}-02-01`, rehired.id],
         );
         continue;
       }
