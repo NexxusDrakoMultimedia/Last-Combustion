@@ -7,6 +7,8 @@ import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
 import { playPrelims } from '../../src/db/prelims';
 import { recordBook } from '../../src/db/records';
+import { driverProfile, garageProfile } from '../../src/db/registry';
+import { roundClassification } from '../../src/db/tables';
 import { startNextSeason } from '../../src/db/rollover';
 import { endSeason } from '../../src/db/season';
 import { createNewDatabase } from '../../src/db/session';
@@ -181,6 +183,66 @@ describe('season awards over two seasons', () => {
     for (const row of ranking('nation_fans').board) expect(row.flag).toMatch(/^[A-Za-z-]{2,}$/);
     // A car on a board has the plate to show.
     for (const row of ranking('car_fans').board.slice(0, 5)) expect(row.plate).toBeTruthy();
+  });
+
+  it('logs attention flags, ranks them for drivers and garages and shows them in the Registry', () => {
+    const logged = Number(
+      scalar(
+        db,
+        "SELECT COUNT(*) FROM event_log ev JOIN entry e ON e.id = ev.entry_id WHERE ev.type = 'attention' AND e.series = 'main'",
+      ),
+    );
+    expect(logged).toBeGreaterThan(0);
+    const book = recordBook(db);
+    for (const id of ['driver_attention', 'garage_attention']) {
+      const record = book.records.find((r) => r.id === id)!;
+      expect(record, id).toBeDefined();
+      expect(
+        record.board.reduce((sum, row) => sum + row.value, 0),
+        id,
+      ).toBe(logged);
+    }
+    // The top driver's profile lists exactly the flags the board counts, and so does their garage's.
+    const top = book.records.find((r) => r.id === 'driver_attention')!;
+    const profile = driverProfile(db, top.subjectId);
+    expect(profile.attention).toHaveLength(top.value);
+    for (const mark of profile.attention) {
+      expect(mark.z).toBeGreaterThanOrEqual(2.5);
+      expect(['prelim', 'final']).toContain(mark.scope);
+    }
+    const garageTop = book.records.find((r) => r.id === 'garage_attention')!;
+    expect(garageProfile(db, garageTop.subjectId).attention).toHaveLength(garageTop.value);
+    // The flagged run is marked in that round's prelim results.
+    const first = profile.attention[0]!;
+    const marked = roundClassification(db, first.year, first.round).prelims.filter(
+      (r) => r.attention,
+    );
+    expect(marked.map((r) => r.driverId)).toContain(top.subjectId);
+  });
+
+  it('gives a flagged driver fans, and grows the series for each flag', () => {
+    const season = (year: number) =>
+      db.exec(`SELECT id, series_fans FROM season WHERE year = ${year}`)[0]!.values[0]!;
+    const [id, audience] = season(2031) as [number, number];
+    const flags = db.exec(
+      `SELECT e.driver_id, COUNT(*) FROM event_log ev JOIN entry e ON e.id = ev.entry_id AND e.series = 'main'
+         JOIN round ro ON ro.id = ev.round_id WHERE ev.type = 'attention' AND ro.season_id = ${id}
+        GROUP BY e.driver_id`,
+    )[0]!.values as [number, number][];
+    expect(flags.length).toBeGreaterThan(0);
+    for (const [driverId, n] of flags) {
+      const gained = Number(
+        scalar(
+          db,
+          `SELECT gained FROM driver_season_fans WHERE season_id = ${id} AND driver_id = ${driverId}`,
+        ),
+      );
+      // At least 0.6% of the audience for each flag, before any other gain or bonus.
+      expect(gained).toBeGreaterThanOrEqual(Math.floor(audience * 0.006) * n - n);
+    }
+    const total = flags.reduce((sum, [, n]) => sum + n, 0);
+    const [, next] = season(2032) as [number, number];
+    expect(next).toBe(Math.round(audience * (1 + 0.25 + 0.01 + 0.005 * total)));
   });
 
   it('gives every record a leaderboard of everyone with a non-zero score, best first', () => {

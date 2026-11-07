@@ -213,7 +213,19 @@ export function startNextSeason(db: Database): Rollover {
         year,
         last.era as string,
         last.final_size as number,
-        Math.round((last.series_fans as number) * (1 + seriesGrowth(year))),
+        Math.round(
+          (last.series_fans as number) *
+            (1 +
+              seriesGrowth(
+                year,
+                Number(
+                  db.exec(
+                    `SELECT COUNT(*) FROM event_log ev JOIN round ro ON ro.id = ev.round_id
+                      WHERE ro.season_id = ${String(last.id)} AND ev.type = 'attention'`,
+                  )[0]!.values[0]![0],
+                ),
+              )),
+        ),
         'scheduled',
       ],
     );

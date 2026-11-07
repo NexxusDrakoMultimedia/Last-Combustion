@@ -108,6 +108,9 @@
     "partFailureFrom": 85
   },
   "sim": {
+    "attention": {
+      "zThreshold": 2.5
+    },
     "kc": 0.12,
     "kd": 0.09,
     "powerToWeight": {
@@ -378,6 +381,7 @@
       "finalRest": 0.001,
       "pointsScorer": 0.0001,
       "pole": 0.003,
+      "attention": 0.006,
       "overtake": 0.0002,
       "hometownMultiplier": 1.2
     },
@@ -395,7 +399,8 @@
       "earlyYears": 5,
       "earlyGrowth": 0.25,
       "lateGrowth": 0.08,
-      "festivalGrowth": 0.01
+      "festivalGrowth": 0.01,
+      "attentionGrowth": 0.005
     }
   },
   "staff": {

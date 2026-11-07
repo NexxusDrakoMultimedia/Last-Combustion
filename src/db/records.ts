@@ -150,6 +150,16 @@ export function recordBook(db: Database): RecordBook {
       return true;
     });
   };
+  // Attention flags raised, all told (see "Attention flags" in the GDD).
+  const attentionFlagsBy = (scope: 'driver' | 'garage'): Row[] =>
+    all(
+      db,
+      `SELECT x.id AS id, x.name AS name, COUNT(*) AS value
+         FROM event_log ev JOIN entry e ON e.id = ev.entry_id AND e.series = 'main'
+         JOIN ${scope} x ON x.id = e.${scope}_id
+        WHERE ev.type = 'attention'
+        GROUP BY x.id ORDER BY value DESC, MIN(ev.id), x.id`,
+    );
   const titles = (scope: 'driver' | 'garage'): Row[] =>
     all(
       db,
@@ -215,6 +225,8 @@ export function recordBook(db: Database): RecordBook {
       'garage_prestige',
       'garage',
     ),
+    recordOf(attentionFlagsBy('driver'), 'driver_attention', 'driver'),
+    recordOf(attentionFlagsBy('garage'), 'garage_attention', 'garage'),
   ];
 
   const seasons = all(

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { formatGap, formatLapTime, formatMoney, formatPoints, t } from '../../i18n';
 import { TABLE_KINDS, type ResultRow, type TableKind } from '../../db/tables';
 import { useCareerStore } from '../../state/career.store';
+import { AttnFlag } from '../AttnFlag';
 import { RegistryLink } from '../RegistryLink';
 import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
@@ -245,6 +246,7 @@ export function ResultsPanel() {
                       <RegistryLink to={{ kind: 'driver', id: r.driverId }}>
                         {r.driver}
                       </RegistryLink>
+                      {r.attention && <AttnFlag />}
                       {r.pole && session === 'prelims' && ` ${t('tables.pole')}`}
                     </span>
                   </td>
