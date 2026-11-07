@@ -5,9 +5,11 @@ import { shareTotals, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
 import { relationshipKind, type RelationshipKind } from '../sim/relationships';
 import { SUPPLIERS, supplierById } from '../sim/supply';
+import { onMarket } from '../sim/jobs';
 import { ensureCapTables, garageValuation } from './equity';
 import { all } from './entries';
 import { readCareer } from './career';
+import { ensureOrigins, originOf, placeLineOf, type Origin, type PlaceLine } from './origins';
 import type { RegistryStatus } from './status';
 
 /** The people the Registry keeps a profile of, apart from drivers: executives, staff and shareholders. */
@@ -24,6 +26,10 @@ export interface PersonRef {
   role: string;
   garage: string | null;
   status: RegistryStatus;
+  /** Their flag (a nation code), or null for a utility supplier, which has none. */
+  flag: string | null;
+  /** Out of work but not retired: let go, quit or between jobs, and on the market until they retire. */
+  lookingForWork: boolean;
   /** The years they were active, "2031-2033" (just the first year if they began and left in it), or from when they began if they still are. */
   years: string;
 }
@@ -38,23 +44,36 @@ function activeYears(from: string | null, to: string | null): string {
 
 const yearOf = (db: Database): number => Number(readCareer(db)?.gameDate.slice(0, 4) ?? 0);
 
-/** The key that makes two holdings one shareholder: the same kind of holder with the same name and link. */
-const HOLDER = 'holder_type, holder_name, COALESCE(holder_id, -1)';
-
 /** Every executive (who has been employed), staff member and shareholder, for the Registry's People tab. */
 export function peopleIndex(db: Database): PersonRef[] {
   ensureCapTables(db);
+  ensureOrigins(db);
+  const year = yearOf(db);
+  /** Whether someone who has left is still on the job market (see `onMarket`). */
+  const looking = (kind: 'executive' | 'staff', r: Record<string, unknown>): boolean =>
+    r.left_on !== null &&
+    onMarket(
+      kind === 'staff' ? 'mechanic' : 'executive',
+      {
+        reason: (r.left_reason as string | null) ?? null,
+        leftYear: Number(String(r.left_on).slice(0, 4)),
+        age: year - ((r.birth_year as number | null) ?? year - 40),
+      },
+      year,
+    );
   const executives = all(
     db,
-    `SELECT e.id, e.name, e.role, e.status, e.hired_on, e.left_on, g.name AS garage FROM executive e
+    `SELECT e.id, e.name, e.role, e.status, e.hired_on, e.left_on, e.left_reason, e.birth_year, e.nationality, g.name AS garage FROM executive e
        JOIN garage g ON g.id = e.garage_id WHERE e.status IN ('employed', 'left') ORDER BY e.name, e.id`,
   ).map((r): PersonRef => ({
     kind: 'executive',
     id: r.id as number,
     name: r.name as string,
     role: r.role as string,
-    garage: r.garage as string,
-    status: r.status === 'employed' ? 'active' : 'retired',
+    garage: r.status === 'employed' ? (r.garage as string) : null,
+    flag: r.nationality as string | null,
+    lookingForWork: r.status !== 'employed' && looking('executive', r),
+    status: r.status === 'employed' || looking('executive', r) ? 'active' : 'retired',
     years: activeYears(
       r.hired_on as string | null,
       r.status === 'employed' ? null : (r.left_on as string | null),
@@ -62,15 +81,17 @@ export function peopleIndex(db: Database): PersonRef[] {
   }));
   const staff = all(
     db,
-    `SELECT s.id, s.name, s.role, s.hired_on, s.left_on, g.name AS garage FROM staff s
+    `SELECT s.id, s.name, s.role, s.hired_on, s.left_on, s.left_reason, s.birth_year, s.nationality, g.name AS garage FROM staff s
        JOIN garage g ON g.id = s.garage_id ORDER BY s.name, s.id`,
   ).map((r): PersonRef => ({
     kind: 'staff',
     id: r.id as number,
     name: r.name as string,
     role: r.role as string,
-    garage: r.garage as string,
-    status: r.left_on === null ? 'active' : 'retired',
+    garage: r.left_on === null ? (r.garage as string) : null,
+    flag: r.nationality as string | null,
+    lookingForWork: r.left_on !== null && looking('staff', r),
+    status: r.left_on === null || looking('staff', r) ? 'active' : 'retired',
     years: activeYears(r.hired_on as string, r.left_on as string | null),
   }));
   // The companies: sponsors, manufacturers and suppliers, all of whom can hold shares.
@@ -83,44 +104,107 @@ export function peopleIndex(db: Database): PersonRef[] {
         GROUP BY holder_type, holder_id`,
     ).map((r) => [r.k as string, String(r.garages).replaceAll(',', ', ')]),
   );
-  const company = (kind: CompanyKind, id: number, name: string): PersonRef => ({
+  const company = (
+    kind: CompanyKind,
+    id: number,
+    name: string,
+    flag: string | null,
+  ): PersonRef => ({
     kind,
     id,
     name,
     role: kind,
     garage: held.get(`${kind}:${id}`) ?? null,
+    flag,
+    lookingForWork: false,
     status: 'active',
     years: '',
   });
   const companies = [
-    ...all(db, 'SELECT id, name FROM sponsor ORDER BY name, id').map((r) =>
-      company('sponsor', r.id as number, r.name as string),
+    ...all(db, 'SELECT id, name, home_country FROM sponsor ORDER BY name, id').map((r) =>
+      company('sponsor', r.id as number, r.name as string, r.home_country as string),
     ),
-    ...all(db, 'SELECT id, name FROM manufacturer ORDER BY name, id').map((r) =>
-      company('manufacturer', r.id as number, r.name as string),
+    ...all(db, 'SELECT id, name, home_country FROM manufacturer ORDER BY name, id').map((r) =>
+      company('manufacturer', r.id as number, r.name as string, r.home_country as string),
     ),
-    ...all(db, 'SELECT id, name FROM part_supplier ORDER BY name, id').map((r) =>
-      company('supplier', r.id as number, r.name as string),
+    ...all(db, 'SELECT id, name, home_country FROM part_supplier ORDER BY name, id').map((r) =>
+      company('supplier', r.id as number, r.name as string, r.home_country as string),
     ),
-    ...SUPPLIERS.map((u) => company('utility', u.id, u.name)),
+    ...SUPPLIERS.map((u) => company('utility', u.id, u.name, null)),
   ];
   // A shareholder who holds in several garages is one person, listed once, at their first holding.
-  const shareholders = all(
+  // Their byline is the garage where their stake is worth most; an owner's is the garage they own.
+  const worth = new Map<number, number>(
+    all(
+      db,
+      `SELECT v.garage_id AS id, v.value FROM valuation v
+        WHERE v.date = (SELECT MAX(date) FROM valuation WHERE garage_id = v.garage_id)`,
+    ).map((r) => [r.id as number, r.value as number]),
+  );
+  const issued = new Map<number, number>(
+    all(db, 'SELECT garage_id AS id, SUM(shares) AS n FROM shareholding GROUP BY garage_id').map(
+      (r) => [r.id as number, r.n as number],
+    ),
+  );
+  const holdings = all(
     db,
-    `SELECT MIN(s.id) AS id, MIN(s.since) AS since, s.holder_name, s.holder_type,
-            GROUP_CONCAT(g.name, ', ') AS garages
+    `SELECT s.id, s.since, s.holder_name, s.holder_type, s.holder_id, s.garage_id, s.shares, s.nationality, g.name AS garage
        FROM shareholding s JOIN garage g ON g.id = s.garage_id
       WHERE NOT (s.holder_type IN ('sponsor', 'manufacturer') AND s.holder_id IS NOT NULL)
-      GROUP BY ${HOLDER} ORDER BY s.holder_name, id`,
-  ).map((r): PersonRef => ({
-    kind: 'shareholder',
-    id: r.id as number,
-    name: r.holder_name as string,
-    role: r.holder_type as string,
-    garage: r.garages as string,
-    status: 'active',
-    years: activeYears(r.since as string, null),
-  }));
+        AND NOT (s.holder_type = 'driver' AND NOT EXISTS (
+              SELECT 1 FROM driver d WHERE d.id = s.holder_id AND d.retired_year IS NOT NULL))
+      ORDER BY s.holder_name, s.id`,
+  );
+  const people = new Map<
+    string,
+    {
+      id: number;
+      since: string;
+      name: string;
+      type: string;
+      garage: string;
+      value: number;
+      flag: string | null;
+    }
+  >();
+  for (const h of holdings) {
+    const key = `${h.holder_type as string}|${h.holder_name as string}|${(h.holder_id as number | null) ?? -1}`;
+    const gid = h.garage_id as number;
+    const stake =
+      ((h.shares as number) / Math.max(1, issued.get(gid) ?? 1)) * (worth.get(gid) ?? 0);
+    const seen = people.get(key);
+    if (!seen) {
+      people.set(key, {
+        id: h.id as number,
+        since: h.since as string,
+        name: h.holder_name as string,
+        type: h.holder_type as string,
+        garage: h.garage as string,
+        value: stake,
+        flag: h.nationality as string | null,
+      });
+    } else {
+      if (String(h.since) < seen.since) seen.since = h.since as string;
+      // The most valuable position gives the byline (and the first holding found keeps the profile id).
+      if (stake > seen.value) {
+        seen.value = stake;
+        seen.garage = h.garage as string;
+      }
+    }
+  }
+  const shareholders = [...people.values()]
+    .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id)
+    .map((p): PersonRef => ({
+      kind: 'shareholder',
+      id: p.id,
+      name: p.name,
+      role: p.type,
+      garage: p.garage,
+      flag: p.flag,
+      lookingForWork: false,
+      status: 'active',
+      years: activeYears(p.since, null),
+    }));
   return [...executives, ...staff, ...companies, ...shareholders];
 }
 
@@ -145,6 +229,8 @@ export interface ExecutiveProfile {
   leftReason: string | null;
   /** Morale now, 0 to 100, or null once they have left. */
   morale: number | null;
+  /** Their flag, hometown and residence. */
+  origin: Origin | null;
 }
 
 export interface StaffProfile {
@@ -159,6 +245,8 @@ export interface StaffProfile {
   leftOn: string | null;
   /** Morale now, 0 to 100, or null once they have left. */
   morale: number | null;
+  /** Their flag, hometown and residence. */
+  origin: Origin | null;
 }
 
 export interface HoldingLine {
@@ -179,6 +267,10 @@ export interface ShareholderProfile {
   name: string;
   holderType: string;
   holdings: HoldingLine[];
+  /** Their flag, hometown and residence. */
+  origin: Origin | null;
+  /** A holder who is a driver (or was) has a racing profile too, linked here. */
+  driver: { id: number; name: string } | null;
 }
 
 /** The holdings a set of shareholding rows make: where, how much, what was paid and what it is worth now. */
@@ -203,6 +295,19 @@ function holdingLines(db: Database, rows: Record<string, unknown>[]): HoldingLin
   });
 }
 
+/** What a driver holds in garages: the stakes they have bought with their winnings. */
+export function driverHoldings(db: Database, driverId: number): HoldingLine[] {
+  return holdingLines(
+    db,
+    all(
+      db,
+      `SELECT s.id, s.garage_id, g.name AS garage, s.class, s.shares, s.paid, s.since FROM shareholding s
+         JOIN garage g ON g.id = s.garage_id WHERE s.holder_type = 'driver' AND s.holder_id = ? ORDER BY s.id`,
+      [driverId],
+    ),
+  );
+}
+
 export interface CompanyProfile {
   kind: CompanyKind;
   id: number;
@@ -216,6 +321,8 @@ export interface CompanyProfile {
   /** What the player's garage and it are to each other, if they have dealt. */
   relationship: { score: number; kind: RelationshipKind } | null;
   holdings: HoldingLine[];
+  /** Where its headquarters are (a sponsor, a manufacturer or a parts supplier). */
+  headquarters: PlaceLine | null;
 }
 
 function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyProfile {
@@ -223,17 +330,27 @@ function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyPro
   let country: string | null = null;
   let tier: string | null = null;
   let category: string | null = null;
+  let hq: number | null = null;
   if (kind === 'sponsor') {
-    const r = all(db, 'SELECT name, home_country, tier FROM sponsor WHERE id = ?', [id])[0];
+    const r = all(db, 'SELECT name, home_country, tier, hq_place_id FROM sponsor WHERE id = ?', [
+      id,
+    ])[0];
+    hq = (r?.hq_place_id as number | null) ?? null;
     name = r?.name as string | undefined;
     country = (r?.home_country as string | undefined) ?? null;
     tier = (r?.tier as string | undefined) ?? null;
   } else if (kind === 'manufacturer') {
-    const r = all(db, 'SELECT name, home_country FROM manufacturer WHERE id = ?', [id])[0];
+    const r = all(db, 'SELECT name, home_country, hq_place_id FROM manufacturer WHERE id = ?', [
+      id,
+    ])[0];
+    hq = (r?.hq_place_id as number | null) ?? null;
     name = r?.name as string | undefined;
     country = (r?.home_country as string | undefined) ?? null;
   } else if (kind === 'supplier') {
-    const r = all(db, 'SELECT name, home_country FROM part_supplier WHERE id = ?', [id])[0];
+    const r = all(db, 'SELECT name, home_country, hq_place_id FROM part_supplier WHERE id = ?', [
+      id,
+    ])[0];
+    hq = (r?.hq_place_id as number | null) ?? null;
     name = r?.name as string | undefined;
     country = (r?.home_country as string | undefined) ?? null;
   } else {
@@ -258,6 +375,7 @@ function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyPro
     country,
     tier,
     category,
+    headquarters: placeLineOf(db, hq),
     relationship: dealt
       ? { score: dealt.score as number, kind: relationshipKind(dealt.score as number) }
       : null,
@@ -277,7 +395,15 @@ function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyPro
 
 export type PersonProfile = ExecutiveProfile | StaffProfile | ShareholderProfile | CompanyProfile;
 
+/** Whether a death is on record for someone (an executive's row says they retired; the death says why). */
+function diedOn(db: Database, kind: 'executive' | 'mechanic', id: number): boolean {
+  return (
+    all(db, 'SELECT 1 FROM death WHERE person_type = ? AND person_id = ?', [kind, id]).length > 0
+  );
+}
+
 export function personProfile(db: Database, kind: PersonKind, id: number): PersonProfile {
+  ensureOrigins(db);
   if (COMPANY_KINDS.includes(kind as CompanyKind))
     return companyProfile(db, kind as CompanyKind, id);
   if (kind === 'executive') {
@@ -300,8 +426,9 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       hiredOn: (r.hired_on as string | null) ?? null,
       contractEnds: (r.end_year as number | null) ?? null,
       leftOn: (r.left_on as string | null) ?? null,
-      leftReason: (r.left_reason as string | null) ?? null,
+      leftReason: diedOn(db, 'executive', id) ? 'died' : ((r.left_reason as string | null) ?? null),
       morale: r.status === 'employed' ? (r.morale as number) : null,
+      origin: originOf(db, r.nationality, r.hometown_place_id, r.residence_place_id),
     };
   }
   if (kind === 'staff') {
@@ -322,12 +449,13 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       hiredOn: r.hired_on as string,
       leftOn: (r.left_on as string | null) ?? null,
       morale: r.left_on === null ? (r.morale as number) : null,
+      origin: originOf(db, r.nationality, r.hometown_place_id, r.residence_place_id),
     };
   }
   ensureCapTables(db);
   const first = all(
     db,
-    'SELECT holder_type, holder_name, holder_id FROM shareholding WHERE id = ?',
+    'SELECT holder_type, holder_name, holder_id, nationality, hometown_place_id, residence_place_id FROM shareholding WHERE id = ?',
     [id],
   )[0];
   if (!first) throw new Error(`There is no shareholder ${id}.`);
@@ -356,5 +484,13 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
     name: first.holder_name as string,
     holderType: first.holder_type as string,
     holdings,
+    origin: originOf(db, first.nationality, first.hometown_place_id, first.residence_place_id),
+    driver:
+      first.holder_type === 'driver' && first.holder_id !== null
+        ? {
+            id: first.holder_id as number,
+            name: first.holder_name as string,
+          }
+        : null,
   };
 }

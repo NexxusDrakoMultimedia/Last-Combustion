@@ -25,6 +25,7 @@ import { partConditions, wearParts } from '../../src/db/repairs';
 import { createNewDatabase, packDatabase, unpackDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { approachableSponsors, openSponsorNegotiation } from '../../src/db/sponsors';
+import { sponsors } from '../../src/sim/sponsors';
 import { createStarterOffers } from '../../src/db/starter';
 import { fitPart, upgradeView } from '../../src/db/upgrades';
 import { persistWorld } from '../../src/db/world';
@@ -257,9 +258,16 @@ describe('what executives do', () => {
     const plain = fresh('executives-sponsor');
     const led = fresh('executives-sponsor');
     appoint(led.db, led.garageId, 'commercial_director');
-    expect(approachableSponsors(led.db, led.garageId).length).toBeGreaterThan(
-      approachableSponsors(plain.db, plain.garageId).length,
-    );
+    // The director lifts how far the garage's prestige reaches, so the offers can come from higher up.
+    const prestige = (g: { db: Database; garageId: number }) =>
+      Number(g.db.exec(`SELECT prestige FROM garage WHERE id = ${g.garageId}`)[0]!.values[0]![0]);
+    const bonus = garageBonuses(led.db, led.garageId).sponsorPrestige;
+    expect(bonus).toBeGreaterThan(0);
+    for (const s of approachableSponsors(led.db, led.garageId))
+      expect(sponsors.find((x) => x.id === s.stableId)!.minPrestige).toBeLessThanOrEqual(
+        prestige(led) + bonus,
+      );
+    expect(approachableSponsors(plain.db, plain.garageId).length).toBeLessThanOrEqual(3);
     const fee = (g: { db: Database; garageId: number }) =>
       openSponsorNegotiation(g.db, g.garageId, 'wattle-hardware').fairValue;
     const ledFee = fee(led);

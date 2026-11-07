@@ -180,6 +180,14 @@ export function Shell() {
         rookies: rollover.rookies,
       }),
     );
+  for (const d of rollover?.deaths ?? [])
+    news.push(
+      t('hub.death', {
+        name: d.name,
+        role: t(`death.role.${d.kind}` as never),
+        cause: t(`death.cause.${d.cause}` as never),
+      }),
+    );
   if (notice) news.push(t(notice.key, notice.values));
 
   return (

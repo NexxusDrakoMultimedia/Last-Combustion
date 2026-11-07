@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { beforeAll, describe, expect, it } from 'vitest';
+import { moveDateTo } from '../../src/db/calendar';
 import { createCareer } from '../../src/db/career';
 import { contactsBook } from '../../src/db/contacts';
 import { ensureCapTables } from '../../src/db/equity';
@@ -44,6 +45,37 @@ function world(seed: string): { db: Database; id: number } {
   db.run("UPDATE career SET game_date = '2031-03-31'");
   return { db, id };
 }
+
+describe('conversations the player missed', () => {
+  it('are held by themselves once the occasion has ended, and only once', () => {
+    const { db, id } = world('social-auto');
+    // The season opening runs 31 March to 2 April. Talk once, then let it end.
+    converse(db, id, null, 'warm');
+    moveDateTo(db, '2031-04-02');
+    expect(socialView(db, id).history.filter((h) => h.auto)).toHaveLength(0);
+    moveDateTo(db, '2031-04-03');
+    const auto = socialView(db, id).history.filter((h) => h.auto);
+    expect(auto).toHaveLength(2);
+    expect(auto.every((h) => h.occasion === 'season_opening' && h.date === '2031-04-02')).toBe(
+      true,
+    );
+    moveDateTo(db, '2031-04-10');
+    expect(socialView(db, id).history.filter((h) => h.auto)).toHaveLength(2);
+  });
+
+  it('are the same however the days are skipped, and leave an occasion that was fully used alone', () => {
+    const run = (steps: string[]) => {
+      const { db, id } = world('social-auto-same');
+      for (const to of steps) moveDateTo(db, to);
+      return socialView(db, id).history.map((h) => [h.occasion, h.party.id, h.manner, h.delta]);
+    };
+    expect(run(['2031-04-05'])).toEqual(run(['2031-04-01', '2031-04-03', '2031-04-05']));
+    const { db, id } = world('social-auto-used');
+    for (const m of ['warm', 'direct', 'bold'] as const) converse(db, id, null, m);
+    moveDateTo(db, '2031-04-05');
+    expect(socialView(db, id).history.filter((h) => h.auto)).toHaveLength(0);
+  });
+});
 
 describe('social occasions in the database', () => {
   it('opens the season opening on 31 March, with three conversations, and says what is next before it', () => {

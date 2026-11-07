@@ -28,6 +28,7 @@ import {
 } from './data';
 import {
   garageName,
+  placeInName,
   nickname,
   nicknameThemesFor,
   personName,
@@ -87,7 +88,6 @@ for (const place of places) {
   placesByCountry.set(place.country, list);
 }
 const placeById = new Map(places.map((p) => [p.id, p]));
-const modelById = new Map(carModels.map((m) => [m.id, m]));
 const makerById = new Map(manufacturers.map((m) => [m.id, m]));
 
 const placeIn = (rng: RandomStream, country: string): string =>
@@ -212,6 +212,19 @@ function homeName(placeId: string): string {
 }
 
 /**
+ * Where a garage is from, given its name: the place the name carries if it carries one, otherwise
+ * the flag and headquarters it was drawn with.
+ */
+function homeOf(
+  name: string,
+  flag: string,
+  hqPlaceId: string,
+): { flag: string; hqPlaceId: string } {
+  const named = placeInName(name);
+  return named ? { flag: named.country, hqPlaceId: named.id } : { flag, hqPlaceId };
+}
+
+/**
  * A new computer garage for a season after the first: a one-car team founded that year, with a
  * name, nation, base and colours drawn the same way as the first field's garages.
  */
@@ -230,14 +243,18 @@ export function makeNewGarage(
   const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
   // The flag is where the garage's main factory, founder, owner or executive office is. To race in
   // the series the garage must be based in an Australian state or territory.
-  const hqPlaceId = founder?.hqPlaceId ?? placeIn(rng, flag);
-  const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(rng, HOST_COUNTRY);
+  const drawnHq = founder?.hqPlaceId ?? placeIn(rng, flag);
+  const name = garageName(rng, nationality, usedNames, homeName(drawnHq));
+  // A garage named for a place is from that place: its flag and headquarters are there.
+  const home = homeOf(name, flag, drawnHq);
+  const hqPlaceId = home.hqPlaceId;
+  const basePlaceId = home.flag === HOST_COUNTRY ? hqPlaceId : placeIn(rng, HOST_COUNTRY);
   const [primary, secondary] = rng.pick(COLOUR_PAIRS);
   const prestige = seasonBalance.garages.newPrestige;
   return {
     id,
-    name: garageName(rng, nationality, usedNames, homeName(hqPlaceId)),
-    flag,
+    name,
+    flag: home.flag,
     basePlaceId,
     hqPlaceId,
     homeState: (placeById.get(basePlaceId) as { region: string }).region,
@@ -307,8 +324,7 @@ export function generateWorld(seed: string | number): World {
   // rest of the world does not change.
   const bRng = rng.stream('worldgen:garage-bases');
   const sizes = garageSizes(gRng);
-  const drakeIndex = sizes.findIndex((s) => s === 3);
-  const usedNames = new Set<string>([DRAKE_MOTORSPORTS]);
+  const usedNames = new Set<string>();
 
   // --- drivers ---
   const dRng = rng.stream('worldgen:drivers');
@@ -337,18 +353,17 @@ export function generateWorld(seed: string | number): World {
   const members = sizes.map((): Driver[] => []);
   drivers.forEach((d, i) => members[garageOf[i] as number]?.push(d));
   const garages: Garage[] = sizes.map((size, index) => {
-    const isDrake = index === drakeIndex;
     const hostFlag = gRng.chance(cfg.garage.australianFlagShare);
-    const flag = isDrake || hostFlag ? HOST_COUNTRY : pickForeignNationality(gRng);
+    const flag = hostFlag ? HOST_COUNTRY : pickForeignNationality(gRng);
     const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
-    const prestige = clamp(
-      cfg.garage.prestigeBase + cfg.garage.prestigePerEntry * size + (isDrake ? 15 : 0),
-      1,
-      100,
-    );
-    const hqPlaceId = isDrake ? 'au-brisbane' : placeIn(gRng, flag);
-    const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(bRng, HOST_COUNTRY);
-    const [primary, secondary] = isDrake ? ['#7f0000', '#ffd900'] : gRng.pick(COLOUR_PAIRS);
+    const prestige = clamp(cfg.garage.prestigeBase + cfg.garage.prestigePerEntry * size, 1, 100);
+    const drawnHq = placeIn(gRng, flag);
+    const name = garageName(gRng, nationality, usedNames, homeName(drawnHq));
+    // A garage named for a place is from that place: its flag and headquarters are there.
+    const home = homeOf(name, flag, drawnHq);
+    const hqPlaceId = home.hqPlaceId;
+    const basePlaceId = home.flag === HOST_COUNTRY ? hqPlaceId : placeIn(bRng, HOST_COUNTRY);
+    const [primary, secondary] = gRng.pick(COLOUR_PAIRS);
     const profile: AiProfile =
       size === 1 && gRng.chance(0.6)
         ? 'local'
@@ -358,10 +373,8 @@ export function generateWorld(seed: string | number): World {
           );
     return {
       id: index + 1,
-      name: isDrake
-        ? DRAKE_MOTORSPORTS
-        : garageName(gRng, nationality, usedNames, homeName(hqPlaceId)),
-      flag,
+      name,
+      flag: home.flag,
       basePlaceId,
       hqPlaceId,
       homeState: (placeById.get(basePlaceId) as { region: string }).region,
@@ -471,28 +484,6 @@ export function generateWorld(seed: string | number): World {
     cars.push(car);
     driverCar.set(d.id, car);
   }
-  // Drake Motorsports keeps its founder's car, which is not entered in the series.
-  const spirit = modelById.get(SPIRIT_R7) as CarModelData;
-  const custom = customPlates[spirit.id];
-  const spiritPlate = custom
-    ? { plate: custom.plate, plateState: custom.state }
-    : plateFor(garages[drakeIndex] as Garage);
-  cars.push({
-    id: cars.length + 1,
-    modelId: spirit.id,
-    chassisNo: 'LC-HOM-R7-0313',
-    ...spiritPlate,
-    flag: 'JP',
-    fans: 0,
-    garageId: (garages[drakeIndex] as Garage).id,
-    modelYear: 2022,
-    roadKm: 24000,
-    raceKm: 0,
-    wear: wearFromKm(24000, 0, 'unique'),
-    kerbKg: spirit.kerbKg,
-    tyreWidthMm: equalizerMm(spirit.kerbKg, spirit.layout),
-  });
-
   // --- entries ---
   for (const d of drivers) {
     entries.push({
@@ -642,7 +633,6 @@ export function generateWorld(seed: string | number): World {
     seriesFans: f.seriesStart,
     rounds: calendar,
     officials: [
-      { name: 'Pyra Drake', role: 'chair', residencePlaceId: 'au-brisbane' },
       { name: 'Declan Marsh', role: 'technical', residencePlaceId: 'au-healesville' },
       { name: 'Ingrid Halloran', role: 'interpersonal', residencePlaceId: 'au-healesville' },
     ],

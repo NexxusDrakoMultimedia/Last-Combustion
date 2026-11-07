@@ -68,7 +68,8 @@ describe('founding the player garage', () => {
     expect(() => foundPlayerGarage(db, { ...setup, birthDate: '2020-01-01' })).toThrow(/18 to 50/);
     expect(() => foundPlayerGarage(db, { ...setup, birthDate: '1970-01-01' })).toThrow(/18 to 50/);
     expect(() => foundPlayerGarage(db, { ...setup, primaryColour: 'red' })).toThrow(/colours/);
-    expect(() => foundPlayerGarage(db, { ...setup, garageName: 'drake motorsports' })).toThrow(
+    const taken = String(db.exec('SELECT name FROM garage ORDER BY id LIMIT 1')[0]!.values[0]![0]);
+    expect(() => foundPlayerGarage(db, { ...setup, garageName: taken.toUpperCase() })).toThrow(
       /already exists/,
     );
     foundPlayerGarage(db, setup);
@@ -144,15 +145,11 @@ describe('where the player’s garage is based', () => {
 });
 
 describe('Drake Motorsports', () => {
-  it('stays based and headquartered in Brisbane, Queensland, and is never the garage the player takes over', () => {
+  it('is not in a new world, so the player never takes it over', () => {
     const db = fresh();
-    const id = foundPlayerGarage(db, { ...setup, flag: 'JP', baseState: 'WA' });
-    const drake = db.exec(
-      `SELECT g.id, g.is_player, g.home_state, b.name, h.name FROM garage g
-         JOIN place b ON b.id = g.base_place_id JOIN place h ON h.id = g.hq_place_id
-        WHERE g.name = 'Drake Motorsports'`,
-    )[0]!.values[0]!;
-    expect(drake[0]).not.toBe(id);
-    expect(drake.slice(1)).toEqual([0, 'Qld', 'Brisbane', 'Brisbane']);
+    foundPlayerGarage(db, { ...setup, flag: 'JP', baseState: 'WA' });
+    expect(
+      db.exec("SELECT COUNT(*) FROM garage WHERE name = 'Drake Motorsports'")[0]!.values[0]![0],
+    ).toBe(0);
   });
 });

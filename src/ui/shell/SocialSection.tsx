@@ -107,7 +107,8 @@ export function SocialSection() {
                   delta: signed(h.delta),
                 })}{' '}
                 {h.trouble && <span className="text-lc-bad">{t('social.trouble')}</span>}{' '}
-                {h.introduced && <span className="text-lc-dim">{t('social.introduced')}</span>}
+                {h.introduced && <span className="text-lc-dim">{t('social.introduced')}</span>}{' '}
+                {h.auto && <span className="text-lc-dim">{t('social.auto')}</span>}
               </li>
             ))}
           </ul>

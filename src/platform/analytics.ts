@@ -6,7 +6,7 @@ import type { TelemetryEvent, TelemetrySink } from './telemetry';
 /**
  * Optional web analytics (the Google tag, the secondary telemetry tool), used only on the hosted
  * web build. The measurement ID is given at build time as `VITE_GTAG_ID`; without it nothing here
- * does anything. The Google script is loaded only after the visitor accepts, never before.
+ * does anything. The Google script is loaded unless the visitor has opted out.
  */
 
 const CONSENT_KEY = 'lc.analytics-consent';

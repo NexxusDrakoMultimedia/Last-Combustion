@@ -12,6 +12,7 @@ import {
 import { addDays } from '../sim/worldgen/calendar';
 import { readCareer } from './career';
 import { flushDailyLife, settleDay, type DailyLifeRun } from './daily';
+import { fireMissedConversations } from './social';
 import { all } from './entries';
 
 export interface CalendarView {
@@ -64,6 +65,9 @@ export function moveDateTo(db: Database, target: string): string {
     // What changes from one day to the next. Whatever is done here must depend only on the seed and
     // the date, so that skipping a week gives the world that seven single days give.
     settleDay(db, date, daily);
+    // An occasion that has ended with conversations unspent has them held by itself.
+    const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+    if (player) fireMissedConversations(db, player.id as number);
   }
   // The day's delivery work is written to the ledger once for the whole skip.
   flushDailyLife(db, daily, date);

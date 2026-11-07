@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { eligibleSponsors, feePerRound, sponsors, titleSponsorFee } from '../../src/sim/sponsors';
 
 describe('the sponsor list', () => {
-  it('has fifteen sponsors across five tiers, each tier needing more prestige and carrying more weight', () => {
-    expect(sponsors).toHaveLength(15);
+  it('has thirty-six sponsors across five tiers, each tier needing more prestige and carrying more weight', () => {
+    expect(sponsors).toHaveLength(36);
     const tiers = ['local', 'regional', 'national', 'continental', 'global'] as const;
     const minOf = (t: string) =>
       Math.min(...sponsors.filter((s) => s.tier === t).map((s) => s.minPrestige));
@@ -15,13 +15,13 @@ describe('the sponsor list', () => {
       expect(minOf(tiers[i]!)).toBeGreaterThan(minOf(tiers[i - 1]!));
       expect(strengthOf(tiers[i]!)).toBeGreaterThan(strengthOf(tiers[i - 1]!));
     }
-    expect(new Set(sponsors.map((s) => s.id)).size).toBe(15);
+    expect(new Set(sponsors.map((s) => s.id)).size).toBe(36);
   });
 
   it('opens up more sponsors as prestige rises', () => {
     expect(eligibleSponsors(1).every((s) => s.tier === 'local')).toBe(true);
     expect(eligibleSponsors(1).length).toBeGreaterThan(0);
-    expect(eligibleSponsors(100)).toHaveLength(15);
+    expect(eligibleSponsors(100)).toHaveLength(36);
     expect(eligibleSponsors(40).length).toBeGreaterThan(eligibleSponsors(20).length);
   });
 });

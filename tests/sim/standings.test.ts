@@ -21,6 +21,7 @@ const row = (over: Partial<RoundResult>): RoundResult => ({
   position: 1,
   points: 10,
   prelimTimeMs: 1000,
+  prelimPos: 1,
   ...over,
 });
 
@@ -41,7 +42,7 @@ describe('the driver championship', () => {
     expect(table[0]!.wins).toBe(1);
   });
 
-  it('breaks a tie with most wins, then most seconds, then the best last prelim time', () => {
+  it('breaks a tie with most wins, then most seconds, and on through the final places', () => {
     const wins = driverStandings([
       row({ driverId: 1, round: 1, points: 10, position: 1 }),
       row({ driverId: 1, round: 2, points: 5, position: 10 }),
@@ -51,16 +52,74 @@ describe('the driver championship', () => {
     expect(wins.map((s) => s.id)).toEqual([1, 2]);
     const seconds = driverStandings([
       row({ driverId: 1, round: 1, points: 9, position: 2 }),
-      row({ driverId: 1, round: 2, points: 1, position: 20 }),
+      row({ driverId: 1, round: 2, points: 1, position: 14 }),
       row({ driverId: 2, round: 1, points: 5, position: 10 }),
       row({ driverId: 2, round: 2, points: 5, position: 10 }),
     ]);
     expect(seconds.map((s) => s.id)).toEqual([1, 2]);
-    const time = driverStandings([
-      row({ driverId: 1, round: 2, points: 5, position: 10, prelimTimeMs: 2000 }),
-      row({ driverId: 2, round: 2, points: 5, position: 10, prelimTimeMs: 1500 }),
+    // The last place of the countback is the 15th: a driver with one is ahead of one with none.
+    const fifteenth = driverStandings([
+      row({ driverId: 1, round: 1, points: 5, position: 14 }),
+      row({ driverId: 1, round: 2, points: 5, position: 15 }),
+      row({ driverId: 2, round: 1, points: 5, position: 14 }),
+      row({ driverId: 2, round: 2, points: 5, position: 16 }),
     ]);
-    expect(time.map((s) => s.id)).toEqual([2, 1]);
+    expect(fifteenth.map((s) => s.id)).toEqual([1, 2]);
+  });
+
+  it('then goes by the better average prelim position, then prestige, valuation and a draw', () => {
+    const level = (over: Partial<RoundResult>[]) =>
+      over.map((o, i) => row({ round: 1, points: 5, position: 10, driverId: i + 1, ...o }));
+    // Same points and the same places: the better average prelim position wins.
+    expect(driverStandings(level([{ prelimPos: 9 }, { prelimPos: 3 }])).map((s) => s.id)).toEqual([
+      2, 1,
+    ]);
+    // A driver with no prelim time is behind one with a time.
+    expect(
+      driverStandings(level([{ prelimPos: null }, { prelimPos: 30 }])).map((s) => s.id),
+    ).toEqual([2, 1]);
+    const same = level([{ prelimPos: 5 }, { prelimPos: 5 }]);
+    const prestige = driverStandings(same, {
+      prestige: (id) => (id === 2 ? 40 : 10),
+      valuation: () => 0,
+      draw: () => 0,
+    });
+    expect(prestige.map((s) => s.id)).toEqual([2, 1]);
+    const valuation = driverStandings(same, {
+      prestige: () => 10,
+      valuation: (id) => (id === 2 ? 900_000 : 100_000),
+      draw: () => 0,
+    });
+    expect(valuation.map((s) => s.id)).toEqual([2, 1]);
+    const draw = driverStandings(same, {
+      prestige: () => 10,
+      valuation: () => 100_000,
+      draw: (id) => (id === 2 ? 0.9 : 0.1),
+    });
+    expect(draw.map((s) => s.id)).toEqual([2, 1]);
+  });
+
+  it('asks for the later tie-breakers only when the earlier ones leave a tie', () => {
+    let asked = 0;
+    const ties = {
+      prestige: () => {
+        asked++;
+        return 0;
+      },
+      valuation: () => {
+        asked++;
+        return 0;
+      },
+      draw: () => 0,
+    };
+    driverStandings(
+      [
+        row({ driverId: 1, points: 9, position: 2, prelimPos: 4 }),
+        row({ driverId: 2, points: 5, position: 3, prelimPos: 4 }),
+      ],
+      ties,
+    );
+    expect(asked).toBe(0);
   });
 
   it('always gives each driver one distinct rank from 1', () => {

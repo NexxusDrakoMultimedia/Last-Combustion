@@ -94,7 +94,7 @@ The game is TypeScript, React, Tailwind CSS and Zustand, with SQLite (SQL.js) ru
 
 ## Privacy
 
-The game has no accounts and no server of its own. The web build asks before it collects anonymous usage data (which buttons are used, counts and money moved, never names or save contents). Say no and nothing is sent. Local and test builds send nothing.
+The game has no accounts and no server of its own. The web build collects anonymous usage data and error reports (which buttons are used, counts and money moved, and the error and where it happened, never names or save contents) unless you opt out. A notice on your first visit says so, with a button to opt out, and the Privacy settings button changes your mind at any time. Opt out and nothing more is sent. Local and test builds send nothing.
 
 ## Disclaimer
 

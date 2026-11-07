@@ -11,12 +11,13 @@ M7 is built on `feature/0.3.x`, made from `main` once 0.2.0 is out. It follows t
 
 ## The slices, in order
 
-| #   | Slice                   | What it holds                                                                                                                                                                                             | Why here                                                                              |
-| --- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 1   | Story and feedback      | Rivalries, the storyline engine and event cards, media headlines beyond the garage's own, crash highlights, the ghost record, drone events and the live map ("Story and feedback" in the design document) | The people layer, the press and the calendar it reads from are built in M6            |
-| 2   | Scouting and fog of war | Scouts, the Head of Scouting, and descriptions and ranges that tighten into exact values on every screen that shows a rating ("Scouting and fog of war")                                                  | It hides ratings on every screen, so it comes after the screens, and the story, exist |
+| #   | Slice                                   | What it holds                                                                                                                                                                                             | Why here                                                                              |
+| --- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 1   | Story and feedback                      | Rivalries, the storyline engine and event cards, media headlines beyond the garage's own, crash highlights, the ghost record, drone events and the live map ("Story and feedback" in the design document) | The people layer, the press and the calendar it reads from are built in M6            |
+| 2   | Scouting and fog of war                 | Scouts, the Head of Scouting, and descriptions and ranges that tighten into exact values on every screen that shows a rating ("Scouting and fog of war")                                                  | It hides ratings on every screen, so it comes after the screens, and the story, exist |
+| 3   | Racing by the day and the final in view | Every prelim day and every final can be watched, raced and managed, not only seen in a tactical view (see "Slice 3 in detail")                                                                            | It needs the calendar (built in M6) and the story layer's incidents                   |
 
-Slice 1 is planned in detail when M7 starts.
+Slice 1 is planned in detail when M7 starts. Slice 3 is planned below.
 
 ## Slice 2 in detail: scouting and fog of war
 
@@ -32,3 +33,18 @@ What the player knows about anything outside their own garage becomes an estimat
 **Open questions for the owner** (to settle before piece 3): whether the starter screen shows the starter drivers and cars exact (recommended), what happens to the ratings in a save from an earlier version the first time it opens (a short note, or left exact), and the scouts' wages and how many a garage may hire (a first guess is about $20,000 to $80,000 a year by skill, and four).
 
 **Risks.** Ratings show in about a dozen files, so piece 3 centralises them or numbers will leak; with no scouts a rookie reads as pure fog, so free-agent choices must stay reasonable (a well-known driver reads at about 40 to 50 knowledge, a useful range); and knowledge is worked out for each subject on screen, so it is cached for each refresh.
+
+## Slice 3 in detail: racing by the day and the final in view
+
+Today a round's prelims are one simulation with no decisions between days, and a final is simulated sector by sector with no calls. The aim is that **each day of the prelims and every final can be watched, raced and managed**, not only seen in a tactical view. The result stays deterministic: with no calls from the player, stepping through a day or a race gives exactly what the single run gives now.
+
+1. **A steppable engine.** The prelim and final engines become state machines whose whole state is plain data (`src/sim/prelim`, `src/sim/final`): a day of prelims, or a lap of the final, is one step, drawing from a named stream (`race:<round>:<day or lap>`) so the same seed gives the same step. Property tests: stepping to the end equals the batch result for any seed, and a saved state resumed gives the same result as one that was never saved.
+2. **Saves in the middle of a race.** A `race_state` table (migration) holds the state between steps, so a save made on prelim day 3 or lap 7 of a final loads and carries on. The calendar's blocking events become one per prelim day and one for the final, and Continue moves from one to the next.
+3. **Watching.** A race screen with a timing tower (position, gap, last sector times, tyre life, weather), a feed of what happens, and speed controls (watch each run or lap, fast forward, skip to the end of the day or the race). The course outline already drives a live map, which comes with the story layer's slice 1.
+4. **Managing a prelim day.** Before each of the player's runs: the plan (attack, steady or conserve the car), the tyres and a repair or a retirement after trouble, each with a cost or a risk in the existing wear, tyre and legality rules. The computer garages decide from their profile (`ai_profile`) and the seed.
+5. **Managing a final.** Calls during the race (push, hold, defend, save the tyres) from `final.calls` in `data/balance.json`, with pauses for incidents the player can answer. The player can leave a race on automatic, which is today's behaviour.
+6. **Polish.** Telemetry (counts only), the browser test for a watched day and a watched final, the Game Design Document's "Weekend format and management interface" brought up to date, and a documentation pass.
+
+**Open questions for the owner.** Whether a day of prelims should stop for the player's decisions every time or only when something happens (recommended: only when something happens, with a setting for every run), how much the player's calls may change a final (a few places, not the result), and whether the spectating view should show other garages' runs live or only the results as they come in.
+
+**Risks.** The engines were written to run in one go, so piece 1 is the largest piece and touches every race test; a state that is too big makes saves slow, so it keeps indexes rather than copies; and calls must never make a final unwinnable for the computer garages, which have none.

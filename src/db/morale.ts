@@ -92,7 +92,10 @@ export function leaveUnhappy(db: Database, year: number): number[] {
   )) {
     const id = m.id as number;
     if (rng.stream(`morale:quit:${id}:${year}`).chance(quitChance(m.morale as number))) {
-      db.run('UPDATE staff SET left_on = ? WHERE id = ?', [`${year}-02-01`, id]);
+      db.run("UPDATE staff SET left_on = ?, left_reason = 'quit' WHERE id = ?", [
+        `${year}-02-01`,
+        id,
+      ]);
       left.push(id);
     }
   }

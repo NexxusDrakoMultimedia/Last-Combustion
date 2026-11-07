@@ -22,6 +22,15 @@ M6 was built on `feature/0.2.x`, one slice at a time. Each slice was its own pul
 
 The order could change when a slice turned out larger than expected, and each slice could be split. Anything in the Game Design Document marked M7, M8 or M9 stays out of M6. That includes the story and feedback layer and scouting and fog of war, which are M7 (see [the M7 plan](M7_PLAN.md)).
 
+## Beta 7: the owner's final-check list
+
+Before 0.2.0 the owner's own list of changes was built as one more beta (`0.2.0-beta7`): the almanac and results screens, the championship tiebreakers, automatic dividends and talks, press fans, no founder in a new world, place-named and family-named garages, deaths outside racing, shareholder bylines, origins for the paddock, mechanics for computer garages, the job market, drivers who invest, more sponsors and suppliers with three on offer, companies that come and go, and Better Stack. What was asked for and is **not** in it, and why:
+
+- **Manufacturers and car models named at random from the seed, and coming and going** (like garages and drivers, never for good). The names are in the data files, the lineup refresh and the Game Design Document's tables, and a rename touches the data build, the world generator and the documentation. It is its own slice, with the same coming and going as the sponsors and suppliers.
+- **More part suppliers and parts, three on offer.** Each of the 30 parts has one maker today, so more suppliers means a part for each supplier and category, which changes what a fitted part points at in saves.
+- **Executives on the job market offered to the player.** Only computer garages take them on for now, because a negotiation creates its own candidate.
+- **Racing by the day and the final in view,** which is planned in [the M7 plan](M7_PLAN.md).
+
 ## Left over for later
 
 Each item below is written in the Game Design Document as not built, and is picked up with the work it depends on.

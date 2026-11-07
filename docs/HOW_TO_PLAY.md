@@ -88,7 +88,7 @@ Open **Menu** and press **Save to slot 1**. The save is kept in your browser. **
 - **My save has gone.** Browser saves live in the browser's own storage, so clearing site data deletes them. Export a file now and then.
 - **The game is slow to run a round.** Each prelim simulates 313 cars, so give it a moment.
 - **A button is greyed out.** Entries and some deals are locked once a season has started, and money-spending buttons are off when you cannot afford them. The tooltip or the panel text says why.
-- **A privacy prompt appeared.** The web build asks before it collects anonymous usage data (see the README). Saying no sends nothing.
+- **A privacy prompt appeared.** The web build counts how the game is used and tells you so on your first visit (see the README). Press Opt out and nothing more is sent; Privacy settings, at the bottom left, changes it later.
 
 ## Where to play
 

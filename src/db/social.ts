@@ -32,6 +32,8 @@ export interface ConversationLine {
   met: boolean;
   /** Someone else was introduced as well. */
   introduced: boolean;
+  /** The occasion ended with this conversation unspent, so it was held by itself. */
+  auto: boolean;
   date: string;
 }
 
@@ -135,31 +137,26 @@ export function socialView(db: Database, garageId: number): SocialView {
       trouble: r.trouble === 1,
       met: r.met === 1,
       introduced: r.introduced === 1,
+      auto: r.auto === 1,
       date: r.date as string,
     })),
   };
 }
 
-/**
- * Spends one conversation at the open occasion. The target is someone in the contacts book, or null to
- * meet someone new. The way it goes comes from the career's seed, the occasion and how many
- * conversations came before.
- */
-export function converse(
+/** One conversation, held at an occasion on a date: the way it goes comes from the seed, the occasion and the count so far. */
+function hold(
   db: Database,
   garageId: number,
+  career: { masterSeed: string },
+  seasonId: number,
+  occasion: OccasionId,
   target: { type: ContactType; id: number } | null,
   manner: Manner,
-): ConversationLine {
-  const career = readCareer(db);
-  if (!career) throw new Error('There is no career in this database.');
-  if (!MANNERS.includes(manner)) throw new Error(`There is no manner "${manner}".`);
-  const season = seasonNow(db);
-  const occasion = season ? (occasionOn(season.schedule, season.today)?.id ?? null) : null;
-  if (!season || !occasion) throw new Error('There is no social occasion open now.');
-  const used = countFor(db, garageId, season.id, occasion);
-  if (used >= CONVERSATIONS) throw new Error('There are no conversations left at this occasion.');
-  const stream = createRng(career.masterSeed).stream(`social:${season.id}:${occasion}:${used}`);
+  date: string,
+  auto: boolean,
+): void {
+  const used = countFor(db, garageId, seasonId, occasion);
+  const stream = createRng(career.masterSeed).stream(`social:${seasonId}:${occasion}:${used}`);
   const strangers = strangersOf(db, garageId);
   let party: { type: ContactType; id: number };
   let met = false;
@@ -185,11 +182,11 @@ export function converse(
     }
   }
   db.run(
-    `INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, trouble, introduced, met, date)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, trouble, introduced, met, auto, date)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       garageId,
-      season.id,
+      seasonId,
       occasion,
       party.type,
       party.id,
@@ -198,8 +195,70 @@ export function converse(
       outcome.trouble ? 1 : 0,
       introduced ? 1 : 0,
       met ? 1 : 0,
-      career.gameDate,
+      auto ? 1 : 0,
+      date,
     ],
   );
+}
+
+/**
+ * Spends one conversation at the open occasion. The target is someone in the contacts book, or null to
+ * meet someone new. The way it goes comes from the career's seed, the occasion and how many
+ * conversations came before.
+ */
+export function converse(
+  db: Database,
+  garageId: number,
+  target: { type: ContactType; id: number } | null,
+  manner: Manner,
+): ConversationLine {
+  const career = readCareer(db);
+  if (!career) throw new Error('There is no career in this database.');
+  if (!MANNERS.includes(manner)) throw new Error(`There is no manner "${manner}".`);
+  const season = seasonNow(db);
+  const occasion = season ? (occasionOn(season.schedule, season.today)?.id ?? null) : null;
+  if (!season || !occasion) throw new Error('There is no social occasion open now.');
+  if (countFor(db, garageId, season.id, occasion) >= CONVERSATIONS)
+    throw new Error('There are no conversations left at this occasion.');
+  hold(db, garageId, career, season.id, occasion, target, manner, career.gameDate, false);
   return socialView(db, garageId).history[0]!;
+}
+
+/**
+ * Holds the conversations the player left unspent at an occasion that has now ended: each one is a
+ * random manner with a random contact (or, one time in three, someone new). It is idempotent, so it
+ * can run every day. Returns how many were held.
+ */
+export function fireMissedConversations(db: Database, garageId: number): number {
+  const career = readCareer(db);
+  const season = seasonNow(db);
+  if (!career || !season) return 0;
+  let held = 0;
+  for (const occasion of season.schedule) {
+    const end = occasionEnd(occasion);
+    if (end >= season.today) continue;
+    for (let used = countFor(db, garageId, season.id, occasion.id); used < CONVERSATIONS; used++) {
+      const pick = createRng(career.masterSeed).stream(
+        `socialauto:${season.id}:${occasion.id}:${used}`,
+      );
+      const book = contactsBook(db, garageId);
+      const canMeet = strangersOf(db, garageId).length > 0;
+      if (book.length === 0 && !canMeet) break;
+      const meet = canMeet && (book.length === 0 || pick.chance(1 / 3));
+      const contact = meet ? undefined : pick.pick(book);
+      hold(
+        db,
+        garageId,
+        career,
+        season.id,
+        occasion.id,
+        contact ? { type: contact.type, id: contact.id } : null,
+        pick.pick([...MANNERS]),
+        end,
+        true,
+      );
+      held++;
+    }
+  }
+  return held;
 }

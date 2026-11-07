@@ -21,6 +21,7 @@ import {
   termsForValue,
   walkAwayValue,
 } from '../sim/negotiation';
+import { onMarket } from '../sim/jobs';
 import { createRng } from '../sim/rng';
 import { executiveData } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
@@ -81,6 +82,40 @@ export function executiveCapacity(db: Database, garageId: number): { slots: numb
     slots: executiveSlots(garage.prestige as number),
     used: garageExecutives(db, garageId).length,
   };
+}
+
+/**
+ * The executives of a role on the job market: let go, with a contract that ran out or between jobs,
+ * and not retired, dead, poached or at retirement age, nor out of work for two full seasons.
+ */
+export function marketExecutives(
+  db: Database,
+  role: ExecutiveRole,
+): { id: number; name: string; skill: number; salary: number }[] {
+  const year = yearOf(db);
+  return all(
+    db,
+    `SELECT id, name, skill, salary, birth_year, left_on, left_reason FROM executive
+      WHERE role = ? AND status = 'left' AND left_on IS NOT NULL ORDER BY id`,
+    [role],
+  )
+    .filter((r) =>
+      onMarket(
+        'executive',
+        {
+          reason: (r.left_reason as string | null) ?? null,
+          leftYear: Number(String(r.left_on).slice(0, 4)),
+          age: year - (r.birth_year as number),
+        },
+        year,
+      ),
+    )
+    .map((r) => ({
+      id: r.id as number,
+      name: r.name as string,
+      skill: r.skill as number,
+      salary: r.salary as number,
+    }));
 }
 
 /**
