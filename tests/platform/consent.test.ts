@@ -2,7 +2,11 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { afterEach, describe, expect, it } from 'vitest';
 import { createGoogleTagSink, type ScriptHost, type TagWindow } from '../../src/platform/analytics';
-import { applyTelemetryConsent, telemetryConfigured } from '../../src/platform/consent';
+import {
+  applyTelemetryConsent,
+  effectiveConsent,
+  telemetryConfigured,
+} from '../../src/platform/consent';
 import { resetGameAnalytics, type GameAnalyticsSdk } from '../../src/platform/gameanalytics';
 import { clearSinks, trackDesign } from '../../src/platform/telemetry';
 
@@ -43,8 +47,42 @@ afterEach(() => {
   resetGameAnalytics();
 });
 
+describe('opting out', () => {
+  it('is the default: a visitor who has not chosen is counted until they opt out', () => {
+    expect(effectiveConsent(undefined)).toBe('granted');
+    expect(effectiveConsent('granted')).toBe('granted');
+    expect(effectiveConsent('denied')).toBe('denied');
+  });
+
+  it('starts the tools on a first visit, and an opt-out is kept for the next visit', async () => {
+    const sdk = fakeSdk();
+    const first = fakePage();
+    applyTelemetryConsent(
+      effectiveConsent(undefined),
+      { build: 'web', load: async () => sdk, ...first },
+      { google: 'G-TEST1234', gameAnalytics: KEYS },
+    );
+    await new Promise((r) => setTimeout(r, 0));
+    expect(first.scripts).toHaveLength(1);
+    expect(sdk.calls).toContain('initialize');
+    // They opt out; the saved choice is what the next visit applies, so nothing starts.
+    clearSinks();
+    resetGameAnalytics();
+    const later = fakePage();
+    const sdk2 = fakeSdk();
+    applyTelemetryConsent(
+      effectiveConsent('denied'),
+      { build: 'web', load: async () => sdk2, ...later },
+      { google: 'G-TEST1234', gameAnalytics: KEYS },
+    );
+    await new Promise((r) => setTimeout(r, 0));
+    expect(later.scripts).toHaveLength(0);
+    expect(sdk2.calls).not.toContain('initialize');
+  });
+});
+
 describe('the visitor’s choice', () => {
-  it('starts nothing before they have chosen', async () => {
+  it('applies nothing for no choice at all (the default comes from effectiveConsent)', async () => {
     const sdk = fakeSdk();
     const page = fakePage();
     applyTelemetryConsent(

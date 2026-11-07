@@ -4,9 +4,10 @@
 /**
  * Better Stack's browser script, used only on the hosted web build. The source token is given at
  * build time as `VITE_BETTERSTACK_TOKEN`; without it nothing here does anything. Like every other
- * telemetry tool in the game, the script is only fetched after the visitor accepts the privacy
- * prompt, never from the page's own markup. Once loaded it cannot be unloaded, so declining after
- * accepting takes effect the next time the game is opened.
+ * telemetry tool in the game, the script is fetched by the game's own code unless the visitor has
+ * opted out (never from the page's own markup, so an opt-out is kept before anything loads). Once
+ * loaded it cannot be unloaded, so opting out after it has loaded takes effect the next time the
+ * game is opened.
  */
 
 const SCRIPT_ID = 'lc-betterstack';

@@ -16,19 +16,19 @@ It is a management game first: as much a garage simulation as a racing one. The 
 
 ## Facts
 
-|           |                                                                                                                       |
-| --------- | --------------------------------------------------------------------------------------------------------------------- |
-| Name      | The Last Combustion of the Petrol Engine (short: Last Combustion)                                                     |
-| Maker     | Nexxus Drako Multimedia                                                                                               |
-| Genre     | Racing management and garage simulation, single player                                                                |
-| Platform  | Web browser (desktop builds are planned)                                                                              |
-| Version   | 0.2.0, depth: facilities, ownership, the ledger, people and a calendar                                                |
-| Price     | Free                                                                                                                  |
-| Licence   | Software: GPL 3 or later (see [LICENSE](../LICENSE)). Brand art: CC BY-SA 4.0 (see [Credits](../CREDITS.md))          |
-| Play it   | [lc.nexxusdrako.au](https://lc.nexxusdrako.au)                                                                        |
-| Source    | [github.com/NexxusDrakoMultimedia/Last-Combustion](https://github.com/NexxusDrakoMultimedia/Last-Combustion)          |
-| Languages | English                                                                                                               |
-| Privacy   | No accounts and no server of its own. Anonymous usage data is collected only if the player accepts the privacy prompt |
+|           |                                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------------- |
+| Name      | The Last Combustion of the Petrol Engine (short: Last Combustion)                                                   |
+| Maker     | Nexxus Drako Multimedia                                                                                             |
+| Genre     | Racing management and garage simulation, single player                                                              |
+| Platform  | Web browser (desktop builds are planned)                                                                            |
+| Version   | 0.2.0, depth: facilities, ownership, the ledger, people and a calendar                                              |
+| Price     | Free                                                                                                                |
+| Licence   | Software: GPL 3 or later (see [LICENSE](../LICENSE)). Brand art: CC BY-SA 4.0 (see [Credits](../CREDITS.md))        |
+| Play it   | [lc.nexxusdrako.au](https://lc.nexxusdrako.au)                                                                      |
+| Source    | [github.com/NexxusDrakoMultimedia/Last-Combustion](https://github.com/NexxusDrakoMultimedia/Last-Combustion)        |
+| Languages | English                                                                                                             |
+| Privacy   | No accounts and no server of its own. Anonymous usage data is collected on the web build unless the player opts out |
 
 ## What is in 0.2.0
 

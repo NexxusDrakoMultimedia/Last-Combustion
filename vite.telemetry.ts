@@ -6,6 +6,7 @@ const KEYS = [
   'VITE_GA_GAME_KEY',
   'VITE_GA_SECRET_KEY',
   'VITE_BETTERSTACK_TOKEN',
+  'VITE_SENTRY_DSN',
 ] as const;
 
 /**
