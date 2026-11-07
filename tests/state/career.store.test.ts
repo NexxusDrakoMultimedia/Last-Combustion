@@ -50,6 +50,35 @@ describe('career store', () => {
     expect(useCareerStore.getState().nextRound).toBeNull();
   });
 
+  it('moves through the calendar: Continue skips to the day of an event and then runs it', async () => {
+    useCareerStore.setState({ prelims: undefined });
+    await useCareerStore.getState().createTestCareer();
+    const cal = () => useCareerStore.getState().calendar!;
+    expect(cal().date).toBe('2031-02-01');
+    expect(cal().due).toBeNull();
+    // Continue goes to the day of the prelims (past the practice date, which only marks a day).
+    await useCareerStore.getState().continueTime();
+    expect(cal().date).toBe('2031-04-07');
+    expect(cal().due).toMatchObject({ kind: 'prelims', round: 1 });
+    expect(useCareerStore.getState().prelims).toBeUndefined();
+    // Day, week and Next event wait while something is due.
+    await useCareerStore.getState().skipTime('day');
+    expect(cal().date).toBe('2031-04-07');
+    // On the day, Continue runs the prelims, and the next thing is the final a week later.
+    await useCareerStore.getState().continueTime();
+    expect(useCareerStore.getState().prelims?.roundNumber).toBe(1);
+    expect(cal().due).toBeNull();
+    // (running the prelims fixes the final's date, which the calendar follows)
+    const final = cal().next!;
+    expect(final).toMatchObject({ kind: 'final', round: 1 });
+    expect(final.date > '2031-04-07').toBe(true);
+    await useCareerStore.getState().skipTime('week');
+    expect(cal().date <= final.date).toBe(true);
+    await useCareerStore.getState().skipTime('event');
+    expect(cal().date).toBe(final.date);
+    expect(cal().due).toMatchObject({ kind: 'final', round: 1 });
+  });
+
   it('exports a .lcsave file through the platform', async () => {
     await useCareerStore.getState().createTestCareer();
     await useCareerStore.getState().exportFile();

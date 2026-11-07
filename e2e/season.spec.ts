@@ -17,12 +17,14 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await expect(page.getByRole('dialog')).toBeHidden();
 
   for (let round = 1; round <= 6; round++) {
+    await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
     await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
     await expect(page.getByText(new RegExp(`Round ${round} prelims: \\d+ set a time`))).toBeVisible(
       {
         timeout: 60_000,
       },
     );
+    await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
     await page.getByRole('button', { name: messages['hub.runFinal'] }).click();
     await expect(page.getByText(new RegExp(`Round ${round} final: \\d+ finished`))).toBeVisible({
       timeout: 60_000,
@@ -114,6 +116,7 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   ).toBeVisible();
   await page.keyboard.press('Escape');
 
+  await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();
   await expect(page.getByText(/The 2031 season is over/)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/awards? given out/)).toBeVisible();
@@ -131,6 +134,7 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await expect(page.getByRole('combobox', { name: /^Move .* to$/ }).first()).toBeVisible();
   await page.keyboard.press('Escape');
 
+  await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
   await page.getByRole('button', { name: messages['hub.nextSeason'] }).click();
   await expect(page.getByText(/Year 2032/)).toBeVisible({ timeout: 60_000 });
 });

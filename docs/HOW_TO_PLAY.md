@@ -21,7 +21,7 @@ Press **Start career**. You then choose a **starter car** from three brand-new S
 
 ## The screen
 
-- **The top bar** shows your garage and the year, your balance, the next round and one big button for the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. **Feedback** opens the game's issue form on GitHub in a new tab, for bug reports, feature requests and anything else (it needs a free GitHub account). **Menu** has saving, loading, exporting and the About screen.
+- **The top bar** shows your garage and the year, the date, your balance, the next round, the time controls (**+1 day**, **+1 week** and **Next event**) and one big button, **Continue**. Continue skips on to the next day something needs you, and on that day it becomes the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. The days and weeks stop early at any event, and wait while a race or the end of the season is due. **Feedback** opens the game's issue form on GitHub in a new tab, for bug reports, feature requests and anything else (it needs a free GitHub account). **Menu** has saving, loading, exporting and the About screen.
 - **The garage floor** shows each of your entries: race number (with its borders), licence plate, driver, car and the car's condition.
 - **The news strip** reports what has just happened.
 - **The rail** on the right opens the panels:
@@ -51,7 +51,7 @@ Before the first prelims, in any order:
 3. **Check your driver and car** in Drivers and Cars. Better free agents may be worth their salary. You can change your entry until the first round starts.
 4. **Look at the Upgrades panel.** Parts add power or grip but each one counts against your road-legality score, and a car that fails scrutineering is disqualified.
 
-Then press **Run next prelims**. The prelims run over seven days: every entry sets one timed lap, and the 15 fastest reach the final. Press **Run next final** to race it. The final is simulated sector by sector; there are no race calls in this version.
+Then press **Continue** to skip to the day of the prelims, and again (it now says **Run next prelims**) to run them. The prelims run over seven days: every entry sets one timed lap, and the 15 fastest reach the final. Press **Continue** to skip to the final's day and **Run next final** to race it. The **Calendar** in the rail lists what is coming. The final is simulated sector by sector; there are no race calls in this version.
 
 Points come from the final for the top 15 and from the prelims for 16th to 31st. Prize money goes to the final's finishers. Pole and overtake bonuses add up through the year and are paid when the season ends. Open **Season**, then **Results** or **Standings**, to see every car and every table.
 

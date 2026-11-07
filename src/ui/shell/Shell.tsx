@@ -25,6 +25,7 @@ import { RegistryLink } from '../RegistryLink';
 import { AlmanacPanel } from './AlmanacPanel';
 import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
+import { CalendarPanel } from './CalendarPanel';
 import { ContactsSection } from './ContactsSection';
 import { PressSection } from './PressSection';
 import { SocialSection } from './SocialSection';
@@ -47,6 +48,7 @@ type PanelId =
   | 'registry'
   | 'money'
   | 'ownership'
+  | 'calendar'
   | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
@@ -62,23 +64,13 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'registry', label: 'rail.registry' },
   { id: 'money', label: 'rail.money' },
   { id: 'ownership', label: 'rail.ownership' },
+  { id: 'calendar', label: 'rail.calendar' },
 ];
 
 /** The game shell: a top bar, a rail of panels, the garage floor and the news strip. */
 export function Shell() {
   const s = useCareerStore();
-  const {
-    hub,
-    starter,
-    status,
-    nextRound,
-    nextFinal,
-    prelims,
-    final,
-    seasonEnd,
-    rollover,
-    notice,
-  } = s;
+  const { hub, starter, status, prelims, final, seasonEnd, rollover, notice } = s;
   const [openPanel, setPanel] = useState<PanelId | null>(null);
   // A profile opened from anywhere (a plate, a name, a number) shows the Registry over whatever is open.
   const open = s.registryPage ? 'registry' : openPanel;
@@ -122,23 +114,23 @@ export function Shell() {
   if (!hub) return null;
 
   const busy = status === 'busy';
-  const allDone = hub.rounds.every((r) => r.status === 'complete');
-  const ended = hub.seasonStatus === 'complete';
   const next = hub.rounds.find((r) => r.status !== 'complete');
 
-  // The one thing to do next, as a single button in the top bar.
+  // Continue: run what is due today, or skip on to the next thing that needs the player.
+  const due = s.calendar?.due ?? null;
+  const dueLabel: Record<string, MessageKey> = {
+    prelims: 'hub.runPrelims',
+    final: 'hub.runFinal',
+    end_season: 'hub.endSeason',
+    new_season: 'hub.nextSeason',
+  };
   const action: { label: MessageKey; run: () => void } | null =
-    starter !== undefined
+    starter !== undefined || !s.calendar
       ? null
-      : nextFinal !== null
-        ? { label: 'hub.runFinal', run: () => void s.runNextFinal() }
-        : nextRound !== null
-          ? { label: 'hub.runPrelims', run: () => void s.runNextPrelims() }
-          : allDone && !ended
-            ? { label: 'hub.endSeason', run: () => void s.finishSeason() }
-            : ended
-              ? { label: 'hub.nextSeason', run: () => void s.newSeason() }
-              : null;
+      : {
+          label: due ? (dueLabel[due.kind] ?? 'calendar.continue') : 'calendar.continue',
+          run: () => void s.continueTime(),
+        };
 
   const player = hub.player;
   const locked = starter !== undefined;
@@ -211,6 +203,40 @@ export function Shell() {
               : t('shell.noRounds')}
           </p>
         </div>
+        {s.calendar && starter === undefined && (
+          <div className="text-right">
+            <p className="lc-display text-xs text-lc-dim">{t('shell.date')}</p>
+            <p className="lc-num text-sm">{formatDate(s.calendar.date)}</p>
+          </div>
+        )}
+        {s.calendar && starter === undefined && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              className={quiet}
+              disabled={busy || due !== null}
+              onClick={() => void s.skipTime('day')}
+            >
+              {t('calendar.day')}
+            </button>
+            <button
+              type="button"
+              className={quiet}
+              disabled={busy || due !== null}
+              onClick={() => void s.skipTime('week')}
+            >
+              {t('calendar.week')}
+            </button>
+            <button
+              type="button"
+              className={quiet}
+              disabled={busy || due !== null}
+              onClick={() => void s.skipTime('event')}
+            >
+              {t('calendar.event')}
+            </button>
+          </div>
+        )}
         {action && (
           <button type="button" className={button} disabled={busy} onClick={action.run}>
             {t(action.label)}
@@ -404,6 +430,15 @@ export function Shell() {
           {staffTab === 'contacts' && <ContactsSection />}
           {staffTab === 'social' && <SocialSection />}
           {staffTab === 'press' && <PressSection />}
+        </Panel>
+      )}
+      {!locked && open === 'calendar' && (
+        <Panel
+          title={t('rail.calendar')}
+          subtitle={t('calendar.intro')}
+          onClose={() => setOpen(null)}
+        >
+          <CalendarPanel />
         </Panel>
       )}
       {!locked && open === 'almanac' && (
