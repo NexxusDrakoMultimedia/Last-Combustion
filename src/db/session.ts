@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database, SqlJsStatic } from 'sql.js';
 import { readCareer } from './career';
+import { ensureCapTables } from './equity';
 import { latestSchemaVersion, migrate } from './migrate';
 import { registerAllCars } from './plates';
 import { decodeSave, encodeSave, type SaveHeader } from './save-file';
@@ -47,6 +48,8 @@ export async function unpackDatabase(
   const result = migrate(db);
   // Cars from saves made before plates existed are registered now.
   if (result.applied.length > 0) registerAllCars(db);
+  // Garages from saves made before ownership existed are given their owners now.
+  ensureCapTables(db);
   return { db, header, migrated: result.applied };
 }
 

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+### Added
+
+- Ownership: every garage now has a cap table. You own all of your garage's shares from the day you found it; computer garages belong to their founder and family, or have an outside investor, or are partly held by a sponsor or a manufacturer. The new Ownership panel shows who holds what, the garage's valuation (cash, cars, profit, fans, prestige and titles), the price of a share and how the valuation has moved over the seasons. Saves from earlier versions are given their owners when they load.
+
 ## [0.2.0-beta3] - 2026-11-07
 
 A beta of the 0.2.0 release (M6, depth): the third slice, the financial ledger (part one). Saves from 0.1.x still load; years already played are summed into the ledger when the save loads.
