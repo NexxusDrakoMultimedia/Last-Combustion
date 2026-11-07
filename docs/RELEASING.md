@@ -61,6 +61,16 @@ It may not contain new features, new screens, new rules, schema changes or anyth
 7. Merge, tag `vX.Y.Z`, publish the GitHub Release with the changelog entry as its notes, and confirm the Pages deploy.
 8. Post the release with the social assets.
 
+## Beta releases
+
+From M6 on, each slice of a milestone ends in a beta, so there is something to play and test before the milestone is released. The beta for M6 is `0.2.0-beta1` after slice 1, `0.2.0-beta2` after slice 2, and so on; the final `0.2.0` follows the last slice and the documentation pass.
+
+1. Bump `version` in `package.json` and `APP_VERSION` in `src/db/session.ts` to the beta (for example `0.2.0-beta1`), and add a `[0.2.0-beta1]` section to `CHANGELOG.md` from what is under `[Unreleased]`. This is a pull request into the milestone branch.
+2. Tag the merge commit `v0.2.0-beta1`. A tag with a hyphen is published as a GitHub pre-release by the release workflow, with the web build zipped and checksummed.
+3. Move the `beta` branch to that commit. Netlify builds it and serves it at `beta.lc.nexxusdrako.au` (see `netlify.toml`). The beta site carries no telemetry keys and asks search engines to stay away.
+
+The release site (`lc.nexxusdrako.au`, GitHub Pages) deploys from `main` only, so players there never see a beta. A beta may change rules and add features, but a save from the last release still has to load.
+
 ## The documentation pass
 
 Before every release, all of the documentation gets a thorough pass. It is slow on purpose: take no shortcuts and check every claim against the code. It is done on the release pull request, in commits of its own that change words and structure only, never a game rule. If the pass finds a place where the code and the document disagree and it is not clear which is right, stop and ask the project owner.

@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: Nexxus Drako Multimedia
+#
+# The beta site (beta.lc.nexxusdrako.au). Netlify builds the `beta` branch, which is moved to the commit
+# of each `v0.2.0-beta*` tag (see docs/RELEASING.md, "Beta releases"). The release site on GitHub Pages
+# is built from `main` and does not use this file. No telemetry keys are set here, so the beta collects
+# nothing.
+
+[build]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# A beta is for testing, so keep it out of search engines.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
