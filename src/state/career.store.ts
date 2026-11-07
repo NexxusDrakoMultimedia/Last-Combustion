@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { contactsBook, type Contact, type ContactType } from '../db/contacts';
+import { pressView, type PressView } from '../db/press';
 import { converse as dbConverse, socialView, type SocialView } from '../db/social';
 import type { Manner } from '../sim/social';
 import { create } from 'zustand';
@@ -274,6 +275,7 @@ interface CareerState {
   investments: InvestmentTarget[];
   contacts: Contact[];
   social: SocialView | undefined;
+  press: PressView | undefined;
   investment: InvestmentView | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
@@ -354,6 +356,7 @@ interface CareerState {
   loadInvestments(): void;
   loadContacts(): void;
   loadSocial(): void;
+  loadPress(): void;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
   lookAtInvestment(garageId: number | null): void;
   buyStake(holdingId: number): Promise<void>;
@@ -539,6 +542,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     investments: [],
     contacts: [],
     social: undefined,
+    press: undefined,
     investment: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
@@ -1017,6 +1021,11 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'BuyBackShares'),
+
+    loadPress: () => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ press: pressView(openDb, garageId) });
+    },
 
     loadSocial: () => {
       const garageId = openDb ? playerGarageId(openDb) : null;

@@ -11,7 +11,7 @@ import {
   hasText,
   t,
 } from '../../i18n';
-import type { PersonKind, PersonProfile } from '../../db/people';
+import type { HoldingLine, PersonKind, PersonProfile, PersonRef } from '../../db/people';
 import type {
   CarProfile,
   DriverProfile,
@@ -666,7 +666,46 @@ function ByStatus<T extends { status: RegistryStatus }>({
   );
 }
 
-const INDEX_TABS = ['drivers', 'cars', 'garages', 'paddock', 'rounds'] as const;
+/** The paddock's people grouped by job (A to Z), by name within a job, with the years they were active if asked. */
+function ByJob({ people, years = false }: { people: PersonRef[]; years?: boolean }) {
+  const jobs = new Map<string, PersonRef[]>();
+  for (const p of people) {
+    const job = personRole(p.kind, p.role);
+    jobs.set(job, [...(jobs.get(job) ?? []), p]);
+  }
+  if (jobs.size === 0) return <p className="text-lc-dim">{t('registry.paddock.none')}</p>;
+  return (
+    <div className="space-y-5">
+      {[...jobs.keys()]
+        .sort((a, b) => a.localeCompare(b))
+        .map((job) => (
+          <section key={job} className="space-y-2">
+            <h3 className="lc-display text-sm text-lc-dim">
+              {t('registry.paddock.job', { job, count: jobs.get(job)!.length })}
+            </h3>
+            <ul className="grid gap-1 sm:grid-cols-2">
+              {jobs
+                .get(job)!
+                .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id)
+                .map((p) => (
+                  <li key={`${p.kind}-${p.id}`}>
+                    <RegistryLink to={{ kind: 'person', person: p.kind, id: p.id }}>
+                      {p.name}
+                    </RegistryLink>{' '}
+                    <span className="text-lc-dim">
+                      {years ? `${p.years} ` : ''}
+                      {p.garage ?? ''}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        ))}
+    </div>
+  );
+}
+
+const INDEX_TABS = ['drivers', 'cars', 'garages', 'paddock', 'exPaddock', 'rounds'] as const;
 type IndexTab = (typeof INDEX_TABS)[number];
 
 /** Every driver, car, garage and round in its own tab, with a search that narrows the open tab. */
@@ -680,13 +719,16 @@ function IndexPage({ data }: { data: RegistryIndex }) {
   const drivers = data.drivers.filter((d) => match(d.name, d.number, d.garage));
   const cars = data.cars.filter((c) => match(c.plate, c.model, c.plateState));
   const garages = data.garages.filter((g) => match(g.name));
-  const paddock = data.people.filter((p) => match(p.name, p.garage, personRole(p.kind, p.role)));
+  const people = data.people.filter((p) => match(p.name, p.garage, personRole(p.kind, p.role)));
+  const paddock = people.filter((p) => p.status !== 'retired');
+  const exPaddock = people.filter((p) => p.status === 'retired');
   const rounds = data.rounds.filter((r) => match(r.year, r.course, `round ${r.round}`));
   const counts: Record<IndexTab, number> = {
     drivers: drivers.length,
     cars: cars.length,
     garages: garages.length,
     paddock: paddock.length,
+    exPaddock: exPaddock.length,
     rounds: rounds.length,
   };
   return (
@@ -758,35 +800,8 @@ function IndexPage({ data }: { data: RegistryIndex }) {
             )}
           />
         )}
-        {tab === 'paddock' && (
-          <div className="space-y-6">
-            {(['executive', 'staff', 'shareholder'] as const).map((kind) => {
-              const group = paddock.filter((p) => p.kind === kind);
-              if (group.length === 0) return null;
-              return (
-                <section key={kind} className="space-y-2">
-                  <h3 className="lc-display text-sm text-lc-dim">
-                    {t(`registry.paddock.${kind}s` as never)}
-                  </h3>
-                  <ByStatus
-                    items={group}
-                    render={(p) => (
-                      <li key={`${p.kind}-${p.id}`}>
-                        <RegistryLink to={{ kind: 'person', person: p.kind, id: p.id }}>
-                          {p.name}
-                        </RegistryLink>{' '}
-                        <span className="text-lc-dim">
-                          {personRole(p.kind, p.role)}
-                          {p.garage ? `, ${p.garage}` : ''}
-                        </span>
-                      </li>
-                    )}
-                  />
-                </section>
-              );
-            })}
-          </div>
-        )}
+        {tab === 'paddock' && <ByJob people={paddock} />}
+        {tab === 'exPaddock' && <ByJob people={exPaddock} years />}
         {tab === 'rounds' && (
           <ul className="space-y-1">
             {rounds.map((r) => (
@@ -825,8 +840,59 @@ function personRole(kind: PersonKind, role: string): string {
       ? `executive.role.${role}`
       : kind === 'staff'
         ? `person.role.${role}`
-        : `ownership.type.${role}`;
+        : kind === 'supplier' || kind === 'utility'
+          ? `person.role.${kind}`
+          : `ownership.type.${role}`;
   return hasText(key) ? t(key as never) : role;
+}
+
+function HoldingsSection({ holdings }: { holdings: HoldingLine[] }) {
+  return (
+    <Section title={t('person.holdings')}>
+      {holdings.length === 0 ? (
+        <p className="text-lc-dim">{t('person.noHoldings')}</p>
+      ) : (
+        <table className={dataTable}>
+          <thead>
+            <tr>
+              <th scope="col">{t('person.garage')}</th>
+              <th scope="col">{t('person.class')}</th>
+              <th scope="col" className="text-right">
+                {t('person.shares')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('person.stake')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('person.paid')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('person.worth')}
+              </th>
+              <th scope="col">{t('person.since')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {holdings.map((h) => (
+              <tr key={`${h.garage.id}-${h.class}-${h.since}`}>
+                <td>
+                  <RegistryLink to={{ kind: 'garage', id: h.garage.id }}>
+                    {h.garage.name}
+                  </RegistryLink>
+                </td>
+                <td>{t(`ownership.class.${h.class}` as never)}</td>
+                <td className="lc-num text-right">{h.shares.toLocaleString('en-AU')}</td>
+                <td className="lc-num text-right">{`${Math.round(h.stake * 1000) / 10}%`}</td>
+                <td className="lc-num text-right">{formatMoney(h.paid)}</td>
+                <td className="lc-num text-right">{formatMoney(h.worth)}</td>
+                <td className="lc-num">{formatDate(h.since)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Section>
+  );
 }
 
 function PersonPage({ p }: { p: PersonProfile }) {
@@ -891,54 +957,49 @@ function PersonPage({ p }: { p: PersonProfile }) {
         />
       </div>
     );
+  if (p.kind !== 'shareholder')
+    return (
+      <div className="space-y-5 text-sm">
+        <h2 className="lc-display text-lg">{p.name}</h2>
+        <Facts
+          items={[
+            [t('person.role'), personRole(p.kind, p.kind)],
+            ...(p.country
+              ? ([[t('person.country'), flagName(p.country)]] as [string, ReactNode][])
+              : []),
+            ...(p.tier
+              ? ([[t('person.tier'), t(`sponsors.tier.${p.tier}` as never)]] as [
+                  string,
+                  ReactNode,
+                ][])
+              : []),
+            ...(p.category
+              ? ([[t('person.category'), t(`supply.category.${p.category}` as never)]] as [
+                  string,
+                  ReactNode,
+                ][])
+              : []),
+            [
+              t('person.relationship'),
+              p.relationship
+                ? t('person.relationship.value', {
+                    kind: t(`contacts.kind.${p.relationship.kind}` as never),
+                    score: p.relationship.score,
+                  })
+                : t('person.relationship.none'),
+            ],
+          ]}
+        />
+        {(p.kind === 'sponsor' || p.kind === 'manufacturer') && (
+          <HoldingsSection holdings={p.holdings} />
+        )}
+      </div>
+    );
   return (
     <div className="space-y-5 text-sm">
       <h2 className="lc-display text-lg">{p.name}</h2>
       <Facts items={[[t('person.holderType'), personRole('shareholder', p.holderType)]]} />
-      <Section title={t('person.holdings')}>
-        {p.holdings.length === 0 ? (
-          <p className="text-lc-dim">{t('person.noHoldings')}</p>
-        ) : (
-          <table className={dataTable}>
-            <thead>
-              <tr>
-                <th scope="col">{t('person.garage')}</th>
-                <th scope="col">{t('person.class')}</th>
-                <th scope="col" className="text-right">
-                  {t('person.shares')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('person.stake')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('person.paid')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('person.worth')}
-                </th>
-                <th scope="col">{t('person.since')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {p.holdings.map((h) => (
-                <tr key={`${h.garage.id}-${h.class}-${h.since}`}>
-                  <td>
-                    <RegistryLink to={{ kind: 'garage', id: h.garage.id }}>
-                      {h.garage.name}
-                    </RegistryLink>
-                  </td>
-                  <td>{t(`ownership.class.${h.class}` as never)}</td>
-                  <td className="lc-num text-right">{h.shares.toLocaleString('en-AU')}</td>
-                  <td className="lc-num text-right">{`${Math.round(h.stake * 1000) / 10}%`}</td>
-                  <td className="lc-num text-right">{formatMoney(h.paid)}</td>
-                  <td className="lc-num text-right">{formatMoney(h.worth)}</td>
-                  <td className="lc-num">{formatDate(h.since)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Section>
+      <HoldingsSection holdings={p.holdings} />
     </div>
   );
 }

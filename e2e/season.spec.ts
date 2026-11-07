@@ -106,9 +106,8 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   // The same people are listed in the Registry's Paddock tab.
   await page.getByRole('button', { name: messages['registry.index'] }).click();
   await page.getByRole('tab', { name: /^Paddock/ }).click();
-  await expect(
-    page.getByRole('heading', { name: messages['registry.paddock.shareholders'] }),
-  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: /^Owner \(\d+\)$/ })).toBeVisible();
+  await expect(page.getByRole('tab', { name: /^Ex-Paddock/ })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(
     page.getByRole('rowheader', { name: messages['ownership.part.total'] }),
