@@ -88,7 +88,13 @@ import {
   type TransactionsView,
 } from '../db/ledger';
 import { ledgerCsv, type LedgerFilter } from '../sim/ledger';
-import { ownershipView, type OwnershipView } from '../db/equity';
+import {
+  buyBackShares as dbBuyBackShares,
+  declareDividend as dbDeclareDividend,
+  issueShares as dbIssueShares,
+  ownershipView,
+  type OwnershipView,
+} from '../db/equity';
 import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
 import type { FacilityKind } from '../sim/facilities';
 import {
@@ -324,6 +330,9 @@ interface CareerState {
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
   buildFacility(kind: FacilityKind): Promise<void>;
+  issueShares(investor: number, amount: number): Promise<void>;
+  declareDividend(amount: number): Promise<void>;
+  buyBackShares(holdingId: number, shares: number, by: 'garage' | 'owner'): Promise<void>;
   loadRecords(): void;
   openRegistry(target: RegistryTarget): void;
   registryBack(): void;
@@ -931,6 +940,36 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'DismissExecutive'),
+
+    issueShares: (investor, amount) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbIssueShares(openDb, garageId, investor, amount);
+        refresh(openDb);
+        return undefined;
+      }, 'IssueShares'),
+
+    declareDividend: (amount) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbDeclareDividend(openDb, garageId, amount);
+        refresh(openDb);
+        return undefined;
+      }, 'DeclareDividend'),
+
+    buyBackShares: (holdingId, shares, by) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbBuyBackShares(openDb, garageId, holdingId, shares, by);
+        refresh(openDb);
+        return undefined;
+      }, 'BuyBackShares'),
 
     buildFacility: (kind) =>
       run(async () => {

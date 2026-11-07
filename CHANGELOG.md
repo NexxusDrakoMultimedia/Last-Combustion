@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- You can raise money by selling new preferred shares to an investor (a Seed round, then Series A to D, one a year, giving away at most 30% at once), pay a dividend to the holders of your shares (the owner's part goes to your own cash), and buy an outside holder's shares back, either with the garage's cash (the shares are cancelled) or with your own. All of it is in the Ownership panel and the Ledger.
 - Ownership: every garage now has a cap table. You own all of your garage's shares from the day you found it; computer garages belong to their founder and family, or have an outside investor, or are partly held by a sponsor or a manufacturer. The new Ownership panel shows who holds what, the garage's valuation (cash, cars, profit, fans, prestige and titles), the price of a share and how the valuation has moved over the seasons. Saves from earlier versions are given their owners when they load.
 - The Registry has a Paddock tab with a profile for every executive, staff member and shareholder, linked from the Ownership, Staff and Executives panels.
 

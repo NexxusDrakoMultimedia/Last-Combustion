@@ -5,7 +5,12 @@ import { describe, expect, it } from 'vitest';
 import {
   FOUNDING_SHARES,
   drawCapTable,
+  drawInvestors,
+  roundName,
+  roundTerms,
   shareTotals,
+  sharesPrice,
+  splitDividend,
   valuationOf,
   votesOf,
   type DrawContext,
@@ -130,5 +135,97 @@ describe('shares and votes', () => {
     expect(votesOf(holdings[0]!)).toBe(700_000);
     expect(votesOf(holdings[1]!)).toBe(0);
     expect(votesOf(holdings[2]!)).toBe(0);
+  });
+});
+
+describe('funding rounds', () => {
+  it('give the investor the stake their money is worth to them, as new shares', () => {
+    // A garage worth $900,000 that an investor values at 100%: $100,000 in buys 10% of the result.
+    const t = roundTerms(900_000, 1_000_000, 100_000, 1);
+    expect(t.stake).toBeCloseTo(0.1, 10);
+    expect(t.newShares).toBeCloseTo(111_111, -1);
+    expect(t.preMoney).toBe(900_000);
+    expect(t.postMoney).toBe(1_000_000);
+    expect(t.pricePerShare).toBeCloseTo(0.9, 2);
+    // After the round the investor holds the stake they were quoted.
+    expect(t.newShares / (1_000_000 + t.newShares)).toBeCloseTo(t.stake, 4);
+  });
+
+  it('give a bigger stake to an investor who believes in the garage less, and for more money', () => {
+    const base = roundTerms(500_000, 1_000_000, 100_000, 1);
+    expect(roundTerms(500_000, 1_000_000, 100_000, 0.8).stake).toBeGreaterThan(base.stake);
+    expect(roundTerms(500_000, 1_000_000, 200_000, 1).stake).toBeGreaterThan(base.stake);
+  });
+
+  it('never give away the whole garage, whatever the amount', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: 1e8 }),
+        fc.integer({ min: 1, max: 5e6 }),
+        fc.integer({ min: 1, max: 1e9 }),
+        fc.double({ min: 0.5, max: 1.5, noNaN: true }),
+        (value, issued, amount, appetite) => {
+          const t = roundTerms(value, issued, amount, appetite);
+          expect(t.stake).toBeGreaterThan(0);
+          expect(t.stake).toBeLessThan(1);
+          expect(t.newShares).toBeGreaterThan(0);
+        },
+      ),
+    );
+  });
+
+  it('are named by order', () => {
+    expect(roundName(1)).toBe('Seed');
+    expect(roundName(2)).toBe('Series A');
+    expect(roundName(99)).toBe('Series D');
+  });
+
+  it('put three investors on offer, each valuing the garage between 80% and 115%', () => {
+    let n = 0;
+    const offers = drawInvestors(createRng('inv').stream('x'), () => `Investor ${++n}`);
+    expect(offers).toHaveLength(3);
+    for (const o of offers) {
+      expect(o.appetite).toBeGreaterThanOrEqual(0.8);
+      expect(o.appetite).toBeLessThanOrEqual(1.15);
+    }
+  });
+});
+
+describe('dividends and buy-backs', () => {
+  const holdings = [
+    { id: 1, shares: 600_000, class: 'ordinary' as const },
+    { id: 2, shares: 300_000, class: 'preferred' as const },
+    { id: 3, shares: 100_000, class: 'option' as const },
+  ];
+
+  it('split in proportion to the shares that are issued, and nothing goes to the option pool', () => {
+    const parts = splitDividend(holdings, 90_000);
+    expect(parts.get(1)).toBe(60_000);
+    expect(parts.get(2)).toBe(30_000);
+    expect(parts.has(3)).toBe(false);
+  });
+
+  it('always add up to the dividend, in whole dollars', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 1, max: 1_000_000 }), { minLength: 1, maxLength: 8 }),
+        fc.integer({ min: 1, max: 5e7 }),
+        (shares, total) => {
+          const parts = splitDividend(
+            shares.map((s, i) => ({ id: i + 1, shares: s, class: 'ordinary' as const })),
+            total,
+          );
+          expect([...parts.values()].reduce((a, b) => a + b, 0)).toBe(total);
+          expect([...parts.values()].every((v) => Number.isInteger(v) && v >= 0)).toBe(true);
+        },
+      ),
+    );
+  });
+
+  it('price shares at the garage’s valuation', () => {
+    expect(sharesPrice(1_000_000, 1_000_000, 100_000)).toBe(100_000);
+    expect(sharesPrice(2_000_000, 1_000_000, 50_000)).toBe(100_000);
+    expect(sharesPrice(-5, 1_000_000, 100_000)).toBe(0);
+    expect(sharesPrice(1_000_000, 0, 10)).toBe(0);
   });
 });

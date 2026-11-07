@@ -95,6 +95,7 @@ describe('migrate', () => {
       'executive_departures',
       'ledger_year',
       'cap_table',
+      'share_events',
     ]);
   });
 
@@ -313,7 +314,7 @@ describe('executive departures (schema version 39)', () => {
 describe('the cap table (schema version 41)', () => {
   it('adds holdings that take a known holder type and class, and a valuation history', () => {
     const db = openDatabase(SQL);
-    migrate(db);
+    migrate(db, migrations.slice(0, 41));
     expect(getSchemaVersion(db)).toBe(41);
     const insert = (type: string, cls: string, shares: number) =>
       db.exec(
@@ -325,5 +326,21 @@ describe('the cap table (schema version 41)', () => {
     expect(() => insert('owner', 'ordinary', 0)).toThrow();
     const columns = db.exec('PRAGMA table_info(valuation)')[0]!.values.map((v) => v[1]);
     expect(columns).toEqual(['garage_id', 'date', 'value']);
+  });
+});
+
+describe('share events (schema version 42)', () => {
+  it('adds a history of rounds, dividends and buy-backs, and personal cash for the owner', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(42);
+    expect(() =>
+      db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (1, '2031-02-01', 'round')"),
+    ).not.toThrow();
+    expect(() =>
+      db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (1, '2031-02-01', 'heist')"),
+    ).toThrow();
+    const columns = db.exec('PRAGMA table_info(owner)')[0]!.values.map((v) => v[1]);
+    expect(columns).toContain('personal_cash');
   });
 });

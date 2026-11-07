@@ -87,6 +87,10 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await page.getByRole('button', { name: messages['rail.ownership'] }).click();
   await expect(page.getByRole('heading', { name: messages['ownership.holders'] })).toBeVisible();
   await expect(page.getByRole('cell', { name: /Ordinary/ }).first()).toBeVisible();
+  // Raising a small round brings in an investor and the money.
+  await page.getByLabel(messages['ownership.raise.amount']).fill('50000');
+  await page.getByRole('button', { name: /^Raise/ }).click();
+  await expect(page.getByText(/^Seed:/)).toBeVisible();
   // The owner's name opens their profile in the Registry.
   await page.getByRole('button', { name: 'Season Owner' }).first().click();
   await expect(page.getByRole('heading', { name: messages['person.holdings'] })).toBeVisible();
