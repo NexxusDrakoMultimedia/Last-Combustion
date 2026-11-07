@@ -7,9 +7,13 @@ import {
   CONVERSATIONS,
   MANNERS,
   converseOutcome,
-  occasionAfter,
+  nextOccasion,
+  occasionOn,
+  occasionEnd,
+  occasionSchedule,
   startingScore,
   type Manner,
+  type OccasionDate,
   type OccasionId,
 } from '../sim/social';
 import { readCareer } from './career';
@@ -34,6 +38,10 @@ export interface ConversationLine {
 export interface SocialView {
   /** The occasion open now, or null when none is. */
   occasion: OccasionId | null;
+  /** The last day the open occasion is on. */
+  until: string | null;
+  /** The next occasion to come. */
+  next: { id: OccasionId; date: string } | null;
   left: number;
   total: number;
   /** The people the player could talk to: their contacts book. */
@@ -45,19 +53,26 @@ export interface SocialView {
 
 interface SeasonNow {
   id: number;
-  status: string;
-  complete: number;
+  /** The game date. */
+  today: string;
+  schedule: OccasionDate[];
 }
 
+/** The latest season with its occasions, from the rounds' final dates, and the game date. */
 function seasonNow(db: Database): SeasonNow | undefined {
-  const s = all(db, 'SELECT id, status FROM season ORDER BY year DESC LIMIT 1')[0];
-  if (!s) return undefined;
-  const complete = Number(
-    all(db, "SELECT COUNT(*) AS n FROM round WHERE season_id = ? AND status = 'complete'", [
-      s.id as number,
-    ])[0]!.n,
-  );
-  return { id: s.id as number, status: s.status as string, complete };
+  const s = all(db, 'SELECT id, year FROM season ORDER BY year DESC LIMIT 1')[0];
+  const career = readCareer(db);
+  if (!s || !career) return undefined;
+  const finals: Record<number, string> = {};
+  for (const r of all(db, 'SELECT number, final_date FROM round WHERE season_id = ?', [
+    s.id as number,
+  ]))
+    finals[r.number as number] = r.final_date as string;
+  return {
+    id: s.id as number,
+    today: career.gameDate,
+    schedule: occasionSchedule(s.year as number, finals),
+  };
 }
 
 /** Who the garage has not met: sponsors that would have it, manufacturers and journalists. */
@@ -93,10 +108,14 @@ const countFor = (db: Database, garageId: number, seasonId: number, occasion: st
 /** The social occasion open now, what is left to spend at it, and what has happened so far. */
 export function socialView(db: Database, garageId: number): SocialView {
   const season = seasonNow(db);
-  const occasion = season ? occasionAfter(season.complete) : null;
+  const open = season ? occasionOn(season.schedule, season.today) : null;
+  const upcoming = season ? nextOccasion(season.schedule, season.today) : null;
+  const occasion = open?.id ?? null;
   const used = season && occasion ? countFor(db, garageId, season.id, occasion) : 0;
   return {
     occasion,
+    until: open ? occasionEnd(open) : null,
+    next: upcoming ? { id: upcoming.id, date: upcoming.date } : null,
     left: occasion ? Math.max(0, CONVERSATIONS - used) : 0,
     total: CONVERSATIONS,
     contacts: contactsBook(db, garageId),
@@ -136,7 +155,7 @@ export function converse(
   if (!career) throw new Error('There is no career in this database.');
   if (!MANNERS.includes(manner)) throw new Error(`There is no manner "${manner}".`);
   const season = seasonNow(db);
-  const occasion = season ? occasionAfter(season.complete) : null;
+  const occasion = season ? (occasionOn(season.schedule, season.today)?.id ?? null) : null;
   if (!season || !occasion) throw new Error('There is no social occasion open now.');
   const used = countFor(db, garageId, season.id, occasion);
   if (used >= CONVERSATIONS) throw new Error('There are no conversations left at this occasion.');

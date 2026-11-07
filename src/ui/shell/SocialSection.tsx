@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useEffect, useState } from 'react';
-import { t } from '../../i18n';
+import { formatDate, t } from '../../i18n';
 import { MANNERS, type Manner } from '../../sim/social';
 import { useCareerStore } from '../../state/career.store';
 import { button, field } from '../styles';
@@ -23,7 +23,14 @@ export function SocialSection() {
     <div className="space-y-6 text-sm">
       <p className="text-lc-dim">{t('social.intro')}</p>
       {social.occasion === null ? (
-        <p className="text-lc-dim">{t('social.closed')}</p>
+        <p className="text-lc-dim">
+          {social.next
+            ? t('social.next', {
+                occasion: t(`social.occasion.${social.next.id}` as never),
+                date: formatDate(social.next.date),
+              })
+            : t('social.closed')}
+        </p>
       ) : (
         <section className="space-y-3">
           <h3 className="lc-display text-sm text-lc-dim">
@@ -32,6 +39,7 @@ export function SocialSection() {
               left: social.left,
               total: social.total,
             })}
+            {social.until && ` ${t('social.until', { date: formatDate(social.until) })}`}
           </h3>
           <label className="block space-y-1" htmlFor="social-who">
             {t('social.who')}

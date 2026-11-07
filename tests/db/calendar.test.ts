@@ -46,6 +46,8 @@ describe('the calendar in the database', () => {
   it('puts the prelims due on their day and refuses to skip until they are run', () => {
     const db = world();
     skipTime(db, 'due');
+    expect(calendarView(db)!.date).toBe('2031-03-31');
+    skipTime(db, 'due');
     const v = calendarView(db)!;
     expect(v.date).toBe('2031-04-07');
     expect(v.due).toMatchObject({ kind: 'prelims', round: 1 });

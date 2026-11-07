@@ -40,28 +40,40 @@ function world(seed: string): { db: Database; id: number } {
   const id = foundPlayerGarage(db, setup);
   createStarterOffers(db);
   ensureCapTables(db);
+  // The season opening is on from 31 March; the tests start there unless they say otherwise.
+  db.run("UPDATE career SET game_date = '2031-03-31'");
   return { db, id };
 }
 
 describe('social occasions in the database', () => {
-  it('opens the season opening before the first round, with three conversations', () => {
+  it('opens the season opening on 31 March, with three conversations, and says what is next before it', () => {
     const { db, id } = world('social-open');
+    db.run("UPDATE career SET game_date = '2031-02-01'");
+    const before = socialView(db, id);
+    expect(before.occasion).toBeNull();
+    expect(before.next).toEqual({ id: 'season_opening', date: '2031-03-31' });
+    expect(() => converse(db, id, null, 'warm')).toThrow(/no social occasion/);
+    db.run("UPDATE career SET game_date = '2031-03-31'");
     const v = socialView(db, id);
     expect(v.occasion).toBe('season_opening');
+    expect(v.until).toBe('2031-04-02');
     expect([v.left, v.total]).toEqual([3, 3]);
     expect(v.strangers).toBeGreaterThan(0);
   });
 
-  it('closes between occasions and reopens at the next', () => {
+  it('closes between occasions and reopens on the next one’s date', () => {
     const { db, id } = world('social-close');
-    db.run("UPDATE round SET status = 'complete' WHERE number = 1");
-    expect(socialView(db, id).occasion).toBeNull();
-    db.run("UPDATE round SET status = 'complete' WHERE number = 2");
+    db.run("UPDATE career SET game_date = '2031-04-03'");
+    const between = socialView(db, id);
+    expect(between.occasion).toBeNull();
+    expect(between.next?.id).toBe('sponsor_dinner');
+    db.run('UPDATE career SET game_date = ?', [between.next!.date]);
     expect(socialView(db, id).occasion).toBe('sponsor_dinner');
     expect(() => converse(db, id, null, 'warm')).not.toThrow();
-    db.run("UPDATE round SET status = 'complete' WHERE number = 1");
-    db.run("UPDATE round SET status = 'scheduled' WHERE number = 2");
-    expect(() => converse(db, id, null, 'warm')).toThrow(/no social occasion/);
+    // It stays open for its days, and the conversations are used up per occasion.
+    expect(socialView(db, id).left).toBe(2);
+    db.run("UPDATE career SET game_date = '2031-03-31'");
+    expect(socialView(db, id).left).toBe(3);
   });
 
   it('meets someone new, who joins the contacts book', () => {

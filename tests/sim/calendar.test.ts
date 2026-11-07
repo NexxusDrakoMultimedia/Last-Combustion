@@ -23,7 +23,7 @@ const rounds = (done: number, prelimsDone = false): RoundDates[] =>
 describe('the season calendar', () => {
   it('lists practice, prelims and a final for each round, then the end of the season and the next one', () => {
     const events = buildEvents(2031, rounds(0), false, '2031-02-01');
-    expect(events).toHaveLength(6 * 3 + 2);
+    expect(events).toHaveLength(6 * 3 + 5 + 2);
     expect(events.map((e) => e.date)).toEqual([...events.map((e) => e.date)].sort());
     expect(events[0]).toMatchObject({
       kind: 'practice',
@@ -34,6 +34,16 @@ describe('the season calendar', () => {
     expect(events.at(-2)).toMatchObject({ kind: 'end_season', date: '2031-11-11' });
     expect(events.at(-1)).toMatchObject({ kind: 'new_season', date: '2032-02-01' });
     expect(events.filter((e) => e.blocking).map((e) => e.kind)).not.toContain('practice');
+    // The five social occasions are on it too: they invite the player but do not hold time up.
+    const occasions = events.filter((e) => e.kind === 'occasion');
+    expect(occasions.map((e) => e.occasion)).toEqual([
+      'season_opening',
+      'sponsor_dinner',
+      'press_day',
+      'paddock_party',
+      'closing_ceremony',
+    ]);
+    expect(occasions.every((e) => !e.blocking && e.notable)).toBe(true);
   });
 
   it('marks events done from the rounds’ status and the date', () => {
@@ -71,7 +81,9 @@ describe('skipping time', () => {
 
   it('goes to the next event, or on to the next thing that needs the player', () => {
     expect(skipTarget(events, '2031-02-01', 'event')).toBe('2031-03-31');
-    expect(skipTarget(events, '2031-02-01', 'due')).toBe('2031-04-07');
+    // Continue stops at the season opening, which invites but does not hold time up.
+    expect(skipTarget(events, '2031-02-01', 'due')).toBe('2031-03-31');
+    expect(skipTarget(events, '2031-03-31', 'due')).toBe('2031-04-07');
   });
 
   it('does not move while something is due', () => {

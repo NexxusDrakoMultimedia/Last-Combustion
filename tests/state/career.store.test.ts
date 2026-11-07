@@ -56,7 +56,9 @@ describe('career store', () => {
     const cal = () => useCareerStore.getState().calendar!;
     expect(cal().date).toBe('2031-02-01');
     expect(cal().due).toBeNull();
-    // Continue goes to the day of the prelims (past the practice date, which only marks a day).
+    // Continue stops at the season opening (an invitation), then at the day of the prelims.
+    await useCareerStore.getState().continueTime();
+    expect(cal().date).toBe('2031-03-31');
     await useCareerStore.getState().continueTime();
     expect(cal().date).toBe('2031-04-07');
     expect(cal().due).toMatchObject({ kind: 'prelims', round: 1 });

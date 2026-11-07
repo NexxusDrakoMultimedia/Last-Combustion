@@ -11,7 +11,9 @@ function daysBetween(from: string, to: string): number {
 }
 
 const eventName = (e: CalendarEvent): string =>
-  t(`calendar.event.${e.kind}` as never, { round: e.round ?? 0 });
+  e.kind === 'occasion'
+    ? t('calendar.event.occasion', { occasion: t(`social.occasion.${e.occasion}` as never) })
+    : t(`calendar.event.${e.kind}` as never, { round: e.round ?? 0 });
 
 /** The calendar: today, what is waiting, what is coming and what has been. */
 export function CalendarPanel() {
@@ -37,7 +39,7 @@ export function CalendarPanel() {
         <ul className="space-y-1">
           {upcoming.slice(0, 10).map((e) => (
             <li
-              key={`${e.kind}-${e.round ?? 0}`}
+              key={`${e.kind}-${e.round ?? 0}-${e.occasion ?? ''}`}
               className="flex flex-wrap gap-x-3 border-t border-lc-line py-1"
             >
               <span className="lc-num w-32 text-lc-dim">{formatDate(e.date)}</span>
@@ -53,7 +55,7 @@ export function CalendarPanel() {
           <ul className="space-y-1">
             {past.map((e) => (
               <li
-                key={`${e.kind}-${e.round ?? 0}`}
+                key={`${e.kind}-${e.round ?? 0}-${e.occasion ?? ''}`}
                 className="flex gap-x-3 border-t border-lc-line py-1 text-lc-dim"
               >
                 <span className="lc-num w-32">{formatDate(e.date)}</span>
