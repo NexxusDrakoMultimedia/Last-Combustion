@@ -8,7 +8,7 @@
     "premises": ["electricity", "water", "facilities"],
     "people": ["wages", "salaries", "training", "release_fee", "relocation"],
     "assets": ["car_purchase", "car_sale", "parts", "gear", "restoration"],
-    "finance": []
+    "finance": ["share_issue", "dividends", "buyback"]
   },
   "operating": ["racing_income", "commercial_income", "race_running", "premises", "people"]
 }

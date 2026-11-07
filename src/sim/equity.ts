@@ -148,3 +148,91 @@ export function shareTotals(holdings: readonly Holding[]): {
 /** The votes a holding carries. */
 export const votesOf = (h: Holding): number =>
   h.shares * (equityData.classes[h.class] as { votes: number }).votes;
+
+/** The name of a funding round by its order: Seed, Series A, Series B and so on. */
+export function roundName(order: number): string {
+  const names = equityData.rounds.names;
+  return names[Math.min(order, names.length) - 1] ?? names[names.length - 1]!;
+}
+
+export interface InvestorOffer {
+  name: string;
+  /** How much they believe in the garage, as a multiple of its valuation. */
+  appetite: number;
+}
+
+/** The investors on offer for a round: fictional business people, each valuing the garage a little differently. */
+export function drawInvestors(rng: RandomStream, names: () => string): InvestorOffer[] {
+  const [lo, hi] = equityData.rounds.appetite as [number, number];
+  return Array.from({ length: equityData.rounds.offers }, () => ({
+    name: names(),
+    appetite: Math.round(rng.float(lo, hi) * 100) / 100,
+  }));
+}
+
+export interface RoundTerms {
+  /** The share of the garage (of its issued shares once the round is done) that the investor gets. */
+  stake: number;
+  newShares: number;
+  pricePerShare: number;
+  /** What the investor values the garage at before and after the money goes in. */
+  preMoney: number;
+  postMoney: number;
+}
+
+/**
+ * What an investor offers for a round: for `amount` they get the share of the garage that the money is
+ * of its value to them after it goes in, `amount ÷ (valuation × appetite + amount)`, as newly issued shares.
+ */
+export function roundTerms(
+  valuation: number,
+  issued: number,
+  amount: number,
+  appetite: number,
+): RoundTerms {
+  const preMoney = Math.max(0, valuation) * appetite;
+  const postMoney = preMoney + amount;
+  const stake = postMoney === 0 ? 0 : amount / postMoney;
+  const newShares = stake >= 1 ? 0 : Math.max(1, Math.round((issued * stake) / (1 - stake)));
+  return {
+    stake,
+    newShares,
+    pricePerShare: newShares === 0 ? 0 : amount / newShares,
+    preMoney,
+    postMoney,
+  };
+}
+
+export const MIN_ROUND = equityData.rounds.minAmount;
+export const MAX_ROUND_STAKE = equityData.rounds.maxStake;
+
+/**
+ * Splits a dividend between the holders of ordinary and preferred shares in proportion to their shares.
+ * The parts are whole dollars that add up to the dividend; the odd dollars go to the biggest holdings.
+ */
+export function splitDividend(
+  holdings: readonly { id: number; shares: number; class: ShareClass }[],
+  total: number,
+): Map<number, number> {
+  const paying = holdings.filter((h) => h.class !== 'option');
+  const shares = paying.reduce((sum, h) => sum + h.shares, 0);
+  const out = new Map<number, number>();
+  if (shares === 0 || total <= 0) return out;
+  let given = 0;
+  for (const h of paying) {
+    const part = Math.floor((total * h.shares) / shares);
+    out.set(h.id, part);
+    given += part;
+  }
+  let left = total - given;
+  for (const h of [...paying].sort((a, b) => b.shares - a.shares || a.id - b.id)) {
+    if (left <= 0) break;
+    out.set(h.id, (out.get(h.id) ?? 0) + 1);
+    left--;
+  }
+  return out;
+}
+
+/** What shares are worth now when bought or sold at the garage's valuation, in whole dollars. */
+export const sharesPrice = (valuation: number, issued: number, shares: number): number =>
+  issued === 0 ? 0 : Math.round((Math.max(0, valuation) * shares) / issued);

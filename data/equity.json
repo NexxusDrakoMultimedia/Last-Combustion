@@ -1,10 +1,19 @@
 {
-  "source": "Ownership and the cap table (see the GDD, 'Ownership and the cap table'). All numbers are proposed and tunable. 'shares' is the capital of a garage at founding. 'valuation' is the formula for what a garage is worth. 'computerGarages' says how the starting world's garages are owned: 'familyShare' of them belong to their founder and family, 'investorShare' have an outside investor, and the rest are held in part by a sponsor or a manufacturer. Stakes are shares of the garage, as a range.",
+  "source": "Ownership and the cap table (see the GDD, 'Ownership and the cap table'). All numbers are proposed and tunable. 'shares' is the capital of a garage at founding. 'valuation' is the formula for what a garage is worth. 'computerGarages' says how the starting world's garages are owned: 'familyShare' of them belong to their founder and family, 'investorShare' have an outside investor, and the rest are held in part by a sponsor or a manufacturer. Stakes are shares of the garage, as a range. 'rounds' sets the funding rounds: their names by order, the least a round can raise, the most of the garage it can give away, how many investors are on offer and how much they believe in the garage (a multiple of its valuation). 'dividend' is the share of the last closed year's operating profit that the board suggests paying out.",
   "shares": 1000000,
   "classes": {
-    "ordinary": { "votes": 1, "dividend": true },
-    "preferred": { "votes": 0, "dividend": true },
-    "option": { "votes": 0, "dividend": false }
+    "ordinary": {
+      "votes": 1,
+      "dividend": true
+    },
+    "preferred": {
+      "votes": 0,
+      "dividend": true
+    },
+    "option": {
+      "votes": 0,
+      "dividend": false
+    }
   },
   "valuation": {
     "profitYears": 3,
@@ -21,5 +30,15 @@
     "investorStake": [0.2, 0.4],
     "strategicStake": [0.15, 0.35],
     "manufacturerShare": 0.5
+  },
+  "rounds": {
+    "names": ["Seed", "Series A", "Series B", "Series C", "Series D"],
+    "minAmount": 50000,
+    "maxStake": 0.3,
+    "offers": 3,
+    "appetite": [0.8, 1.15]
+  },
+  "dividend": {
+    "suggestedShareOfProfit": 0.5
   }
 }

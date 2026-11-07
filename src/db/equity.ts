@@ -3,14 +3,24 @@
 import type { Database } from 'sql.js';
 import {
   FOUNDING_SHARES,
+  MAX_ROUND_STAKE,
+  MIN_ROUND,
   drawCapTable,
+  drawInvestors,
+  roundName,
+  roundTerms,
   shareTotals,
+  sharesPrice,
+  splitDividend,
   valuationOf,
   votesOf,
   type HolderType,
+  type InvestorOffer,
+  type RoundTerms,
   type ShareClass,
   type Valuation,
 } from '../sim/equity';
+import { financialYear } from '../sim/ledger';
 import { createRng } from '../sim/rng';
 import { equityData, nameLists } from '../sim/worldgen/data';
 import { pickNationality, personName } from '../sim/worldgen/names';
@@ -172,6 +182,20 @@ export interface OwnershipView {
   issued: number;
   holders: HolderView[];
   history: { date: string; value: number }[];
+  /** The next funding round: its name, the investors on offer and the limits. */
+  round: {
+    name: string;
+    investors: InvestorOffer[];
+    available: boolean;
+    minAmount: number;
+    maxStake: number;
+  };
+  /** The dividend the board suggests, and whether one can still be paid this financial year. */
+  dividend: { suggested: number; available: boolean; cash: number };
+  /** The owner's own cash, from dividends, which buys shares back. */
+  ownerCash: number;
+  /** Funding rounds, dividends and buy-backs, newest first. */
+  events: ShareEventView[];
 }
 
 /** Who owns a garage, what it is worth, and how its value has moved. */
@@ -196,6 +220,9 @@ export function ownershipView(db: Database, garageId: number): OwnershipView {
   const totals = shareTotals(rows);
   const votes = rows.reduce((sum, r) => sum + votesOf(r), 0);
   const valuation = garageValuation(db, garageId);
+  const next = roundInvestors(db, garageId);
+  const isPlayer =
+    all(db, 'SELECT is_player FROM garage WHERE id = ?', [garageId])[0]?.is_player === 1;
   return {
     garageId,
     garageName: garage.name as string,
@@ -212,5 +239,312 @@ export function ownershipView(db: Database, garageId: number): OwnershipView {
     history: all(db, 'SELECT date, value FROM valuation WHERE garage_id = ? ORDER BY date', [
       garageId,
     ]).map((r) => ({ date: r.date as string, value: r.value as number })),
+    round: {
+      name: roundName(next.order),
+      investors: next.investors,
+      available: isPlayer && !doneThisYear(db, garageId, 'round'),
+      minAmount: MIN_ROUND,
+      maxStake: MAX_ROUND_STAKE,
+    },
+    dividend: {
+      suggested: suggestedDividend(db, garageId),
+      available: isPlayer && !doneThisYear(db, garageId, 'dividend'),
+      cash: Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!.cash),
+    },
+    ownerCash: Number(
+      all(db, 'SELECT personal_cash FROM owner WHERE garage_id = ?', [garageId])[0]
+        ?.personal_cash ?? 0,
+    ),
+    events: events(db, garageId),
   };
+}
+
+// ---- What the owner can do with the shares: raise money, pay a dividend, buy shares back ----
+
+export interface ShareEventView {
+  id: number;
+  date: string;
+  kind: 'round' | 'dividend' | 'buyback';
+  detail: Record<string, unknown>;
+}
+
+const gameDate = (db: Database): string => readCareer(db)?.gameDate ?? '';
+
+function playerGarage(db: Database, garageId: number): void {
+  const g = all(db, 'SELECT is_player, kind FROM garage WHERE id = ?', [garageId])[0];
+  if (!g || g.kind !== 'racing' || g.is_player !== 1)
+    throw new Error('Only the player’s garage can do this.');
+}
+
+function events(db: Database, garageId: number): ShareEventView[] {
+  return all(
+    db,
+    'SELECT id, date, kind, detail FROM share_event WHERE garage_id = ? ORDER BY date DESC, id DESC',
+    [garageId],
+  ).map((r) => ({
+    id: r.id as number,
+    date: r.date as string,
+    kind: r.kind as ShareEventView['kind'],
+    detail: JSON.parse(r.detail as string) as Record<string, unknown>,
+  }));
+}
+
+/** The investors on offer for the garage's next round. They stay the same until a round is done. */
+export function roundInvestors(
+  db: Database,
+  garageId: number,
+): { order: number; investors: InvestorOffer[] } {
+  const career = readCareer(db);
+  const order =
+    Number(
+      all(db, "SELECT COUNT(*) AS n FROM share_event WHERE garage_id = ? AND kind = 'round'", [
+        garageId,
+      ])[0]!.n,
+    ) + 1;
+  if (!career) return { order, investors: [] };
+  const stream = createRng(career.masterSeed).stream(`investors:${garageId}:${order}`);
+  return {
+    order,
+    investors: drawInvestors(stream, () =>
+      personName(stream, pickNationality(stream), stream.chance(0.5) ? 'male' : 'female'),
+    ),
+  };
+}
+
+const doneThisYear = (db: Database, garageId: number, kind: ShareEventView['kind']): boolean =>
+  events(db, garageId).some(
+    (e) => e.kind === kind && financialYear(e.date) === financialYear(gameDate(db)),
+  );
+
+/** What a round of this size would give each investor, for the screen to show before the player agrees. */
+export function previewRound(
+  db: Database,
+  garageId: number,
+  investor: number,
+  amount: number,
+): RoundTerms {
+  const offer = roundInvestors(db, garageId).investors[investor];
+  if (!offer) throw new Error('There is no such investor.');
+  const issued = shareTotals(
+    all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [garageId]).map((r) => ({
+      shares: r.shares as number,
+      class: r.class as ShareClass,
+    })),
+  ).outstanding;
+  return roundTerms(garageValuation(db, garageId).total, issued, amount, offer.appetite);
+}
+
+/**
+ * Raises money by issuing new preferred shares to one of the investors on offer. The investor gets the
+ * stake their money is worth to them, which dilutes every other holder. One round a financial year, no
+ * less than the minimum and no more than the share of the garage that may be given away at once.
+ */
+export function issueShares(
+  db: Database,
+  garageId: number,
+  investor: number,
+  amount: number,
+): RoundTerms {
+  playerGarage(db, garageId);
+  ensureCapTables(db);
+  amount = Math.round(amount);
+  if (!(amount >= MIN_ROUND)) throw new Error(`A round raises at least ${MIN_ROUND}.`);
+  if (doneThisYear(db, garageId, 'round'))
+    throw new Error('The garage has already raised money this year.');
+  const { order, investors } = roundInvestors(db, garageId);
+  const offer = investors[investor];
+  if (!offer) throw new Error('There is no such investor.');
+  const terms = previewRound(db, garageId, investor, amount);
+  if (terms.stake > MAX_ROUND_STAKE)
+    throw new Error('That gives away too much of the garage in one round.');
+  const date = gameDate(db);
+  db.exec('BEGIN');
+  try {
+    db.run(
+      `INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, paid, since)
+       VALUES (?, 'investor', ?, 'preferred', ?, ?, ?)`,
+      [garageId, offer.name, terms.newShares, amount, date],
+    );
+    db.run(
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'share_issue', ?, ?)",
+      [garageId, date, amount, `${roundName(order)} round`],
+    );
+    db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [amount, garageId]);
+    db.run("INSERT INTO share_event (garage_id, date, kind, detail) VALUES (?, ?, 'round', ?)", [
+      garageId,
+      date,
+      JSON.stringify({
+        round: roundName(order),
+        investor: offer.name,
+        amount,
+        shares: terms.newShares,
+        stake: terms.stake,
+        preMoney: terms.preMoney,
+      }),
+    ]);
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+  return terms;
+}
+
+/** What the board suggests paying out: half of the last closed year's operating profit, within the cash. */
+export function suggestedDividend(db: Database, garageId: number): number {
+  const profit = closedYearProfits(db, garageId, 1)[0] ?? 0;
+  const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]?.cash ?? 0);
+  return Math.max(
+    0,
+    Math.min(cash, Math.round(profit * equityData.dividend.suggestedShareOfProfit)),
+  );
+}
+
+/**
+ * Pays a dividend to the holders of ordinary and preferred shares in proportion to their shares. The
+ * garage pays all of it; the owner's part goes to their personal cash. One a financial year, and never
+ * more than the garage holds.
+ */
+export function declareDividend(db: Database, garageId: number, amount: number): void {
+  playerGarage(db, garageId);
+  ensureCapTables(db);
+  amount = Math.round(amount);
+  if (!(amount > 0)) throw new Error('A dividend must be more than nothing.');
+  const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!.cash);
+  if (amount > cash) throw new Error('The garage cannot pay more than it holds.');
+  if (doneThisYear(db, garageId, 'dividend'))
+    throw new Error('The garage has already paid a dividend this year.');
+  const holdings = all(
+    db,
+    'SELECT id, holder_type, shares, class FROM shareholding WHERE garage_id = ?',
+    [garageId],
+  ).map((r) => ({
+    id: r.id as number,
+    type: r.holder_type as string,
+    shares: r.shares as number,
+    class: r.class as ShareClass,
+  }));
+  const parts = splitDividend(holdings, amount);
+  const ownerPart = holdings
+    .filter((h) => h.type === 'owner')
+    .reduce((sum, h) => sum + (parts.get(h.id) ?? 0), 0);
+  const date = gameDate(db);
+  db.exec('BEGIN');
+  try {
+    db.run(
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'dividends', ?, ?)",
+      [garageId, date, -amount, `Dividend ${financialYear(date)}`],
+    );
+    db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [amount, garageId]);
+    db.run('UPDATE owner SET personal_cash = personal_cash + ? WHERE garage_id = ?', [
+      ownerPart,
+      garageId,
+    ]);
+    db.run("INSERT INTO share_event (garage_id, date, kind, detail) VALUES (?, ?, 'dividend', ?)", [
+      garageId,
+      date,
+      JSON.stringify({ amount, owner: ownerPart, others: amount - ownerPart }),
+    ]);
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
+/**
+ * Buys shares back from an outside holder at the garage's valuation. Either the garage buys them and
+ * cancels them (so every other holder owns a bigger share), or the owner buys them with their personal
+ * cash and holds them (which is how control is won back). The owner's own shares cannot be bought.
+ */
+export function buyBackShares(
+  db: Database,
+  garageId: number,
+  holdingId: number,
+  shares: number,
+  by: 'garage' | 'owner',
+): number {
+  playerGarage(db, garageId);
+  ensureCapTables(db);
+  const holding = all(
+    db,
+    'SELECT id, holder_type, holder_name, class, shares, paid FROM shareholding WHERE id = ? AND garage_id = ?',
+    [holdingId, garageId],
+  )[0];
+  if (!holding) throw new Error('The garage has no such holding.');
+  if (holding.holder_type === 'owner') throw new Error('You cannot buy shares from yourself.');
+  if (holding.class === 'option') throw new Error('Option pool shares cannot be bought back.');
+  shares = Math.round(shares);
+  if (!(shares > 0) || shares > (holding.shares as number))
+    throw new Error('That is not a number of shares the holder has.');
+  const issued = shareTotals(
+    all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [garageId]).map((r) => ({
+      shares: r.shares as number,
+      class: r.class as ShareClass,
+    })),
+  ).outstanding;
+  const price = sharesPrice(garageValuation(db, garageId).total, issued, shares);
+  const date = gameDate(db);
+  const left = (holding.shares as number) - shares;
+  const paidLeft = Math.round(((holding.paid as number) * left) / (holding.shares as number));
+  db.exec('BEGIN');
+  try {
+    if (by === 'garage') {
+      const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!.cash);
+      if (cash < price) throw new Error('The garage cannot afford this.');
+      db.run(
+        "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'buyback', ?, ?)",
+        [garageId, date, -price, `Bought back from ${holding.holder_name as string}`],
+      );
+      db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [price, garageId]);
+    } else {
+      const personal = Number(
+        all(db, 'SELECT personal_cash FROM owner WHERE garage_id = ?', [garageId])[0]
+          ?.personal_cash ?? 0,
+      );
+      if (personal < price) throw new Error('You cannot afford this with your own cash.');
+      db.run('UPDATE owner SET personal_cash = personal_cash - ? WHERE garage_id = ?', [
+        price,
+        garageId,
+      ]);
+      const mine = all(
+        db,
+        "SELECT id FROM shareholding WHERE garage_id = ? AND holder_type = 'owner' AND class = ? LIMIT 1",
+        [garageId, holding.class as string],
+      )[0];
+      if (mine)
+        db.run('UPDATE shareholding SET shares = shares + ?, paid = paid + ? WHERE id = ?', [
+          shares,
+          price,
+          mine.id as number,
+        ]);
+      else {
+        const ownerName = String(
+          all(db, 'SELECT name FROM owner WHERE garage_id = ?', [garageId])[0]!.name,
+        );
+        db.run(
+          `INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, paid, since)
+           VALUES (?, 'owner', ?, ?, ?, ?, ?)`,
+          [garageId, ownerName, holding.class as string, shares, price, date],
+        );
+      }
+    }
+    if (left === 0) db.run('DELETE FROM shareholding WHERE id = ?', [holdingId]);
+    else
+      db.run('UPDATE shareholding SET shares = ?, paid = ? WHERE id = ?', [
+        left,
+        paidLeft,
+        holdingId,
+      ]);
+    db.run("INSERT INTO share_event (garage_id, date, kind, detail) VALUES (?, ?, 'buyback', ?)", [
+      garageId,
+      date,
+      JSON.stringify({ from: holding.holder_name, shares, price, by }),
+    ]);
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+  return price;
 }
