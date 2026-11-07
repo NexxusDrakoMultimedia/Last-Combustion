@@ -3,11 +3,12 @@
 import type { Database } from 'sql.js';
 import { OUTAGE_CATEGORIES, OUTAGE_EFFECTS, outageActive, outageData } from '../sim/outages';
 import type { OutageCategory } from '../sim/outages';
-import type { PracticeHandicap } from '../sim/prelim/practice';
+import type { PracticeEffect } from '../sim/prelim/practice';
 import { supplierById } from '../sim/supply';
 import { readCareer } from './career';
 import { all } from './entries';
 import { garageBonuses } from './bonuses';
+import { garageFacilityBonuses } from './facilities';
 import { activeContracts } from './supply';
 
 /** The reliability a garage can count on for a category: its supplier's, or the spot market's. */
@@ -18,7 +19,12 @@ export function supplyReliability(
   year: number,
 ): number {
   const contract = activeContracts(db, garageId, year).find((c) => c.category === category);
-  return (contract && supplierById(contract.supplierId)?.reliability) || outageData.spotReliability;
+  const base =
+    (contract && supplierById(contract.supplierId)?.reliability) || outageData.spotReliability;
+  // A transporter fleet makes late deliveries less likely.
+  return category === 'logistics'
+    ? 1 - (1 - base) * (1 - garageFacilityBonuses(db, garageId).lateDeliveries)
+    : base;
 }
 
 /** The supplies that are down for a garage in a round (only the player's garage keeps its own supplies). */
@@ -49,12 +55,14 @@ export function garageOutages(
 export function practiceHandicaps(
   outages: readonly OutageCategory[],
   entryIds: readonly number[],
-): Map<number, PracticeHandicap> {
-  const handicap: PracticeHandicap = {
+  breakthroughBoost = 0,
+): Map<number, PracticeEffect> {
+  const handicap: PracticeEffect = {
     lapShare: outages.includes('race_fuel') ? OUTAGE_EFFECTS.lapShare : 1,
     daysLost: outages.includes('logistics') ? OUTAGE_EFFECTS.daysLost : 0,
+    breakthroughBoost,
   };
-  return handicap.lapShare < 1 || handicap.daysLost > 0
+  return handicap.lapShare < 1 || handicap.daysLost > 0 || breakthroughBoost > 0
     ? new Map(entryIds.map((id) => [id, handicap]))
     : new Map();
 }
@@ -111,7 +119,9 @@ export function roundOutages(
 
 /** What multiplies a garage's crew cover in a round: an electricity outage idles part of the crew. */
 export function crewOutageFactor(db: Database, garageId: number, roundId: number): number {
+  // A solar array keeps part of the crew working through a power cut.
+  const loss = OUTAGE_EFFECTS.crewCoverLoss * (1 - garageFacilityBonuses(db, garageId).outageCover);
   return roundOutages(db, garageId, roundId).some((o) => o.category === 'electricity')
-    ? 1 - OUTAGE_EFFECTS.crewCoverLoss
+    ? 1 - loss
     : 1;
 }

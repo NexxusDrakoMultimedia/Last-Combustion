@@ -102,10 +102,12 @@ describe('what an outage does in practice', () => {
     expect(practiceHandicaps(['race_fuel'], [1, 2]).get(1)).toEqual({
       lapShare: OUTAGE_EFFECTS.lapShare,
       daysLost: 0,
+      breakthroughBoost: 0,
     });
     expect(practiceHandicaps(['logistics'], [1]).get(1)).toEqual({
       lapShare: 1,
       daysLost: OUTAGE_EFFECTS.daysLost,
+      breakthroughBoost: 0,
     });
   });
 });

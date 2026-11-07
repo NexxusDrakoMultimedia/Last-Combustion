@@ -7,6 +7,7 @@ import { seasonBalance } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
+import { garageFacilityBonuses } from './facilities';
 
 /** The number of training levels, from 0 (none) up. */
 export const TRAINING_LEVELS = seasonBalance.training.levels.length;
@@ -95,7 +96,12 @@ export function settleTraining(
     }
     db.run('UPDATE driver SET training = ? WHERE id = ?', [level, driverId]);
     levels.set(driverId, level);
-    boosts.set(driverId, closedGarages.has(garageId) ? 0 : garageBonuses(db, garageId).training);
+    boosts.set(
+      driverId,
+      closedGarages.has(garageId)
+        ? 0
+        : garageBonuses(db, garageId).training + garageFacilityBonuses(db, garageId).training,
+    );
   }
   return { levels, boosts, spent };
 }

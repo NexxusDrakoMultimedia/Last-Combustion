@@ -25,6 +25,7 @@ import { ResultsPanel, StandingsPanel } from './TablesPanel';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
+import { FacilitiesSection } from './FacilitiesSection';
 import { ConditionBar, MenuActions, OwnedCars, SeasonCalendar, UsedMarket } from './panels';
 
 type PanelId =
@@ -76,6 +77,7 @@ export function Shell() {
   const [seasonTab, setSeason] = useState('calendar');
   const [marketTab, setMarket] = useState('market');
   const [staffTab, setStaff] = useState('mechanics');
+  const [operationsTab, setOperationsTab] = useState('suppliers');
   const [almanacTab, setAlmanac] = useState('seasons');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
@@ -406,10 +408,16 @@ export function Shell() {
       {!locked && open === 'operations' && (
         <Panel
           title={t('rail.operations')}
-          subtitle={t('supply.intro')}
+          subtitle={operationsTab === 'suppliers' ? t('supply.intro') : t('facilities.intro')}
+          tabs={[
+            { id: 'suppliers', label: t('operations.supplyTab') },
+            { id: 'facilities', label: t('operations.facilitiesTab') },
+          ]}
+          tab={operationsTab}
+          onTab={setOperationsTab}
           onClose={() => setOpen(null)}
         >
-          <SupplyPanel />
+          {operationsTab === 'suppliers' ? <SupplyPanel /> : <FacilitiesSection />}
         </Panel>
       )}
       {!locked && open === 'sponsors' && (

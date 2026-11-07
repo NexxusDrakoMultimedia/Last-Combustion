@@ -13,7 +13,7 @@ import {
 import { classifyPrelims, POLE_BONUS, type Classified } from './classify';
 import { simulateLap } from './lap';
 import { buildRunningOrder } from './order';
-import { simulatePractice, type PracticeHandicap, type SimEvent } from './practice';
+import { simulatePractice, type PracticeEffect, type SimEvent } from './practice';
 import type { CarSpec } from './ratings';
 import { planRoundDays, type RoundSchedule } from './weather';
 
@@ -37,7 +37,7 @@ export interface RoundInput {
   finalSize: number;
   entries: readonly PrelimEntry[];
   /** Entries held back in practice by a supply outage. */
-  practiceHandicaps?: ReadonlyMap<number, PracticeHandicap>;
+  practiceHandicaps?: ReadonlyMap<number, PracticeEffect>;
 }
 
 export interface PrelimRound {

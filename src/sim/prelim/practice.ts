@@ -13,12 +13,14 @@ export interface SimEvent {
   payload: Record<string, unknown>;
 }
 
-/** What a supply outage does to an entry's practice week. */
-export interface PracticeHandicap {
+/** What an outage, or a data room, does to an entry's practice week. */
+export interface PracticeEffect {
   /** The share of each day's laps that are still run (1 for all of them). */
   lapShare: number;
   /** The practice days missed at the start of the week. */
   daysLost: number;
+  /** Raises the chance of a setup breakthrough each day by this share (a data room). */
+  breakthroughBoost?: number;
 }
 
 export interface PracticeResult {
@@ -39,7 +41,7 @@ export function simulatePractice(
   days: readonly DayPlan[],
   lapKm: number,
   rng: RandomStream,
-  handicaps: ReadonlyMap<number, PracticeHandicap> = new Map(),
+  handicaps: ReadonlyMap<number, PracticeEffect> = new Map(),
 ): PracticeResult {
   const cfg = simBalance.practice;
   const events: SimEvent[] = [];
@@ -87,7 +89,10 @@ export function simulatePractice(
       // Practice runs are short, gentle test runs: only a tenth of their distance counts as race
       // kilometres, so a season of practice wears a car about as much as a few laps of racing.
       raceKm.set(entry.carId, (raceKm.get(entry.carId) ?? 0) + covered * cfg.kmShare);
-      if (!outForDay && rng.chance(cfg.breakthroughPerDay)) {
+      if (
+        !outForDay &&
+        rng.chance(cfg.breakthroughPerDay * (1 + (handicap?.breakthroughBoost ?? 0)))
+      ) {
         const gain = Math.round(rng.float(0.001, 0.003) * 10000) / 10000;
         setupBonus.set(entry.entryId, Math.max(setupBonus.get(entry.entryId) ?? 0, gain));
         events.push({

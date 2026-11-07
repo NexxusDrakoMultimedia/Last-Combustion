@@ -29,6 +29,7 @@ import { OUTAGE_CATEGORIES, outageChance, type OutageCategory } from '../sim/out
 import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
+import { garageFacilityBonuses } from './facilities';
 import { garageOutages, supplyReliability } from './outages';
 import { nextRoundNumber } from './prelims';
 import { adjustRelationship, relationshipScore, type Negotiation } from './negotiation';
@@ -100,12 +101,20 @@ export function supplyRates(
   year: number = yearOf(db),
 ): SupplyRates {
   const saving = 1 - garageBonuses(db, garageId).utilities;
+  // Solar panels, water tanks and a transporter fleet cut their own bills.
+  const own = garageFacilityBonuses(db, garageId);
+  const facilitySaving: Partial<Record<SupplyCategory, number>> = {
+    electricity: own.electricity,
+    water: own.water,
+    logistics: own.logistics,
+  };
   const contracts = activeContracts(db, garageId, year);
   const rates = { ...BASE_RATES };
   for (const category of SUPPLY_CATEGORIES) {
     const contract = contracts.find((c) => c.category === category);
     const base = contract ? contract.rate : categoryMarket(db, category, year).rate;
-    rates[category] = Math.round(base * saving * 10000) / 10000;
+    rates[category] =
+      Math.round(base * saving * (1 - (facilitySaving[category] ?? 0)) * 10000) / 10000;
   }
   return rates;
 }

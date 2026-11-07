@@ -80,6 +80,8 @@ import {
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
+import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
+import type { FacilityKind } from '../sim/facilities';
 import {
   dismissExecutive,
   executiveCandidates,
@@ -243,6 +245,8 @@ interface CareerState {
   /** The garage's utility, fuel and logistics suppliers, markets and contracts. */
   supply: SupplyView | undefined;
   supplyNegotiation: ActiveSupplyNegotiation | undefined;
+  /** The garage's facilities, at their levels, with what the next level costs. */
+  facilities: FacilityView[];
   /** The record book and the champions and awards of every finished season (read when the Almanac opens). */
   recordBook: RecordBook | undefined;
   /** The seasons in the save, and the full tables and round classification last asked for (read when the Season panel needs them). */
@@ -298,6 +302,7 @@ interface CareerState {
   negotiateSupply(supplierId: number): Promise<void>;
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
+  buildFacility(kind: FacilityKind): Promise<void>;
   loadRecords(): void;
   openRegistry(target: RegistryTarget): void;
   registryBack(): void;
@@ -383,6 +388,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             })),
       years: seasonYears(db),
       supply: playerGarageId(db) === null ? undefined : supplyView(db, playerGarageId(db)!),
+      facilities: playerGarageId(db) === null ? [] : facilityViews(db, playerGarageId(db)!),
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
       staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
@@ -442,6 +448,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     executiveOffers: [],
     executiveNegotiation: undefined,
     supply: undefined,
+    facilities: [],
     supplyNegotiation: undefined,
     recordBook: undefined,
     years: [],
@@ -852,6 +859,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'DismissExecutive'),
+
+    buildFacility: (kind) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        buildFacility(openDb, garageId, kind);
+        refresh(openDb);
+        return undefined;
+      }, 'BuildFacility'),
 
     hireMechanic: (offer) =>
       run(async () => {

@@ -16,6 +16,7 @@ import pointsJson from '../../../data/points.json';
 import prizesJson from '../../../data/prizes.json';
 import linksJson from '../../../data/links.json';
 import suppliersJson from '../../../data/suppliers.json';
+import facilitiesJson from '../../../data/facilities.json';
 import type { CarModelData, Commentator, CourseData, ManufacturerData, PlaceData } from './types';
 
 export const places = placesJson as PlaceData[];
@@ -40,6 +41,7 @@ export const dailyBalance = balanceJson.daily;
 export const executiveData = executivesJson;
 export const siteLinks = linksJson;
 export const supplyData = suppliersJson;
+export const facilityData = facilitiesJson;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
 export interface FlagRegion {
