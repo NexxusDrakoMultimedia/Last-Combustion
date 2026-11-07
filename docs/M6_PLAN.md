@@ -34,12 +34,12 @@ The order can change when a slice turns out larger than expected, and each slice
 
 ## Release task: move the release site to Cloudflare
 
-The release site moves from GitHub Pages to Cloudflare Workers & Pages as part of the 0.2.0 release itself, not before. Previews stay on the same Worker, and production is added to the same `wrangler.jsonc`. GitHub Pages stays live until the move is complete. The ordered steps, and what to check on the way (above all, that the telemetry keys reach production builds and not previews), are in the Hosting section of [Releasing](RELEASING.md).
+The release site moved from GitHub Pages to Cloudflare Workers & Pages ahead of the release (done on 2026-11-07): the Worker `last-combustion` serves `lc.nexxusdrako.au`, built from `main`, and the previews stay on the same Worker. What is left for the release itself is that `main` gets this branch's code, including the guard that keeps the telemetry keys out of previews. The setup is in the Hosting section of [Releasing](RELEASING.md).
 
 ## Definition of done for M6
 
 - Every slice above is built, tested and described in the Game Design Document as built, and the "to come" notes for M6 are gone.
 - The documentation pass in [Releasing](RELEASING.md) is done.
 - Players can carry a 0.1.x save into 0.2.0.
-- The release site is served from Cloudflare, GitHub Pages is switched off, and the docs say so.
+- The release site is served from Cloudflare and the docs say so (done).
 - `CHANGELOG.md` has a `[0.2.0]` entry, and the release pull request is merged with a merge commit.
