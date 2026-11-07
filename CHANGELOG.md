@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Many more names, and 43 more nations and cultures to draw them from (Latin America, Europe, East, South-East and South Asia, the Middle East, Africa and the Pacific), with the established nations' lists made larger. Australia keeps 60% of the weight.
 - A work-of-fiction disclaimer in the About screen, the README and the press kit: every manufacturer, car, company and character is invented, and any resemblance to real people or companies is coincidental.
 - The Registry's Paddock tab groups people by job, and a new Ex-Paddock tab lists everyone who has left, by job, with the years they were active. The Paddock also lists every sponsor, manufacturer, parts supplier and utility supplier, each with a profile: where it is from, how far its reach goes, how it sees your garage and, for sponsors and manufacturers, the shares it holds.
 - The press: six fictional journalists and the four commentators write a headline about the garage after every final, in a tone set by how they see you. A warm view wins fans and a cold one loses them. The Staff panel has a Press tab with the headlines and the journalists, and you can meet the journalists at the paddock occasions.
@@ -17,6 +18,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Changed
 
+- Generated names are checked for offensive words and infamous people, not against real drivers: a random name may now match a real driver's name by chance.
 - The game is fully fictional with no mapping to real cars or makers anywhere: the real-counterpart columns and the optional `mod_mapping.json` are gone from the design document. The starting roster is unchanged, at 31 manufacturers and 96 models.
 
 ## [0.2.0-beta4] - 2026-11-07
