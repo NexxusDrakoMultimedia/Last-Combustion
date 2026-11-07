@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Changed
 
+- The plan for 0.2.0 has a new slice, the calendar and time controls (a game date that moves a day at a time, a calendar of events, and Continue, Next event, Day and Week controls in place of Run prelims and Run final). It is written in the design document and not built yet.
 - Generated names are checked for offensive words and infamous people, not against real drivers: a random name may now match a real driver's name by chance.
 - The game is fully fictional with no mapping to real cars or makers anywhere: the real-counterpart columns and the optional `mod_mapping.json` are gone from the design document. The starting roster is unchanged, at 31 manufacturers and 96 models.
 
