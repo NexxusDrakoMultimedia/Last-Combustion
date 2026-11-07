@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.0-beta4] - 2026-11-07
+
+A beta of the 0.2.0 release (M6, depth): the fourth slice, ownership and the cap table. Saves from 0.1.x still load; every garage is given its owners, and every computer garage its business, when the save opens.
+
 ### Added
 
 - Computer garages are businesses: each has executives (for as many roles as its prestige allows), facilities, a sponsor and an electricity supplier, shown on its Registry page with its executives in the Paddock. Its sponsor covers what they cost, so the economy is unchanged. A garage with cash to spare pays half of its profit to its holders each year, and your share is paid into your own cash.
