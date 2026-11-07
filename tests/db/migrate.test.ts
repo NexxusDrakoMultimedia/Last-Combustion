@@ -92,6 +92,7 @@ describe('migrate', () => {
       'car_retirement',
       'continental_tier',
       'facilities',
+      'executive_departures',
     ]);
   });
 
@@ -284,10 +285,25 @@ describe('facilities (schema version 38)', () => {
   it('adds a table of facilities that holds a level from 1 to 5', () => {
     const db = openDatabase(SQL);
     migrate(db, migrations.slice(0, 37));
-    migrate(db);
+    migrate(db, migrations.slice(0, 38));
     expect(getSchemaVersion(db)).toBe(38);
     const columns = db.exec('PRAGMA table_info(facility)')[0]!.values.map((v) => v[1]);
     expect(columns).toEqual(['garage_id', 'kind', 'level']);
     expect(() => db.exec("INSERT INTO facility VALUES (1, 'data_room', 6)")).toThrow();
+  });
+});
+
+describe('executive departures (schema version 39)', () => {
+  it('adds a reason for leaving that only takes the known reasons', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(39);
+    const columns = db.exec('PRAGMA table_info(executive)')[0]!.values.map((v) => v[1]);
+    expect(columns).toContain('left_reason');
+    expect(() =>
+      db.exec(
+        "INSERT INTO executive (garage_id, role, name, birth_year, skill, left_reason) VALUES (1, 'chief_executive', 'X', 1970, 50, 'bored')",
+      ),
+    ).toThrow();
   });
 });

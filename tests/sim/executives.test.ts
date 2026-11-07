@@ -9,6 +9,9 @@ import {
   executiveOffers,
   executiveSlots,
   fairSalaryFor,
+  marketSalary,
+  poachChance,
+  retirementAge,
   NO_BONUSES,
   salaryPerRound,
 } from '../../src/sim/executives';
@@ -118,5 +121,36 @@ describe('what executives add up to', () => {
         },
       ),
     );
+  });
+});
+
+describe('retirement, poaching and the Chief Executive', () => {
+  it('draws a retirement age from 60 to 70', () => {
+    for (let i = 0; i < 50; i++) {
+      const age = retirementAge(createRng('x').stream(`r${i}`));
+      expect(age).toBeGreaterThanOrEqual(60);
+      expect(age).toBeLessThanOrEqual(70);
+    }
+  });
+
+  it('makes a better or worse-paid executive likelier to be poached', () => {
+    expect(poachChance(90, marketSalary(90))).toBeGreaterThan(poachChance(40, marketSalary(40)));
+    expect(poachChance(60, marketSalary(60) * 0.7)).toBeGreaterThan(
+      poachChance(60, marketSalary(60)),
+    );
+    expect(poachChance(60, marketSalary(60) * 1.5)).toBeLessThan(poachChance(60, marketSalary(60)));
+    expect(poachChance(60, 1e9)).toBeGreaterThan(0);
+  });
+
+  it('gives a Chief Executive faster prestige gains, in proportion to skill', () => {
+    expect(executiveBonuses([{ role: 'chief_executive', skill: 100 }]).prestige).toBeCloseTo(
+      0.25,
+      10,
+    );
+    expect(executiveBonuses([{ role: 'chief_executive', skill: 40 }]).prestige).toBeCloseTo(
+      0.1,
+      10,
+    );
+    expect(executiveBonuses([{ role: 'finance_director', skill: 100 }]).prestige).toBe(0);
   });
 });

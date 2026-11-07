@@ -1,5 +1,5 @@
 {
-  "source": "Executive roles for the garage-operations design (see the GDD, 'Garage operations'). 'max' is the effect at skill 100; the effect grows in proportion to skill. A role with built = false is not offered until what it affects exists.",
+  "source": "Executive roles for the garage-operations design (see the GDD, 'Garage operations'). 'max' is the effect at skill 100; the effect grows in proportion to skill. A role with built = false is not offered until what it affects exists. 'poach' is the yearly chance that a rival garage poaches an employed executive: base plus perSkill times skill/100, multiplied by 2 minus the ratio of their pay to the market pay for their skill, kept within payRange.",
   "salaryBase": 40000,
   "salaryPerSkill": 1200,
   "skill": [35, 90],
@@ -13,7 +13,8 @@
       "name": "Chief Executive",
       "built": true,
       "max": {
-        "othersBonus": 0.1
+        "othersBonus": 0.1,
+        "prestige": 0.25
       }
     },
     "commercial_director": {
@@ -72,5 +73,10 @@
         "gearCost": 0.2
       }
     }
+  },
+  "poach": {
+    "base": 0.04,
+    "perSkill": 0.08,
+    "payRange": [0.25, 2]
   }
 }

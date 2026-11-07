@@ -87,9 +87,11 @@ import {
   executiveCandidates,
   executiveCapacity,
   garageExecutives,
+  recentDepartures,
   offerExecutiveContract,
   openExecutiveNegotiation,
   type Executive,
+  type ExecutiveDeparture,
   type ExecutiveOutcome,
 } from '../db/executives';
 import {
@@ -242,6 +244,8 @@ interface CareerState {
   executiveCapacity: { slots: number; used: number };
   executiveOffers: { role: ExecutiveRole; offers: ExecutiveOffer[] }[];
   executiveNegotiation: ActiveExecutiveNegotiation | undefined;
+  /** The executives lost to retirement or a rival this year. */
+  executiveDepartures: ExecutiveDeparture[];
   /** The garage's utility, fuel and logistics suppliers, markets and contracts. */
   supply: SupplyView | undefined;
   supplyNegotiation: ActiveSupplyNegotiation | undefined;
@@ -373,6 +377,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             },
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
       executives: playerGarageId(db) === null ? [] : garageExecutives(db, playerGarageId(db)!),
+      executiveDepartures:
+        playerGarageId(db) === null ? [] : recentDepartures(db, playerGarageId(db)!),
       executiveCapacity:
         playerGarageId(db) === null
           ? { slots: 0, used: 0 }
@@ -444,6 +450,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     sponsors: undefined,
     money: undefined,
     executives: [],
+    executiveDepartures: [],
     executiveCapacity: { slots: 0, used: 0 },
     executiveOffers: [],
     executiveNegotiation: undefined,
