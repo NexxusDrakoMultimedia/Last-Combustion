@@ -5,15 +5,22 @@ import {
   FOUNDING_SHARES,
   MAX_ROUND_STAKE,
   MIN_ROUND,
+  boardOf,
+  controlOf,
   drawCapTable,
   drawInvestors,
+  noConfidence,
   roundName,
   roundTerms,
   shareTotals,
   sharesPrice,
+  seasonTarget,
   splitDividend,
+  targetMet,
   valuationOf,
   votesOf,
+  type ControlView,
+  type Director,
   type HolderType,
   type InvestorOffer,
   type RoundTerms,
@@ -196,6 +203,10 @@ export interface OwnershipView {
   ownerCash: number;
   /** Funding rounds, dividends and buy-backs, newest first. */
   events: ShareEventView[];
+  /** Who controls the garage, who sits on its board, and the season targets the board has set. */
+  control: ControlView;
+  board: Director[];
+  targets: BoardTargetView[];
 }
 
 /** Who owns a garage, what it is worth, and how its value has moved. */
@@ -256,6 +267,9 @@ export function ownershipView(db: Database, garageId: number): OwnershipView {
         ?.personal_cash ?? 0,
     ),
     events: events(db, garageId),
+    control: controlView(db, garageId),
+    board: boardView(db, garageId),
+    targets: boardTargets(db, garageId),
   };
 }
 
@@ -357,13 +371,16 @@ export function issueShares(
   const terms = previewRound(db, garageId, investor, amount);
   if (terms.stake > MAX_ROUND_STAKE)
     throw new Error('That gives away too much of the garage in one round.');
+  // Issuing shares is a reserved matter: a holder with a blocking minority of the votes can refuse it.
+  const blocker = controlView(db, garageId).blockers[0];
+  if (blocker) throw new Error(`${blocker.name} holds a blocking minority and vetoes new shares.`);
   const date = gameDate(db);
   db.exec('BEGIN');
   try {
     db.run(
       `INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, paid, since)
-       VALUES (?, 'investor', ?, 'preferred', ?, ?, ?)`,
-      [garageId, offer.name, terms.newShares, amount, date],
+       VALUES (?, 'investor', ?, ?, ?, ?, ?)`,
+      [garageId, offer.name, offer.class, terms.newShares, amount, date],
     );
     db.run(
       "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'share_issue', ?, ?)",
@@ -376,6 +393,7 @@ export function issueShares(
       JSON.stringify({
         round: roundName(order),
         investor: offer.name,
+        class: offer.class,
         amount,
         shares: terms.newShares,
         stake: terms.stake,
@@ -547,4 +565,144 @@ export function buyBackShares(
     throw error;
   }
   return price;
+}
+
+// ---- Control and the board ----
+
+const holdersOf = (db: Database, garageId: number) =>
+  all(
+    db,
+    'SELECT id, holder_type, holder_name, class, shares FROM shareholding WHERE garage_id = ?',
+    [garageId],
+  ).map((r) => ({
+    id: r.id as number,
+    name: r.holder_name as string,
+    type: r.holder_type as string,
+    shares: r.shares as number,
+    class: r.class as ShareClass,
+  }));
+
+/** Who controls a garage, by the votes its ordinary shares carry. */
+export function controlView(db: Database, garageId: number): ControlView {
+  ensureCapTables(db);
+  return controlOf(holdersOf(db, garageId));
+}
+
+/** The independent chair of a garage's board: a fictional business person, the same for a given save. */
+function chairName(db: Database, garageId: number): string {
+  const career = readCareer(db);
+  const stream = createRng(career?.masterSeed ?? '').stream(`chair:${garageId}`);
+  return personName(stream, pickNationality(stream), stream.chance(0.5) ? 'male' : 'female');
+}
+
+/** The board: the owner, a director for each outside holder with a tenth of the shares, and the chair. */
+export function boardView(db: Database, garageId: number): Director[] {
+  ensureCapTables(db);
+  const owner = String(
+    all(db, 'SELECT name FROM owner WHERE garage_id = ?', [garageId])[0]?.name ??
+      holdersOf(db, garageId).find((h) => h.type === 'owner')?.name ??
+      '',
+  );
+  return boardOf(holdersOf(db, garageId), owner, chairName(db, garageId));
+}
+
+export interface BoardTargetView {
+  year: number;
+  /** The finish in the Garage table that the board expects. */
+  target: number;
+  /** The finish achieved, once the season has ended. */
+  finish: number | null;
+  met: boolean | null;
+  /** Whether the board called a vote of no confidence after this season. */
+  vote: boolean;
+}
+
+const seasonYear = (db: Database): number =>
+  Number(
+    all(db, 'SELECT MAX(year) AS y FROM season')[0]?.y ?? readCareer(db)?.gameDate.slice(0, 4) ?? 0,
+  );
+
+/** The finish in the Garage table a garage had in the latest season before a year, or null if it never raced. */
+function lastFinish(db: Database, garageId: number, year: number): number | null {
+  const own = all(
+    db,
+    'SELECT finish FROM board_target WHERE garage_id = ? AND year < ? AND finish IS NOT NULL ORDER BY year DESC LIMIT 1',
+    [garageId, year],
+  )[0];
+  if (own) return own.finish as number;
+  const snap = all(
+    db,
+    `SELECT ss.position FROM standing_snapshot ss JOIN season s ON s.id = ss.season_id
+      WHERE ss.table_kind = 'garage' AND ss.subject = ? AND s.year < ?
+      ORDER BY s.year DESC, ss.after_round DESC LIMIT 1`,
+    [String(garageId), year],
+  )[0];
+  return snap ? (snap.position as number) : null;
+}
+
+/** The board's target for a garage this season, set the first time it is looked at. */
+export function boardTargets(db: Database, garageId: number): BoardTargetView[] {
+  const year = seasonYear(db);
+  if (
+    !all(db, 'SELECT 1 FROM board_target WHERE garage_id = ? AND year = ?', [garageId, year]).length
+  ) {
+    const prestige = Number(
+      all(db, 'SELECT prestige FROM garage WHERE id = ?', [garageId])[0]?.prestige ?? 1,
+    );
+    const rank =
+      Number(
+        all(db, "SELECT COUNT(*) AS n FROM garage WHERE kind = 'racing' AND prestige > ?", [
+          prestige,
+        ])[0]!.n,
+      ) + 1;
+    db.run('INSERT INTO board_target (garage_id, year, target) VALUES (?, ?, ?)', [
+      garageId,
+      year,
+      Math.max(1, seasonTarget(lastFinish(db, garageId, year), rank)),
+    ]);
+  }
+  return all(
+    db,
+    'SELECT year, target, finish, met, vote FROM board_target WHERE garage_id = ? ORDER BY year DESC',
+    [garageId],
+  ).map((r) => ({
+    year: r.year as number,
+    target: r.target as number,
+    finish: (r.finish as number | null) ?? null,
+    met: r.met === null ? null : r.met === 1,
+    vote: r.vote === 1,
+  }));
+}
+
+/**
+ * Closes the board's year: writes the finish beside the target, and notes a vote of no confidence if
+ * the target has been missed twice running while the owner holds no more than half the votes.
+ * Called when a season ends, for the player's garage.
+ */
+export function reviewBoard(
+  db: Database,
+  garageId: number,
+  year: number,
+  finish: number | null,
+): void {
+  boardTargets(db, garageId);
+  const row = all(db, 'SELECT target FROM board_target WHERE garage_id = ? AND year = ?', [
+    garageId,
+    year,
+  ])[0];
+  if (!row) return;
+  const met = targetMet(finish, row.target as number);
+  db.run('UPDATE board_target SET finish = ?, met = ? WHERE garage_id = ? AND year = ?', [
+    finish,
+    met ? 1 : 0,
+    garageId,
+    year,
+  ]);
+  const misses = all(
+    db,
+    'SELECT met FROM board_target WHERE garage_id = ? AND met IS NOT NULL ORDER BY year DESC',
+    [garageId],
+  ).map((r) => r.met === 0);
+  if (noConfidence(misses, controlView(db, garageId).ownerVotes))
+    db.run('UPDATE board_target SET vote = 1 WHERE garage_id = ? AND year = ?', [garageId, year]);
 }

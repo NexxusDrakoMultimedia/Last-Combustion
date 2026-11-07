@@ -10,7 +10,11 @@ import {
   issueShares,
   ownershipView,
   previewRound,
+  boardTargets,
+  boardView,
+  controlView,
   recordValuations,
+  reviewBoard,
   roundInvestors,
 } from '../../src/db/equity';
 import { playFinal } from '../../src/db/final';
@@ -156,6 +160,9 @@ describe('a season of ownership', () => {
     // Recording again for the same date replaces the value rather than adding a row.
     recordValuations(db, '2031-11-11');
     expect(Number(scalar(db, `SELECT COUNT(*) FROM valuation WHERE garage_id = ${id}`))).toBe(1);
+    // The board has reviewed the season against its target.
+    const review = boardTargets(db, id).find((t) => t.year === 2031)!;
+    expect(review.met).toBe(review.finish !== null && review.finish <= review.target);
     // The champions' garages carry their titles in their value.
     const champion = Number(scalar(db, 'SELECT champion_garage_id FROM season'));
     expect(garageValuation(db, champion).titles).toBeGreaterThanOrEqual(1);
@@ -186,17 +193,21 @@ describe('raising money', () => {
     const { db, id } = playerWorld('round-issue');
     const before = cashOf(db, id);
     const quoted = previewRound(db, id, 0, 200_000);
+    const offer = roundInvestors(db, id).investors[0]!;
     const terms = issueShares(db, id, 0, 200_000);
     expect(cashOf(db, id)).toBe(before + 200_000);
     expect(terms).toEqual(quoted);
     const view = ownershipView(db, id);
     const investor = view.holders.find((h) => h.type === 'investor')!;
-    expect(investor.class).toBe('preferred');
+    expect(investor.class).toBe(offer.class);
     expect(investor.paid).toBe(200_000);
     expect(investor.stake).toBeCloseTo(terms.stake, 4);
     expect(view.holders.find((h) => h.type === 'owner')!.stake).toBeCloseTo(1 - terms.stake, 4);
-    // Preferred shares do not vote, so the owner keeps every vote.
-    expect(view.holders.find((h) => h.type === 'owner')!.votes).toBe(1);
+    // Preferred shares do not vote, so the owner keeps every vote; ordinary shares share the votes.
+    expect(view.holders.find((h) => h.type === 'owner')!.votes).toBeCloseTo(
+      offer.class === 'preferred' ? 1 : 1 - terms.stake,
+      4,
+    );
     expect(
       Number(
         scalar(
@@ -310,5 +321,114 @@ describe('buying shares back', () => {
     const own = ownershipView(db, id).holders.find((h) => h.type === 'owner')!;
     expect(() => buyBackShares(db, id, own.id, 10, 'garage')).toThrow(/yourself/);
     expect(() => buyBackShares(db, id, 999_999, 10, 'garage')).toThrow(/no such holding/);
+  });
+});
+
+/** Gives the career a seed whose next round has an investor who insists on voting shares; returns who. */
+function withVotingInvestor(db: Database, id: number): number {
+  for (let i = 0; i < 400; i++) {
+    db.run('UPDATE career SET master_seed = ? WHERE id = 1', [`votes-${i}`]);
+    const n = roundInvestors(db, id).investors.findIndex((x) => x.class === 'ordinary');
+    if (n >= 0) return n;
+  }
+  throw new Error('No seed with a voting investor was found.');
+}
+
+describe('control', () => {
+  it('is complete for an owner who has sold only preferred shares', () => {
+    const { db, id } = playerWorld('control-pref');
+    const n = roundInvestors(db, id).investors.findIndex((x) => x.class === 'preferred');
+    if (n >= 0) issueShares(db, id, n, 100_000);
+    expect(controlView(db, id)).toMatchObject({ ownerVotes: 1, level: 'control', blockers: [] });
+  });
+
+  it('is shared with an investor who buys ordinary shares, who may block the reserved matters', () => {
+    const { db, id } = playerWorld('control-vote', 20_000_000);
+    const n = withVotingInvestor(db, id);
+    // A big round (just under the limit) so the investor holds a blocking minority.
+    let amount = 300_000;
+    while (previewRound(db, id, n, amount + 100_000).stake <= 0.3 && amount < 50_000_000)
+      amount += 100_000;
+    const terms = issueShares(db, id, n, amount);
+    const c = controlView(db, id);
+    expect(c.ownerVotes).toBeCloseTo(1 - terms.stake, 4);
+    expect(c.level).toBe('control');
+    if (terms.stake >= 0.25) {
+      expect(c.blockers).toHaveLength(1);
+      // The next round is a reserved matter and the blocker refuses it, even after the year turns.
+      db.run("UPDATE career SET game_date = '2032-02-01' WHERE id = 1");
+      expect(() => issueShares(db, id, 0, 100_000)).toThrow(/vetoes new shares/);
+    }
+  });
+});
+
+describe('the board', () => {
+  it('seats the owner, an investor with a tenth of the shares or more, and an independent chair', () => {
+    const { db, id } = playerWorld('board-seats', 20_000_000);
+    expect(boardView(db, id).map((d) => d.seat)).toEqual(['owner', 'chair']);
+    const n = roundInvestors(db, id).investors.findIndex((x) => x.class === 'preferred');
+    const terms = issueShares(db, id, n, 600_000);
+    const seats = boardView(db, id);
+    if (terms.stake >= 0.1)
+      expect(seats.map((d) => d.seat)).toEqual(['owner', 'investor', 'chair']);
+    const chair = seats.find((d) => d.seat === 'chair')!;
+    // The chair is the same person every time for a save.
+    expect(boardView(db, id).find((d) => d.seat === 'chair')!.name).toBe(chair.name);
+  });
+
+  it('sets a target the first time it is looked at and keeps it', () => {
+    const { db, id } = playerWorld('board-target');
+    const first = boardTargets(db, id);
+    expect(first).toHaveLength(1);
+    expect(first[0]).toMatchObject({ year: 2031, finish: null, met: null, vote: false });
+    expect(first[0]!.target).toBeGreaterThanOrEqual(1);
+    expect(boardTargets(db, id)).toEqual(first);
+  });
+
+  it('reviews the season against the target, and sets the next target at the finish', () => {
+    const { db, id } = playerWorld('board-review');
+    const target = boardTargets(db, id)[0]!.target;
+    reviewBoard(db, id, 2031, target);
+    expect(boardTargets(db, id)[0]).toMatchObject({ year: 2031, finish: target, met: true });
+    db.run(
+      "INSERT INTO season (year, era, final_size, series_fans, status) VALUES (2032, 'original', 15, 1000, 'active')",
+    );
+    const next = boardTargets(db, id)[0]!;
+    expect(next.year).toBe(2032);
+    expect(next.target).toBe(target);
+  });
+
+  it('calls a vote of no confidence after two missed targets when the owner is not in the majority', () => {
+    const { db, id } = playerWorld('board-vote', 20_000_000);
+    // Without a majority of the votes: the owner holds 40%.
+    db.run(
+      "INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, paid, since) VALUES (?, 'investor', 'Majority Holder', 'ordinary', 1500000, 1, '2031-02-01')",
+      [id],
+    );
+    boardTargets(db, id);
+    reviewBoard(db, id, 2031, 90 + 20);
+    expect(boardTargets(db, id)[0]!.vote).toBe(false);
+    db.run(
+      "INSERT INTO season (year, era, final_size, series_fans, status) VALUES (2032, 'original', 15, 1000, 'active')",
+    );
+    boardTargets(db, id);
+    db.run('UPDATE board_target SET target = 1 WHERE year = 2031');
+    reviewBoard(db, id, 2032, null);
+    const rows = boardTargets(db, id);
+    expect(rows.find((r) => r.year === 2032)).toMatchObject({ met: false, vote: true });
+  });
+
+  it('does not call a vote against an owner who holds the majority', () => {
+    const { db, id } = playerWorld('board-majority');
+    boardTargets(db, id);
+    db.run('UPDATE board_target SET target = 1');
+    reviewBoard(db, id, 2031, 50);
+    db.run(
+      "INSERT INTO season (year, era, final_size, series_fans, status) VALUES (2032, 'original', 15, 1000, 'active')",
+    );
+    boardTargets(db, id);
+    db.run('UPDATE board_target SET target = 1 WHERE year = 2032');
+    reviewBoard(db, id, 2032, 50);
+    expect(boardTargets(db, id).some((r) => r.vote)).toBe(false);
   });
 });

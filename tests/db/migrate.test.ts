@@ -96,6 +96,7 @@ describe('migrate', () => {
       'ledger_year',
       'cap_table',
       'share_events',
+      'board',
     ]);
   });
 
@@ -332,7 +333,7 @@ describe('the cap table (schema version 41)', () => {
 describe('share events (schema version 42)', () => {
   it('adds a history of rounds, dividends and buy-backs, and personal cash for the owner', () => {
     const db = openDatabase(SQL);
-    migrate(db);
+    migrate(db, migrations.slice(0, 42));
     expect(getSchemaVersion(db)).toBe(42);
     expect(() =>
       db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (1, '2031-02-01', 'round')"),
@@ -342,5 +343,24 @@ describe('share events (schema version 42)', () => {
     ).toThrow();
     const columns = db.exec('PRAGMA table_info(owner)')[0]!.values.map((v) => v[1]);
     expect(columns).toContain('personal_cash');
+  });
+});
+
+describe('the board (schema version 43)', () => {
+  it('adds a target for each garage and year, with the finish, whether it was met and any vote', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(43);
+    const columns = db.exec('PRAGMA table_info(board_target)')[0]!.values.map((v) => v[1]);
+    expect(columns).toEqual(['garage_id', 'year', 'target', 'finish', 'met', 'vote']);
+    expect(() =>
+      db.exec('INSERT INTO board_target (garage_id, year, target) VALUES (1, 2031, 0)'),
+    ).toThrow();
+    expect(() =>
+      db.exec('INSERT INTO board_target (garage_id, year, target) VALUES (1, 2031, 40)'),
+    ).not.toThrow();
+    expect(() =>
+      db.exec('INSERT INTO board_target (garage_id, year, target) VALUES (1, 2031, 41)'),
+    ).toThrow();
   });
 });
