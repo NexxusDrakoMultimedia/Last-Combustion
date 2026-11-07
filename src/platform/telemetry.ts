@@ -112,6 +112,7 @@ export const LEDGER_CATEGORIES = [
   'share_issue',
   'dividends',
   'buyback',
+  'capital',
   'acquisitions',
   'car_purchase',
   'car_sale',
@@ -136,6 +137,7 @@ const ITEM_GROUP: Readonly<Record<string, string>> = {
   share_issue: 'equity',
   dividends: 'equity',
   buyback: 'equity',
+  capital: 'equity',
   acquisitions: 'equity',
 };
 

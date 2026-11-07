@@ -101,6 +101,7 @@ import {
 import { ledgerCsv, type LedgerFilter } from '../sim/ledger';
 import {
   buyBackShares as dbBuyBackShares,
+  injectCapital as dbInjectCapital,
   issueShares as dbIssueShares,
   ownershipView,
   type OwnershipView,
@@ -375,6 +376,7 @@ interface CareerState {
   launchTakeover(garageId: number, premium: number): Promise<void>;
   issueShares(investor: number, amount: number): Promise<void>;
   buyBackShares(holdingId: number, shares: number, by: 'garage' | 'owner'): Promise<void>;
+  injectCapital(amount: number): Promise<void>;
   loadRecords(): void;
   openRegistry(target: RegistryTarget): void;
   openResults(year: number, round: number, session: 'prelims' | 'final'): void;
@@ -1033,6 +1035,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'BuyBackShares'),
+
+    injectCapital: (amount) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbInjectCapital(openDb, garageId, amount);
+        refresh(openDb);
+        return undefined;
+      }, 'InjectCapital'),
 
     loadPress: () => {
       const garageId = openDb ? playerGarageId(openDb) : null;

@@ -499,6 +499,38 @@ export function payAnnualDividend(db: Database, garageId: number): number {
 }
 
 /**
+ * The owner puts some of their own cash into the garage as capital. It leaves their personal cash,
+ * joins the garage's cash and is written in the ledger under `capital` (no shares change hands, so
+ * nobody is diluted). It cannot be more than the owner holds.
+ */
+export function injectCapital(db: Database, garageId: number, amount: number): void {
+  playerGarage(db, garageId);
+  amount = Math.round(amount);
+  if (!(amount > 0)) throw new Error('Capital must be more than nothing.');
+  const personal = Number(
+    all(db, 'SELECT personal_cash FROM owner WHERE garage_id = ?', [garageId])[0]?.personal_cash ??
+      0,
+  );
+  if (amount > personal) throw new Error('You cannot put in more than your own cash.');
+  db.exec('BEGIN');
+  try {
+    db.run('UPDATE owner SET personal_cash = personal_cash - ? WHERE garage_id = ?', [
+      amount,
+      garageId,
+    ]);
+    db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [amount, garageId]);
+    db.run(
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'capital', ?, 'Capital from the owner')",
+      [garageId, gameDate(db), amount],
+    );
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
+/**
  * Buys shares back from an outside holder at the garage's valuation. Either the garage buys them and
  * cancels them (so every other holder owns a bigger share), or the owner buys them with their personal
  * cash and holds them (which is how control is won back). The owner's own shares cannot be bought.

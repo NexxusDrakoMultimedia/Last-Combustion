@@ -130,6 +130,16 @@ describe('where the player’s garage is based', () => {
     expect(db.exec(`SELECT home_state FROM garage WHERE id = ${id}`)[0]!.values[0]![0]).toBe('WA');
   });
 
+  it('puts the headquarters at the base when the flag is Australia', () => {
+    const db = fresh();
+    const id = foundPlayerGarage(db, { ...setup, flag: 'AU', baseState: 'WA' });
+    const row = db.exec(`SELECT base_place_id = hq_place_id FROM garage WHERE id = ${id}`)[0]!
+      .values[0]![0];
+    expect(row).toBe(1);
+    const id2 = foundPlayerGarage(fresh(), { ...setup, flag: 'AU' });
+    expect(id2).toBeGreaterThan(0);
+  });
+
   it('keeps the base it starts with when no state is chosen, still in Australia', () => {
     const db = fresh();
     const id = foundPlayerGarage(db, setup);

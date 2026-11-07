@@ -7,6 +7,7 @@ import {
   declareDividend,
   ensureCapTables,
   garageValuation,
+  injectCapital,
   issueShares,
   payAnnualDividend,
   ownershipView,
@@ -327,6 +328,27 @@ describe('the annual dividend', () => {
     bookYear(poor.db, poor.id, 400_000);
     expect(payAnnualDividend(poor.db, poor.id)).toBe(50_000);
     expect(cashOf(poor.db, poor.id)).toBe(0);
+  });
+});
+
+describe('putting in capital', () => {
+  it('moves the owner’s own cash into the garage and writes it in the ledger', () => {
+    const { db, id } = playerWorld('capital');
+    db.run('UPDATE owner SET personal_cash = 500000');
+    const before = cashOf(db, id);
+    injectCapital(db, id, 200_000);
+    expect(cashOf(db, id)).toBe(before + 200_000);
+    expect(ownershipView(db, id).ownerCash).toBe(300_000);
+    expect(
+      scalar(db, `SELECT amount FROM ledger WHERE category = 'capital' AND garage_id = ${id}`),
+    ).toBe(200_000);
+  });
+
+  it('refuses nothing, or more than the owner holds', () => {
+    const { db, id } = playerWorld('capital-limits');
+    db.run('UPDATE owner SET personal_cash = 1000');
+    expect(() => injectCapital(db, id, 0)).toThrow(/more than nothing/);
+    expect(() => injectCapital(db, id, 5000)).toThrow(/own cash/);
   });
 });
 
