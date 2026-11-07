@@ -59,7 +59,7 @@ After six rounds, press **End the season**. The champion's prize is paid, the se
 
 ## Money
 
-**Coming in:** prize money (the final's top finishers), your title sponsor, merchandise from your fans, delivery driving between rounds (each of your cars earns about $250 a day, more in a busy state), and the champion's prize.
+**Coming in:** prize money (the final's top finishers), your title sponsor, merchandise from your fans, delivery driving on the days between rounds (each of your cars earns about $167 a day that passes, more in a busy state), and the champion's prize.
 
 **Going out:** each round, an entry fee, tyres, servicing, travel to the venue, electricity, water and race fuel; wages for mechanics; salaries for executives; driver training; crash repairs. Buying and fitting cars and parts is spending too.
 

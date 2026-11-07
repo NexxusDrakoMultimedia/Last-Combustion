@@ -11,6 +11,7 @@ import {
 } from '../sim/calendar';
 import { addDays } from '../sim/worldgen/calendar';
 import { readCareer } from './career';
+import { flushDailyLife, settleDay, type DailyLifeRun } from './daily';
 import { all } from './entries';
 
 export interface CalendarView {
@@ -56,13 +57,16 @@ export function moveDateTo(db: Database, target: string): string {
   const career = readCareer(db);
   if (!career) throw new Error('There is no career in this database.');
   let date = career.gameDate;
+  const daily: DailyLifeRun = new Map();
   while (date < target) {
     date = addDays(date, 1);
     db.run('UPDATE career SET game_date = ? WHERE id = 1', [date]);
-    // The place for what changes from one day to the next (nothing yet: daily life is settled with
-    // each round). Whatever goes here must depend only on the seed and the date, so that skipping a
-    // week gives the world that seven single days give.
+    // What changes from one day to the next. Whatever is done here must depend only on the seed and
+    // the date, so that skipping a week gives the world that seven single days give.
+    settleDay(db, date, daily);
   }
+  // The day's delivery work is written to the ledger once for the whole skip.
+  flushDailyLife(db, daily, date);
   return date;
 }
 
