@@ -8,8 +8,9 @@
 // The Worker's build settings in the Cloudflare dashboard are:
 //   - build command:  pnpm run build   (Cloudflare finds pnpm and installs the dependencies itself)
 //   - deploy command: npx wrangler preview
-// `wrangler preview` needs the (empty) `previews` block below. Do not set any telemetry keys
-// (VITE_GTAG_ID, VITE_GA_GAME_KEY, VITE_GA_SECRET_KEY) on the Worker: a preview should collect nothing.
+// `wrangler preview` needs the (empty) `previews` block below. The telemetry keys
+// (VITE_GTAG_ID, VITE_GA_GAME_KEY, VITE_GA_SECRET_KEY) go on the Worker only when the release site moves
+// here: vite.telemetry.ts drops them from every Cloudflare build that is not of `main`.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "last-combustion",
