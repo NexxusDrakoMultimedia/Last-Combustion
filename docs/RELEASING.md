@@ -10,7 +10,7 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each
 | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M5 First playable season | **0.1.0** | The first release: start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season and begin 2032 with every record kept |
 | M6 Depth                 | 0.2.0     | Ownership, the people layer, supply outages, facilities and the rest of the depth work                                                            |
-| M7 Junior and expansion  | 0.3.0     | The Junior Series, promotion and the 2036 expansion                                                                                               |
+| M7 Junior and expansion  | 0.3.0     | The Junior Series, promotion, the 2036 expansion and scouting and fog of war                                                                      |
 | M8 Modes and release     | 0.4.0     | All career modes, polish, mods, desktop builds, listing on the exchange                                                                           |
 | Feature complete         | **1.0.0** | Not a milestone: the project owner declares 1.0.0 when the game is feature complete, whenever that is                                             |
 
@@ -33,10 +33,9 @@ It may not contain new features, new screens, new rules, schema changes or anyth
 
 | Waiting for | Item                                                                                                                                                                                                         |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| M6 (0.2.0)  | Scouting and fog of war: scouts, the Head of Scouting, descriptions and ranges that tighten into exact values ("Scouting and fog of war")                                                                    |
 | M6 (0.2.0)  | Fan and prestige rankings for drivers, cars, garages and nations, and the logo as the start-page header (issues 80 and 85)                                                                                   |
 | M6 (0.2.0)  | The financial ledger, ownership and the cap table, facilities and the people layer                                                                                                                           |
-| M7 (0.3.0)  | The Junior Series, the 2036 expansion and the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior)                                                                                        |
+| M7 (0.3.0)  | The Junior Series, the 2036 expansion, the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior) and scouting and fog of war                                                               |
 | Later       | The thematic type (Orbitron and Exo 2) for the logo and special screens, the story, press and social layers that use the slab, serif and flexible fonts, and a way to give feedback without a GitHub account |
 
 ## Branches
