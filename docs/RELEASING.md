@@ -4,14 +4,15 @@ This is how Last Combustion is released to players. The [Game Design Document](G
 
 ## Versions
 
-Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each milestone from M5 on ends in a release (the numbers below are confirmed). **1.0.0 is not tied to any milestone**: the project owner declares it when the game is feature complete, so milestones after M8, or more releases between, are possible.
+Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each milestone from M5 on ends in a release (the numbers below are confirmed). **1.0.0 is not tied to any milestone**: the project owner declares it when the game is feature complete, so milestones after M9, or more releases between, are possible.
 
 | Milestone                | Release   | What players get                                                                                                                                  |
 | ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M5 First playable season | **0.1.0** | The first release: start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season and begin 2032 with every record kept |
 | M6 Depth                 | 0.2.0     | Ownership, the people layer, supply outages, facilities and the rest of the depth work                                                            |
-| M7 Junior and expansion  | 0.3.0     | The Junior Series, promotion, the 2036 expansion and scouting and fog of war                                                                      |
-| M8 Modes and release     | 0.4.0     | All career modes, polish, mods, desktop builds, listing on the exchange                                                                           |
+| M7 Story and fog of war  | 0.3.0     | Rivalries, the storyline engine and event cards, media headlines, crash highlights and the live map, and scouting and fog of war                  |
+| M8 Junior and expansion  | 0.4.0     | The Junior Series, promotion and the 2036 expansion                                                                                               |
+| M9 Modes and release     | 0.5.0     | All career modes, polish, mods, desktop builds, listing on the exchange                                                                           |
 | Feature complete         | **1.0.0** | Not a milestone: the project owner declares 1.0.0 when the game is feature complete, whenever that is                                             |
 
 M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load: schema changes are new numbered migrations and a released migration is never edited.
@@ -29,19 +30,20 @@ M0 to M4 were built before there were players and have no release. Before 1.0.0 
 
 It may not contain new features, new screens, new rules, schema changes or anything else that belongs to a milestone. Those wait for 0.2.0 (M6) or later. The test is simple: if a player would say "that is new", it is not a patch.
 
-**Where requests go.** Bugs are GitHub issues (the Feedback button opens the form). Ideas and feature requests are issues too, and are sorted into the patch series, M6, M7 or M8 when they are read. What is already decided to wait:
+**Where requests go.** Bugs are GitHub issues (the Feedback button opens the form). Ideas and feature requests are issues too, and are sorted into the patch series, M6, M7, M8 or M9 when they are read. What is already decided to wait:
 
 | Waiting for | Item                                                                                                                                                                                                         |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | M6 (0.2.0)  | Fan and prestige rankings for drivers, cars, garages and nations, and the logo as the start-page header (issues 80 and 85)                                                                                   |
 | M6 (0.2.0)  | The financial ledger, ownership and the cap table, facilities and the people layer                                                                                                                           |
-| M7 (0.3.0)  | The Junior Series, the 2036 expansion, the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior) and scouting and fog of war                                                               |
+| M7 (0.3.0)  | Scouting and fog of war, and the story and feedback layer (rivalries, the storyline engine, event cards, crash highlights and the live map)                                                                  |
+| M8 (0.4.0)  | The Junior Series, the 2036 expansion and the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior)                                                                                        |
 | Later       | The thematic type (Orbitron and Exo 2) for the logo and special screens, the story, press and social layers that use the slab, serif and flexible fonts, and a way to give feedback without a GitHub account |
 
 ## Branches
 
 - **`main` is the latest release.** The web build on GitHub Pages deploys from `main`, so players only ever see released work.
-- **Every milestone from M6 on runs on its own branch named for its release series**: `feature/0.2.x` for M6, `feature/0.3.x` for M7 and `feature/0.4.x` for M8. It is created from `main` when the milestone starts, and all of the milestone's pull requests target it, not `main`. CI (lint, types, tests, build, browser test, CodeQL, dependency review) runs on every pull request whatever its base, and on pushes to `main`, `feature/**` and `hotfix/**`.
+- **Every milestone from M6 on runs on its own branch named for its release series**: `feature/0.2.x` for M6, `feature/0.3.x` for M7, `feature/0.4.x` for M8 and `feature/0.5.x` for M9. It is created from `main` when the milestone starts, and all of the milestone's pull requests target it, not `main`. CI (lint, types, tests, build, browser test, CodeQL, dependency review) runs on every pull request whatever its base, and on pushes to `main`, `feature/**` and `hotfix/**`.
 - **Feature pull requests** are squash-merged into the milestone branch. The squash title ends with the pull request number, as now. The designated session branch (`claude/...`) stays the working branch; only the pull request's base changes.
 - **Finishing a milestone.** When everything in the milestone is built and its game-design-document status is up to date, a release pull request merges the milestone branch into `main` with a merge commit (not a squash, so the milestone's history stays readable), titled `release: 0.2.0 (M6 depth)`. The release steps below run on it. Then `main` is tagged `v0.2.0` and a GitHub Release is published (publishing it also rebuilds the web build).
 - **The next milestone** branch is created from the new `main` once the release is out.
