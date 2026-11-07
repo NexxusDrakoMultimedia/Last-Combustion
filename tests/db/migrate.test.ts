@@ -90,6 +90,7 @@ describe('migrate', () => {
       'restorations',
       'garage_champions',
       'car_retirement',
+      'continental_tier',
     ]);
   });
 
@@ -243,9 +244,37 @@ describe('car retirement (schema version 36)', () => {
     const db = openDatabase(SQL);
     migrate(db, migrations.slice(0, 35));
     expect(getSchemaVersion(db)).toBe(35);
-    migrate(db);
+    migrate(db, migrations.slice(0, 36));
     expect(getSchemaVersion(db)).toBe(36);
     const columns = db.exec('PRAGMA table_info(car)')[0]!.values.map((v) => v[1]);
     expect(columns).toContain('retired_year');
+  });
+});
+
+describe('the continental tier (schema version 37)', () => {
+  const tierRows = (db: ReturnType<typeof openDatabase>) =>
+    db.exec("SELECT stable_id FROM sponsor WHERE tier = 'continental' ORDER BY id")[0]?.values ??
+    [];
+
+  it('adds the continental sponsors to a career that already has its sponsors', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 36));
+    db.exec(
+      "INSERT INTO sponsor VALUES (1, 'wattle-hardware', 'Wattle Hardware Co.', 'AU', 'local', 1, 30)",
+    );
+    db.exec('INSERT INTO sponsor_deal VALUES (1, 1, 1, 2031, 2032, 40000, 1)');
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(37);
+    expect(tierRows(db)).toHaveLength(3);
+    expect(db.exec('SELECT sponsor_id FROM sponsor_deal')[0]!.values[0]![0]).toBe(1);
+    expect(db.exec('SELECT name FROM sponsor WHERE id = 1')[0]!.values[0]![0]).toBe(
+      'Wattle Hardware Co.',
+    );
+  });
+
+  it('adds nothing to a new world, which is filled in from the data files', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(db.exec('SELECT COUNT(*) FROM sponsor')[0]!.values[0]![0]).toBe(0);
   });
 });
