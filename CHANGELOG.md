@@ -28,6 +28,14 @@ Milestone M6, depth: the garage as a business, its people and a calendar to run 
 
 ### Changed
 
+- **Ties in a championship** are broken by countback on final places (most wins, then most 2nds, through to most 15th places), then the better average prelim finishing position, then prestige, then valuation, then a draw from the career's seed. This applies to every table.
+- **Dividends are paid by themselves.** When the season closes your garage pays the year's dividend (half of the operating profit, within its cash, and nothing after a loss). The Pay button is gone.
+- **Missed conversations happen anyway.** When a social occasion ends with talks unspent, they are held at random (a random manner with a random contact, now and then someone new), and the Social tab says you missed them.
+- **The press moves your fans whatever it thinks of you.** A journalist who does not know the garage still reports the result: a win wins 60 fans, a podium 30, points 10, and a day with none loses 20.
+- **Drake Motorsports, Pyra Drake and her car are not in a new career.** They return with the Founder's career, and as Legends in the Hall of Fame later. A new career still has 96 garages and 313 drivers. Saves made before keep what they have.
+- **A garage named for a place is from that place:** its flag and headquarters are there (it still races from an Australian base). A garage with a family name in its name belongs to someone with that name (or, with two, one of them or both, chosen by the seed).
+- **People can die outside racing** (a road accident, an illness, a fall, a fire, an accident in the water): drivers, mechanics and executives roll once a year, and each death is in the news. Your own owner is exempt until succession is built.
+- **The almanac and results screens** are tidier: the used car market is out of every ranking, titles read "Drivers with the most fans" and "Most prestigious garages", results rows have two lines (entry over garage, car over plate) with the weather and dates of the round, and the Registry no longer repeats prelims and races, which live on the Season panel. The number in a black box is centred.
 - The game is fully fictional, with no mapping to real cars or makers. The starting roster is unchanged, at 31 manufacturers and 96 models.
 - Generated names are checked for offensive words and infamous people, not against real drivers: a random name may match a real driver's name by chance.
 - The Money panel is now the Ledger panel.
