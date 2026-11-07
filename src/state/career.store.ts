@@ -88,6 +88,7 @@ import {
   type TransactionsView,
 } from '../db/ledger';
 import { ledgerCsv, type LedgerFilter } from '../sim/ledger';
+import { ownershipView, type OwnershipView } from '../db/equity';
 import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
 import type { FacilityKind } from '../sim/facilities';
 import {
@@ -245,6 +246,8 @@ interface CareerState {
   money: GarageFinance | undefined;
   /** The financial years the player's garage has books for (newest first), and the summary of the one being looked at. */
   ledgerYears: number[];
+  /** Who owns the player's garage, what it is worth and how that has moved. */
+  ownership: OwnershipView | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
   transactionsFilter: LedgerFilter | undefined;
@@ -394,6 +397,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             },
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
       ledgerYears: playerGarageId(db) === null ? [] : ledgerYears(db, playerGarageId(db)!),
+      ownership: playerGarageId(db) === null ? undefined : ownershipView(db, playerGarageId(db)!),
       // The summary on show moves on when money does.
       transactionsView:
         playerGarageId(db) === null || !get().transactionsFilter
@@ -479,6 +483,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     sponsors: undefined,
     money: undefined,
     ledgerYears: [],
+    ownership: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
     transactionsView: undefined,

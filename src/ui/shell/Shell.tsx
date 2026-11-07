@@ -12,6 +12,7 @@ import { AuctionSection } from './AuctionSection';
 import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
 import { LedgerPanel } from './LedgerPanel';
+import { OwnershipPanel } from './OwnershipPanel';
 import { TransactionsSection } from './TransactionsSection';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
@@ -41,6 +42,7 @@ type PanelId =
   | 'almanac'
   | 'registry'
   | 'money'
+  | 'ownership'
   | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
@@ -55,6 +57,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'almanac', label: 'rail.almanac' },
   { id: 'registry', label: 'rail.registry' },
   { id: 'money', label: 'rail.money' },
+  { id: 'ownership', label: 'rail.ownership' },
 ];
 
 /** The game shell: a top bar, a rail of panels, the garage floor and the news strip. */
@@ -433,6 +436,15 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <SponsorsPanel />
+        </Panel>
+      )}
+      {!locked && open === 'ownership' && (
+        <Panel
+          title={t('rail.ownership')}
+          subtitle={t('ownership.intro')}
+          onClose={() => setOpen(null)}
+        >
+          <OwnershipPanel />
         </Panel>
       )}
       {!locked && open === 'money' && (

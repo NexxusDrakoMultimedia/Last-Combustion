@@ -182,7 +182,11 @@ describe('career store', () => {
       await useCareerStore.getState().buyNewCar(offer.modelId);
       const spare = useCareerStore.getState().cars.find((c) => c.inEntry === null)!;
       await useCareerStore.getState().consign(spare.carId, 5_000_000_000);
-      const lot = useCareerStore.getState().auction!.lotViews.find((l) => !l.mine)!;
+      // The cheapest lot, so the bid is one the garage can afford whatever the world holds.
+      const lot = useCareerStore
+        .getState()
+        .auction!.lotViews.filter((l) => !l.mine)
+        .sort((x, y) => x.openingPrice - y.openingPrice)[0]!;
       await useCareerStore.getState().placeBid(lot.id, lot.openingPrice);
       const view = useCareerStore.getState().auction!;
       expect(view.lotViews.find((l) => l.id === lot.id)!.myBid).toBe(lot.openingPrice);

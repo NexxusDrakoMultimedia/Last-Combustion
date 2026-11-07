@@ -83,6 +83,15 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   ).toBeVisible();
   await page.keyboard.press('Escape');
 
+  // The player owns every share of the garage, and the panel says what it is worth.
+  await page.getByRole('button', { name: messages['rail.ownership'] }).click();
+  await expect(page.getByRole('heading', { name: messages['ownership.holders'] })).toBeVisible();
+  await expect(page.getByRole('cell', { name: /Ordinary/ }).first()).toBeVisible();
+  await expect(
+    page.getByRole('rowheader', { name: messages['ownership.part.total'] }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();
   await expect(page.getByText(/The 2031 season is over/)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/awards? given out/)).toBeVisible();

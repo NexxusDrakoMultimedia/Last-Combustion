@@ -94,6 +94,7 @@ describe('migrate', () => {
       'facilities',
       'executive_departures',
       'ledger_year',
+      'cap_table',
     ]);
   });
 
@@ -306,5 +307,23 @@ describe('executive departures (schema version 39)', () => {
         "INSERT INTO executive (garage_id, role, name, birth_year, skill, left_reason) VALUES (1, 'chief_executive', 'X', 1970, 50, 'bored')",
       ),
     ).toThrow();
+  });
+});
+
+describe('the cap table (schema version 41)', () => {
+  it('adds holdings that take a known holder type and class, and a valuation history', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(41);
+    const insert = (type: string, cls: string, shares: number) =>
+      db.exec(
+        `INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, since) VALUES (1, '${type}', 'X', '${cls}', ${shares}, '2031-02-01')`,
+      );
+    expect(() => insert('owner', 'ordinary', 1000)).not.toThrow();
+    expect(() => insert('pirate', 'ordinary', 1000)).toThrow();
+    expect(() => insert('owner', 'golden', 1000)).toThrow();
+    expect(() => insert('owner', 'ordinary', 0)).toThrow();
+    const columns = db.exec('PRAGMA table_info(valuation)')[0]!.values.map((v) => v[1]);
+    expect(columns).toEqual(['garage_id', 'date', 'value']);
   });
 });

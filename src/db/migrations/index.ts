@@ -41,6 +41,7 @@ import { migration0037 } from './0037_continental_tier';
 import { migration0038 } from './0038_facilities';
 import { migration0039 } from './0039_executive_departures';
 import { migration0040 } from './0040_ledger_year';
+import { migration0041 } from './0041_cap_table';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -84,4 +85,5 @@ export const migrations: readonly Migration[] = [
   migration0038,
   migration0039,
   migration0040,
+  migration0041,
 ];

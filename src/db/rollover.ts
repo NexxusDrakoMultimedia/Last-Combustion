@@ -17,6 +17,7 @@ import { all } from './entries';
 import { applyMoves } from './daily';
 import { retireOldCars } from './carage';
 import { createUsedCar } from './market';
+import { ensureCapTables } from './equity';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
@@ -316,6 +317,8 @@ export function startNextSeason(db: Database): Rollover {
         identityRng.chance(workBalance.driver.nonBinaryShare) ? 'non_binary' : rolled,
     });
     refurbishAiGear(db, seasonId, year);
+    // New garages come with their owners.
+    ensureCapTables(db);
     expireExecutives(db, year);
     refreshPlayerPrestige(db);
     const worldChanges = applyWorldChanges(db, year);

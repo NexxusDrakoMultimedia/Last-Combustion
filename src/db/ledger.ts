@@ -159,3 +159,15 @@ export function transactions(
     categories: [...new Set(all_.map((r) => r.category))].sort(),
   };
 }
+
+/**
+ * A garage's operating result for each of its last closed financial years, newest first (the profit a
+ * valuation looks at). A year with no books is left out.
+ */
+export function closedYearProfits(db: Database, garageId: number, limit: number): number[] {
+  return all(
+    db,
+    `SELECT DISTINCT year FROM ledger_year WHERE garage_id = ? ORDER BY year DESC LIMIT ?`,
+    [garageId, limit],
+  ).map((r) => summariseYear(categoryTotals(db, garageId, r.year as number)).operatingResult);
+}
