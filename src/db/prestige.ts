@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { garageBonuses } from './bonuses';
 import { all } from './entries';
 
 /**
@@ -40,7 +41,9 @@ export function refreshPlayerPrestige(db: Database): number | undefined {
   const titles = Number(
     all(db, 'SELECT COUNT(*) AS n FROM season WHERE champion_driver_garage_id = ?', [id])[0]!.n,
   );
-  const prestige = prestigeOf(entries, gold, titles);
+  // A Chief Executive makes what the garage has earned count for more.
+  const earned = prestigeOf(entries, gold, titles) - 1;
+  const prestige = Math.min(100, 1 + Math.round(earned * (1 + garageBonuses(db, id).prestige)));
   db.run('UPDATE garage SET prestige = ? WHERE id = ?', [prestige, id]);
   return prestige;
 }

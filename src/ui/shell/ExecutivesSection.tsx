@@ -16,6 +16,7 @@ export function describeExecutive(role: ExecutiveRole, skill: number): string {
     case 'chief_executive':
       return t('executive.effect.chief_executive', {
         others: pct((executiveData.roles.chief_executive.max.othersBonus * skill) / 100),
+        prestige: pct(b.prestige),
       });
     case 'commercial_director':
       return t('executive.effect.commercial_director', {
@@ -63,6 +64,7 @@ export function describeExecutive(role: ExecutiveRole, skill: number): string {
 export function ExecutivesSection() {
   const {
     executives,
+    executiveDepartures,
     executiveCapacity,
     executiveOffers,
     executiveNegotiation,
@@ -165,6 +167,14 @@ export function ExecutivesSection() {
         })}
       </p>
       <section className="space-y-2">
+        {executiveDepartures.map((d) => (
+          <p key={`${d.role}-${d.name}`} className="border border-lc-line bg-lc-raised p-2">
+            {t(`executive.left.${d.reason}` as never, {
+              name: d.name,
+              role: t(`executive.role.${d.role}` as never),
+            })}
+          </p>
+        ))}
         <h3 className="lc-display text-sm text-lc-dim">{t('executive.employed')}</h3>
         {executives.length === 0 && <p className="text-lc-dim">{t('executive.none')}</p>}
         <ul className="space-y-1">

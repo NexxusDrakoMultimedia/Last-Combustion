@@ -84,6 +84,8 @@ export interface ExecutiveBonuses {
   utilities: number;
   /** Share off the chance that a supply outage runs on into a second round. */
   outages: number;
+  /** Multiplies the prestige the garage has earned above the base: `1 + this`. */
+  prestige: number;
 }
 
 export const NO_BONUSES: ExecutiveBonuses = {
@@ -101,6 +103,7 @@ export const NO_BONUSES: ExecutiveBonuses = {
   gearCost: 0,
   utilities: 0,
   outages: 0,
+  prestige: 0,
 };
 
 /**
@@ -119,6 +122,9 @@ export function executiveBonuses(
     const mult = e.role === 'chief_executive' ? 1 : lift;
     const get = (max: number) => max * share * mult;
     switch (e.role) {
+      case 'chief_executive':
+        out.prestige = roles.chief_executive.max.prestige * share;
+        break;
       case 'commercial_director':
         out.sponsorFee = get(roles.commercial_director.max.sponsorFee);
         out.sponsorPrestige = Math.round(get(roles.commercial_director.max.sponsorPrestige));
@@ -152,4 +158,26 @@ export function executiveBonuses(
     }
   }
   return out;
+}
+
+/** The age an executive retires at (60 to 70), drawn once for each person from the career's seed. */
+export function retirementAge(stream: RandomStream): number {
+  const [lo, hi] = executiveData.retireAge as [number, number];
+  return stream.int(lo, hi);
+}
+
+/** The pay the market gives an executive of a skill. */
+export const marketSalary = (skill: number): number =>
+  executiveData.salaryBase + executiveData.salaryPerSkill * skill;
+
+/**
+ * The chance that a rival poaches an executive in a year: higher for better executives, and for
+ * those paid below the market for their skill.
+ */
+export function poachChance(skill: number, salary: number): number {
+  const c = executiveData.poach;
+  const ratio = salary / marketSalary(skill);
+  const [lo, hi] = c.payRange as [number, number];
+  const pay = Math.min(hi, Math.max(lo, 2 - ratio));
+  return Math.min(1, (c.base + (c.perSkill * skill) / 100) * pay);
 }

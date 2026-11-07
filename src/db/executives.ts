@@ -6,6 +6,8 @@ import {
   executiveOffers,
   executiveSlots,
   fairSalaryFor,
+  poachChance,
+  retirementAge,
   salaryPerRound,
   type ExecutiveOffer,
   type ExecutiveRole,
@@ -305,10 +307,10 @@ export function dismissExecutive(db: Database, garageId: number, executiveId: nu
   if (cash < notice) throw new Error('The garage cannot afford the notice pay.');
   db.exec('BEGIN');
   try {
-    db.run("UPDATE executive SET status = 'left', left_on = ? WHERE id = ?", [
-      career.gameDate,
-      executiveId,
-    ]);
+    db.run(
+      "UPDATE executive SET status = 'left', left_on = ?, left_reason = 'dismissed' WHERE id = ?",
+      [career.gameDate, executiveId],
+    );
     db.run(
       "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'salaries', ?, 'Notice pay')",
       [garageId, career.gameDate, -notice],
@@ -322,16 +324,63 @@ export function dismissExecutive(db: Database, garageId: number, executiveId: nu
   return notice;
 }
 
-/** Ends the contracts that ran out before a year, and returns who left. Called when a season starts. */
+/**
+ * Ends the contracts that ran out before a year, sends the executives who reach their retirement age
+ * home and lets rivals poach some of the rest, and returns how many left. Called when a season
+ * starts. Retirement and poaching come from the career's seed.
+ */
 export function expireExecutives(db: Database, year: number): number {
   const date = `${year}-02-01`;
-  const gone = all(db, "SELECT id FROM executive WHERE status = 'employed' AND end_year < ?", [
-    year,
-  ]);
-  for (const g of gone)
-    db.run("UPDATE executive SET status = 'left', left_on = ? WHERE id = ?", [
+  const career = readCareer(db);
+  const rng = career ? createRng(career.masterSeed) : undefined;
+  let left = 0;
+  const leave = (id: number, reason: 'contract' | 'retired' | 'poached') => {
+    db.run("UPDATE executive SET status = 'left', left_on = ?, left_reason = ? WHERE id = ?", [
       date,
-      g.id as number,
+      reason,
+      id,
     ]);
-  return gone.length;
+    left++;
+  };
+  for (const e of all(
+    db,
+    "SELECT id, birth_year, skill, salary, end_year FROM executive WHERE status = 'employed' ORDER BY id",
+  )) {
+    const id = e.id as number;
+    if ((e.end_year as number) < year) leave(id, 'contract');
+    else if (
+      rng &&
+      year - (e.birth_year as number) >= retirementAge(rng.stream(`executive:retire:${id}`))
+    )
+      leave(id, 'retired');
+    else if (
+      rng &&
+      rng.stream(`executive:poach:${id}:${year}`).float(0, 1) <
+        poachChance(e.skill as number, e.salary as number)
+    )
+      leave(id, 'poached');
+  }
+  return left;
+}
+
+export interface ExecutiveDeparture {
+  name: string;
+  role: ExecutiveRole;
+  reason: 'retired' | 'poached';
+}
+
+/** The executives a garage lost to retirement or a rival in the year that has just begun. */
+export function recentDepartures(db: Database, garageId: number): ExecutiveDeparture[] {
+  const year = yearOf(db);
+  return all(
+    db,
+    `SELECT name, role, left_reason FROM executive
+      WHERE garage_id = ? AND status = 'left' AND left_reason IN ('retired', 'poached')
+        AND left_on >= ? ORDER BY id`,
+    [garageId, `${year}-01-01`],
+  ).map((r) => ({
+    name: r.name as string,
+    role: r.role as ExecutiveRole,
+    reason: r.left_reason as 'retired' | 'poached',
+  }));
 }
