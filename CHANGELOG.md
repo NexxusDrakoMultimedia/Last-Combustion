@@ -9,6 +9,11 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 ### Changed
 
 - Builds on Cloudflare drop the telemetry keys unless the branch is `main`, ready for the release site to move there.
+- The release site is served by Cloudflare (Workers & Pages) from `main` instead of GitHub Pages.
+
+### Removed
+
+- The GitHub Pages deploy workflow and its domain file.
 
 ## [0.2.0-beta6] - 2026-11-07
 

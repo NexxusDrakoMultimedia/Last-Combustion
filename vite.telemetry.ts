@@ -6,7 +6,7 @@ const KEYS = ['VITE_GTAG_ID', 'VITE_GA_GAME_KEY', 'VITE_GA_SECRET_KEY'] as const
 /**
  * Cloudflare Workers Builds gives a preview and the release site the same build variables, so the
  * telemetry keys would reach previews. This removes them from any Cloudflare build that is not of
- * `main`, so a preview collects nothing. Builds elsewhere (GitHub Pages, local, tests) are untouched.
+ * `main`, so a preview collects nothing. Builds elsewhere (GitHub, local, tests) are untouched.
  * Returns the names it removed.
  */
 export function dropTelemetryKeysOffMain(env: NodeJS.ProcessEnv = process.env): string[] {

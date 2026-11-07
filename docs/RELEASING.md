@@ -42,7 +42,7 @@ It may not contain new features, new screens, new rules, schema changes or anyth
 
 ## Branches
 
-- **`main` is the latest release.** The web build on GitHub Pages deploys from `main`, so players only ever see released work.
+- **`main` is the latest release.** The release site is built from `main`, so players only ever see released work.
 - **Every milestone from M6 on runs on its own branch named for its release series**: `feature/0.2.x` for M6, `feature/0.3.x` for M7, `feature/0.4.x` for M8 and `feature/0.5.x` for M9. It is created from `main` when the milestone starts, and all of the milestone's pull requests target it, not `main`. CI (lint, types, tests, build, browser test, CodeQL, dependency review) runs on every pull request whatever its base, and on pushes to `main`, `feature/**` and `hotfix/**`.
 - **Feature pull requests** are squash-merged into the milestone branch. The squash title ends with the pull request number, as now. The designated session branch (`claude/...`) stays the working branch; only the pull request's base changes.
 - **Finishing a milestone.** When everything in the milestone is built and its game-design-document status is up to date, a release pull request merges the milestone branch into `main` with a merge commit (not a squash, so the milestone's history stays readable), titled `release: 0.2.0 (M6 depth)`. The release steps below run on it. Then `main` is tagged `v0.2.0` and a GitHub Release is published (publishing it also rebuilds the web build).
@@ -58,7 +58,7 @@ It may not contain new features, new screens, new rules, schema changes or anyth
 4. Bump `version` in `package.json`, and show the version on the About and menu screen.
 5. Write the changelog entry (below).
 6. Check the notices: `CREDITS.md` lists every third-party asset, the privacy prompt and telemetry text still match what is collected, and anything the design document marks "to be checked before release" (for example the flag list against the official lists) has been checked. `TRADEMARKS.md` is a draft that needs legal review before the first public release.
-7. Merge, tag `vX.Y.Z`, publish the GitHub Release with the changelog entry as its notes, and confirm the Pages deploy.
+7. Merge, tag `vX.Y.Z`, publish the GitHub Release with the changelog entry as its notes, and confirm the Cloudflare build of `main` has deployed.
 8. Post the release with the social assets.
 
 ## Beta releases
@@ -69,19 +69,15 @@ From M6 on, each slice of a milestone ends in a beta, so there is something to p
 2. Tag the merge commit `v0.2.0-beta1`. A tag with a hyphen is published as a GitHub pre-release by the release workflow, with the web build zipped and checksummed.
 3. Players try the beta by downloading the web build from the pre-release's assets and serving it locally, or by playing from source. There is no hosted beta site.
 
-The release site (`lc.nexxusdrako.au`, GitHub Pages) deploys from `main` only, so players there never see a beta. A beta may change rules and add features, but a save from the last release still has to load.
+The release site (`lc.nexxusdrako.au`, Cloudflare) is built from `main` only, so players there never see a beta. A beta may change rules and add features, but a save from the last release still has to load.
 
 ## Hosting
 
-- **The release site** (`lc.nexxusdrako.au`) is served by GitHub Pages and deploys from `main` through `.github/workflows/pages.yml`. Its telemetry keys are the `GTAG_ID`, `GA_GAME_KEY` and `GA_SECRET_KEY` secrets there.
-- **A beta** is a GitHub pre-release with the web build attached. There is no separate beta site; to try one in a browser, use the branch's preview on Cloudflare (below).
-- **Previews** of branches and pull requests are built by Cloudflare Workers & Pages (the Worker `last-combustion`, configured by `wrangler.jsonc`). That is the owner's own setup for looking at work in progress. It sets no telemetry keys, so a preview collects nothing, and it is not a release: nothing there is published to players.
-- **Moving the release site to Cloudflare (planned for the 0.2.0 release).** The Worker `last-combustion` will serve the release site as well as the previews, from the same `wrangler.jsonc`: its top-level settings are the production site, and the `previews` block keeps the previews as they are. GitHub Pages stays live until the move is complete. The order:
-  1. In the Cloudflare dashboard, set the production branch (`main`) deploy command to `npx wrangler deploy`. The other branches keep `npx wrangler preview`.
-  2. Add the telemetry keys (`VITE_GTAG_ID`, `VITE_GA_GAME_KEY`, `VITE_GA_SECRET_KEY`) as build variables on the Worker. Cloudflare shares build variables between `main` and the previews, so `vite.config.ts` drops the three keys from any Cloudflare build whose branch is not `main` (`vite.telemetry.ts`, using `WORKERS_CI_BRANCH`), and a preview still collects nothing. After the first deploy, check a preview's built page for the keys. Never write the keys in a file or an issue.
-  3. Deploy `main` to the Worker and check the result on its `workers.dev` address, including the privacy prompt.
-  4. Add the custom domain `lc.nexxusdrako.au` to `wrangler.jsonc` (a `routes` entry with `custom_domain`), and change the DNS for the domain from GitHub Pages to Cloudflare. Do not add the route before this step: deploying it claims the domain. Wait for the HTTPS certificate.
-  5. Only when the Cloudflare site is serving, remove `.github/workflows/pages.yml` and `public/CNAME`, turn off GitHub Pages in the repository settings, and update this page and the Security section of `AGENTS.md` (which name GitHub Pages and the GitHub secrets).
+- **The release site** (`lc.nexxusdrako.au`) is served by Cloudflare Workers & Pages: the Worker `last-combustion`, built from `main` and deployed with `npx wrangler deploy`. The domain is attached in the Cloudflare dashboard (Worker, Settings, Domains and Routes), not in `wrangler.jsonc`, and the Worker's production `workers.dev` address is switched off. GitHub Pages is no longer used.
+- **A beta** is a GitHub pre-release with the web build attached. There is no separate beta site; to try one in a browser, use the branch's preview on Cloudflare.
+- **Previews** of branches and pull requests are built by the same Worker with `npx wrangler preview`. They are public to anyone with the address, and they are not a release: nothing there is published to players.
+- **Telemetry keys.** `VITE_GTAG_ID`, `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY` are build secrets on the Worker. Cloudflare shares build variables between `main` and the previews, so `vite.config.ts` drops the three keys from any Cloudflare build whose branch is not `main` (`vite.telemetry.ts`, using `WORKERS_CI_BRANCH`), and a preview collects nothing. A branch made before that code (such as `hotfix/0.1.x`) lacks the guard, so a preview of it would carry the keys until the guard is backported. Never write the keys in a file or an issue.
+- **If a Cloudflare build fails before it starts**, read its log: a tool install that fails (for example a brand-new Node 22 release that the mirror does not have yet) is Cloudflare's, and retrying the build in the dashboard usually clears it. If it keeps failing, pin Node in `.nvmrc`.
 
   The checks and the release workflow (zip, checksums, GitHub Release) stay on GitHub.
 
