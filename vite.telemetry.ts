@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 
-const KEYS = ['VITE_GTAG_ID', 'VITE_GA_GAME_KEY', 'VITE_GA_SECRET_KEY'] as const;
+const KEYS = [
+  'VITE_GTAG_ID',
+  'VITE_GA_GAME_KEY',
+  'VITE_GA_SECRET_KEY',
+  'VITE_BETTERSTACK_TOKEN',
+] as const;
 
 /**
  * Cloudflare Workers Builds gives a preview and the release site the same build variables, so the

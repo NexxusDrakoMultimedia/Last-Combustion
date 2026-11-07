@@ -42,6 +42,7 @@ Milestone M6, depth: the garage as a business, its people and a calendar to run 
 - The game is fully fictional, with no mapping to real cars or makers. The starting roster is unchanged, at 31 manufacturers and 96 models.
 - Generated names are checked for offensive words and infamous people, not against real drivers: a random name may match a real driver's name by chance.
 - The Money panel is now the Ledger panel.
+- **Better Stack** can now collect usage and errors from the web build, under the same privacy prompt as the other tools (nothing loads until you accept, and the script is never in the page itself), and the Worker's traces and logs go to Better Stack too. The privacy text names it.
 - The release site is served by Cloudflare (Workers & Pages) from `main` instead of GitHub Pages, and builds on Cloudflare drop the telemetry keys unless the branch is `main`, so a preview collects nothing.
 - Scouting and fog of war, and the story and feedback layer, are planned for 0.3.0, and the 2036 expansion and the career modes move back one milestone each (0.4.0 and 0.5.0). Ratings stay exact until 0.3.0.
 

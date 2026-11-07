@@ -14,11 +14,16 @@ import {
   stopGameAnalytics,
   type GameAnalyticsSdk,
 } from './gameanalytics';
+import { betterStackToken, loadBetterStack, type BetterStackHost } from './betterstack';
 import { addSink, clearSinks } from './telemetry';
 
 /** Whether this build has any telemetry at all (so whether to ask the visitor). */
 export function telemetryConfigured(): boolean {
-  return analyticsId() !== undefined || gameAnalyticsKeys() !== undefined;
+  return (
+    analyticsId() !== undefined ||
+    gameAnalyticsKeys() !== undefined ||
+    betterStackToken() !== undefined
+  );
 }
 
 export interface TelemetryOptions {
@@ -38,9 +43,23 @@ export interface TelemetryOptions {
 export function applyTelemetryConsent(
   value: Consent | undefined,
   options: TelemetryOptions,
-  ids = { google: analyticsId(), gameAnalytics: gameAnalyticsKeys() },
+  ids: {
+    google?: string | undefined;
+    gameAnalytics?: ReturnType<typeof gameAnalyticsKeys>;
+    betterStack?: string | undefined;
+  } = {
+    google: analyticsId(),
+    gameAnalytics: gameAnalyticsKeys(),
+    betterStack: betterStackToken(),
+  },
 ): void {
   applyConsent(value, ids.google, options.doc, options.win);
+  if (value === 'granted' && ids.betterStack)
+    loadBetterStack(
+      ids.betterStack,
+      options.doc as unknown as BetterStackHost | undefined,
+      options.win,
+    );
   if (value === 'granted') {
     clearSinks();
     if (ids.gameAnalytics)
