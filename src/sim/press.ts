@@ -54,5 +54,9 @@ export function pickJournalist(rng: RandomStream, kind: ResultKind): Journalist 
   );
 }
 
-/** What a headline of some tone does to the garage's fans. */
-export const fansFor = (tone: Tone): number => pressData.fans[tone];
+/**
+ * What a headline does to the garage's fans. A warm or cold one wins or loses a fixed number. A fair
+ * one reports the result as it is, so a good day wins fans and a bad one loses them.
+ */
+export const fansFor = (tone: Tone, kind: ResultKind): number =>
+  tone === 'fair' ? pressData.fans.fair[kind] : pressData.fans[tone];

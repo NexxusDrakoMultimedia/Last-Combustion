@@ -87,7 +87,6 @@ for (const place of places) {
   placesByCountry.set(place.country, list);
 }
 const placeById = new Map(places.map((p) => [p.id, p]));
-const modelById = new Map(carModels.map((m) => [m.id, m]));
 const makerById = new Map(manufacturers.map((m) => [m.id, m]));
 
 const placeIn = (rng: RandomStream, country: string): string =>
@@ -307,8 +306,7 @@ export function generateWorld(seed: string | number): World {
   // rest of the world does not change.
   const bRng = rng.stream('worldgen:garage-bases');
   const sizes = garageSizes(gRng);
-  const drakeIndex = sizes.findIndex((s) => s === 3);
-  const usedNames = new Set<string>([DRAKE_MOTORSPORTS]);
+  const usedNames = new Set<string>();
 
   // --- drivers ---
   const dRng = rng.stream('worldgen:drivers');
@@ -337,18 +335,13 @@ export function generateWorld(seed: string | number): World {
   const members = sizes.map((): Driver[] => []);
   drivers.forEach((d, i) => members[garageOf[i] as number]?.push(d));
   const garages: Garage[] = sizes.map((size, index) => {
-    const isDrake = index === drakeIndex;
     const hostFlag = gRng.chance(cfg.garage.australianFlagShare);
-    const flag = isDrake || hostFlag ? HOST_COUNTRY : pickForeignNationality(gRng);
+    const flag = hostFlag ? HOST_COUNTRY : pickForeignNationality(gRng);
     const nationality = nameLists.byNationality[flag] ? flag : HOST_COUNTRY;
-    const prestige = clamp(
-      cfg.garage.prestigeBase + cfg.garage.prestigePerEntry * size + (isDrake ? 15 : 0),
-      1,
-      100,
-    );
-    const hqPlaceId = isDrake ? 'au-brisbane' : placeIn(gRng, flag);
+    const prestige = clamp(cfg.garage.prestigeBase + cfg.garage.prestigePerEntry * size, 1, 100);
+    const hqPlaceId = placeIn(gRng, flag);
     const basePlaceId = flag === HOST_COUNTRY ? hqPlaceId : placeIn(bRng, HOST_COUNTRY);
-    const [primary, secondary] = isDrake ? ['#7f0000', '#ffd900'] : gRng.pick(COLOUR_PAIRS);
+    const [primary, secondary] = gRng.pick(COLOUR_PAIRS);
     const profile: AiProfile =
       size === 1 && gRng.chance(0.6)
         ? 'local'
@@ -358,9 +351,7 @@ export function generateWorld(seed: string | number): World {
           );
     return {
       id: index + 1,
-      name: isDrake
-        ? DRAKE_MOTORSPORTS
-        : garageName(gRng, nationality, usedNames, homeName(hqPlaceId)),
+      name: garageName(gRng, nationality, usedNames, homeName(hqPlaceId)),
       flag,
       basePlaceId,
       hqPlaceId,
@@ -471,28 +462,6 @@ export function generateWorld(seed: string | number): World {
     cars.push(car);
     driverCar.set(d.id, car);
   }
-  // Drake Motorsports keeps its founder's car, which is not entered in the series.
-  const spirit = modelById.get(SPIRIT_R7) as CarModelData;
-  const custom = customPlates[spirit.id];
-  const spiritPlate = custom
-    ? { plate: custom.plate, plateState: custom.state }
-    : plateFor(garages[drakeIndex] as Garage);
-  cars.push({
-    id: cars.length + 1,
-    modelId: spirit.id,
-    chassisNo: 'LC-HOM-R7-0313',
-    ...spiritPlate,
-    flag: 'JP',
-    fans: 0,
-    garageId: (garages[drakeIndex] as Garage).id,
-    modelYear: 2022,
-    roadKm: 24000,
-    raceKm: 0,
-    wear: wearFromKm(24000, 0, 'unique'),
-    kerbKg: spirit.kerbKg,
-    tyreWidthMm: equalizerMm(spirit.kerbKg, spirit.layout),
-  });
-
   // --- entries ---
   for (const d of drivers) {
     entries.push({
@@ -642,7 +611,6 @@ export function generateWorld(seed: string | number): World {
     seriesFans: f.seriesStart,
     rounds: calendar,
     officials: [
-      { name: 'Pyra Drake', role: 'chair', residencePlaceId: 'au-brisbane' },
       { name: 'Declan Marsh', role: 'technical', residencePlaceId: 'au-healesville' },
       { name: 'Ingrid Halloran', role: 'interpersonal', residencePlaceId: 'au-healesville' },
     ],

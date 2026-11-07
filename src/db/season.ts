@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { createRng } from '../sim/rng';
 import {
   driverNationStandings,
   driverStandings,
@@ -9,9 +10,11 @@ import {
   manufacturerStandings,
   type RoundResult,
   type Standing,
+  type TieBreaks,
 } from '../sim/standings';
 import { fanBalance, seasonBalance } from '../sim/worldgen/data';
-import { recordValuations, reviewBoard } from './equity';
+import { garageValuation, payAnnualDividend, recordValuations, reviewBoard } from './equity';
+import { readCareer } from './career';
 import { updateMorale } from './morale';
 import { closeLedgerYear } from './ledger';
 import { garageBonuses } from './bonuses';
@@ -26,7 +29,7 @@ export function loadRoundResults(db: Database, seasonId: number): RoundResult[] 
     db,
     `SELECT ro.number AS round, e.driver_id, e.garage_id, m.manufacturer_id,
             d.flag AS driver_flag, g.flag AS garage_flag,
-            COALESCE(r.final_pos, r.prelim_pos) AS position, r.points, r.prelim_time_ms
+            COALESCE(r.final_pos, r.prelim_pos) AS position, r.points, r.prelim_time_ms, r.prelim_pos
        FROM result r
        JOIN round ro ON ro.id = r.round_id
        JOIN entry e ON e.id = r.entry_id
@@ -46,6 +49,7 @@ export function loadRoundResults(db: Database, seasonId: number): RoundResult[] 
     position: r.position as number | null,
     points: r.points as number,
     prelimTimeMs: r.prelim_time_ms as number | null,
+    prelimPos: r.prelim_pos as number | null,
   }));
 }
 
@@ -57,15 +61,73 @@ export interface StandingsTables {
   garageNations: Standing[];
 }
 
+/**
+ * What separates entries level on points, countback and average prelim position: the prestige and
+ * valuation of the garages behind them, then a random draw fixed by the career's seed, the season
+ * and the table. A driver counts for the garages they raced for this season, a make or a nation
+ * for every garage that ran its cars or drivers, summed. Valuations are only worked out when a tie
+ * gets that far.
+ */
+function tieBreaksFor(
+  db: Database,
+  table: string,
+  year: number,
+  garagesOf: ReadonlyMap<number | string, ReadonlySet<number>>,
+): TieBreaks {
+  const rng = createRng(readCareer(db)?.masterSeed ?? '');
+  const sum = (id: number | string, read: (garageId: number) => number): number =>
+    [...(garagesOf.get(id) ?? [])].reduce((total, g) => total + read(g), 0);
+  return {
+    prestige: (id) =>
+      sum(id, (g) =>
+        Number(all(db, 'SELECT prestige FROM garage WHERE id = ?', [g])[0]?.prestige ?? 0),
+      ),
+    valuation: (id) => sum(id, (g) => garageValuation(db, g).total),
+    draw: (id) => rng.stream(`standings:${year}:${table}:${String(id)}`).next(),
+  };
+}
+
+/** The garages behind each key of a table. */
+function garagesBy(
+  rows: readonly RoundResult[],
+  keyOf: (r: RoundResult) => number | string,
+): Map<number | string, Set<number>> {
+  const out = new Map<number | string, Set<number>>();
+  for (const r of rows) {
+    const key = keyOf(r);
+    if (!out.has(key)) out.set(key, new Set());
+    out.get(key)!.add(r.garageId);
+  }
+  return out;
+}
+
 /** The five championship tables for a season so far. */
 export function computeStandings(db: Database, seasonId: number): StandingsTables {
   const rows = loadRoundResults(db, seasonId);
+  const year = Number(all(db, 'SELECT year FROM season WHERE id = ?', [seasonId])[0]?.year ?? 0);
+  const ties = (table: string, keyOf: (r: RoundResult) => number | string) =>
+    tieBreaksFor(db, table, year, garagesBy(rows, keyOf));
   return {
-    drivers: driverStandings(rows),
-    garages: garageStandings(rows),
-    manufacturers: manufacturerStandings(rows),
-    driverNations: driverNationStandings(rows),
-    garageNations: garageNationStandings(rows),
+    drivers: driverStandings(
+      rows,
+      ties('drivers', (r) => r.driverId),
+    ),
+    garages: garageStandings(
+      rows,
+      ties('garages', (r) => r.garageId),
+    ),
+    manufacturers: manufacturerStandings(
+      rows,
+      ties('manufacturers', (r) => r.manufacturerId),
+    ),
+    driverNations: driverNationStandings(
+      rows,
+      ties('driverNations', (r) => r.driverFlag),
+    ),
+    garageNations: garageNationStandings(
+      rows,
+      ties('garageNations', (r) => r.garageFlag),
+    ),
   };
 }
 
@@ -223,9 +285,12 @@ export function endSeason(db: Database): SeasonEnd {
     refreshPlayerPrestige(db);
     // The financial year closes with the season: keep every garage's summary for good.
     closeLedgerYear(db, year);
+    // The player's garage pays its dividend by itself, out of the year's profit, and the year's
+    // summary is struck again so the dividend is in it.
+    const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+    if (player && payAnnualDividend(db, player.id as number) > 0) closeLedgerYear(db, year);
     recordValuations(db, date);
     // The board reviews the player's season against its target.
-    const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
     if (player)
       reviewBoard(
         db,

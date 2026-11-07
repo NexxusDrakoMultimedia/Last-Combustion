@@ -102,11 +102,8 @@ describe('cars', () => {
     expect(checked).toBeGreaterThan(100);
   });
 
-  it('gives the founder’s car its personalised Victorian plate', () => {
-    const spirit = world.cars.find((c) => c.modelId === 'homura-spirit-r-7')!;
-    expect(spirit.plate).toBe('NEXXUS');
-    expect(spirit.plateState).toBe('VIC');
-    expect(world.cars.filter((c) => c.plate === 'NEXXUS')).toHaveLength(1);
+  it('leaves the founder’s personalised plate unissued, as the founder’s car is not in the world', () => {
+    expect(world.cars.filter((c) => c.plate === 'NEXXUS')).toHaveLength(0);
   });
 
   it('give every chassis a model year, road kilometres and wear, and no racing history yet', () => {
@@ -141,12 +138,9 @@ describe('cars', () => {
     expect(meanPrestige('hypercar')).toBeGreaterThan(meanPrestige('supercar'));
   });
 
-  it('never enter the founder car, which Drake Motorsports keeps', () => {
-    const spirit = world.cars.find((c) => c.modelId === 'homura-spirit-r-7')!;
-    const drake = world.garages.find((g) => g.name === DRAKE_MOTORSPORTS)!;
-    expect(spirit.garageId).toBe(drake.id);
-    expect(world.entries.some((e) => e.carId === spirit.id)).toBe(false);
-    expect(world.cars.filter((c) => c.modelId === 'homura-spirit-r-7')).toHaveLength(1);
+  it('never include the founder’s car, which is not in the game until the founder is', () => {
+    expect(world.cars.some((c) => c.modelId === 'homura-spirit-r-7')).toBe(false);
+    expect(world.cars).toHaveLength(313);
   });
 });
 
@@ -187,15 +181,10 @@ describe('manufacturers and models', () => {
 });
 
 describe('garages', () => {
-  it('have unique names, and Drake Motorsports is based in Brisbane in its own colours', () => {
+  it('have unique names, and neither Drake Motorsports nor its chair is in the starting world', () => {
     expect(new Set(world.garages.map((g) => g.name)).size).toBe(96);
-    const drake = world.garages.find((g) => g.name === DRAKE_MOTORSPORTS)!;
-    expect(drake.flag).toBe('AU');
-    expect(drake.basePlaceId).toBe('au-brisbane');
-    // Pyra Drake lives in Queensland, so her garage is based and headquartered there.
-    expect(drake.hqPlaceId).toBe('au-brisbane');
-    expect(drake.homeState).toBe('Qld');
-    expect([drake.primaryColour, drake.secondaryColour]).toEqual(['#7f0000', '#ffd900']);
+    expect(world.garages.some((g) => g.name === DRAKE_MOTORSPORTS)).toBe(false);
+    expect(world.officials.map((o) => o.role)).toEqual(['technical', 'interpersonal']);
   });
 
   it('are not the player', () => {

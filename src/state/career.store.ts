@@ -101,7 +101,6 @@ import {
 import { ledgerCsv, type LedgerFilter } from '../sim/ledger';
 import {
   buyBackShares as dbBuyBackShares,
-  declareDividend as dbDeclareDividend,
   issueShares as dbIssueShares,
   ownershipView,
   type OwnershipView,
@@ -375,7 +374,6 @@ interface CareerState {
   sellStake(garageId: number): Promise<void>;
   launchTakeover(garageId: number, premium: number): Promise<void>;
   issueShares(investor: number, amount: number): Promise<void>;
-  declareDividend(amount: number): Promise<void>;
   buyBackShares(holdingId: number, shares: number, by: 'garage' | 'owner'): Promise<void>;
   loadRecords(): void;
   openRegistry(target: RegistryTarget): void;
@@ -1025,16 +1023,6 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'IssueShares'),
-
-    declareDividend: (amount) =>
-      run(async () => {
-        if (!openDb) return undefined;
-        const garageId = playerGarageId(openDb);
-        if (garageId === null) return undefined;
-        dbDeclareDividend(openDb, garageId, amount);
-        refresh(openDb);
-        return undefined;
-      }, 'DeclareDividend'),
 
     buyBackShares: (holdingId, shares, by) =>
       run(async () => {

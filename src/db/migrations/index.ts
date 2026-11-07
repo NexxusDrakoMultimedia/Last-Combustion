@@ -49,6 +49,7 @@ import { migration0045 } from './0045_business';
 import { migration0046 } from './0046_morale';
 import { migration0047 } from './0047_conversations';
 import { migration0048 } from './0048_press';
+import { migration0049 } from './0049_conversations_auto';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -100,4 +101,5 @@ export const migrations: readonly Migration[] = [
   migration0046,
   migration0047,
   migration0048,
+  migration0049,
 ];

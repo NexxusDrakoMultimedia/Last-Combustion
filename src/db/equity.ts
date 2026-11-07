@@ -422,17 +422,9 @@ export function suggestedDividend(db: Database, garageId: number): number {
 /**
  * Pays a dividend to the holders of ordinary and preferred shares in proportion to their shares. The
  * garage pays all of it; the owner's part goes to their personal cash. One a financial year, and never
- * more than the garage holds.
+ * more than the garage holds. It does not open a transaction, so it can run inside the season's end.
  */
-export function declareDividend(db: Database, garageId: number, amount: number): void {
-  playerGarage(db, garageId);
-  ensureCapTables(db);
-  amount = Math.round(amount);
-  if (!(amount > 0)) throw new Error('A dividend must be more than nothing.');
-  const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!.cash);
-  if (amount > cash) throw new Error('The garage cannot pay more than it holds.');
-  if (doneThisYear(db, garageId, 'dividend'))
-    throw new Error('The garage has already paid a dividend this year.');
+function payDividend(db: Database, garageId: number, amount: number): void {
   const holdings = all(
     db,
     'SELECT id, holder_type, shares, class FROM shareholding WHERE garage_id = ?',
@@ -448,27 +440,55 @@ export function declareDividend(db: Database, garageId: number, amount: number):
     .filter((h) => h.type === 'owner')
     .reduce((sum, h) => sum + (parts.get(h.id) ?? 0), 0);
   const date = gameDate(db);
+  db.run(
+    "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'dividends', ?, ?)",
+    [garageId, date, -amount, `Dividend ${financialYear(date)}`],
+  );
+  db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [amount, garageId]);
+  db.run('UPDATE owner SET personal_cash = personal_cash + ? WHERE garage_id = ?', [
+    ownerPart,
+    garageId,
+  ]);
+  db.run("INSERT INTO share_event (garage_id, date, kind, detail) VALUES (?, ?, 'dividend', ?)", [
+    garageId,
+    date,
+    JSON.stringify({ amount, owner: ownerPart, others: amount - ownerPart }),
+  ]);
+}
+
+/** Pays a dividend of a chosen amount in a transaction of its own (the season's end pays one by itself). */
+export function declareDividend(db: Database, garageId: number, amount: number): void {
+  playerGarage(db, garageId);
+  ensureCapTables(db);
+  amount = Math.round(amount);
+  if (!(amount > 0)) throw new Error('A dividend must be more than nothing.');
+  const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [garageId])[0]!.cash);
+  if (amount > cash) throw new Error('The garage cannot pay more than it holds.');
+  if (doneThisYear(db, garageId, 'dividend'))
+    throw new Error('The garage has already paid a dividend this year.');
   db.exec('BEGIN');
   try {
-    db.run(
-      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, 'dividends', ?, ?)",
-      [garageId, date, -amount, `Dividend ${financialYear(date)}`],
-    );
-    db.run('UPDATE garage SET cash = cash - ? WHERE id = ?', [amount, garageId]);
-    db.run('UPDATE owner SET personal_cash = personal_cash + ? WHERE garage_id = ?', [
-      ownerPart,
-      garageId,
-    ]);
-    db.run("INSERT INTO share_event (garage_id, date, kind, detail) VALUES (?, ?, 'dividend', ?)", [
-      garageId,
-      date,
-      JSON.stringify({ amount, owner: ownerPart, others: amount - ownerPart }),
-    ]);
+    payDividend(db, garageId, amount);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
     throw error;
   }
+}
+
+/**
+ * The year's dividend, paid by itself as the season closes (inside the season's own transaction): what
+ * the board suggests, half of the year's operating profit, within the garage's cash. Nothing is paid
+ * after a loss, or if one has already gone out this year. Returns what was paid.
+ */
+export function payAnnualDividend(db: Database, garageId: number): number {
+  playerGarage(db, garageId);
+  ensureCapTables(db);
+  if (doneThisYear(db, garageId, 'dividend')) return 0;
+  const amount = suggestedDividend(db, garageId);
+  if (!(amount > 0)) return 0;
+  payDividend(db, garageId, amount);
+  return amount;
 }
 
 /**

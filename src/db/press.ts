@@ -66,7 +66,7 @@ export function writeHeadline(db: Database, roundId: number): HeadlineLine | und
   const me = { type: 'garage', id: garageId };
   const them = { type: 'journalist', id: journalist.id };
   const tone = toneOf(relationshipScore(db, me, them));
-  const fans = fansFor(tone);
+  const fans = fansFor(tone, kind);
   db.run(
     `INSERT INTO headline (garage_id, round_id, journalist_id, kind, tone, driver, position, fans, date)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)

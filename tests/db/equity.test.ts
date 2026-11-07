@@ -8,6 +8,7 @@ import {
   ensureCapTables,
   garageValuation,
   issueShares,
+  payAnnualDividend,
   ownershipView,
   previewRound,
   boardTargets,
@@ -17,6 +18,7 @@ import {
   reviewBoard,
   roundInvestors,
 } from '../../src/db/equity';
+import { closeLedgerYear } from '../../src/db/ledger';
 import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
@@ -275,6 +277,38 @@ describe('paying a dividend', () => {
     const { db, id } = playerWorld('dividend-limits', 50_000);
     expect(() => declareDividend(db, id, 0)).toThrow(/more than nothing/);
     expect(() => declareDividend(db, id, 60_000)).toThrow(/cannot pay more/);
+  });
+});
+
+describe('the annual dividend', () => {
+  /** Books an income (positive) or a loss (negative) in the 2031 financial year and closes it. */
+  const bookYear = (db: Database, id: number, amount: number) => {
+    db.run(
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, '2031-06-01', ?, ?, 'test')",
+      [id, amount >= 0 ? 'sponsor' : 'wages', amount],
+    );
+    closeLedgerYear(db, 2031);
+  };
+
+  it('is paid by itself after a profit: half of it, to the holders, once a year', () => {
+    const { db, id } = playerWorld('dividend-auto');
+    bookYear(db, id, 400_000);
+    const before = cashOf(db, id);
+    expect(payAnnualDividend(db, id)).toBe(200_000);
+    expect(cashOf(db, id)).toBe(before - 200_000);
+    expect(ownershipView(db, id).ownerCash).toBe(200_000);
+    expect(payAnnualDividend(db, id)).toBe(0);
+    expect(cashOf(db, id)).toBe(before - 200_000);
+  });
+
+  it('is nothing after a loss, and never more than the garage holds', () => {
+    const loss = playerWorld('dividend-loss');
+    bookYear(loss.db, loss.id, -100_000);
+    expect(payAnnualDividend(loss.db, loss.id)).toBe(0);
+    const poor = playerWorld('dividend-poor', 50_000);
+    bookYear(poor.db, poor.id, 400_000);
+    expect(payAnnualDividend(poor.db, poor.id)).toBe(50_000);
+    expect(cashOf(poor.db, poor.id)).toBe(0);
   });
 });
 

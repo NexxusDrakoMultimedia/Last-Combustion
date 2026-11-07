@@ -225,11 +225,9 @@ function Raise() {
 }
 
 function Pay() {
-  const { ownership, status, declareDividend, buyBackShares } = useCareerStore();
-  const [dividend, setDividend] = useState('');
+  const { ownership, status, buyBackShares } = useCareerStore();
   if (!ownership) return null;
   const d = ownership.dividend;
-  const value = dividend === '' ? d.suggested : Number(dividend);
   const outside = ownership.holders.filter((h) => h.type !== 'owner' && h.class !== 'option');
   return (
     <section className="space-y-3">
@@ -238,33 +236,11 @@ function Pay() {
       <p className="lc-num">
         {t('ownership.ownerCash', { amount: formatMoney(ownership.ownerCash) })}
       </p>
-      {!d.available ? (
-        <p>{t('ownership.dividend.done')}</p>
-      ) : (
-        <div className="space-y-2">
-          <p className="text-lc-dim">
-            {t('ownership.dividend.suggested', { amount: formatMoney(d.suggested) })}
-          </p>
-          <label className="block space-y-1" htmlFor="dividend-amount">
-            {t('ownership.dividend.amount')}
-            <input
-              id="dividend-amount"
-              className={field}
-              inputMode="numeric"
-              value={dividend === '' ? String(d.suggested) : dividend}
-              onChange={(e) => setDividend(e.target.value.replace(/[^0-9]/g, ''))}
-            />
-          </label>
-          <button
-            type="button"
-            className={button}
-            disabled={status === 'busy' || !(value > 0) || value > d.cash}
-            onClick={() => void declareDividend(value)}
-          >
-            {t('ownership.dividend.button', { amount: formatMoney(value) })}
-          </button>
-        </div>
-      )}
+      <p>
+        {d.available
+          ? t('ownership.dividend.next', { amount: formatMoney(d.suggested) })
+          : t('ownership.dividend.done')}
+      </p>
       {outside.length > 0 && (
         <div className="space-y-2">
           <h4 className="lc-display text-xs text-lc-dim">{t('ownership.buyback')}</h4>

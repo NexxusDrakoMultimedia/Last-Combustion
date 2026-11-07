@@ -33,13 +33,13 @@ describe('persisting a world', () => {
     expect(scalar(db, 'SELECT COUNT(*) FROM driver WHERE preferred_number IS NULL')).toBe(0);
   });
 
-  it('writes every table and the migrated schema is at version 48', () => {
+  it('writes every table and the migrated schema is at the latest version', () => {
     const db = freshWorld();
-    expect(getSchemaVersion(db)).toBe(48);
+    expect(getSchemaVersion(db)).toBe(49);
     expect(readWorldSummary(db)).toEqual({
       garages: 96,
       drivers: 313,
-      cars: 314,
+      cars: 313,
       entries: 313,
       rounds: 6,
       seriesFans: 200_000,
@@ -48,7 +48,7 @@ describe('persisting a world', () => {
     expect(scalar(db, 'SELECT COUNT(*) FROM car_model')).toBe(96);
     expect(scalar(db, 'SELECT COUNT(*) FROM course')).toBe(6);
     expect(scalar(db, 'SELECT COUNT(*) FROM driver_road_affinity')).toBe(313 * 4);
-    expect(scalar(db, 'SELECT COUNT(*) FROM series_official')).toBe(3);
+    expect(scalar(db, 'SELECT COUNT(*) FROM series_official')).toBe(2);
     expect(scalar(db, 'SELECT COUNT(*) FROM commentator')).toBe(4);
     expect(scalar(db, 'SELECT COUNT(*) FROM sector')).toBeGreaterThan(100);
     expect(scalar(db, 'SELECT COUNT(*) FROM gear_item')).toBe(28);
@@ -59,14 +59,10 @@ describe('persisting a world', () => {
     expect(freshWorld().exec('PRAGMA foreign_key_check')).toEqual([]);
   });
 
-  it('stores Drake Motorsports in Brisbane and the officials in the right towns', () => {
+  it('stores no Drake Motorsports, and the officials in the right towns', () => {
     const db = freshWorld();
-    expect(
-      scalar(
-        db,
-        "SELECT p.name FROM garage g JOIN place p ON p.id = g.base_place_id WHERE g.name = 'Drake Motorsports'",
-      ),
-    ).toBe('Brisbane');
+    expect(scalar(db, "SELECT COUNT(*) FROM garage WHERE name = 'Drake Motorsports'")).toBe(0);
+    expect(scalar(db, "SELECT COUNT(*) FROM series_official WHERE name = 'Pyra Drake'")).toBe(0);
     expect(
       scalar(
         db,
