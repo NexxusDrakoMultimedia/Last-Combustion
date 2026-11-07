@@ -579,5 +579,11 @@
     "performance": 0.05,
     "quitBelow": 25,
     "quitPerPoint": 0.012
+  },
+  "relationshipKinds": {
+    "source": "The kind a relationship score earns (see the GDD, 'People and relationships'): a friend from 'friend' up, a rival at 'rival' or below, an enemy at 'enemy' or below, and an acquaintance in between.",
+    "friend": 50,
+    "rival": -20,
+    "enemy": -60
   }
 }

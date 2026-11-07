@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { contactsBook, type Contact } from '../db/contacts';
 import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
@@ -269,6 +270,7 @@ interface CareerState {
   wealth: Wealth | undefined;
   /** The computer garages the owner could invest in (read when the Investments tab opens), and the one being looked at. */
   investments: InvestmentTarget[];
+  contacts: Contact[];
   investment: InvestmentView | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
@@ -347,6 +349,7 @@ interface CareerState {
   endSupplyNegotiation(): void;
   buildFacility(kind: FacilityKind): Promise<void>;
   loadInvestments(): void;
+  loadContacts(): void;
   lookAtInvestment(garageId: number | null): void;
   buyStake(holdingId: number): Promise<void>;
   sellStake(garageId: number): Promise<void>;
@@ -529,6 +532,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     ownership: undefined,
     wealth: undefined,
     investments: [],
+    contacts: [],
     investment: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
@@ -1007,6 +1011,11 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'BuyBackShares'),
+
+    loadContacts: () => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ contacts: contactsBook(openDb, garageId) });
+    },
 
     loadInvestments: () => {
       if (openDb && playerGarageId(openDb) !== null)
