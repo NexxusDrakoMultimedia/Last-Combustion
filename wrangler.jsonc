@@ -23,7 +23,7 @@
   // Traces and logs go to Better Stack (the destinations are set up in the Cloudflare dashboard) and
   // are not kept in Cloudflare.
   "observability": {
-    "enabled": true, 
+    "enabled": true,
     "head_sampling_rate": 1,
     "traces": {
       "enabled": true,
@@ -40,7 +40,7 @@
     },
     "issue_detection": {
       "enabled": true
-    }  
+    }
   },
   "previews": {}
 }
