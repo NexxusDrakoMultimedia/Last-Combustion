@@ -93,6 +93,7 @@ describe('migrate', () => {
       'continental_tier',
       'facilities',
       'executive_departures',
+      'ledger_year',
     ]);
   });
 
@@ -296,7 +297,7 @@ describe('facilities (schema version 38)', () => {
 describe('executive departures (schema version 39)', () => {
   it('adds a reason for leaving that only takes the known reasons', () => {
     const db = openDatabase(SQL);
-    migrate(db);
+    migrate(db, migrations.slice(0, 39));
     expect(getSchemaVersion(db)).toBe(39);
     const columns = db.exec('PRAGMA table_info(executive)')[0]!.values.map((v) => v[1]);
     expect(columns).toContain('left_reason');

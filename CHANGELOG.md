@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+### Added
+
+- The ledger keeps a summary of each financial year (closing on 11 November, with the season) for every garage, grouped into racing income, commercial income, race running costs, premises, people and assets, with the year's operating result and net cash movement. Years played in earlier versions are summed from the ledger when the save loads. The screen for it comes next.
+
 ## [0.2.0-beta2] - 2026-11-07
 
 A beta of the 0.2.0 release (M6, depth): the second slice, garage operations. Saves from 0.1.x still load, and saves from beta1 gain the new sponsors and start with no facilities.

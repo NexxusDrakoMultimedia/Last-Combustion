@@ -40,6 +40,7 @@ import { migration0036 } from './0036_car_retirement';
 import { migration0037 } from './0037_continental_tier';
 import { migration0038 } from './0038_facilities';
 import { migration0039 } from './0039_executive_departures';
+import { migration0040 } from './0040_ledger_year';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -82,4 +83,5 @@ export const migrations: readonly Migration[] = [
   migration0037,
   migration0038,
   migration0039,
+  migration0040,
 ];
