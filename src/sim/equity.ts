@@ -159,15 +159,24 @@ export interface InvestorOffer {
   name: string;
   /** How much they believe in the garage, as a multiple of its valuation. */
   appetite: number;
+  /** The shares they take: preferred (no vote), or ordinary when they insist on a say. */
+  class: ShareClass;
 }
 
 /** The investors on offer for a round: fictional business people, each valuing the garage a little differently. */
 export function drawInvestors(rng: RandomStream, names: () => string): InvestorOffer[] {
   const [lo, hi] = equityData.rounds.appetite as [number, number];
-  return Array.from({ length: equityData.rounds.offers }, () => ({
-    name: names(),
-    appetite: Math.round(rng.float(lo, hi) * 100) / 100,
-  }));
+  return Array.from({ length: equityData.rounds.offers }, () => {
+    const name = names();
+    const votes = rng.chance(equityData.rounds.votingShare);
+    const base = rng.float(lo, hi);
+    return {
+      name,
+      // An investor who wants votes pays a little more for the garage, because the votes are worth having.
+      appetite: Math.round(base * (votes ? equityData.rounds.votingPremium : 1) * 100) / 100,
+      class: votes ? ('ordinary' as const) : ('preferred' as const),
+    };
+  });
 }
 
 export interface RoundTerms {
@@ -236,3 +245,108 @@ export function splitDividend(
 /** What shares are worth now when bought or sold at the garage's valuation, in whole dollars. */
 export const sharesPrice = (valuation: number, issued: number, shares: number): number =>
   issued === 0 ? 0 : Math.round((Math.max(0, valuation) * shares) / issued);
+
+export type ControlLevel = 'control' | 'blocking' | 'minority';
+
+export interface VoteHolder {
+  id: number;
+  name: string;
+  type: string;
+  shares: number;
+  class: ShareClass;
+}
+
+export interface ControlView {
+  /** The owner's share of all the votes. */
+  ownerVotes: number;
+  /** Over half the votes is control; a quarter or more can block the reserved matters; less is neither. */
+  level: ControlLevel;
+  /** Other holders with enough votes to block the reserved matters, with their share of the votes. */
+  blockers: { name: string; votes: number }[];
+}
+
+/** Who controls a garage: the owner's votes, and anyone else who can block the reserved matters. */
+export function controlOf(holders: readonly VoteHolder[]): ControlView {
+  const c = equityData.control;
+  const total = holders.reduce((sum, h) => sum + votesOf(h), 0);
+  const share = (h: VoteHolder): number => (total === 0 ? 0 : votesOf(h) / total);
+  const ownerVotes = holders.filter((h) => h.type === 'owner').reduce((s, h) => s + share(h), 0);
+  const byName = new Map<string, number>();
+  for (const h of holders)
+    if (h.type !== 'owner') byName.set(h.name, (byName.get(h.name) ?? 0) + share(h));
+  return {
+    ownerVotes,
+    level:
+      ownerVotes > c.majority
+        ? 'control'
+        : ownerVotes >= c.blockingMinority
+          ? 'blocking'
+          : 'minority',
+    blockers: [...byName]
+      .filter(([, v]) => v >= c.blockingMinority)
+      .map(([name, votes]) => ({ name, votes }))
+      .sort((a, b) => b.votes - a.votes),
+  };
+}
+
+export interface Director {
+  name: string;
+  /** Why they sit on the board. */
+  seat: 'owner' | 'investor' | 'chair';
+  /** The share of the issued shares they hold, for an owner or an investor. */
+  stake: number;
+}
+
+/**
+ * The board: the owner, a director for each outside holder with a tenth of the issued shares or more,
+ * and an independent chair.
+ */
+export function boardOf(
+  holders: readonly VoteHolder[],
+  ownerName: string,
+  chair: string,
+): Director[] {
+  const issued = shareTotals(holders).outstanding;
+  const stakeOf = (name: string) =>
+    issued === 0
+      ? 0
+      : holders
+          .filter((h) => h.name === name && h.class !== 'option')
+          .reduce((s, h) => s + h.shares, 0) / issued;
+  const seats = new Map<string, number>();
+  for (const h of holders)
+    if (h.type !== 'owner' && h.class !== 'option') seats.set(h.name, stakeOf(h.name));
+  return [
+    { name: ownerName, seat: 'owner', stake: stakeOf(ownerName) },
+    ...[...seats]
+      .filter(([, stake]) => stake >= equityData.control.directorStake)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, stake]): Director => ({ name, seat: 'investor', stake })),
+    { name: chair, seat: 'chair', stake: 0 },
+  ];
+}
+
+/**
+ * The finish the board expects of a garage this season: no worse than last season's, or, for a garage
+ * with no history, its place among the garages by prestige.
+ */
+export function seasonTarget(lastFinish: number | null, prestigeRank: number): number {
+  return lastFinish ?? prestigeRank;
+}
+
+/** Whether a finish meets the target (a lower place is better). */
+export const targetMet = (finish: number | null, target: number): boolean =>
+  finish !== null && finish <= target;
+
+/**
+ * Whether the board may call a vote of no confidence: the target missed this many seasons in a row
+ * (the newest first) while the owner holds no more than half the votes.
+ */
+export function noConfidence(missesNewestFirst: readonly boolean[], ownerVotes: number): boolean {
+  const need = equityData.control.missesForVote;
+  return (
+    missesNewestFirst.length >= need &&
+    missesNewestFirst.slice(0, need).every(Boolean) &&
+    ownerVotes <= equityData.control.majority
+  );
+}

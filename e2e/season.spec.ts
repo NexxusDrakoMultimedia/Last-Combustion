@@ -87,6 +87,9 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await page.getByRole('button', { name: messages['rail.ownership'] }).click();
   await expect(page.getByRole('heading', { name: messages['ownership.holders'] })).toBeVisible();
   await expect(page.getByRole('cell', { name: /Ordinary/ }).first()).toBeVisible();
+  // The panel says who controls the garage and what the board expects.
+  await expect(page.getByText(/You control the garage with 100% of the votes/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: messages['ownership.target'] })).toBeVisible();
   // Raising a small round brings in an investor and the money.
   await page.getByLabel(messages['ownership.raise.amount']).fill('50000');
   await page.getByRole('button', { name: /^Raise/ }).click();

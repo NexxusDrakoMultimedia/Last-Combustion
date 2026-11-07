@@ -11,7 +11,7 @@ import {
   type Standing,
 } from '../sim/standings';
 import { fanBalance, seasonBalance } from '../sim/worldgen/data';
-import { recordValuations } from './equity';
+import { recordValuations, reviewBoard } from './equity';
 import { closeLedgerYear } from './ledger';
 import { garageBonuses } from './bonuses';
 import { awardSeason, type AwardWon } from './awards';
@@ -223,6 +223,15 @@ export function endSeason(db: Database): SeasonEnd {
     // The financial year closes with the season: keep every garage's summary for good.
     closeLedgerYear(db, year);
     recordValuations(db, date);
+    // The board reviews the player's season against its target.
+    const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+    if (player)
+      reviewBoard(
+        db,
+        player.id as number,
+        year,
+        tables.garages.find((g) => g.id === (player.id as number))?.rank ?? null,
+      );
     db.exec('COMMIT');
     return {
       year,

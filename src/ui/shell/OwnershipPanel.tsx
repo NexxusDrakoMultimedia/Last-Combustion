@@ -102,6 +102,7 @@ export function OwnershipPanel() {
         </table>
       </section>
 
+      <Governance />
       <Raise />
       <Pay />
       <Events />
@@ -137,6 +138,7 @@ function Raise() {
     ? roundTerms(ownership.valuation.total, ownership.issued, value, offer.appetite)
     : undefined;
   const tooMuch = terms !== undefined && terms.stake > r.maxStake;
+  const vetoed = ownership.control.blockers[0];
   const tooLittle = value < r.minAmount;
   return (
     <section className="space-y-2">
@@ -180,7 +182,8 @@ function Raise() {
               {t('ownership.raise.believes', {
                 name: offer.name,
                 percent: Math.round(offer.appetite * 100),
-              })}
+              })}{' '}
+              {t(`ownership.raise.class.${offer.class}` as never, { name: offer.name })}
             </p>
           )}
           {terms && value > 0 && !tooLittle && (
@@ -199,6 +202,9 @@ function Raise() {
               {t('ownership.raise.tooLittle', { min: formatMoney(r.minAmount) })}
             </p>
           )}
+          {vetoed && (
+            <p className="text-lc-bad">{t('ownership.raise.vetoed', { name: vetoed.name })}</p>
+          )}
           {tooMuch && (
             <p className="text-lc-bad">
               {t('ownership.raise.tooMuch', { max: Math.round(r.maxStake * 100) })}
@@ -207,7 +213,7 @@ function Raise() {
           <button
             type="button"
             className={button}
-            disabled={status === 'busy' || !offer || tooLittle || tooMuch}
+            disabled={status === 'busy' || !offer || tooLittle || tooMuch || vetoed !== undefined}
             onClick={() => void issueShares(Number(investor), value)}
           >
             {t('ownership.raise.button', { amount: formatMoney(value) })}
@@ -343,6 +349,75 @@ function Events() {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+function Governance() {
+  const { ownership } = useCareerStore();
+  if (!ownership) return null;
+  const c = ownership.control;
+  const votes = Math.round(c.ownerVotes * 1000) / 10;
+  const latest = ownership.targets[0];
+  const previous = ownership.targets[1];
+  const warn =
+    previous !== undefined && previous.met === false && latest?.met === null && c.ownerVotes <= 0.5;
+  const called = ownership.targets.find((x) => x.vote);
+  return (
+    <section className="space-y-3">
+      <h3 className="lc-display text-sm text-lc-dim">{t('ownership.control')}</h3>
+      <p>{t(`ownership.control.${c.level}` as never, { votes })}</p>
+      {c.blockers.map((b) => (
+        <p key={b.name} className="text-lc-dim">
+          {t('ownership.control.blockers', {
+            name: b.name,
+            votes: Math.round(b.votes * 1000) / 10,
+          })}
+        </p>
+      ))}
+      <p className="text-lc-dim">{t('ownership.control.note')}</p>
+
+      <h4 className="lc-display text-xs text-lc-dim">{t('ownership.board')}</h4>
+      <ul className="space-y-1">
+        {ownership.board.map((d) => (
+          <li
+            key={`${d.seat}-${d.name}`}
+            className="flex flex-wrap items-baseline justify-between gap-2 border-t border-lc-line py-1"
+          >
+            <span>
+              <span className="font-medium">{d.name}</span>{' '}
+              <span className="text-lc-dim">{t(`ownership.board.${d.seat}` as never)}</span>
+            </span>
+            {d.seat !== 'chair' && (
+              <span className="lc-num text-lc-dim">
+                {t('ownership.board.stake', { percent: Math.round(d.stake * 1000) / 10 })}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <h4 className="lc-display text-xs text-lc-dim">{t('ownership.target')}</h4>
+      <ul className="space-y-1">
+        {ownership.targets.map((x) => (
+          <li key={x.year} className="flex flex-wrap gap-3 border-t border-lc-line py-1">
+            <span>{t('ownership.target.row', { year: x.year, target: x.target })}</span>
+            <span className={x.met === false ? 'text-lc-bad' : 'text-lc-dim'}>
+              {x.met === null
+                ? t('ownership.target.open')
+                : x.finish === null
+                  ? t('ownership.target.noFinish')
+                  : t(x.met ? 'ownership.target.met' : 'ownership.target.missed', {
+                      finish: x.finish,
+                    })}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {warn && <p className="text-lc-bad">{t('ownership.target.warning', { votes })}</p>}
+      {called && (
+        <p className="text-lc-bad">{t('ownership.target.vote', { year: called.year, votes })}</p>
+      )}
     </section>
   );
 }

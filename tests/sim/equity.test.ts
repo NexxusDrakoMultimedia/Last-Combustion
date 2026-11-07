@@ -5,13 +5,18 @@ import { describe, expect, it } from 'vitest';
 import {
   FOUNDING_SHARES,
   MAX_ROUND_STAKE,
+  boardOf,
+  controlOf,
   drawCapTable,
   drawInvestors,
+  noConfidence,
   roundName,
   roundTerms,
+  seasonTarget,
   shareTotals,
   sharesPrice,
   splitDividend,
+  targetMet,
   valuationOf,
   votesOf,
   type DrawContext,
@@ -235,5 +240,119 @@ describe('dividends and buy-backs', () => {
     expect(sharesPrice(2_000_000, 1_000_000, 50_000)).toBe(100_000);
     expect(sharesPrice(-5, 1_000_000, 100_000)).toBe(0);
     expect(sharesPrice(1_000_000, 0, 10)).toBe(0);
+  });
+});
+
+describe('control of a garage', () => {
+  const h = (
+    id: number,
+    type: string,
+    name: string,
+    shares: number,
+    cls: 'ordinary' | 'preferred' | 'option',
+  ) => ({
+    id,
+    type,
+    name,
+    shares,
+    class: cls,
+  });
+
+  it('is the owner’s while they hold over half of the votes', () => {
+    const c = controlOf([
+      h(1, 'owner', 'Owner', 600_000, 'ordinary'),
+      h(2, 'investor', 'Inv', 400_000, 'ordinary'),
+    ]);
+    expect(c.level).toBe('control');
+    expect(c.ownerVotes).toBeCloseTo(0.6, 10);
+    expect(c.blockers).toEqual([{ name: 'Inv', votes: expect.closeTo(0.4, 10) }]);
+  });
+
+  it('only counts ordinary shares as votes', () => {
+    const c = controlOf([
+      h(1, 'owner', 'Owner', 100_000, 'ordinary'),
+      h(2, 'investor', 'Inv', 900_000, 'preferred'),
+    ]);
+    expect(c.ownerVotes).toBe(1);
+    expect(c.level).toBe('control');
+    expect(c.blockers).toEqual([]);
+  });
+
+  it('is a blocking minority at a quarter of the votes and none below, and loses control at half', () => {
+    expect(
+      controlOf([
+        h(1, 'owner', 'O', 500_000, 'ordinary'),
+        h(2, 'investor', 'I', 500_000, 'ordinary'),
+      ]).level,
+    ).toBe('blocking');
+    expect(
+      controlOf([
+        h(1, 'owner', 'O', 250_000, 'ordinary'),
+        h(2, 'investor', 'I', 750_000, 'ordinary'),
+      ]).level,
+    ).toBe('blocking');
+    expect(
+      controlOf([
+        h(1, 'owner', 'O', 249_000, 'ordinary'),
+        h(2, 'investor', 'I', 751_000, 'ordinary'),
+      ]).level,
+    ).toBe('minority');
+    expect(
+      controlOf([
+        h(1, 'owner', 'O', 800_000, 'ordinary'),
+        h(2, 'investor', 'I', 190_000, 'ordinary'),
+        h(3, 'family', 'F', 10_000, 'ordinary'),
+      ]).blockers,
+    ).toEqual([]);
+  });
+
+  it('adds up the votes of one holder with several holdings', () => {
+    const c = controlOf([
+      h(1, 'owner', 'O', 500_000, 'ordinary'),
+      h(2, 'investor', 'I', 140_000, 'ordinary'),
+      h(3, 'investor', 'I', 140_000, 'ordinary'),
+      h(4, 'family', 'F', 220_000, 'ordinary'),
+    ]);
+    expect(c.blockers.map((b) => b.name)).toEqual(['I']);
+  });
+});
+
+describe('the board and its targets', () => {
+  const holders = [
+    { id: 1, type: 'owner', name: 'Owner', shares: 700_000, class: 'ordinary' as const },
+    { id: 2, type: 'investor', name: 'Big Investor', shares: 200_000, class: 'preferred' as const },
+    { id: 3, type: 'investor', name: 'Small Investor', shares: 50_000, class: 'ordinary' as const },
+    { id: 4, type: 'family', name: 'Relative', shares: 50_000, class: 'ordinary' as const },
+  ];
+
+  it('seats the owner, each outside holder with a tenth of the issued shares, and a chair', () => {
+    const board = boardOf(holders, 'Owner', 'Chair Person');
+    expect(board.map((d) => [d.seat, d.name])).toEqual([
+      ['owner', 'Owner'],
+      ['investor', 'Big Investor'],
+      ['chair', 'Chair Person'],
+    ]);
+    expect(board[1]!.stake).toBeCloseTo(0.2, 10);
+  });
+
+  it('expects last season’s finish, or the garage’s place by prestige if it has none', () => {
+    expect(seasonTarget(12, 80)).toBe(12);
+    expect(seasonTarget(null, 80)).toBe(80);
+  });
+
+  it('is met by a finish at or above the target, and never by no finish', () => {
+    expect(targetMet(10, 12)).toBe(true);
+    expect(targetMet(12, 12)).toBe(true);
+    expect(targetMet(13, 12)).toBe(false);
+    expect(targetMet(null, 12)).toBe(false);
+  });
+
+  it('calls for a vote of no confidence after two misses in a row, without a majority', () => {
+    expect(noConfidence([true, true], 0.4)).toBe(true);
+    expect(noConfidence([true, true], 0.5)).toBe(true);
+    expect(noConfidence([true, true], 0.51)).toBe(false);
+    expect(noConfidence([true, false], 0.2)).toBe(false);
+    expect(noConfidence([true], 0.2)).toBe(false);
+    expect(noConfidence([false, true, true], 0.2)).toBe(false);
   });
 });

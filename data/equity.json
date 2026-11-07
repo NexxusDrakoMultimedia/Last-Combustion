@@ -1,5 +1,5 @@
 {
-  "source": "Ownership and the cap table (see the GDD, 'Ownership and the cap table'). All numbers are proposed and tunable. 'shares' is the capital of a garage at founding. 'valuation' is the formula for what a garage is worth. 'computerGarages' says how the starting world's garages are owned: 'familyShare' of them belong to their founder and family, 'investorShare' have an outside investor, and the rest are held in part by a sponsor or a manufacturer. Stakes are shares of the garage, as a range. 'rounds' sets the funding rounds: their names by order, the least a round can raise, the most of the garage it can give away, how many investors are on offer and how much they believe in the garage (a multiple of its valuation). 'dividend' is the share of the last closed year's operating profit that the board suggests paying out.",
+  "source": "Ownership and the cap table (see the GDD, 'Ownership and the cap table'). All numbers are proposed and tunable. 'shares' is the capital of a garage at founding. 'valuation' is the formula for what a garage is worth. 'computerGarages' says how the starting world's garages are owned: 'familyShare' of them belong to their founder and family, 'investorShare' have an outside investor, and the rest are held in part by a sponsor or a manufacturer. Stakes are shares of the garage, as a range. 'rounds' sets the funding rounds: their names by order, the least a round can raise, the most of the garage it can give away, how many investors are on offer and how much they believe in the garage (a multiple of its valuation). 'dividend' is the share of the last closed year's operating profit that the board suggests paying out. 'control' sets the votes that matter: 'majority' of the votes is control, 'blockingMinority' of the votes can veto the reserved matters, and a holder of 'directorStake' of the issued shares or more has a seat on the board. 'rounds.votingShare' is the share of investors who insist on voting (ordinary) shares, and 'rounds.votingPremium' is how much more they value the garage for them.",
   "shares": 1000000,
   "classes": {
     "ordinary": {
@@ -36,9 +36,17 @@
     "minAmount": 50000,
     "maxStake": 0.3,
     "offers": 3,
-    "appetite": [0.8, 1.15]
+    "appetite": [0.8, 1.15],
+    "votingShare": 0.4,
+    "votingPremium": 1.1
   },
   "dividend": {
     "suggestedShareOfProfit": 0.5
+  },
+  "control": {
+    "majority": 0.5,
+    "blockingMinority": 0.25,
+    "directorStake": 0.1,
+    "missesForVote": 2
   }
 }
