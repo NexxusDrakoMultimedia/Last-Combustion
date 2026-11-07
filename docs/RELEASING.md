@@ -71,6 +71,20 @@ From M6 on, each slice of a milestone ends in a beta, so there is something to p
 
 The release site (`lc.nexxusdrako.au`, GitHub Pages) deploys from `main` only, so players there never see a beta. A beta may change rules and add features, but a save from the last release still has to load.
 
+## Hosting
+
+Netlify builds the game for both sites from `netlify.toml`: the release site (`lc.nexxusdrako.au`, production branch `main`) and the beta site (`beta.lc.nexxusdrako.au`, production branch `beta`). Until the release site is switched over, it is still served by GitHub Pages (`.github/workflows/pages.yml`), and only the beta is on Netlify.
+
+**Switching the release site from GitHub Pages to Netlify.** Do this in order, so the site is never down:
+
+1. In Netlify, add a second site from this repository with the production branch `main`. Its build settings come from `netlify.toml`.
+2. In that site's environment variables, set `VITE_GTAG_ID`, `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY` to the same values as the `GTAG_ID`, `GA_GAME_KEY` and `GA_SECRET_KEY` secrets used by the Pages workflow. Never write them in a file or an issue. Without them the build collects nothing.
+3. Check the build on its `.netlify.app` address, including the privacy prompt.
+4. Add the domain `lc.nexxusdrako.au` to the Netlify site, then change its DNS `CNAME` from GitHub Pages to the Netlify address, and wait for Netlify's HTTPS certificate.
+5. Once the Netlify site is serving, a pull request removes `.github/workflows/pages.yml` and `public/CNAME`, turns off GitHub Pages in the repository settings, and updates this page and the Security section of `AGENTS.md`.
+
+Releases then deploy on every push to `main`, as they do now. The release workflow (zip, checksums, GitHub Release) is unchanged.
+
 ## The documentation pass
 
 Before every release, all of the documentation gets a thorough pass. It is slow on purpose: take no shortcuts and check every claim against the code. It is done on the release pull request, in commits of its own that change words and structure only, never a game rule. If the pass finds a place where the code and the document disagree and it is not clear which is right, stop and ask the project owner.
