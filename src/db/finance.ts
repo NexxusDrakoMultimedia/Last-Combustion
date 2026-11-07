@@ -100,7 +100,7 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         entries
           .filter((e) => e.dnf_reason === 'crash')
           .reduce((sum, e) => sum + crashRepairCost(e.price_new as number), 0) *
-          repairFactor(garageCrewStrength(db, garageId)),
+          repairFactor(garageCrewStrength(db, garageId, roundId)),
       );
       if (repairs > 0) {
         lines.push(['repairs', repairs]);

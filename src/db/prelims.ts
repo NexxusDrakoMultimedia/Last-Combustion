@@ -7,6 +7,7 @@ import { chassisWear } from '../sim/wear';
 import { courses } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { all, loadEntries, type Row } from './entries';
+import { garageOutages, practiceHandicaps, recordOutages } from './outages';
 import { wearGear, wearParts } from './repairs';
 import { scrutineerCar } from './upgrades';
 
@@ -95,6 +96,14 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
     points: points.get(e.entryId) ?? 0,
   }));
 
+  // A supply outage holds the player's garage back in practice (and idles its crew).
+  const playerGarage = loaded.find(
+    (e) => all(db, 'SELECT 1 FROM garage WHERE id = ? AND is_player = 1', [e.garageId]).length > 0,
+  )?.garageId;
+  const outages =
+    playerGarage === undefined
+      ? []
+      : garageOutages(db, playerGarage, roundNumber, season.year as number);
   const outcome = simulateRoundPrelims({
     seed: career.masterSeed,
     season: season.year as number,
@@ -104,6 +113,10 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
     practiceStart: round.practice_start as string,
     finalSize: season.final_size as number,
     entries,
+    practiceHandicaps: practiceHandicaps(
+      outages,
+      loaded.filter((e) => e.garageId === playerGarage).map((e) => e.entryId),
+    ),
   });
 
   db.exec('BEGIN');
@@ -115,6 +128,8 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
       'prelims_done',
       roundId,
     ]);
+    if (playerGarage !== undefined)
+      recordOutages(db, roundId, outcome.schedule.days[0]!.date, playerGarage, outages);
     const insertResult = db.prepare(
       'INSERT INTO result (round_id, entry_id, run_day, run_slot, prelim_time_ms, prelim_pos, points, pole, dnf_reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     );
@@ -158,7 +173,7 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
         chassisWear(entry.roadKm, raceKm, entry.tier, entry.wearOffset, entry.restorations),
         entry.carId,
       ]);
-      wearParts(db, entry.carId, added, 'race', entry.tier);
+      wearParts(db, entry.carId, added, 'race', entry.tier, roundId);
       wearGear(db, entry.driver.id, added);
     }
     db.exec('COMMIT');

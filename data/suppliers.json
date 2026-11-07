@@ -1,5 +1,5 @@
 {
-  "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). Every supplier serves all of Australia for now, so only prestige (its tier) gates them. A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year.",
+  "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). Every supplier serves all of Australia for now, so only prestige (its tier) gates them. A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year. 'outages' sets how often supply fails: a round's chance is (1 - reliability) times chanceScale, where reliability is the contracted supplier's, or spotReliability when the garage buys on the spot market; an outage lasts a second round with chance extendChance. The effects are the crew cover lost (electricity), the share of practice laps still run (race fuel) and the practice days lost (logistics).",
   "maxYears": 3,
   "discount": {
     "base": 0.04,
@@ -241,5 +241,19 @@
       "reliability": 0.97,
       "states": null
     }
-  ]
+  ],
+  "outages": {
+    "spotReliability": 0.9,
+    "chanceScale": 1,
+    "extendChance": 0.35,
+    "electricity": {
+      "crewCoverLoss": 0.2
+    },
+    "race_fuel": {
+      "lapShare": 0.5
+    },
+    "logistics": {
+      "daysLost": 1
+    }
+  }
 }

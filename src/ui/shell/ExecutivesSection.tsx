@@ -50,7 +50,10 @@ export function describeExecutive(role: ExecutiveRole, skill: number): string {
         gear: pct(b.gearCost),
       });
     case 'operations_director':
-      return t('executive.effect.operations_director', { utilities: pct(b.utilities) });
+      return t('executive.effect.operations_director', {
+        utilities: pct(b.utilities),
+        outages: pct(b.outages),
+      });
     default:
       return t('executive.effect.none');
   }

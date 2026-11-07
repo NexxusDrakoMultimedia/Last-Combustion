@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { createRng } from '../sim/rng';
+import { crewOutageFactor } from './outages';
 import { crewStrength, mechanicOffers, wagePerRound, type MechanicOffer } from '../sim/staff';
 import { staffBalance } from '../sim/worldgen/data';
 import { readCareer } from './career';
@@ -35,7 +36,7 @@ export function garageStaff(db: Database, garageId: number): Mechanic[] {
 }
 
 /** How well a garage's mechanics cover its entries this season (0 to 1). */
-export function garageCrewStrength(db: Database, garageId: number): number {
+export function garageCrewStrength(db: Database, garageId: number, roundId?: number): number {
   const entries = Number(
     all(
       db,
@@ -44,10 +45,12 @@ export function garageCrewStrength(db: Database, garageId: number): number {
       [garageId],
     )[0]!.n,
   );
-  return crewStrength(
+  const strength = crewStrength(
     garageStaff(db, garageId).map((m) => m.skill),
     entries,
   );
+  // In a round with an electricity outage the crew is idle part of the time.
+  return roundId === undefined ? strength : strength * crewOutageFactor(db, garageId, roundId);
 }
 
 /** What a garage pays its mechanics for one round. */

@@ -25,9 +25,12 @@ import {
   type SupplyRates,
 } from '../sim/supply';
 import { economyBalance, supplyData } from '../sim/worldgen/data';
+import { OUTAGE_CATEGORIES, outageChance, type OutageCategory } from '../sim/outages';
 import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
+import { garageOutages, supplyReliability } from './outages';
+import { nextRoundNumber } from './prelims';
 import { adjustRelationship, relationshipScore, type Negotiation } from './negotiation';
 
 const careerOf = (db: Database) => {
@@ -128,6 +131,8 @@ export interface CategoryView {
   nextRound: number;
   contract: SupplyContract | undefined;
   suppliers: SupplierOption[];
+  /** The chance that this supply fails in a round, and whether it is down in the next round. Null for a category whose failure is not played out. */
+  outage: { chance: number; next: boolean } | null;
 }
 
 export interface SupplyView {
@@ -187,6 +192,8 @@ export function supplyView(db: Database, garageId: number): SupplyView {
     )[0]!.n,
   );
   const costs = forecast(db, garageId, rates, Math.max(1, entries));
+  const coming = nextRoundNumber(db);
+  const down = coming === null ? [] : garageOutages(db, garageId, coming, year);
   return {
     saving: garageBonuses(db, garageId).utilities,
     categories: SUPPLY_CATEGORIES.map((category) => {
@@ -198,6 +205,14 @@ export function supplyView(db: Database, garageId: number): SupplyView {
         rate: rates[category],
         nextRound: costs[category],
         contract: contracts.find((c) => c.category === category),
+        outage: (OUTAGE_CATEGORIES as readonly string[]).includes(category)
+          ? {
+              chance: outageChance(
+                supplyReliability(db, garageId, category as OutageCategory, year),
+              ),
+              next: down.includes(category as OutageCategory),
+            }
+          : null,
         suppliers: SUPPLIERS.filter((s) => s.category === category).map((s) => ({
           id: s.id,
           name: s.name,

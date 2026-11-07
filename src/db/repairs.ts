@@ -28,11 +28,13 @@ export function wearParts(
   km: number,
   kind: 'road' | 'race',
   tier: Tier,
+  /** The round the distance was driven in, when it was a round (an outage in it affects the crew). */
+  roundId?: number,
 ): void {
   const owner = all(db, 'SELECT garage_id FROM car WHERE id = ?', [carId])[0];
   // A good crew looks after the parts: they wear more slowly.
   const crew = owner
-    ? partWearFactor(garageCrewStrength(db, owner.garage_id as number)) *
+    ? partWearFactor(garageCrewStrength(db, owner.garage_id as number, roundId)) *
       (1 - garageBonuses(db, owner.garage_id as number).partWear)
     : 1;
   const delta = wearAdded(km, kind, tier) * repairBalance.partWearFactor * crew;
