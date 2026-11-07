@@ -4,6 +4,7 @@ import { moraleText } from '../moraleText';
 import { useState, type ReactNode } from 'react';
 import { formatDate, formatMoney, formatPoints, hasText, t } from '../../i18n';
 import type { HoldingLine, PersonKind, PersonProfile, PersonRef } from '../../db/people';
+import type { Origin, PlaceLine } from '../../db/origins';
 import type {
   CarProfile,
   DriverProfile,
@@ -546,6 +547,11 @@ function ByJob({ people, years = false }: { people: PersonRef[]; years?: boolean
                 .sort((a, b) => a.name.localeCompare(b.name) || a.id - b.id)
                 .map((p) => (
                   <li key={`${p.kind}-${p.id}`}>
+                    {p.flag && (
+                      <>
+                        <Flag code={p.flag} />{' '}
+                      </>
+                    )}
                     <RegistryLink to={{ kind: 'person', person: p.kind, id: p.id }}>
                       {p.name}
                     </RegistryLink>{' '}
@@ -724,6 +730,23 @@ function HoldingsSection({ holdings }: { holdings: HoldingLine[] }) {
   );
 }
 
+/** The facts of where a person is from and lives: their flag, hometown and residence. */
+function originFacts(origin: Origin | null): [string, ReactNode][] {
+  if (!origin) return [];
+  const place = (l: PlaceLine | null): ReactNode =>
+    l ? `${l.name}, ${l.region === l.name ? flagName(l.country) : l.region}` : t('registry.none');
+  return [
+    [
+      t('person.flag'),
+      <span key="flag" className="inline-flex items-center gap-2">
+        <Flag code={origin.flag} /> {flagName(origin.flag)}
+      </span>,
+    ],
+    [t('person.hometown'), place(origin.hometown)],
+    [t('person.residence'), place(origin.residence)],
+  ];
+}
+
 function PersonPage({ p }: { p: PersonProfile }) {
   if (p.kind === 'executive')
     return (
@@ -738,6 +761,7 @@ function PersonPage({ p }: { p: PersonProfile }) {
                 {p.garage.name}
               </RegistryLink>,
             ],
+            ...originFacts(p.origin),
             [t('person.age'), p.age],
             [t('person.skill'), p.skill],
             [t('person.salary'), formatMoney(p.salary)],
@@ -772,6 +796,7 @@ function PersonPage({ p }: { p: PersonProfile }) {
                 {p.garage.name}
               </RegistryLink>,
             ],
+            ...originFacts(p.origin),
             [t('person.skill'), p.skill],
             [t('person.wage'), formatMoney(p.wagePerWeek)],
             [t('person.hiredOn'), formatDate(p.hiredOn)],
@@ -794,7 +819,22 @@ function PersonPage({ p }: { p: PersonProfile }) {
           items={[
             [t('person.role'), personRole(p.kind, p.kind)],
             ...(p.country
-              ? ([[t('person.country'), flagName(p.country)]] as [string, ReactNode][])
+              ? ([
+                  [
+                    t('person.country'),
+                    <span key="flag" className="inline-flex items-center gap-2">
+                      <Flag code={p.country} /> {flagName(p.country)}
+                    </span>,
+                  ],
+                ] as [string, ReactNode][])
+              : []),
+            ...(p.headquarters
+              ? ([
+                  [
+                    t('person.headquarters'),
+                    `${p.headquarters.name}, ${p.headquarters.region === p.headquarters.name ? flagName(p.headquarters.country) : p.headquarters.region}`,
+                  ],
+                ] as [string, ReactNode][])
               : []),
             ...(p.tier
               ? ([[t('person.tier'), t(`sponsors.tier.${p.tier}` as never)]] as [
@@ -827,7 +867,12 @@ function PersonPage({ p }: { p: PersonProfile }) {
   return (
     <div className="space-y-5 text-sm">
       <h2 className="lc-display text-lg">{p.name}</h2>
-      <Facts items={[[t('person.holderType'), personRole('shareholder', p.holderType)]]} />
+      <Facts
+        items={[
+          [t('person.holderType'), personRole('shareholder', p.holderType)],
+          ...originFacts(p.origin),
+        ]}
+      />
       <HoldingsSection holdings={p.holdings} />
     </div>
   );

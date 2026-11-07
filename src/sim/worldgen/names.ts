@@ -97,6 +97,24 @@ export function garageName(
   ).name;
 }
 
+/**
+ * The nations whose name lists have this person's name: both the given name and the surname if any
+ * do, otherwise any with the surname. Empty when none does.
+ */
+export function nationsOfName(name: string): string[] {
+  const space = name.indexOf(' ');
+  const first = space < 0 ? name : name.slice(0, space);
+  const last = space < 0 ? '' : name.slice(space + 1).split('-')[0]!;
+  const both: string[] = [];
+  const family: string[] = [];
+  for (const [code, pools] of Object.entries(nameLists.byNationality)) {
+    if (!pools.surnames.includes(last)) continue;
+    family.push(code);
+    if (pools.male.includes(first) || pools.female.includes(first)) both.push(code);
+  }
+  return both.length > 0 ? both : family;
+}
+
 /** The words of a name that are family names of a nation, leaving out the words of a place the name carries. */
 export function surnamesInName(name: string, nationality: string): string[] {
   const pools = nameLists.byNationality[nationality];

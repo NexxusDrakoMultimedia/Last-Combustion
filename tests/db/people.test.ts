@@ -74,6 +74,40 @@ describe('the people the Registry keeps', () => {
     expect(peopleIndex(db).find((p) => p.name === 'Hired Person')!.years).toMatch(/^\d{4}-$/);
   });
 
+  it('gives a shareholder one byline: the garage where their stake is worth most, and an owner’s own garage', () => {
+    const { db, garageId } = fresh();
+    const rows = db.exec(
+      "SELECT id, name FROM garage WHERE kind = 'racing' AND is_player = 0 ORDER BY id LIMIT 2",
+    )[0]!.values as [number, string][];
+    const [[a, nameA], [b, nameB]] = rows as [[number, string], [number, string]];
+    // The same investor holds a tenth of garage A and a tenth of garage B, but B is worth far more.
+    for (const g of [a, b])
+      db.run(
+        `INSERT INTO shareholding (garage_id, holder_type, holder_id, holder_name, class, shares, paid, since)
+         VALUES (?, 'investor', NULL, 'Test Investor', 'ordinary', 111112, 0, '2031-02-01')`,
+        [g],
+      );
+    db.run(
+      "INSERT OR REPLACE INTO valuation (garage_id, date, value) VALUES (?, '2031-02-01', 1000000)",
+      [a],
+    );
+    db.run(
+      "INSERT OR REPLACE INTO valuation (garage_id, date, value) VALUES (?, '2031-02-01', 90000000)",
+      [b],
+    );
+    const people = peopleIndex(db);
+    const investor = people.filter((p) => p.name === 'Test Investor');
+    expect(investor).toHaveLength(1);
+    expect(investor[0]!.garage).toBe(nameB);
+    expect(investor[0]!.garage).not.toBe(nameA);
+    expect(investor[0]!.garage).not.toContain(',');
+    // The player owns their own garage, so that is the owner's byline.
+    const owner = people.find((p) => p.name === 'Test Owner' && p.role === 'owner')!;
+    expect(owner.garage).toBe(
+      String(db.exec(`SELECT name FROM garage WHERE id = ${garageId}`)[0]!.values[0]![0]),
+    );
+  });
+
   it('is part of the Registry index', () => {
     const { db } = fresh();
     expect(registryIndex(db).people.length).toBeGreaterThan(50);
