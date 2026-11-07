@@ -158,6 +158,31 @@ describe('season awards over two seasons', () => {
     expect(careerPoints.value).toBeGreaterThanOrEqual(seasonPoints.value);
   });
 
+  it('ranks drivers, cars, garages and nations by fans and garages by prestige, as they stand now', () => {
+    const book = recordBook(db);
+    const ranking = (id: string) => book.records.find((r) => r.id === id)!;
+    expect(ranking('driver_fans').subjectType).toBe('driver');
+    expect(ranking('car_fans').subjectType).toBe('car');
+    expect(ranking('garage_fans').subjectType).toBe('garage');
+    expect(ranking('nation_fans').subjectType).toBe('nation');
+    expect(ranking('garage_prestige').subjectType).toBe('garage');
+    // The top of each is the current maximum in the database.
+    const max = (sql: string) => Number(scalar(db, sql));
+    expect(ranking('driver_fans').value).toBe(max('SELECT MAX(fans) FROM driver'));
+    expect(ranking('car_fans').value).toBe(max('SELECT MAX(fans) FROM car'));
+    expect(ranking('garage_fans').value).toBe(max('SELECT MAX(fans) FROM garage'));
+    expect(ranking('garage_prestige').value).toBe(max('SELECT MAX(prestige) FROM garage'));
+    // Nations are ranked by their latest season's fans, and carry their flag code.
+    expect(ranking('nation_fans').value).toBe(
+      max(
+        'SELECT MAX(fans) FROM flag_fans WHERE season_id = (SELECT MAX(season_id) FROM flag_fans)',
+      ),
+    );
+    for (const row of ranking('nation_fans').board) expect(row.flag).toMatch(/^[A-Za-z-]{2,}$/);
+    // A car on a board has the plate to show.
+    for (const row of ranking('car_fans').board.slice(0, 5)) expect(row.plate).toBeTruthy();
+  });
+
   it('gives every record a leaderboard of everyone with a non-zero score, best first', () => {
     const book = recordBook(db);
     for (const r of book.records) {
@@ -166,7 +191,9 @@ describe('season awards over two seasons', () => {
       for (const row of r.board) expect(row.value, r.id).toBeGreaterThan(0);
       for (let i = 1; i < r.board.length; i++)
         expect(r.board[i]!.value, r.id).toBeLessThanOrEqual(r.board[i - 1]!.value);
-      expect(new Set(r.board.map((row) => row.subjectId)).size, r.id).toBe(r.board.length);
+      expect(new Set(r.board.map((row) => `${row.subjectId}:${row.flag ?? ''}`)).size, r.id).toBe(
+        r.board.length,
+      );
     }
     // Career points: exactly the drivers who have scored.
     const scorers = Number(

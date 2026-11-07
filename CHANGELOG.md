@@ -6,7 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- Almanac rankings of the most fans for drivers, cars, garages and nations, and of the highest prestige for garages, as they stand now.
+- The Last Combustion logo is the header of the start page.
 
 ## [0.1.2] - 2026-11-06
 
