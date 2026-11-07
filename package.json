@@ -1,6 +1,6 @@
 {
   "name": "last-combustion",
-  "version": "0.2.0",
+  "version": "0.2.0-beta7",
   "private": true,
   "description": "Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft.",
   "license": "GPL-3.0-or-later",
