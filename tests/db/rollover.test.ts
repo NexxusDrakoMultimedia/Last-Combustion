@@ -163,10 +163,17 @@ describe('starting the next season', () => {
     for (const c of categories) expect(hasText(`money.category.${c}`), c).toBe(true);
   });
 
-  it('grows the series audience by 26% for the new season', () => {
+  it('grows the series audience by 26% for the new season, and half a percent more for each attention flag', () => {
     const s = (year: number) =>
       Number(scalar(db, `SELECT series_fans FROM season WHERE year = ${year}`));
-    expect(s(2032)).toBe(Math.round(s(2031) * 1.26));
+    const flags = Number(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM event_log ev JOIN round ro ON ro.id = ev.round_id
+          WHERE ev.type = 'attention' AND ro.season_id = (SELECT id FROM season WHERE year = 2031)`,
+      ),
+    );
+    expect(s(2032)).toBe(Math.round(s(2031) * (1.26 + 0.005 * flags)));
   });
 
   it('carries the flag fans over into the new season', () => {

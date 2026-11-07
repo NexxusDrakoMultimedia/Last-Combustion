@@ -13,6 +13,7 @@ import type {
 import type { ResultRow } from '../../db/tables';
 import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
+import { AttentionList, AttnFlag } from '../AttnFlag';
 import { DecalRow, DecalStrip, StarRow } from '../Decals';
 import { STATUS_ORDER, type RegistryStatus } from '../../db/status';
 import { Flag } from '../Flag';
@@ -139,6 +140,9 @@ function DriverPage({ p }: { p: DriverProfile }) {
               .join(', ')}
           </p>
         )}
+      </Section>
+      <Section title={t('registry.attention')}>
+        <AttentionList marks={p.attention} />
       </Section>
       <Section title={t('registry.seasons')}>
         {p.seasons.length === 0 ? (
@@ -374,6 +378,9 @@ function GaragePage({ p }: { p: GarageProfile }) {
       <Section title={t('registry.garageStars')}>
         <StarRow decals={p.decals} />
       </Section>
+      <Section title={t('registry.attention')}>
+        <AttentionList marks={p.attention} />
+      </Section>
       <Section title={t('registry.entries')}>
         {p.entries.length === 0 ? (
           <p className="text-lc-dim">{t('registry.noEntries')}</p>
@@ -453,6 +460,12 @@ function ClassificationRow({ r, race }: { r: ResultRow; race: boolean }) {
       </td>
       <td>
         <RegistryLink to={{ kind: 'driver', id: r.driverId }}>{r.driver}</RegistryLink>
+        {r.attention && (
+          <>
+            {' '}
+            <AttnFlag />
+          </>
+        )}
         {r.pole && !race && ` ${t('tables.pole')}`}
       </td>
       <td className="text-lc-dim">

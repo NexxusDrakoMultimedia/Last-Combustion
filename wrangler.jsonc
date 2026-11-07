@@ -1,0 +1,22 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+//
+// Cloudflare Workers & Pages builds previews of the game from this repository (the Worker is called
+// last-combustion). The game is a static site, so the Worker only serves the built files in `dist`.
+// The release site on GitHub Pages is built by .github/workflows/pages.yml and does not use this file.
+//
+// The Worker's build settings in the Cloudflare dashboard are:
+//   - build command:  pnpm run build   (Cloudflare finds pnpm and installs the dependencies itself)
+//   - deploy command: npx wrangler preview
+// `wrangler preview` needs the (empty) `previews` block below. Do not set any telemetry keys
+// (VITE_GTAG_ID, VITE_GA_GAME_KEY, VITE_GA_SECRET_KEY) on the Worker: a preview should collect nothing.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "last-combustion",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "previews": {}
+}

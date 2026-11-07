@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
+- Attention flags: when a driver's prelim run beats what their car should manage by a wide margin (about one or two runs a round), the series' computer flags it with the ATTN pennant, which shows in the prelim results and on the driver's and garage's Registry pages. A flag wins the driver 0.6% of the series audience in fans, and the series audience grows by 0.5% for each flag over the season. The Almanac ranks drivers and garages by attention flags.
 - Almanac rankings of the most fans for drivers, cars, garages and nations, and of the highest prestige for garages, as they stand now.
 - The Last Combustion logo is the header of the start page.
 

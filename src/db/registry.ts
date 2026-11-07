@@ -51,6 +51,36 @@ export function decalsOf(db: Database, owner: 'driver' | 'car', id: number): Dec
   }));
 }
 
+/** One attention flag a driver (or one of a garage's drivers) raised. */
+export interface AttentionMark {
+  year: number;
+  round: number;
+  course: string;
+  /** Where it was raised: in the prelims or in the final. */
+  scope: 'prelim' | 'final';
+  /** How many standard deviations above the field the run was. */
+  z: number;
+}
+
+/** The attention flags raised by a driver, or by any driver in a garage's cars, oldest first. */
+export function attentionOf(db: Database, owner: 'driver' | 'garage', id: number): AttentionMark[] {
+  return all(
+    db,
+    `SELECT s.year, ro.number AS round, c.name AS course, ev.scope, ev.payload
+       FROM event_log ev JOIN entry e ON e.id = ev.entry_id AND e.series = 'main'
+       JOIN round ro ON ro.id = ev.round_id JOIN season s ON s.id = ro.season_id
+       JOIN course c ON c.id = ro.course_id
+      WHERE ev.type = 'attention' AND e.${owner}_id = ? ORDER BY s.year, ro.number, ev.id`,
+    [id],
+  ).map((r) => ({
+    year: r.year as number,
+    round: r.round as number,
+    course: r.course as string,
+    scope: r.scope === 'final' ? 'final' : 'prelim',
+    z: Number((JSON.parse(String(r.payload)) as { z?: number }).z ?? 0),
+  }));
+}
+
 /** A star for each Garage Championship a garage has won, oldest first (a garage's trophies, as it were). */
 export function garageStars(db: Database, garageId: number): Decal[] {
   return all(db, 'SELECT year FROM season WHERE champion_garage_id = ? ORDER BY year', [
@@ -165,6 +195,8 @@ export interface DriverProfile {
   contracts: { garage: Ref; startYear: number; endYear: number; salary: number }[];
   titles: { name: string; year: number }[];
   decals: Decal[];
+  /** The attention flags the driver has raised. */
+  attention: AttentionMark[];
 }
 
 /** The profile of a driver: who they are, the number and borders they carry, their record, season by season, and their decals. */
@@ -278,6 +310,7 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
     })),
     titles: titlesOf(db, driverId).map((t) => ({ name: t.name, year: t.year })),
     decals: decalsOf(db, 'driver', driverId),
+    attention: attentionOf(db, 'driver', driverId),
   };
 }
 
@@ -438,6 +471,8 @@ export interface GarageProfile {
   championships: number[];
   /** A star for each Garage Championship won. */
   decals: Decal[];
+  /** The attention flags raised by the garage's drivers while racing for it. */
+  attention: AttentionMark[];
   /** The seasons with at least a point, and the first and last of them. */
   scoring: ScoringSpan;
   drivers: (Ref & { years: string })[];
@@ -522,6 +557,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
       garageId,
     ]).map((s) => s.year as number),
     decals: garageStars(db, garageId),
+    attention: attentionOf(db, 'garage', garageId),
     scoring: scoringSpan(
       seasonRows.map((s) => ({ year: s.year as number, points: Number(s.points) })),
     ),

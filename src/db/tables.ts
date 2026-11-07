@@ -165,6 +165,8 @@ export interface ResultRow {
   /** Why the car did not finish (for example "crash"), or null. */
   dnf: string | null;
   mine: boolean;
+  /** The series' computer flagged this run for pace well beyond what the car should manage. */
+  attention: boolean;
 }
 
 export interface RoundClassification {
@@ -198,7 +200,7 @@ export function roundClassification(
   if (!round) throw new Error(`There is no round ${roundNumber} in ${year}.`);
   const rows = all(
     db,
-    `SELECT r.prelim_pos, r.prelim_time_ms, r.final_pos, r.final_time_ms, r.points, r.prize, r.pole,
+    `SELECT r.entry_id, r.prelim_pos, r.prelim_time_ms, r.final_pos, r.final_time_ms, r.points, r.prize, r.pole,
             r.dnf_reason, e.race_number, e.driver_id, e.garage_id, e.car_id, c.plate, c.plate_state, d.name AS driver, g.name AS garage, g.is_player, m.name AS car
        FROM result r
        JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
@@ -209,8 +211,14 @@ export function roundClassification(
       WHERE r.round_id = ?`,
     [round.id as number],
   );
+  const flagged = all(
+    db,
+    "SELECT entry_id, scope FROM event_log WHERE round_id = ? AND type = 'attention'",
+    [round.id as number],
+  );
   const toRow = (
     r: (typeof rows)[number],
+    scope: 'prelim' | 'final',
     position: number | null,
     timeMs: number | null,
     leaderMs: number | null,
@@ -234,6 +242,7 @@ export function roundClassification(
     pole: r.pole === 1,
     dnf: (r.dnf_reason as string | null) ?? null,
     mine: r.is_player === 1,
+    attention: flagged.some((f) => f.entry_id === r.entry_id && f.scope === scope),
   });
 
   const badges = badgesFor(db, year);
@@ -250,6 +259,7 @@ export function roundClassification(
   const prelims = prelimRows.map((r) =>
     toRow(
       r,
+      'prelim',
       r.prelim_pos as number | null,
       r.prelim_time_ms as number | null,
       r.prelim_pos === null ? null : prelimLeader,
@@ -266,6 +276,7 @@ export function roundClassification(
   const final = finalRows.map((r) =>
     toRow(
       r,
+      'final',
       r.final_time_ms === null ? null : (r.final_pos as number),
       r.final_time_ms as number | null,
       finalLeader,

@@ -75,6 +75,7 @@ The release site (`lc.nexxusdrako.au`, GitHub Pages) deploys from `main` only, s
 
 - **The release site** (`lc.nexxusdrako.au`) is served by GitHub Pages and deploys from `main` through `.github/workflows/pages.yml`. Its telemetry keys are the `GTAG_ID`, `GA_GAME_KEY` and `GA_SECRET_KEY` secrets there.
 - **There is no beta site.** A beta is a GitHub pre-release with the web build attached.
+- **Previews** of branches and pull requests are built by Cloudflare Workers & Pages (the Worker `last-combustion`, configured by `wrangler.jsonc`). That is the owner's own setup for looking at work in progress. It sets no telemetry keys, so a preview collects nothing, and it is not a release: nothing there is published to players.
 - **The checks** (lint, types, tests, browser tests, documentation checks, REUSE, CodeQL and the dependency review) all run on GitHub, on every pull request.
 
 ## The documentation pass
