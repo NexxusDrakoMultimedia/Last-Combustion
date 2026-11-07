@@ -1,7 +1,20 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import messages from '../locales/en.json' with { type: 'json' };
+
+/** Presses Continue until it is the button that runs the given step (it skips past the days and occasions between). */
+async function continueTo(page: Page, label: string): Promise<void> {
+  const primary = page.getByRole('button', {
+    name: new RegExp(`^(${messages['calendar.continue']}|${label})$`),
+  });
+  for (let i = 0; i < 12; i++) {
+    await expect(primary).toBeEnabled();
+    if ((await primary.textContent())?.trim() === label) return;
+    await primary.click();
+  }
+  throw new Error(`Never reached "${label}".`);
+}
 
 test('plays a whole season, ends it, reads the almanac and starts the next one', async ({
   page,
@@ -17,14 +30,14 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await expect(page.getByRole('dialog')).toBeHidden();
 
   for (let round = 1; round <= 6; round++) {
-    await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
+    await continueTo(page, messages['hub.runPrelims']);
     await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
     await expect(page.getByText(new RegExp(`Round ${round} prelims: \\d+ set a time`))).toBeVisible(
       {
         timeout: 60_000,
       },
     );
-    await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
+    await continueTo(page, messages['hub.runFinal']);
     await page.getByRole('button', { name: messages['hub.runFinal'] }).click();
     await expect(page.getByText(new RegExp(`Round ${round} final: \\d+ finished`))).toBeVisible({
       timeout: 60_000,
@@ -116,7 +129,7 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   ).toBeVisible();
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
+  await continueTo(page, messages['hub.endSeason']);
   await page.getByRole('button', { name: messages['hub.endSeason'] }).click();
   await expect(page.getByText(/The 2031 season is over/)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/awards? given out/)).toBeVisible();
@@ -134,7 +147,7 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await expect(page.getByRole('combobox', { name: /^Move .* to$/ }).first()).toBeVisible();
   await page.keyboard.press('Escape');
 
-  await page.getByRole('button', { name: messages['calendar.continue'], exact: true }).click();
+  await continueTo(page, messages['hub.nextSeason']);
   await page.getByRole('button', { name: messages['hub.nextSeason'] }).click();
   await expect(page.getByText(/Year 2032/)).toBeVisible({ timeout: 60_000 });
 });

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { occasionEnd, occasionSchedule } from './social';
 import { addDays } from './worldgen/calendar';
 
 /** What a calendar event is. Prelims, finals and the two ends of the season need the player; practice just marks a date. */
-export type EventKind = 'practice' | 'prelims' | 'final' | 'end_season' | 'new_season';
+export type EventKind = 'practice' | 'prelims' | 'final' | 'occasion' | 'end_season' | 'new_season';
 
 export interface CalendarEvent {
   kind: EventKind;
@@ -14,6 +15,12 @@ export interface CalendarEvent {
   done: boolean;
   /** Whether time stops until the player has dealt with it. */
   blocking: boolean;
+  /** Whether Continue stops at it even though time can move on (a social occasion). */
+  notable?: boolean;
+  /** For an occasion, which one. */
+  occasion?: string;
+  /** For an occasion, how many days it is open. */
+  days?: number;
 }
 
 export interface RoundDates {
@@ -62,6 +69,18 @@ export function buildEvents(
       },
     );
   }
+  const finals: Record<number, string> = {};
+  for (const r of rounds) finals[r.number] = r.finalDate;
+  for (const o of occasionSchedule(year, finals))
+    events.push({
+      kind: 'occasion',
+      date: o.date,
+      occasion: o.id,
+      days: o.days,
+      done: today > occasionEnd(o),
+      blocking: false,
+      notable: true,
+    });
   events.push(
     {
       kind: 'end_season',
@@ -103,7 +122,7 @@ export type SkipMode = 'day' | 'week' | 'event' | 'due';
 
 /**
  * Where a skip lands. A day moves one day and a week seven, and either stops early at the next
- * event; Next event goes straight to it, and Continue goes to the next thing that needs the player. Nothing moves while an event needs the player, and
+ * event; Next event goes straight to it, and Continue goes to the next thing that needs the player or invites them (a race, an occasion). Nothing moves while an event needs the player, and
  * nothing moves with no event ahead.
  */
 export function skipTarget(
@@ -116,8 +135,8 @@ export function skipTarget(
   if (mode === 'event') return next ? next.date : today;
   // Continue goes to the next thing that needs the player, past events that only mark a date.
   if (mode === 'due') {
-    const blocking = events.find((e) => e.blocking && !e.done && e.date > today);
-    return blocking ? blocking.date : today;
+    const stop = events.find((e) => (e.blocking || e.notable) && !e.done && e.date > today);
+    return stop ? stop.date : today;
   }
   const step = addDays(today, mode === 'day' ? 1 : 7);
   return next && next.date < step ? next.date : step;
