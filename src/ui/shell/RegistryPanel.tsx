@@ -11,7 +11,7 @@ import {
   hasText,
   t,
 } from '../../i18n';
-import type { PersonKind, PersonProfile, PersonRef } from '../../db/people';
+import type { HoldingLine, PersonKind, PersonProfile, PersonRef } from '../../db/people';
 import type {
   CarProfile,
   DriverProfile,
@@ -840,8 +840,59 @@ function personRole(kind: PersonKind, role: string): string {
       ? `executive.role.${role}`
       : kind === 'staff'
         ? `person.role.${role}`
-        : `ownership.type.${role}`;
+        : kind === 'supplier' || kind === 'utility'
+          ? `person.role.${kind}`
+          : `ownership.type.${role}`;
   return hasText(key) ? t(key as never) : role;
+}
+
+function HoldingsSection({ holdings }: { holdings: HoldingLine[] }) {
+  return (
+    <Section title={t('person.holdings')}>
+      {holdings.length === 0 ? (
+        <p className="text-lc-dim">{t('person.noHoldings')}</p>
+      ) : (
+        <table className={dataTable}>
+          <thead>
+            <tr>
+              <th scope="col">{t('person.garage')}</th>
+              <th scope="col">{t('person.class')}</th>
+              <th scope="col" className="text-right">
+                {t('person.shares')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('person.stake')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('person.paid')}
+              </th>
+              <th scope="col" className="text-right">
+                {t('person.worth')}
+              </th>
+              <th scope="col">{t('person.since')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {holdings.map((h) => (
+              <tr key={`${h.garage.id}-${h.class}-${h.since}`}>
+                <td>
+                  <RegistryLink to={{ kind: 'garage', id: h.garage.id }}>
+                    {h.garage.name}
+                  </RegistryLink>
+                </td>
+                <td>{t(`ownership.class.${h.class}` as never)}</td>
+                <td className="lc-num text-right">{h.shares.toLocaleString('en-AU')}</td>
+                <td className="lc-num text-right">{`${Math.round(h.stake * 1000) / 10}%`}</td>
+                <td className="lc-num text-right">{formatMoney(h.paid)}</td>
+                <td className="lc-num text-right">{formatMoney(h.worth)}</td>
+                <td className="lc-num">{formatDate(h.since)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Section>
+  );
 }
 
 function PersonPage({ p }: { p: PersonProfile }) {
@@ -906,54 +957,49 @@ function PersonPage({ p }: { p: PersonProfile }) {
         />
       </div>
     );
+  if (p.kind !== 'shareholder')
+    return (
+      <div className="space-y-5 text-sm">
+        <h2 className="lc-display text-lg">{p.name}</h2>
+        <Facts
+          items={[
+            [t('person.role'), personRole(p.kind, p.kind)],
+            ...(p.country
+              ? ([[t('person.country'), flagName(p.country)]] as [string, ReactNode][])
+              : []),
+            ...(p.tier
+              ? ([[t('person.tier'), t(`sponsors.tier.${p.tier}` as never)]] as [
+                  string,
+                  ReactNode,
+                ][])
+              : []),
+            ...(p.category
+              ? ([[t('person.category'), t(`supply.category.${p.category}` as never)]] as [
+                  string,
+                  ReactNode,
+                ][])
+              : []),
+            [
+              t('person.relationship'),
+              p.relationship
+                ? t('person.relationship.value', {
+                    kind: t(`contacts.kind.${p.relationship.kind}` as never),
+                    score: p.relationship.score,
+                  })
+                : t('person.relationship.none'),
+            ],
+          ]}
+        />
+        {(p.kind === 'sponsor' || p.kind === 'manufacturer') && (
+          <HoldingsSection holdings={p.holdings} />
+        )}
+      </div>
+    );
   return (
     <div className="space-y-5 text-sm">
       <h2 className="lc-display text-lg">{p.name}</h2>
       <Facts items={[[t('person.holderType'), personRole('shareholder', p.holderType)]]} />
-      <Section title={t('person.holdings')}>
-        {p.holdings.length === 0 ? (
-          <p className="text-lc-dim">{t('person.noHoldings')}</p>
-        ) : (
-          <table className={dataTable}>
-            <thead>
-              <tr>
-                <th scope="col">{t('person.garage')}</th>
-                <th scope="col">{t('person.class')}</th>
-                <th scope="col" className="text-right">
-                  {t('person.shares')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('person.stake')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('person.paid')}
-                </th>
-                <th scope="col" className="text-right">
-                  {t('person.worth')}
-                </th>
-                <th scope="col">{t('person.since')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {p.holdings.map((h) => (
-                <tr key={`${h.garage.id}-${h.class}-${h.since}`}>
-                  <td>
-                    <RegistryLink to={{ kind: 'garage', id: h.garage.id }}>
-                      {h.garage.name}
-                    </RegistryLink>
-                  </td>
-                  <td>{t(`ownership.class.${h.class}` as never)}</td>
-                  <td className="lc-num text-right">{h.shares.toLocaleString('en-AU')}</td>
-                  <td className="lc-num text-right">{`${Math.round(h.stake * 1000) / 10}%`}</td>
-                  <td className="lc-num text-right">{formatMoney(h.paid)}</td>
-                  <td className="lc-num text-right">{formatMoney(h.worth)}</td>
-                  <td className="lc-num">{formatDate(h.since)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Section>
+      <HoldingsSection holdings={p.holdings} />
     </div>
   );
 }

@@ -3,13 +3,18 @@
 import type { Database } from 'sql.js';
 import { shareTotals, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
+import { relationshipKind, type RelationshipKind } from '../sim/relationships';
+import { SUPPLIERS, supplierById } from '../sim/supply';
 import { ensureCapTables, garageValuation } from './equity';
 import { all } from './entries';
 import { readCareer } from './career';
 import type { RegistryStatus } from './status';
 
 /** The people the Registry keeps a profile of, apart from drivers: executives, staff and shareholders. */
-export type PersonKind = 'executive' | 'staff' | 'shareholder';
+export type CompanyKind = 'sponsor' | 'manufacturer' | 'supplier' | 'utility';
+export type PersonKind = 'executive' | 'staff' | 'shareholder' | CompanyKind;
+
+const COMPANY_KINDS: CompanyKind[] = ['sponsor', 'manufacturer', 'supplier', 'utility'];
 
 export interface PersonRef {
   kind: PersonKind;
@@ -68,12 +73,44 @@ export function peopleIndex(db: Database): PersonRef[] {
     status: r.left_on === null ? 'active' : 'retired',
     years: activeYears(r.hired_on as string, r.left_on as string | null),
   }));
+  // The companies: sponsors, manufacturers and suppliers, all of whom can hold shares.
+  const held = new Map<string, string>(
+    all(
+      db,
+      `SELECT holder_type || ':' || holder_id AS k, GROUP_CONCAT(DISTINCT g.name) AS garages
+         FROM shareholding s JOIN garage g ON g.id = s.garage_id
+        WHERE holder_type IN ('sponsor', 'manufacturer') AND holder_id IS NOT NULL
+        GROUP BY holder_type, holder_id`,
+    ).map((r) => [r.k as string, String(r.garages).replaceAll(',', ', ')]),
+  );
+  const company = (kind: CompanyKind, id: number, name: string): PersonRef => ({
+    kind,
+    id,
+    name,
+    role: kind,
+    garage: held.get(`${kind}:${id}`) ?? null,
+    status: 'active',
+    years: '',
+  });
+  const companies = [
+    ...all(db, 'SELECT id, name FROM sponsor ORDER BY name, id').map((r) =>
+      company('sponsor', r.id as number, r.name as string),
+    ),
+    ...all(db, 'SELECT id, name FROM manufacturer ORDER BY name, id').map((r) =>
+      company('manufacturer', r.id as number, r.name as string),
+    ),
+    ...all(db, 'SELECT id, name FROM part_supplier ORDER BY name, id').map((r) =>
+      company('supplier', r.id as number, r.name as string),
+    ),
+    ...SUPPLIERS.map((u) => company('utility', u.id, u.name)),
+  ];
   // A shareholder who holds in several garages is one person, listed once, at their first holding.
   const shareholders = all(
     db,
     `SELECT MIN(s.id) AS id, MIN(s.since) AS since, s.holder_name, s.holder_type,
             GROUP_CONCAT(g.name, ', ') AS garages
        FROM shareholding s JOIN garage g ON g.id = s.garage_id
+      WHERE NOT (s.holder_type IN ('sponsor', 'manufacturer') AND s.holder_id IS NOT NULL)
       GROUP BY ${HOLDER} ORDER BY s.holder_name, id`,
   ).map((r): PersonRef => ({
     kind: 'shareholder',
@@ -84,7 +121,7 @@ export function peopleIndex(db: Database): PersonRef[] {
     status: 'active',
     years: activeYears(r.since as string, null),
   }));
-  return [...executives, ...staff, ...shareholders];
+  return [...executives, ...staff, ...companies, ...shareholders];
 }
 
 interface GarageRef {
@@ -144,9 +181,105 @@ export interface ShareholderProfile {
   holdings: HoldingLine[];
 }
 
-export type PersonProfile = ExecutiveProfile | StaffProfile | ShareholderProfile;
+/** The holdings a set of shareholding rows make: where, how much, what was paid and what it is worth now. */
+function holdingLines(db: Database, rows: Record<string, unknown>[]): HoldingLine[] {
+  return rows.map((r): HoldingLine => {
+    const garageId = r.garage_id as number;
+    const all_ = all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [
+      garageId,
+    ]).map((x) => ({ shares: x.shares as number, class: x.class as ShareClass }));
+    const outstanding = shareTotals(all_).outstanding;
+    const stake =
+      r.class === 'option' || outstanding === 0 ? 0 : (r.shares as number) / outstanding;
+    return {
+      garage: { id: garageId, name: r.garage as string },
+      class: r.class as ShareClass,
+      shares: r.shares as number,
+      stake,
+      paid: r.paid as number,
+      since: r.since as string,
+      worth: Math.round(stake * garageValuation(db, garageId).total),
+    };
+  });
+}
+
+export interface CompanyProfile {
+  kind: CompanyKind;
+  id: number;
+  name: string;
+  /** Where it is from (a flag code), if the game says. */
+  country: string | null;
+  /** How far its reach goes (local to global), for a sponsor or a supplier. */
+  tier: string | null;
+  /** What a utility supplier sells. */
+  category: string | null;
+  /** What the player's garage and it are to each other, if they have dealt. */
+  relationship: { score: number; kind: RelationshipKind } | null;
+  holdings: HoldingLine[];
+}
+
+function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyProfile {
+  let name: string | undefined;
+  let country: string | null = null;
+  let tier: string | null = null;
+  let category: string | null = null;
+  if (kind === 'sponsor') {
+    const r = all(db, 'SELECT name, home_country, tier FROM sponsor WHERE id = ?', [id])[0];
+    name = r?.name as string | undefined;
+    country = (r?.home_country as string | undefined) ?? null;
+    tier = (r?.tier as string | undefined) ?? null;
+  } else if (kind === 'manufacturer') {
+    const r = all(db, 'SELECT name, home_country FROM manufacturer WHERE id = ?', [id])[0];
+    name = r?.name as string | undefined;
+    country = (r?.home_country as string | undefined) ?? null;
+  } else if (kind === 'supplier') {
+    const r = all(db, 'SELECT name, home_country FROM part_supplier WHERE id = ?', [id])[0];
+    name = r?.name as string | undefined;
+    country = (r?.home_country as string | undefined) ?? null;
+  } else {
+    const u = supplierById(id);
+    name = u?.name;
+    tier = u?.tier ?? null;
+    category = u?.category ?? null;
+  }
+  if (!name) throw new Error(`There is no ${kind} ${id}.`);
+  const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+  const dealt = player
+    ? all(
+        db,
+        "SELECT score FROM relationship WHERE party_a_type = 'garage' AND party_a_id = ? AND party_b_type = ? AND party_b_id = ?",
+        [player.id as number, kind, id],
+      )[0]
+    : undefined;
+  return {
+    kind,
+    id,
+    name,
+    country,
+    tier,
+    category,
+    relationship: dealt
+      ? { score: dealt.score as number, kind: relationshipKind(dealt.score as number) }
+      : null,
+    holdings: holdingLines(
+      db,
+      kind === 'sponsor' || kind === 'manufacturer'
+        ? all(
+            db,
+            `SELECT s.id, s.garage_id, g.name AS garage, s.class, s.shares, s.paid, s.since FROM shareholding s
+               JOIN garage g ON g.id = s.garage_id WHERE s.holder_type = ? AND s.holder_id = ? ORDER BY s.id`,
+            [kind, id],
+          )
+        : [],
+    ),
+  };
+}
+
+export type PersonProfile = ExecutiveProfile | StaffProfile | ShareholderProfile | CompanyProfile;
 
 export function personProfile(db: Database, kind: PersonKind, id: number): PersonProfile {
+  if (COMPANY_KINDS.includes(kind as CompanyKind))
+    return companyProfile(db, kind as CompanyKind, id);
   if (kind === 'executive') {
     const r = all(
       db,
@@ -198,6 +331,12 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
     [id],
   )[0];
   if (!first) throw new Error(`There is no shareholder ${id}.`);
+  // A sponsor or a manufacturer that holds shares has the profile of the company.
+  if (
+    (first.holder_type === 'sponsor' || first.holder_type === 'manufacturer') &&
+    first.holder_id !== null
+  )
+    return companyProfile(db, first.holder_type, first.holder_id as number);
   const rows = all(
     db,
     `SELECT s.id, s.garage_id, g.name AS garage, s.class, s.shares, s.paid, s.since FROM shareholding s
@@ -210,26 +349,9 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       (first.holder_id as number | null) ?? -1,
     ],
   );
-  const holdings = rows.map((r): HoldingLine => {
-    const garageId = r.garage_id as number;
-    const all_ = all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [
-      garageId,
-    ]).map((x) => ({ shares: x.shares as number, class: x.class as ShareClass }));
-    const outstanding = shareTotals(all_).outstanding;
-    const stake =
-      r.class === 'option' || outstanding === 0 ? 0 : (r.shares as number) / outstanding;
-    return {
-      garage: { id: garageId, name: r.garage as string },
-      class: r.class as ShareClass,
-      shares: r.shares as number,
-      stake,
-      paid: r.paid as number,
-      since: r.since as string,
-      worth: Math.round(stake * garageValuation(db, garageId).total),
-    };
-  });
+  const holdings = holdingLines(db, rows);
   return {
-    kind,
+    kind: 'shareholder',
     id,
     name: first.holder_name as string,
     holderType: first.holder_type as string,

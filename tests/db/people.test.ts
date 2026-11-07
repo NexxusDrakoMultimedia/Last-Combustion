@@ -171,3 +171,56 @@ describe('a person’s profile', () => {
     expect(() => personProfile(db, 'shareholder', 99_999)).toThrow(/no shareholder/);
   });
 });
+
+describe('companies in the paddock', () => {
+  it('lists every sponsor, manufacturer, parts supplier and utility supplier as a company', () => {
+    const { db } = fresh();
+    const people = peopleIndex(db);
+    const count = (kind: string) => people.filter((p) => p.kind === kind).length;
+    const rows = (sql: string) => Number(db.exec(sql)[0]!.values[0]![0]);
+    expect(count('sponsor')).toBe(rows('SELECT COUNT(*) FROM sponsor'));
+    expect(count('manufacturer')).toBe(rows('SELECT COUNT(*) FROM manufacturer'));
+    expect(count('supplier')).toBe(rows('SELECT COUNT(*) FROM part_supplier'));
+    expect(count('utility')).toBeGreaterThan(0);
+    expect(people.filter((p) => p.kind === 'supplier').every((p) => p.role === 'supplier')).toBe(
+      true,
+    );
+    // A sponsor or a manufacturer that holds shares is listed once, as a company, not also as a shareholder.
+    const shareholders = people.filter((p) => p.kind === 'shareholder');
+    expect(
+      shareholders.filter((p) => p.role === 'sponsor' || p.role === 'manufacturer'),
+    ).toHaveLength(0);
+    const held = people.filter((p) => p.kind === 'sponsor' && p.garage !== null);
+    expect(held.length).toBeGreaterThan(0);
+  });
+
+  it('gives each company a profile, with the holdings a sponsor or manufacturer has', () => {
+    const { db, garageId } = fresh();
+    const holder = db.exec(
+      "SELECT holder_type, holder_id, MIN(id) FROM shareholding WHERE holder_type IN ('sponsor', 'manufacturer') AND holder_id IS NOT NULL GROUP BY holder_type, holder_id LIMIT 1",
+    )[0]!.values[0]!;
+    const kind = holder[0] as 'sponsor' | 'manufacturer';
+    const company = personProfile(db, kind, holder[1] as number);
+    if (company.kind !== kind) throw new Error('not a company');
+    expect(company.name.length).toBeGreaterThan(0);
+    expect(company.holdings.length).toBeGreaterThan(0);
+    expect(company.relationship).toBeNull();
+    // A shareholder profile of the same holder is the company’s.
+    expect(personProfile(db, 'shareholder', holder[2] as number)).toEqual(company);
+    // Once the garage has dealt with it, the profile says how it sees the garage.
+    db.run(
+      "INSERT INTO relationship (party_a_type, party_a_id, party_b_type, party_b_id, score) VALUES ('garage', ?, ?, ?, 55)",
+      [garageId, kind, holder[1] as number],
+    );
+    expect(personProfile(db, kind, holder[1] as number)).toMatchObject({
+      relationship: { score: 55, kind: 'friend' },
+    });
+    // Suppliers have profiles too, with nothing held.
+    const supplier = db.exec('SELECT id FROM part_supplier ORDER BY id LIMIT 1')[0]!.values[0]![0];
+    const sp = personProfile(db, 'supplier', supplier as number);
+    expect(sp).toMatchObject({ kind: 'supplier', holdings: [] });
+    const utility = personProfile(db, 'utility', 1);
+    expect(utility).toMatchObject({ kind: 'utility', category: 'electricity' });
+    expect(() => personProfile(db, 'utility', 99999)).toThrow(/no utility/);
+  });
+});
