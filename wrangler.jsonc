@@ -23,22 +23,24 @@
   // Traces and logs go to Better Stack (the destinations are set up in the Cloudflare dashboard) and
   // are not kept in Cloudflare.
   "observability": {
+    "enabled": true, 
+    "head_sampling_rate": 1,
     "traces": {
       "enabled": true,
       "destinations": ["betterstack"],
-      // traces sample rate of 5%
-      "head_sampling_rate": 0.05,
-      // export without storing traces in Cloudflare
+      "head_sampling_rate": 1,
       "persist": false
     },
     "logs": {
       "enabled": true,
       "destinations": ["betterstack-logs"],
-      // logs sample rate of 60%
-      "head_sampling_rate": 0.6,
-      // export without storing logs in Cloudflare
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
       "persist": false
-    }
+    },
+    "issue_detection": {
+      "enabled": true
+    }  
   },
   "previews": {}
 }
