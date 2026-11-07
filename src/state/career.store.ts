@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
-import { contactsBook, type Contact } from '../db/contacts';
+import { contactsBook, type Contact, type ContactType } from '../db/contacts';
+import { converse as dbConverse, socialView, type SocialView } from '../db/social';
+import type { Manner } from '../sim/social';
 import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
@@ -271,6 +273,7 @@ interface CareerState {
   /** The computer garages the owner could invest in (read when the Investments tab opens), and the one being looked at. */
   investments: InvestmentTarget[];
   contacts: Contact[];
+  social: SocialView | undefined;
   investment: InvestmentView | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
@@ -350,6 +353,8 @@ interface CareerState {
   buildFacility(kind: FacilityKind): Promise<void>;
   loadInvestments(): void;
   loadContacts(): void;
+  loadSocial(): void;
+  converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
   lookAtInvestment(garageId: number | null): void;
   buyStake(holdingId: number): Promise<void>;
   sellStake(garageId: number): Promise<void>;
@@ -533,6 +538,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     wealth: undefined,
     investments: [],
     contacts: [],
+    social: undefined,
     investment: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
@@ -1011,6 +1017,21 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'BuyBackShares'),
+
+    loadSocial: () => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ social: socialView(openDb, garageId) });
+    },
+
+    converse: (target, manner) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbConverse(openDb, garageId, target, manner);
+        set({ social: socialView(openDb, garageId), contacts: contactsBook(openDb, garageId) });
+        return undefined;
+      }, 'Converse'),
 
     loadContacts: () => {
       const garageId = openDb ? playerGarageId(openDb) : null;

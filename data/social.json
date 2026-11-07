@@ -1,0 +1,18 @@
+{
+  "source": "Social occasions for the people layer (see the GDD, 'People and relationships'). An occasion opens when a season has completed 'afterRounds' rounds (0 is before the first round, 6 is after the last) and stays open until the next round is run. At each the player has 'conversations' to spend. A conversation with a manner moves a relationship by a number of points drawn from 'delta'; a 'bold' one may go wrong ('goesWrong' is its chance, with the points in 'trouble'); a 'discreet' one may also lead to an introduction ('introduces' is its chance). Meeting someone new starts a relationship at the points the conversation earns, plus 'newAcquaintance'.",
+  "conversations": 3,
+  "newAcquaintance": 5,
+  "occasions": [
+    { "id": "season_opening", "afterRounds": 0 },
+    { "id": "sponsor_dinner", "afterRounds": 2 },
+    { "id": "press_day", "afterRounds": 3 },
+    { "id": "paddock_party", "afterRounds": 4 },
+    { "id": "closing_ceremony", "afterRounds": 6 }
+  ],
+  "manners": {
+    "warm": { "delta": [3, 6], "goesWrong": 0, "trouble": [0, 0], "introduces": 0 },
+    "direct": { "delta": [-2, 9], "goesWrong": 0, "trouble": [0, 0], "introduces": 0 },
+    "bold": { "delta": [10, 14], "goesWrong": 0.5, "trouble": [-10, -6], "introduces": 0 },
+    "discreet": { "delta": [1, 3], "goesWrong": 0, "trouble": [0, 0], "introduces": 0.2 }
+  }
+}

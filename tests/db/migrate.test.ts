@@ -100,6 +100,7 @@ describe('migrate', () => {
       'investments',
       'business',
       'morale',
+      'conversations',
     ]);
   });
 
@@ -380,7 +381,7 @@ describe('investments (schema version 44)', () => {
     );
     db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-02-01', 'round')");
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(46);
+    expect(getSchemaVersion(db)).toBe(47);
     expect(db.exec('PRAGMA table_info(garage)')[0]!.values.map((v) => v[1])).toContain(
       'acquired_by',
     );
@@ -408,7 +409,7 @@ describe('business (schema version 45)', () => {
   it('records a sponsor and a supplier for each garage', () => {
     const db = openDatabase(SQL);
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(46);
+    expect(getSchemaVersion(db)).toBe(47);
     expect(db.exec('PRAGMA table_info(business)')[0]!.values.map((v) => v[1])).toEqual([
       'garage_id',
       'sponsor_id',
@@ -423,7 +424,7 @@ describe('morale (schema version 46)', () => {
     const db = openDatabase(SQL);
     migrate(db, migrations.slice(0, 45));
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(46);
+    expect(getSchemaVersion(db)).toBe(47);
     for (const table of ['staff', 'executive'])
       expect(db.exec(`PRAGMA table_info(${table})`)[0]!.values.map((v) => v[1])).toContain(
         'morale',
@@ -433,5 +434,23 @@ describe('morale (schema version 46)', () => {
         "INSERT INTO staff (garage_id, name, skill, wage_per_week, hired_on, morale) VALUES (1, 'M', 50, 500, '2031-02-01', 101)",
       ),
     ).toThrow();
+  });
+});
+
+describe('conversations (schema version 47)', () => {
+  it('keeps each conversation with its manner', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(47);
+    expect(() =>
+      db.exec(
+        "INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, date) VALUES (1, 1, 'season_opening', 'sponsor', 1, 'shouting', 3, '2031-03-01')",
+      ),
+    ).toThrow();
+    expect(() =>
+      db.exec(
+        "INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, date) VALUES (1, 1, 'season_opening', 'sponsor', 1, 'warm', 3, '2031-03-01')",
+      ),
+    ).not.toThrow();
   });
 });
