@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.0-beta5] - 2026-11-07
+
+A beta of the 0.2.0 release (M6, depth): the fifth slice, people and relationships, with the work that went with it on names, the Paddock and the fiction of the game. Saves from 0.1.x still load; morale starts at 50 for everyone already in a save, and computer garages are given their executives, facilities, sponsors and suppliers when the save opens.
+
 ### Added
 
 - Many more names, and 43 more nations and cultures to draw them from (Latin America, Europe, East, South-East and South Asia, the Middle East, Africa and the Pacific), with the established nations' lists made larger. Australia keeps 60% of the weight.
