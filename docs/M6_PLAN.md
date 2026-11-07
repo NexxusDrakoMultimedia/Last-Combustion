@@ -23,9 +23,14 @@ M6 is built on `feature/0.2.x`, one slice at a time. Each slice is its own pull 
 
 The order can change when a slice turns out larger than expected, and each slice can be split. Anything in the Game Design Document marked M7 or M8 stays out of M6.
 
+## Release task: move the release site to Cloudflare
+
+The release site moves from GitHub Pages to Cloudflare Workers & Pages as part of the 0.2.0 release itself, not before. Previews stay on the same Worker, and production is added to the same `wrangler.jsonc`. GitHub Pages stays live until the move is complete. The ordered steps, and what to check on the way (above all, that the telemetry keys reach production builds and not previews), are in the Hosting section of [Releasing](RELEASING.md).
+
 ## Definition of done for M6
 
 - Every slice above is built, tested and described in the Game Design Document as built, and the "to come" notes for M6 are gone.
 - The documentation pass in [Releasing](RELEASING.md) is done.
 - Players can carry a 0.1.x save into 0.2.0.
+- The release site is served from Cloudflare, GitHub Pages is switched off, and the docs say so.
 - `CHANGELOG.md` has a `[0.2.0]` entry, and the release pull request is merged with a merge commit.

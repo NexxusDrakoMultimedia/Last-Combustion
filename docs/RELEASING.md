@@ -74,8 +74,17 @@ The release site (`lc.nexxusdrako.au`, GitHub Pages) deploys from `main` only, s
 ## Hosting
 
 - **The release site** (`lc.nexxusdrako.au`) is served by GitHub Pages and deploys from `main` through `.github/workflows/pages.yml`. Its telemetry keys are the `GTAG_ID`, `GA_GAME_KEY` and `GA_SECRET_KEY` secrets there.
-- **There is no beta site.** A beta is a GitHub pre-release with the web build attached.
+- **A beta** is a GitHub pre-release with the web build attached. There is no separate beta site; to try one in a browser, use the branch's preview on Cloudflare (below).
 - **Previews** of branches and pull requests are built by Cloudflare Workers & Pages (the Worker `last-combustion`, configured by `wrangler.jsonc`). That is the owner's own setup for looking at work in progress. It sets no telemetry keys, so a preview collects nothing, and it is not a release: nothing there is published to players.
+- **Moving the release site to Cloudflare (planned for the 0.2.0 release).** The Worker `last-combustion` will serve the release site as well as the previews, from the same `wrangler.jsonc`: its top-level settings are the production site, and the `previews` block keeps the previews as they are. GitHub Pages stays live until the move is complete. The order:
+  1. In the Cloudflare dashboard, set the production branch (`main`) deploy command to `npx wrangler deploy`. The other branches keep `npx wrangler preview`.
+  2. Make sure the telemetry keys (`VITE_GTAG_ID`, `VITE_GA_GAME_KEY`, `VITE_GA_SECRET_KEY`) reach production builds and not previews. Cloudflare may share build variables between the two, so check this first: if it does, the build has to drop the keys when the branch is not `main`. Never write the keys in a file or an issue.
+  3. Deploy `main` to the Worker and check the result on its `workers.dev` address, including the privacy prompt.
+  4. Add the custom domain `lc.nexxusdrako.au` to `wrangler.jsonc` (a `routes` entry with `custom_domain`), and change the DNS for the domain from GitHub Pages to Cloudflare. Do not add the route before this step: deploying it claims the domain. Wait for the HTTPS certificate.
+  5. Only when the Cloudflare site is serving, remove `.github/workflows/pages.yml` and `public/CNAME`, turn off GitHub Pages in the repository settings, and update this page and the Security section of `AGENTS.md` (which name GitHub Pages and the GitHub secrets).
+
+  The checks and the release workflow (zip, checksums, GitHub Release) stay on GitHub.
+
 - **The checks** (lint, types, tests, browser tests, documentation checks, REUSE, CodeQL and the dependency review) all run on GitHub, on every pull request.
 
 ## The documentation pass
