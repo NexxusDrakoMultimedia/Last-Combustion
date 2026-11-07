@@ -67,15 +67,15 @@ From M6 on, each slice of a milestone ends in a beta, so there is something to p
 
 1. Bump `version` in `package.json` and `APP_VERSION` in `src/db/session.ts` to the beta (for example `0.2.0-beta1`), and add a `[0.2.0-beta1]` section to `CHANGELOG.md` from what is under `[Unreleased]`. This is a pull request into the milestone branch.
 2. Tag the merge commit `v0.2.0-beta1`. A tag with a hyphen is published as a GitHub pre-release by the release workflow, with the web build zipped and checksummed.
-3. Move the `beta` branch to that commit. Netlify builds it and serves it at `beta.lc.nexxusdrako.au` (see `netlify.toml`). The beta site carries no telemetry keys and asks search engines to stay away.
+3. Players try the beta by downloading the web build from the pre-release's assets and serving it locally, or by playing from source. There is no hosted beta site.
 
 The release site (`lc.nexxusdrako.au`, GitHub Pages) deploys from `main` only, so players there never see a beta. A beta may change rules and add features, but a save from the last release still has to load.
 
 ## Hosting
 
 - **The release site** (`lc.nexxusdrako.au`) is served by GitHub Pages and deploys from `main` through `.github/workflows/pages.yml`. Its telemetry keys are the `GTAG_ID`, `GA_GAME_KEY` and `GA_SECRET_KEY` secrets there.
-- **The beta site** (`beta.lc.nexxusdrako.au`) is served by Netlify from this repository's `beta` branch, with the build settings in `netlify.toml`. It sets no telemetry keys, so it collects nothing, and it asks search engines to stay away. Netlify also builds branch deploys.
-- **The checks** (lint, types, tests, browser tests, documentation checks, REUSE, CodeQL and the dependency review) all run on GitHub, on every pull request. Netlify only builds and serves the game.
+- **There is no beta site.** A beta is a GitHub pre-release with the web build attached.
+- **The checks** (lint, types, tests, browser tests, documentation checks, REUSE, CodeQL and the dependency review) all run on GitHub, on every pull request.
 
 ## The documentation pass
 
