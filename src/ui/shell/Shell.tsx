@@ -11,7 +11,7 @@ import { Panel } from './Panel';
 import { AuctionSection } from './AuctionSection';
 import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
-import { MoneyPanel } from './MoneyPanel';
+import { LedgerPanel } from './LedgerPanel';
 import { SponsorsPanel } from './SponsorsPanel';
 import { SupplyPanel } from './SupplyPanel';
 import { About, FeedbackLink } from '../About';
@@ -431,7 +431,7 @@ export function Shell() {
       )}
       {!locked && open === 'money' && (
         <Panel title={t('rail.money')} subtitle={t('money.intro')} onClose={() => setOpen(null)}>
-          <MoneyPanel />
+          <LedgerPanel />
         </Panel>
       )}
       {open === 'menu' && (

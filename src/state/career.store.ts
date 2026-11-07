@@ -80,6 +80,7 @@ import {
 import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
+import { ledgerSummary, ledgerYears, type LedgerSummary } from '../db/ledger';
 import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
 import type { FacilityKind } from '../sim/facilities';
 import {
@@ -235,6 +236,9 @@ interface CareerState {
   entries: GarageEntry[];
   sponsors: SponsorsView | undefined;
   money: GarageFinance | undefined;
+  /** The financial years the player's garage has books for (newest first), and the summary of the one being looked at. */
+  ledgerYears: number[];
+  ledgerView: LedgerSummary | undefined;
   /** The mechanics the garage employs, the ones on offer, and how well they cover its entries (0 to 1). */
   staff: Mechanic[];
   staffOffers: MechanicOffer[];
@@ -311,6 +315,7 @@ interface CareerState {
   openRegistry(target: RegistryTarget): void;
   registryBack(): void;
   closeRegistry(): void;
+  loadLedger(year: number): void;
   loadStandings(year: number): void;
   loadClassification(year: number, round: number): void;
   dismissExecutive(executiveId: number): Promise<void>;
@@ -376,6 +381,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               approachable: approachableSponsors(db, playerGarageId(db)!),
             },
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
+      ledgerYears: playerGarageId(db) === null ? [] : ledgerYears(db, playerGarageId(db)!),
+      // The summary on show moves on when money does.
+      ledgerView:
+        playerGarageId(db) === null ||
+        !get().ledgerView ||
+        !ledgerYears(db, playerGarageId(db)!).includes(get().ledgerView!.year)
+          ? undefined
+          : ledgerSummary(db, playerGarageId(db)!, get().ledgerView!.year),
       executives: playerGarageId(db) === null ? [] : garageExecutives(db, playerGarageId(db)!),
       executiveDepartures:
         playerGarageId(db) === null ? [] : recentDepartures(db, playerGarageId(db)!),
@@ -449,6 +462,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     entries: [],
     sponsors: undefined,
     money: undefined,
+    ledgerYears: [],
+    ledgerView: undefined,
     executives: [],
     executiveDepartures: [],
     executiveCapacity: { slots: 0, used: 0 },
@@ -805,6 +820,11 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         });
         return undefined;
       }, 'SupplyOffer'),
+
+    loadLedger: (year) => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ ledgerView: ledgerSummary(openDb, garageId, year) });
+    },
 
     loadStandings: (year) => {
       if (openDb) set({ standingsView: fullStandings(openDb, year) });
