@@ -17,7 +17,7 @@ A beta of the 0.2.0 release (M6, depth): the sixth slice, the calendar and time 
 
 ### Changed
 
-- Scouting and fog of war moves from the 0.2.0 release to 0.3.0 (M7, the 2036 expansion). 0.2.0 keeps its other slices and the story and feedback slice, and ratings stay exact until then.
+- Scouting and fog of war, and the story and feedback layer (rivalries, the storyline engine, event cards, crash highlights and the live map), move from 0.2.0 to 0.3.0 (M7). 0.2.0 ends with the calendar, and the 2036 expansion and the career modes move back one milestone each (M8 is 0.4.0, M9 is 0.5.0). Ratings stay exact until 0.3.0.
 - Daily life is settled a day at a time as the date moves, not in one lump before each round: your cars earn delivery pay, pick up road wear and train their drivers on every day that is not a race day, so skipping days and weeks now matters. The per-day numbers are two thirds of the old ones ($167 and 40 km a day for 162 days instead of $250 and 60 km for 108), so a season comes to about the same. The ledger gets one delivery line for each skip.
 - The Run next prelims, Run next final, End the season and Start next season buttons now appear in place of Continue on the day each is due. The browser tests and the how-to-play guide follow.
 
