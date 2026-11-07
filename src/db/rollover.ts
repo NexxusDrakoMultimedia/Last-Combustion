@@ -20,6 +20,7 @@ import { createUsedCar } from './market';
 import { ensureBusinesses, settleBusinesses } from './business';
 import { ensureCapTables } from './equity';
 import { recordDeaths, rollDeaths, type Death } from './deaths';
+import { driversInvest } from './driverinvest';
 import { leaveUnhappy } from './morale';
 import { expireExecutives } from './executives';
 import { refreshPlayerPrestige } from './prestige';
@@ -82,6 +83,7 @@ export function startNextSeason(db: Database): Rollover {
     recordDeaths(db, deaths, year - 1);
     const closedGarages = new Set(settleGarages(db, lastId, year));
     settleBusinesses(db, year);
+    driversInvest(db, year);
     const openEntries = allEntries.filter((e) => !closedGarages.has(e.garage_id as number));
 
     // Cars past the oldest age for their tier that never scored a point retire. A computer garage

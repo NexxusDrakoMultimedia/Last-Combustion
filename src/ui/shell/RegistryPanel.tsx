@@ -95,14 +95,20 @@ function DriverPage({ p }: { p: DriverProfile }) {
           ],
           [
             t('registry.status'),
-            p.retiredYear !== null
-              ? t('registry.retired', { year: p.retiredYear })
-              : t('registry.active'),
+            p.died
+              ? t('registry.died', {
+                  date: formatDate(p.died.date),
+                  cause: t(`death.cause.${p.died.cause}` as never),
+                })
+              : p.retiredYear !== null
+                ? t('registry.retired', { year: p.retiredYear })
+                : t('registry.active'),
           ],
           [t('registry.debut'), p.debutYear ?? t('registry.none')],
           [t('registry.fans'), p.fans.toLocaleString('en')],
         ]}
       />
+      {p.holdings.length > 0 && <HoldingsSection holdings={p.holdings} />}
       <Section title={t('registry.career')}>
         <Facts
           items={[
@@ -409,6 +415,18 @@ function GaragePage({ p }: { p: GarageProfile }) {
               </dd>
             </div>
           </dl>
+          {p.business.mechanics.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {p.business.mechanics.map((m) => (
+                <li key={m.id}>
+                  <RegistryLink to={{ kind: 'person', person: 'staff', id: m.id }}>
+                    {m.name}
+                  </RegistryLink>{' '}
+                  <span className="text-lc-dim">{t('registry.business.mechanic')}</span>
+                </li>
+              ))}
+            </ul>
+          )}
           {p.business.executives.length > 0 && (
             <ul className="mt-2 space-y-1">
               {p.business.executives.map((e) => (
@@ -557,7 +575,7 @@ function ByJob({ people, years = false }: { people: PersonRef[]; years?: boolean
                     </RegistryLink>{' '}
                     <span className="text-lc-dim">
                       {years ? `${p.years} ` : ''}
-                      {p.garage ?? ''}
+                      {p.lookingForWork ? t('registry.lookingForWork') : (p.garage ?? '')}
                     </span>
                   </li>
                 ))}
@@ -873,6 +891,13 @@ function PersonPage({ p }: { p: PersonProfile }) {
           ...originFacts(p.origin),
         ]}
       />
+      {p.driver && (
+        <p>
+          <RegistryLink to={{ kind: 'driver', id: p.driver.id }}>
+            {t('person.alsoDriver')}
+          </RegistryLink>
+        </p>
+      )}
       <HoldingsSection holdings={p.holdings} />
     </div>
   );

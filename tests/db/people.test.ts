@@ -64,9 +64,17 @@ describe('the people the Registry keeps', () => {
     expect(names('shareholder')).toContain('Test Owner');
     expect(people.every((p) => p.status === 'active')).toBe(true);
     // Someone who has left is listed among the retired.
-    db.run("UPDATE staff SET left_on = '2031-06-01'");
+    // Someone let go is still on the market, so still in the Paddock...
+    db.run("UPDATE staff SET left_on = '2031-06-01', left_reason = 'fired'");
+    const out = peopleIndex(db).find((p) => p.name === 'Crew Person')!;
+    expect(out.status).toBe('active');
+    expect(out.lookingForWork).toBe(true);
+    expect(out.garage).toBeNull();
+    // ...until they retire.
+    db.run("UPDATE staff SET left_reason = 'retired'");
     const crew = peopleIndex(db).find((p) => p.name === 'Crew Person')!;
     expect(crew.status).toBe('retired');
+    expect(crew.lookingForWork).toBe(false);
     // ...with the years they were active.
     expect(crew.years).toBe('2031');
     db.run("UPDATE staff SET left_on = '2033-06-01'");

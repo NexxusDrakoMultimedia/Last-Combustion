@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { createRng, type RandomStream } from '../sim/rng';
-import { places as placeData } from '../sim/worldgen/data';
+import { jobsBalance, places as placeData } from '../sim/worldgen/data';
 import { nationsOfName, pickNationality } from '../sim/worldgen/names';
 import { readCareer } from './career';
 import { all } from './entries';
@@ -49,7 +49,7 @@ export function ensureOrigins(db: Database): void {
   if (!career) return;
   const needs =
     all(db, 'SELECT 1 FROM executive WHERE nationality IS NULL LIMIT 1').length +
-    all(db, 'SELECT 1 FROM staff WHERE nationality IS NULL LIMIT 1').length +
+    all(db, 'SELECT 1 FROM staff WHERE nationality IS NULL OR birth_year IS NULL LIMIT 1').length +
     all(
       db,
       `SELECT 1 FROM shareholding WHERE nationality IS NULL
@@ -109,6 +109,15 @@ export function ensureOrigins(db: Database): void {
       );
     }
   }
+
+  // A mechanic has an age (an executive's birth year is already known).
+  const [youngest, oldest] = jobsBalance.mechanicAge as [number, number];
+  const thisYear = Number(career.gameDate.slice(0, 4));
+  for (const r of all(db, 'SELECT id FROM staff WHERE birth_year IS NULL ORDER BY id'))
+    db.run('UPDATE staff SET birth_year = ? WHERE id = ?', [
+      thisYear - rng.stream(`origin:age:${r.id as number}`).int(youngest, oldest),
+      r.id as number,
+    ]);
 
   // Owners and families live at their garage's headquarters; investors live in their own nation.
   for (const r of all(

@@ -74,11 +74,10 @@ export function recordDeaths(db: Database, deaths: readonly Death[], lastYear: n
     } else if (d.kind === 'mechanic') {
       db.run('UPDATE staff SET left_on = ? WHERE id = ?', [d.date, d.id]);
     } else {
-      db.run("UPDATE executive SET status = 'left', left_on = ?, end_year = ? WHERE id = ?", [
-        d.date,
-        lastYear,
-        d.id,
-      ]);
+      db.run(
+        "UPDATE executive SET status = 'left', left_on = ?, left_reason = 'retired', end_year = ? WHERE id = ?",
+        [d.date, lastYear, d.id],
+      );
     }
   }
 }

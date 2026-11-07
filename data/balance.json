@@ -568,6 +568,10 @@
     "deaths": {
       "chancePerYear": 0.0015,
       "causes": ["road", "illness", "fall", "fire", "water"]
+    },
+    "driverInvesting": {
+      "minEarnings": 150000,
+      "share": 0.5
     }
   },
   "morale": {
@@ -588,5 +592,12 @@
     "friend": 50,
     "rival": -20,
     "enemy": -60
+  },
+  "jobs": {
+    "source": "The job market for mechanics and executives. Someone who leaves a garage without retiring (let go, quit, a contract that ran out, poached and not placed) goes back on the market and stays there, and in the Paddock, until they retire: after 'unemployedSeasons' full seasons out of work, at the retirement age for their job, or by dying. A retirement or a death is final at once.",
+    "unemployedSeasons": 2,
+    "mechanicRetireAge": 65,
+    "executiveRetireAge": 70,
+    "mechanicAge": [22, 58]
   }
 }

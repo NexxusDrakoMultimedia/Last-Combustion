@@ -14,6 +14,7 @@ import { persistWorld } from '../../src/db/world';
 import { BUILT_ROLES, executiveSlots } from '../../src/sim/executives';
 import { facilityLevelsFor } from '../../src/sim/business';
 import { generateWorld } from '../../src/sim/worldgen';
+import { staffBalance } from '../../src/sim/worldgen/data';
 
 let SQL: SqlJsStatic;
 beforeAll(async () => {
@@ -76,6 +77,97 @@ describe('computer garages as businesses', () => {
         db,
         'SELECT COUNT(*) FROM business WHERE garage_id IN (SELECT id FROM garage WHERE is_player = 1)',
       ),
+    ).toBe(0);
+  });
+
+  it('gives each computer garage a crew of mechanics for the cars it enters, paid by its sponsor', () => {
+    const { db } = world('biz-crew');
+    ensureBusinesses(db, 2031);
+    let checked = 0;
+    for (const [id] of rows(db, `SELECT id FROM garage WHERE ${COMPUTER}`)) {
+      const entries = Number(
+        scalar(db, `SELECT COUNT(*) FROM entry WHERE garage_id = ${id} AND series = 'main'`),
+      );
+      if (entries === 0) continue;
+      checked++;
+      expect(
+        scalar(db, `SELECT COUNT(*) FROM staff WHERE garage_id = ${id} AND left_on IS NULL`),
+      ).toBe(Math.min(staffBalance.maxPerGarage, entries));
+    }
+    expect(checked).toBeGreaterThan(50);
+    // The year's wages are written off against the sponsor, so a garage's money is as it was.
+    settleBusinesses(db, 2032);
+    const id = Number(scalar(db, `SELECT id FROM garage WHERE ${COMPUTER} ORDER BY id LIMIT 1`));
+    expect(
+      Number(
+        scalar(db, `SELECT SUM(amount) FROM ledger WHERE garage_id = ${id} AND category = 'wages'`),
+      ),
+    ).toBeLessThan(0);
+    expect(
+      Number(
+        scalar(
+          db,
+          `SELECT SUM(amount) FROM ledger WHERE garage_id = ${id} AND category IN ('wages', 'salaries', 'facilities', 'sponsor')`,
+        ),
+      ),
+    ).toBe(0);
+  });
+
+  it('fills a vacancy now and then with someone from the job market, the same person again', () => {
+    const { db } = world('biz-market');
+    ensureBusinesses(db, 2031);
+    const id = Number(scalar(db, `SELECT id FROM garage WHERE ${COMPUTER} ORDER BY id LIMIT 1`));
+    const before = Number(scalar(db, 'SELECT COUNT(*) FROM staff'));
+    // Let every mechanic of that garage go; they are all on the market, and the garage has vacancies.
+    db.run(
+      `UPDATE staff SET left_on = '2031-11-12', left_reason = 'fired' WHERE garage_id = ${id}`,
+    );
+    const gone = Number(scalar(db, `SELECT COUNT(*) FROM staff WHERE garage_id = ${id}`));
+    ensureBusinesses(db, 2032);
+    const back = Number(
+      scalar(db, `SELECT COUNT(*) FROM staff WHERE garage_id = ${id} AND left_on IS NULL`),
+    );
+    expect(back).toBe(gone);
+    // Some of them were hired again (the same rows), the rest are new faces.
+    const rehired = Number(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM staff WHERE garage_id = ${id} AND hired_on = '2032-02-01' AND id <= ${before}`,
+      ),
+    );
+    expect(
+      rehired + Number(scalar(db, `SELECT COUNT(*) FROM staff WHERE id > ${before}`)),
+    ).toBeGreaterThanOrEqual(gone);
+  });
+
+  it('re-seats some executives who were let go, the same person on a new contract', () => {
+    const { db } = world('biz-exec-market');
+    ensureBusinesses(db, 2031);
+    const before = Number(scalar(db, 'SELECT MAX(id) FROM executive'));
+    db.run(
+      "UPDATE executive SET status = 'left', left_on = '2031-11-12', left_reason = 'dismissed' WHERE status = 'employed'",
+    );
+    ensureBusinesses(db, 2032);
+    const rehired = Number(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM executive WHERE status = 'employed' AND id <= ${before} AND hired_on = '2032-02-01'`,
+      ),
+    );
+    const fresh = Number(scalar(db, `SELECT COUNT(*) FROM executive WHERE id > ${before}`));
+    expect(rehired).toBeGreaterThan(5);
+    expect(fresh).toBeGreaterThan(5);
+    // Every seat is filled once and no person works in two.
+    expect(
+      Number(
+        scalar(
+          db,
+          "SELECT COUNT(*) FROM (SELECT garage_id, role FROM executive WHERE status = 'employed' GROUP BY garage_id, role HAVING COUNT(*) > 1)",
+        ),
+      ),
+    ).toBe(0);
+    expect(
+      scalar(db, "SELECT COUNT(*) FROM executive WHERE left_reason IS NULL AND status = 'left'"),
     ).toBe(0);
   });
 

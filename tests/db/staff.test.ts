@@ -47,6 +47,38 @@ const firstEntry = (db: Database) =>
     number,
   ];
 
+describe('the job market for mechanics', () => {
+  it('puts someone let go back on offer, as the same person, until they retire', () => {
+    const db = newCareer('staff-market');
+    const [, garage] = firstEntry(db);
+    const hired = hireMechanic(db, garage, 0);
+    fireMechanic(db, garage, hired.id);
+    expect(scalar(db, `SELECT left_reason FROM staff WHERE id = ${hired.id}`)).toBe('fired');
+    const offers = mechanicCandidates(db, garage);
+    const again = offers.findIndex((o) => o.staffId === hired.id);
+    expect(again).toBeGreaterThanOrEqual(0);
+    const rehired = hireMechanic(db, garage, again);
+    // The same row, back at work, with nothing left against it.
+    expect(rehired.id).toBe(hired.id);
+    expect(scalar(db, `SELECT left_on FROM staff WHERE id = ${hired.id}`)).toBeNull();
+    expect(scalar(db, `SELECT left_reason FROM staff WHERE id = ${hired.id}`)).toBeNull();
+    expect(scalar(db, 'SELECT COUNT(*) FROM staff')).toBe(1);
+    // Let go again and kept out of work for two full seasons: they have retired and are not offered.
+    fireMechanic(db, garage, hired.id);
+    db.run("UPDATE career SET game_date = '2034-02-01'");
+    expect(mechanicCandidates(db, garage).some((o) => o.staffId === hired.id)).toBe(false);
+  });
+
+  it('never offers someone who retired or died', () => {
+    const db = newCareer('staff-market-final');
+    const [, garage] = firstEntry(db);
+    const a = hireMechanic(db, garage, 0);
+    fireMechanic(db, garage, a.id);
+    db.run("UPDATE staff SET left_reason = 'died' WHERE id = ?", [a.id]);
+    expect(mechanicCandidates(db, garage).some((o) => o.staffId === a.id)).toBe(false);
+  });
+});
+
 describe('hiring and letting go', () => {
   it('starts with no mechanics, offers four, and keeps the same offers until someone is hired', () => {
     const db = newCareer();

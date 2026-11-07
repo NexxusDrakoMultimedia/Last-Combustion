@@ -5,6 +5,7 @@ import { shareTotals, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
 import { relationshipKind, type RelationshipKind } from '../sim/relationships';
 import { SUPPLIERS, supplierById } from '../sim/supply';
+import { onMarket } from '../sim/jobs';
 import { ensureCapTables, garageValuation } from './equity';
 import { all } from './entries';
 import { readCareer } from './career';
@@ -27,6 +28,8 @@ export interface PersonRef {
   status: RegistryStatus;
   /** Their flag (a nation code), or null for a utility supplier, which has none. */
   flag: string | null;
+  /** Out of work but not retired: let go, quit or between jobs, and on the market until they retire. */
+  lookingForWork: boolean;
   /** The years they were active, "2031-2033" (just the first year if they began and left in it), or from when they began if they still are. */
   years: string;
 }
@@ -45,18 +48,32 @@ const yearOf = (db: Database): number => Number(readCareer(db)?.gameDate.slice(0
 export function peopleIndex(db: Database): PersonRef[] {
   ensureCapTables(db);
   ensureOrigins(db);
+  const year = yearOf(db);
+  /** Whether someone who has left is still on the job market (see `onMarket`). */
+  const looking = (kind: 'executive' | 'staff', r: Record<string, unknown>): boolean =>
+    r.left_on !== null &&
+    onMarket(
+      kind === 'staff' ? 'mechanic' : 'executive',
+      {
+        reason: (r.left_reason as string | null) ?? null,
+        leftYear: Number(String(r.left_on).slice(0, 4)),
+        age: year - ((r.birth_year as number | null) ?? year - 40),
+      },
+      year,
+    );
   const executives = all(
     db,
-    `SELECT e.id, e.name, e.role, e.status, e.hired_on, e.left_on, e.nationality, g.name AS garage FROM executive e
+    `SELECT e.id, e.name, e.role, e.status, e.hired_on, e.left_on, e.left_reason, e.birth_year, e.nationality, g.name AS garage FROM executive e
        JOIN garage g ON g.id = e.garage_id WHERE e.status IN ('employed', 'left') ORDER BY e.name, e.id`,
   ).map((r): PersonRef => ({
     kind: 'executive',
     id: r.id as number,
     name: r.name as string,
     role: r.role as string,
-    garage: r.garage as string,
+    garage: r.status === 'employed' ? (r.garage as string) : null,
     flag: r.nationality as string | null,
-    status: r.status === 'employed' ? 'active' : 'retired',
+    lookingForWork: r.status !== 'employed' && looking('executive', r),
+    status: r.status === 'employed' || looking('executive', r) ? 'active' : 'retired',
     years: activeYears(
       r.hired_on as string | null,
       r.status === 'employed' ? null : (r.left_on as string | null),
@@ -64,16 +81,17 @@ export function peopleIndex(db: Database): PersonRef[] {
   }));
   const staff = all(
     db,
-    `SELECT s.id, s.name, s.role, s.hired_on, s.left_on, s.nationality, g.name AS garage FROM staff s
+    `SELECT s.id, s.name, s.role, s.hired_on, s.left_on, s.left_reason, s.birth_year, s.nationality, g.name AS garage FROM staff s
        JOIN garage g ON g.id = s.garage_id ORDER BY s.name, s.id`,
   ).map((r): PersonRef => ({
     kind: 'staff',
     id: r.id as number,
     name: r.name as string,
     role: r.role as string,
-    garage: r.garage as string,
+    garage: r.left_on === null ? (r.garage as string) : null,
     flag: r.nationality as string | null,
-    status: r.left_on === null ? 'active' : 'retired',
+    lookingForWork: r.left_on !== null && looking('staff', r),
+    status: r.left_on === null || looking('staff', r) ? 'active' : 'retired',
     years: activeYears(r.hired_on as string, r.left_on as string | null),
   }));
   // The companies: sponsors, manufacturers and suppliers, all of whom can hold shares.
@@ -98,6 +116,7 @@ export function peopleIndex(db: Database): PersonRef[] {
     role: kind,
     garage: held.get(`${kind}:${id}`) ?? null,
     flag,
+    lookingForWork: false,
     status: 'active',
     years: '',
   });
@@ -132,6 +151,8 @@ export function peopleIndex(db: Database): PersonRef[] {
     `SELECT s.id, s.since, s.holder_name, s.holder_type, s.holder_id, s.garage_id, s.shares, s.nationality, g.name AS garage
        FROM shareholding s JOIN garage g ON g.id = s.garage_id
       WHERE NOT (s.holder_type IN ('sponsor', 'manufacturer') AND s.holder_id IS NOT NULL)
+        AND NOT (s.holder_type = 'driver' AND NOT EXISTS (
+              SELECT 1 FROM driver d WHERE d.id = s.holder_id AND d.retired_year IS NOT NULL))
       ORDER BY s.holder_name, s.id`,
   );
   const people = new Map<
@@ -180,6 +201,7 @@ export function peopleIndex(db: Database): PersonRef[] {
       role: p.type,
       garage: p.garage,
       flag: p.flag,
+      lookingForWork: false,
       status: 'active',
       years: activeYears(p.since, null),
     }));
@@ -247,6 +269,8 @@ export interface ShareholderProfile {
   holdings: HoldingLine[];
   /** Their flag, hometown and residence. */
   origin: Origin | null;
+  /** A holder who is a driver (or was) has a racing profile too, linked here. */
+  driver: { id: number; name: string } | null;
 }
 
 /** The holdings a set of shareholding rows make: where, how much, what was paid and what it is worth now. */
@@ -269,6 +293,19 @@ function holdingLines(db: Database, rows: Record<string, unknown>[]): HoldingLin
       worth: Math.round(stake * garageValuation(db, garageId).total),
     };
   });
+}
+
+/** What a driver holds in garages: the stakes they have bought with their winnings. */
+export function driverHoldings(db: Database, driverId: number): HoldingLine[] {
+  return holdingLines(
+    db,
+    all(
+      db,
+      `SELECT s.id, s.garage_id, g.name AS garage, s.class, s.shares, s.paid, s.since FROM shareholding s
+         JOIN garage g ON g.id = s.garage_id WHERE s.holder_type = 'driver' AND s.holder_id = ? ORDER BY s.id`,
+      [driverId],
+    ),
+  );
 }
 
 export interface CompanyProfile {
@@ -358,6 +395,13 @@ function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyPro
 
 export type PersonProfile = ExecutiveProfile | StaffProfile | ShareholderProfile | CompanyProfile;
 
+/** Whether a death is on record for someone (an executive's row says they retired; the death says why). */
+function diedOn(db: Database, kind: 'executive' | 'mechanic', id: number): boolean {
+  return (
+    all(db, 'SELECT 1 FROM death WHERE person_type = ? AND person_id = ?', [kind, id]).length > 0
+  );
+}
+
 export function personProfile(db: Database, kind: PersonKind, id: number): PersonProfile {
   ensureOrigins(db);
   if (COMPANY_KINDS.includes(kind as CompanyKind))
@@ -382,7 +426,7 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       hiredOn: (r.hired_on as string | null) ?? null,
       contractEnds: (r.end_year as number | null) ?? null,
       leftOn: (r.left_on as string | null) ?? null,
-      leftReason: (r.left_reason as string | null) ?? null,
+      leftReason: diedOn(db, 'executive', id) ? 'died' : ((r.left_reason as string | null) ?? null),
       morale: r.status === 'employed' ? (r.morale as number) : null,
       origin: originOf(db, r.nationality, r.hometown_place_id, r.residence_place_id),
     };
@@ -441,5 +485,12 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
     holderType: first.holder_type as string,
     holdings,
     origin: originOf(db, first.nationality, first.hometown_place_id, first.residence_place_id),
+    driver:
+      first.holder_type === 'driver' && first.holder_id !== null
+        ? {
+            id: first.holder_id as number,
+            name: first.holder_name as string,
+          }
+        : null,
   };
 }

@@ -61,10 +61,11 @@
     "maxPremium": 1
   },
   "business": {
-    "source": "Computer garages run as businesses. Each has executives (as many as its prestige allows), facilities (one level for every 'prestigePerLevel' points of prestige), a sponsor and an electricity supplier. Its sponsor covers the running of the executives and facilities. A garage with cash above 'dividendMinCash' pays 'dividendShare' of its last closed year's operating profit to its holders each year, never taking it below that cash.",
+    "source": "Computer garages run as businesses. Each has executives (as many as its prestige allows), facilities (one level for every 'prestigePerLevel' points of prestige), a sponsor and an electricity supplier. Each also keeps a crew of 'mechanicsPerEntry' mechanics for every car it enters (never more than the most a garage may have), as good as its prestige. Its sponsor covers the running of the executives, the mechanics and the facilities. A garage with cash above 'dividendMinCash' pays 'dividendShare' of its last closed year's operating profit to its holders each year, never taking it below that cash.",
     "prestigePerLevel": 12,
     "dividendShare": 0.5,
     "dividendMinCash": 150000,
-    "roundsPerYear": 6
+    "roundsPerYear": 6,
+    "mechanicsPerEntry": 1
   }
 }
