@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.0-beta2] - 2026-11-07
+
+A beta of the 0.2.0 release (M6, depth): the second slice, garage operations. Saves from 0.1.x still load, and saves from beta1 gain the new sponsors and start with no facilities.
+
 ### Added
 
 - Executives now retire (at 60 to 70) and rivals poach them: the better the executive, and the further below the market their pay, the likelier they go each year. The Executives tab says who left and why. A Chief Executive also makes your garage's prestige gains count for up to 25% more.
