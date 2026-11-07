@@ -41,7 +41,7 @@ A pre-commit hook formats staged files and checks your commit message. CI runs e
 
 - Use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`. Add `!` for a breaking change. Keep the subject in lower case and each line of the body to 100 characters or fewer; the pre-commit hook rejects a message that breaks the rules.
 - Sign off every commit (`git commit -s`) to certify the [Developer Certificate of Origin](https://developercertificate.org/).
-- The project uses [Semantic Versioning](https://semver.org/). Each pull request adds a line under `[Unreleased]` in `CHANGELOG.md` for anything a player would notice ([Keep a Changelog](https://keepachangelog.com/) style: Added, Changed, Fixed, Removed, Security), written in plain words because players read it in the game.
+- The project uses [Semantic Versioning](https://semver.org/). Each pull request adds a line under `[Unreleased]` in `CHANGELOG.md` for anything a player would notice ([Keep a Changelog](https://keepachangelog.com/) style: Added, Changed, Fixed, Removed, Security), written in plain words because players read it in the game. Betas never get a section of their own; see [Releasing](docs/RELEASING.md).
 
 ## Code rules that catch people out
 

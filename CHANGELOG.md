@@ -6,107 +6,37 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
-## [0.2.0] - 2026-11-07
-
-Milestone M6, depth: the garage as a business, its people and a calendar to run it on. Saves from 0.1.x still load: the game date moves from where the save left it, morale starts at 50, every garage is given its owners and every computer garage its business when the save opens, and years already played are summed into the ledger. The betas below (0.2.0-beta1 to beta6) list each step in more detail.
+Milestone M6, depth: the garage as a business, its people and a calendar to run it on. Saves from 0.1.x still load: the game date moves from where the save left it, morale starts at 50, every garage is given its owners and every computer garage its business when the save opens, and years already played are summed into the ledger.
 
 ### Added
 
-- **A calendar.** The game has a date. **Continue**, **+1 day**, **+1 week** and **Next event** in the top bar replace the buttons that ran the next prelims or final, and a Calendar panel lists what is coming. Daily life (delivery pay, road wear and driver training) is settled for each day that passes.
-- **Garage operations.** Sponsors and suppliers come in five tiers, from local to global, with a spot market. Suppliers can fail (outages), seven facilities can be built and upgraded, and executives retire, are poached and affect the garage's prestige.
-- **Ownership.** Every garage has a cap table, a valuation, a board and a season target. Raise money in funding rounds, pay dividends, buy shares back, buy stakes in other garages and take a garage over. Computer garages run as businesses with executives, facilities, a sponsor and a supplier.
-- **The ledger.** The Ledger panel has a year picker, a summary by category and a list of every transaction, with CSV export.
-- **People.** Mechanics and executives have morale. The Staff panel has Contacts, Social (five occasions a season, three conversations each) and Press (six journalists and the four commentators write a headline about you after each final).
-- **The Registry.** A Paddock tab by job, an Ex-Paddock tab with years active, and company profiles for every sponsor, manufacturer and supplier. Attention flags, fan and prestige rankings, and the logo on the start page.
-- **Names.** Many more names and 43 more nations and cultures, with a filter for offensive words.
-- A work-of-fiction disclaimer in the About screen, the README and the press kit.
+- **A calendar.** The game has a date. **Continue**, **+1 day**, **+1 week** and **Next event** in the top bar replace the buttons that ran the next prelims or final: Continue runs what is due today or skips to the next day something needs you, and days and weeks stop early at any event. A Calendar panel lists what is coming. The Run next prelims, Run next final, End the season and Start next season buttons appear in place of Continue on the day each is due.
+- **Daily life by the day.** Each day that is not a race day, your cars earn delivery pay (about $167 a car), pick up road wear (40 km) and train their drivers on the roads at home, so skipping days and weeks matters. A season comes to about the same as before.
+- **Social occasions on real dates.** The season opening on 31 March, the sponsor dinner, press day and paddock party ten days after the finals of rounds 2, 3 and 4, and the closing ceremony from 11 November. Each stays open for a few days, Continue stops at each, and the Social tab says when the next one is.
+- **Tiers and a spot market.** Sponsors and suppliers come in five tiers (local, regional, national, continental, global), with three continental title sponsors and a continental supplier for each of electricity, water, race fuel, travel fuel and logistics. A garage can also buy on the spot market.
+- **Outages.** A supplier that is not reliable can fail. A power cut idles part of the crew for a round, a fuel shortage halves the practice laps, and late transport costs the cars their first practice day. The Operations panel shows the chance and warns before a round.
+- **Facilities.** Build and upgrade seven facilities in the Operations panel, each from level 1 to 5, paid for at once and with a running cost every round: workshop bays, the dyno and data room, the driver simulator, the tyre and parts store, the solar array, water tanks and the transporter fleet.
+- **Executives.** They retire (at 60 to 70) and rivals poach them, and a Chief Executive makes your garage's prestige gains count for up to 25% more.
+- **Ownership.** Every garage has a cap table, a valuation, a board and a season target. Raise money in funding rounds (a Seed round, then Series A to D), pay dividends, buy shares back, buy stakes in other garages and bid to take a garage over. Over half the votes means control, a quarter blocks the big decisions, and a vote of no confidence is shown after two missed targets (it has no effect yet). The Ownership panel has Mine, Cap table and Investments views.
+- **Computer garages are businesses.** Each has executives (as many roles as its prestige allows), facilities, a sponsor and an electricity supplier, shown on its Registry page. A garage with cash to spare pays half of its profit to its holders each year, and your share is paid into your own cash.
+- **The ledger.** The Ledger panel keeps a summary of each financial year (closing on 11 November) for every garage, grouped into racing income, commercial income, race running costs, premises, people and assets, with a year picker, the change on the year before, and a Transactions tab that lists every movement of cash and exports it to a CSV file.
+- **People.** Mechanics and executives have a morale from 0 to 100 that moves each season with their pay, the garage's results, its facilities and (for mechanics) the workload, changes their work by up to 5%, and may make an unhappy mechanic leave. The Staff panel has a Contacts tab (everyone the garage has dealt with and what they are to you: a friend, an acquaintance, a rival or an enemy), a Social tab (talk to someone you know or meet someone new at each occasion, in a warm, direct, bold or discreet manner) and a Press tab (six journalists and the four commentators write a headline about the garage after every final, in a tone set by how they see you, and a warm view wins fans while a cold one loses them).
+- **The Registry.** A Paddock tab groups people by job, an Ex-Paddock tab lists everyone who has left with the years they were active, and every sponsor, manufacturer, parts supplier and utility supplier has a profile (where it is from, how far its reach goes, how it sees your garage and the shares it holds). Every executive, staff member and shareholder has a profile too.
+- **Records.** Almanac rankings of the most fans for drivers, cars, garages and nations, and of the most prestigious garages. Attention flags: when a driver's prelim run beats what their car should manage by a wide margin, the ATTN pennant shows in the results and on the driver's and garage's pages, wins fans and grows the series audience.
+- **Names.** Many more names and 43 more nations and cultures, 58 in all (Latin America, Europe, East, South-East and South Asia, the Middle East, Africa and the Pacific), with Australia keeping 60% of the weight and a filter for offensive words.
+- A work-of-fiction disclaimer in the About screen, the README and the press kit, and the Last Combustion logo as the header of the start page.
 
 ### Changed
 
 - The game is fully fictional, with no mapping to real cars or makers. The starting roster is unchanged, at 31 manufacturers and 96 models.
-- The release site is served by Cloudflare (Workers & Pages) from `main` instead of GitHub Pages. Builds on Cloudflare drop the telemetry keys unless the branch is `main`, so a preview collects nothing.
-- Scouting and fog of war, and the story and feedback layer, are planned for 0.3.0 (M7), and the 2036 expansion and the career modes move back one milestone each (0.4.0 and 0.5.0). Ratings stay exact until 0.3.0.
+- Generated names are checked for offensive words and infamous people, not against real drivers: a random name may match a real driver's name by chance.
+- The Money panel is now the Ledger panel.
+- The release site is served by Cloudflare (Workers & Pages) from `main` instead of GitHub Pages, and builds on Cloudflare drop the telemetry keys unless the branch is `main`, so a preview collects nothing.
+- Scouting and fog of war, and the story and feedback layer, are planned for 0.3.0, and the 2036 expansion and the career modes move back one milestone each (0.4.0 and 0.5.0). Ratings stay exact until 0.3.0.
 
 ### Removed
 
 - The GitHub Pages deploy workflow and its domain file.
-
-## [0.2.0-beta6] - 2026-11-07
-
-A beta of the 0.2.0 release (M6, depth): the sixth slice, the calendar and time controls. Saves from 0.1.x still load; the game date moves from where the save left it, and the new per-day delivery pay and wear take over from the old lump before each round.
-
-### Added
-
-- The social occasions are on real dates, and on the calendar: the season opening on 31 March, the sponsor dinner, press day and paddock party ten days after the finals of rounds 2, 3 and 4, and the closing ceremony from 11 November. Each stays open for a few days, Continue stops at each, and the Social tab says when the next one is.
-- A calendar: the game date now moves a day at a time. The top bar has **Continue**, **+1 day**, **+1 week** and **Next event** instead of a button to run the next prelims or final. Continue skips on to the day something needs you and, on that day, runs it; days and weeks stop early at any event. A new Calendar panel lists what is coming.
-
-### Changed
-
-- Scouting and fog of war, and the story and feedback layer (rivalries, the storyline engine, event cards, crash highlights and the live map), move from 0.2.0 to 0.3.0 (M7). 0.2.0 ends with the calendar, and the 2036 expansion and the career modes move back one milestone each (M8 is 0.4.0, M9 is 0.5.0). Ratings stay exact until 0.3.0.
-- Daily life is settled a day at a time as the date moves, not in one lump before each round: your cars earn delivery pay, pick up road wear and train their drivers on every day that is not a race day, so skipping days and weeks now matters. The per-day numbers are two thirds of the old ones ($167 and 40 km a day for 162 days instead of $250 and 60 km for 108), so a season comes to about the same. The ledger gets one delivery line for each skip.
-- The Run next prelims, Run next final, End the season and Start next season buttons now appear in place of Continue on the day each is due. The browser tests and the how-to-play guide follow.
-
-## [0.2.0-beta5] - 2026-11-07
-
-A beta of the 0.2.0 release (M6, depth): the fifth slice, people and relationships, with the work that went with it on names, the Paddock and the fiction of the game. Saves from 0.1.x still load; morale starts at 50 for everyone already in a save, and computer garages are given their executives, facilities, sponsors and suppliers when the save opens.
-
-### Added
-
-- Many more names, and 43 more nations and cultures to draw them from (Latin America, Europe, East, South-East and South Asia, the Middle East, Africa and the Pacific), with the established nations' lists made larger. Australia keeps 60% of the weight.
-- A work-of-fiction disclaimer in the About screen, the README and the press kit: every manufacturer, car, company and character is invented, and any resemblance to real people or companies is coincidental.
-- The Registry's Paddock tab groups people by job, and a new Ex-Paddock tab lists everyone who has left, by job, with the years they were active. The Paddock also lists every sponsor, manufacturer, parts supplier and utility supplier, each with a profile: where it is from, how far its reach goes, how it sees your garage and, for sponsors and manufacturers, the shares it holds.
-- The press: six fictional journalists and the four commentators write a headline about the garage after every final, in a tone set by how they see you. A warm view wins fans and a cold one loses them. The Staff panel has a Press tab with the headlines and the journalists, and you can meet the journalists at the paddock occasions.
-- Social occasions: the Staff panel's new Social tab opens at the season opening, the sponsor dinner, press day, the paddock party and the closing ceremony, with three conversations at each. Talk to someone the garage knows, or meet someone new, in a warm, direct, bold or discreet manner: relationships move, a bold approach may go wrong, and a discreet one may lead to an introduction.
-- The Staff panel has a Contacts tab: everyone the garage has dealt with (sponsors, suppliers, manufacturers and executives), the best relationship first, with the score and what it makes them to you: a friend, an acquaintance, a rival or an enemy.
-- Morale: mechanics and executives each have a morale from 0 to 100, shown in the Staff and Executives panels and on their pages in the Paddock. It moves each season with their pay, the garage's results, its facilities and (for mechanics) the workload, changes their work by up to 5%, and an unhappy mechanic may leave.
-
-### Changed
-
-- The plan for 0.2.0 has a new slice, the calendar and time controls (a game date that moves a day at a time, a calendar of events, and Continue, Next event, Day and Week controls in place of Run prelims and Run final). It is written in the design document and not built yet.
-- Generated names are checked for offensive words and infamous people, not against real drivers: a random name may now match a real driver's name by chance.
-- The game is fully fictional with no mapping to real cars or makers anywhere: the real-counterpart columns and the optional `mod_mapping.json` are gone from the design document. The starting roster is unchanged, at 31 manufacturers and 96 models.
-
-## [0.2.0-beta4] - 2026-11-07
-
-A beta of the 0.2.0 release (M6, depth): the fourth slice, ownership and the cap table. Saves from 0.1.x still load; every garage is given its owners, and every computer garage its business, when the save opens.
-
-### Added
-
-- Computer garages are businesses: each has executives (for as many roles as its prestige allows), facilities, a sponsor and an electricity supplier, shown on its Registry page with its executives in the Paddock. Its sponsor covers what they cost, so the economy is unchanged. A garage with cash to spare pays half of its profit to its holders each year, and your share is paid into your own cash.
-- Investments: the Ownership panel's new Investments tab shows your own wealth (your own cash from dividends, and the shares you hold in other garages), lets you buy a stake in any other garage from a holder at the price they ask, sell it back, and bid to take a whole garage over between seasons. A bid that wins more than half the votes buys everyone else out at the same price; the garage's cars, running driver contracts, fans and cash become yours and it closes. Saves from earlier versions load with no stakes.
-- Control and a board: the Ownership panel says whether you control your garage (over half the votes), who can block the big decisions (a quarter of the votes), and who sits on the board (you, any investor with a tenth of the shares, and an independent chair). Some investors insist on voting shares, which cost you votes, and an investor with a quarter of the votes can refuse new shares. Each season the board sets a target finish in the Garage table; miss it twice running without a majority of the votes and it calls a vote of no confidence (shown, but with no effect yet).
-- You can raise money by selling new preferred shares to an investor (a Seed round, then Series A to D, one a year, giving away at most 30% at once), pay a dividend to the holders of your shares (the owner's part goes to your own cash), and buy an outside holder's shares back, either with the garage's cash (the shares are cancelled) or with your own. All of it is in the Ownership panel and the Ledger.
-- Ownership: every garage now has a cap table. You own all of your garage's shares from the day you found it; computer garages belong to their founder and family, or have an outside investor, or are partly held by a sponsor or a manufacturer. The new Ownership panel shows who holds what, the garage's valuation (cash, cars, profit, fans, prestige and titles), the price of a share and how the valuation has moved over the seasons. Saves from earlier versions are given their owners when they load.
-- The Registry has a Paddock tab with a profile for every executive, staff member and shareholder, linked from the Ownership, Staff and Executives panels.
-
-## [0.2.0-beta3] - 2026-11-07
-
-A beta of the 0.2.0 release (M6, depth): the third slice, the financial ledger (part one). Saves from 0.1.x still load; years already played are summed into the ledger when the save loads.
-
-### Added
-
-- The ledger keeps a summary of each financial year (closing on 11 November, with the season) for every garage, grouped into racing income, commercial income, race running costs, premises, people and assets, with the year's operating result and net cash movement. Years played in earlier versions are summed from the ledger when the save loads. The Money panel is now the Ledger panel, with a year picker and a table of each group and category showing income, spending, net, the change on the year before and its share of the group. Its Transactions tab lists every movement of cash with the cash after it, filters by year, category, round, date and note, and exports the lines to a CSV file.
-
-## [0.2.0-beta2] - 2026-11-07
-
-A beta of the 0.2.0 release (M6, depth): the second slice, garage operations. Saves from 0.1.x still load, and saves from beta1 gain the new sponsors and start with no facilities.
-
-### Added
-
-- Executives now retire (at 60 to 70) and rivals poach them: the better the executive, and the further below the market their pay, the likelier they go each year. The Executives tab says who left and why. A Chief Executive also makes your garage's prestige gains count for up to 25% more.
-- Facilities: in the Operations panel you can build and upgrade seven facilities, each from level 1 to 5, paid for at once and with a running cost every round. Workshop bays lift the crew's cover, the data room makes practice breakthroughs likelier, the driver simulator (which needs the data room) boosts training, the parts store cuts part prices, the solar array and water tanks cut those bills (the solar array also keeps the crew working through a power cut), and the transporter fleet cuts the logistics bill and late transport. Saves from earlier versions load with none built.
-- Supply outages: a supplier that is not reliable can fail. A power cut idles part of the crew for a round (20% less cover), a fuel shortage halves the practice laps, and late transport costs the cars their first practice day. A garage buying on the spot market (or from a local firm) is hit about one round in ten per supply; a reliable global supplier almost never. The Operations panel shows the chance and warns before a round, and an Operations Director makes outages less likely to run on into a second round.
-- A continental tier of sponsors and suppliers, between national and global: three continental title sponsors (prestige 58 to 62) and a continental supplier for each of electricity, water, race fuel, travel fuel and logistics (prestige 40). Careers started in earlier versions gain the new sponsors when they load.
-
-## [0.2.0-beta1] - 2026-11-07
-
-A beta of the 0.2.0 release (M6, depth): the first slice, records and first impressions. Saves from 0.1.x still load.
-
-### Added
-
-- Attention flags: when a driver's prelim run beats what their car should manage by a wide margin (about one or two runs a round), the series' computer flags it with the ATTN pennant, which shows in the prelim results and on the driver's and garage's Registry pages. A flag wins the driver 0.6% of the series audience in fans, and the series audience grows by 0.5% for each flag over the season. The Almanac ranks drivers and garages by attention flags.
-- Almanac rankings of the most fans for drivers, cars, garages and nations, and of the highest prestige for garages, as they stand now.
-- The Last Combustion logo is the header of the start page.
 
 ## [0.1.2] - 2026-11-06
 

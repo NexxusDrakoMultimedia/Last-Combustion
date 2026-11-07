@@ -55,9 +55,6 @@ export function AlmanacPanel({ tab }: { tab: string }) {
               </span>
             </summary>
             <div className="space-y-1 border-t border-lc-line p-2">
-              <p className="lc-display text-xs text-lc-dim">
-                {t('almanac.leaderboard', { count: r.board.length })}
-              </p>
               <ol className="space-y-1">
                 {r.board.map((row, i) => (
                   <li

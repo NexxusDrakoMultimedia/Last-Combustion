@@ -11,6 +11,8 @@ _The full name is **The Last Combustion of the Petrol Engine**._
 
 _Racing team simulation game based in a post-petrol world, where the last petrolheads ply their craft._
 
+_Dwarf Fortress meets MF Ghost meets Aussie car culture._
+
 Petrol is the rarest thing in the world, and a handful of people still race combustion cars on it. In 2031 they meet on closed Australian public roads for a new championship, six rounds a season, in ordinary road-legal cars. You run a garage. You buy and upgrade the cars, sign the drivers, keep the money coming in, and try to build a name that lasts through the seasons. Every driver, car, garage and race is remembered.
 
 It is a management game first: as much a garage simulation as a racing one. The people, the parts, the suppliers and the books matter as much as the lap times. The names, the world and the branding are all original, and the idea is loosely inspired by _MF Ghost_.

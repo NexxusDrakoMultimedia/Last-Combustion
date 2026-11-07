@@ -2,15 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { moraleText } from '../moraleText';
 import { useState, type ReactNode } from 'react';
-import {
-  formatDate,
-  formatGap,
-  formatLapTime,
-  formatMoney,
-  formatPoints,
-  hasText,
-  t,
-} from '../../i18n';
+import { formatDate, formatMoney, formatPoints, hasText, t } from '../../i18n';
 import type { HoldingLine, PersonKind, PersonProfile, PersonRef } from '../../db/people';
 import type {
   CarProfile,
@@ -18,12 +10,10 @@ import type {
   GarageProfile,
   RegistryIndex,
   ScoringSpan,
-  RoundProfile,
 } from '../../db/registry';
-import type { ResultRow } from '../../db/tables';
 import { flagNames } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
-import { AttentionList, AttnFlag } from '../AttnFlag';
+import { AttentionList } from '../AttnFlag';
 import { DecalRow, DecalStrip, StarRow } from '../Decals';
 import { STATUS_ORDER, type RegistryStatus } from '../../db/status';
 import { Flag } from '../Flag';
@@ -502,139 +492,6 @@ function GaragePage({ p }: { p: GarageProfile }) {
   );
 }
 
-function ClassificationRow({ r, race }: { r: ResultRow; race: boolean }) {
-  return (
-    <tr className={`border-t border-lc-line ${r.mine ? 'bg-lc-raised font-medium' : ''}`}>
-      <td className="lc-num py-1">{r.position ?? t('tables.none')}</td>
-      <td>
-        <RaceNumber number={r.raceNumber} badge={r.badge} />
-      </td>
-      <td>
-        <RegistryLink to={{ kind: 'driver', id: r.driverId }}>{r.driver}</RegistryLink>
-        {r.attention && (
-          <>
-            {' '}
-            <AttnFlag />
-          </>
-        )}
-        {r.pole && !race && ` ${t('tables.pole')}`}
-      </td>
-      <td className="text-lc-dim">
-        <RegistryLink to={{ kind: 'garage', id: r.garageId }}>{r.garage}</RegistryLink>
-      </td>
-      <td>
-        <Plate plate={r.plate} state={r.plateState} carId={r.carId} />
-      </td>
-      <td className="lc-num">
-        {r.timeMs === null
-          ? r.dnf
-            ? t('tables.dnf', { reason: r.dnf })
-            : ''
-          : formatLapTime(r.timeMs)}
-      </td>
-      <td className="lc-num">{r.gapMs !== null && r.gapMs > 0 ? formatGap(r.gapMs) : ''}</td>
-      <td className="lc-num text-right">{r.points > 0 ? formatPoints(r.points) : ''}</td>
-      {race && <td className="lc-num text-right">{r.prize > 0 ? formatMoney(r.prize) : ''}</td>}
-    </tr>
-  );
-}
-
-function RoundPage({ p }: { p: RoundProfile }) {
-  const race = p.kind === 'race';
-  const other = race ? 'prelim' : 'race';
-  return (
-    <div className="space-y-5 text-sm">
-      <h2 className="lc-display text-lg">
-        {t(race ? 'registry.raceTitle' : 'registry.prelimTitle', {
-          year: p.year,
-          round: p.round,
-          course: p.course,
-        })}
-      </h2>
-      <p>
-        <RegistryLink to={{ kind: other, year: p.year, round: p.round }}>
-          {t(race ? 'registry.seePrelims' : 'registry.seeRace')}
-        </RegistryLink>
-      </p>
-      <Facts
-        items={[
-          [t('registry.practiceFrom'), formatDate(p.practiceStart)],
-          [t('registry.prelimsFrom'), formatDate(p.prelimStart)],
-          [t('registry.finalOn'), formatDate(p.finalDate)],
-          [
-            t('registry.pole'),
-            p.pole ? (
-              <RegistryLink to={{ kind: 'driver', id: p.pole.id }}>{p.pole.name}</RegistryLink>
-            ) : (
-              t('registry.none')
-            ),
-          ],
-          [
-            t('registry.winner'),
-            p.winner ? (
-              <RegistryLink to={{ kind: 'driver', id: p.winner.id }}>{p.winner.name}</RegistryLink>
-            ) : (
-              t('registry.none')
-            ),
-          ],
-        ]}
-      />
-      {p.days.length > 0 && (
-        <Section title={t('registry.conditions')}>
-          <ul className="flex flex-wrap gap-2">
-            {p.days.map((d) => (
-              <li key={d.date} className="border border-lc-line p-2">
-                <span className="lc-num block">{formatDate(d.date)}</span>
-                <span className="text-lc-dim">
-                  {t('registry.dayLine', {
-                    kind: t(`registry.day.${d.kind}` as never),
-                    weather: t(`registry.weather.${d.weather}` as never),
-                    temp: Math.round(d.temperatureC),
-                  })}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      )}
-      <Section title={t(race ? 'tables.session.final' : 'tables.session.prelims')}>
-        {p.rows.length === 0 ? (
-          <p className="text-lc-dim">{t('tables.notRun')}</p>
-        ) : (
-          <div className="max-h-[50vh] overflow-auto">
-            <table className={dataTable}>
-              <thead className={`${th} sticky top-0 bg-lc-panel`}>
-                <tr>
-                  <th scope="col">{t('tables.pos')}</th>
-                  <th scope="col">{t('registry.number')}</th>
-                  <th scope="col">{t('tables.driver')}</th>
-                  <th scope="col">{t('tables.garage')}</th>
-                  <th scope="col">{t('registry.plate')}</th>
-                  <th scope="col">{t('tables.time')}</th>
-                  <th scope="col">{t('tables.gap')}</th>
-                  <th scope="col" className="text-right">
-                    {t('hub.points')}
-                  </th>
-                  {race && (
-                    <th scope="col" className="text-right">
-                      {t('tables.prize')}
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {p.rows.map((r) => (
-                  <ClassificationRow key={r.raceNumber} r={r} race={race} />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Section>
-    </div>
-  );
-}
-
 /** A list split into Champions, Race winners, Active, Retired and Obscure (greylinked), empty sections left out. */
 function ByStatus<T extends { status: RegistryStatus }>({
   items,
@@ -705,14 +562,13 @@ function ByJob({ people, years = false }: { people: PersonRef[]; years?: boolean
   );
 }
 
-const INDEX_TABS = ['drivers', 'cars', 'garages', 'paddock', 'exPaddock', 'rounds'] as const;
+const INDEX_TABS = ['drivers', 'cars', 'garages', 'paddock', 'exPaddock'] as const;
 type IndexTab = (typeof INDEX_TABS)[number];
 
-/** Every driver, car, garage and round in its own tab, with a search that narrows the open tab. */
+/** Every driver, car, garage and person in its own tab, with a search that narrows the open tab. */
 function IndexPage({ data }: { data: RegistryIndex }) {
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<IndexTab>('drivers');
-  const open = useCareerStore((s) => s.openRegistry);
   const q = query.trim().toLowerCase();
   const match = (...parts: (string | number | null)[]) =>
     q === '' || parts.some((x) => x !== null && String(x).toLowerCase().includes(q));
@@ -722,14 +578,12 @@ function IndexPage({ data }: { data: RegistryIndex }) {
   const people = data.people.filter((p) => match(p.name, p.garage, personRole(p.kind, p.role)));
   const paddock = people.filter((p) => p.status !== 'retired');
   const exPaddock = people.filter((p) => p.status === 'retired');
-  const rounds = data.rounds.filter((r) => match(r.year, r.course, `round ${r.round}`));
   const counts: Record<IndexTab, number> = {
     drivers: drivers.length,
     cars: cars.length,
     garages: garages.length,
     paddock: paddock.length,
     exPaddock: exPaddock.length,
-    rounds: rounds.length,
   };
   return (
     <div className="space-y-4 text-sm">
@@ -802,31 +656,6 @@ function IndexPage({ data }: { data: RegistryIndex }) {
         )}
         {tab === 'paddock' && <ByJob people={paddock} />}
         {tab === 'exPaddock' && <ByJob people={exPaddock} years />}
-        {tab === 'rounds' && (
-          <ul className="space-y-1">
-            {rounds.map((r) => (
-              <li key={`${r.year}-${r.round}`} className="flex flex-wrap items-center gap-3">
-                <span className="lc-num">
-                  {t('registry.roundName', { year: r.year, round: r.round, course: r.course })}
-                </span>
-                <button
-                  type="button"
-                  className={quiet}
-                  onClick={() => open({ kind: 'prelim', year: r.year, round: r.round })}
-                >
-                  {t('tables.session.prelims')}
-                </button>
-                <button
-                  type="button"
-                  className={quiet}
-                  onClick={() => open({ kind: 'race', year: r.year, round: r.round })}
-                >
-                  {t('registry.race')}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
         {counts[tab] === 0 && <p className="text-lc-dim">{t('registry.none')}</p>}
       </div>
     </div>
@@ -1028,9 +857,6 @@ export function RegistryPanel() {
       {registryPage.kind === 'car' && <CarPage p={registryPage.data} />}
       {registryPage.kind === 'garage' && <GaragePage p={registryPage.data} />}
       {registryPage.kind === 'person' && <PersonPage p={registryPage.data} />}
-      {(registryPage.kind === 'prelim' || registryPage.kind === 'race') && (
-        <RoundPage p={registryPage.data} />
-      )}
     </div>
   );
 }

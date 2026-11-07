@@ -161,6 +161,7 @@ export function About() {
           <>
             <p className="lc-display text-lg">{t('app.title')}</p>
             <p className="text-lc-dim">{t('app.tagline')}</p>
+            <p className="font-medium">{t('about.describe0')}</p>
             <p>{t('about.describe1')}</p>
             <p>{t('about.describe2')}</p>
             <p>{t('about.describe3')}</p>

@@ -201,13 +201,17 @@ export function recordBook(db: Database): RecordBook {
       all(
         db,
         `SELECT c.id AS id, m.name AS name, c.fans AS value, c.plate AS plate, c.plate_state AS plateState
-           FROM car c JOIN car_model m ON m.id = c.car_model_id ORDER BY c.fans DESC, c.id`,
+           FROM car c JOIN car_model m ON m.id = c.car_model_id JOIN garage g ON g.id = c.garage_id
+          WHERE g.kind <> 'market' ORDER BY c.fans DESC, c.id`,
       ),
       'car_fans',
       'car',
     ),
     rankingOf(
-      all(db, 'SELECT id, name, fans AS value FROM garage ORDER BY fans DESC, id'),
+      all(
+        db,
+        "SELECT id, name, fans AS value FROM garage WHERE kind <> 'market' ORDER BY fans DESC, id",
+      ),
       'garage_fans',
       'garage',
     ),
@@ -221,7 +225,10 @@ export function recordBook(db: Database): RecordBook {
       'nation',
     ),
     rankingOf(
-      all(db, 'SELECT id, name, prestige AS value FROM garage ORDER BY prestige DESC, id'),
+      all(
+        db,
+        "SELECT id, name, prestige AS value FROM garage WHERE kind <> 'market' ORDER BY prestige DESC, id",
+      ),
       'garage_prestige',
       'garage',
     ),

@@ -17,7 +17,6 @@ import {
 } from './people';
 import { businessView, ensureBusinesses, type BusinessView } from './business';
 import { computeStandings } from './season';
-import { roundClassification, type ResultRow } from './tables';
 import { titlesOf } from './titles';
 
 const gameYear = (db: Database): number => {
@@ -589,75 +588,6 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
   };
 }
 
-export type SessionKind = 'prelim' | 'race';
-
-export interface RoundProfile {
-  kind: SessionKind;
-  year: number;
-  round: number;
-  course: string;
-  status: string;
-  /** The dates: the first practice day, the first prelim day and the final. */
-  practiceStart: string;
-  prelimStart: string;
-  finalDate: string;
-  /** The weather and temperature of each day of the round, once the prelims have been run. */
-  days: { date: string; kind: string; weather: string; temperatureC: number }[];
-  pole: Ref | null;
-  winner: Ref | null;
-  rows: ResultRow[];
-}
-
-/** The days of a round's schedule from its saved log (empty before the prelims are run). */
-function parseDays(log: string): RoundProfile['days'] {
-  try {
-    return (JSON.parse(log) as Record<string, unknown>[]).map((d) => ({
-      date: String(d.date),
-      kind: String(d.kind),
-      weather: String(d.weather),
-      temperatureC: Number(d.temperatureC),
-    }));
-  } catch {
-    return [];
-  }
-}
-
-/** The profile of a round's prelims or of its race (the final): the conditions and the full classification. */
-export function roundProfile(
-  db: Database,
-  kind: SessionKind,
-  year: number,
-  roundNumber: number,
-): RoundProfile {
-  const c = roundClassification(db, year, roundNumber);
-  const round = all(
-    db,
-    `SELECT r.practice_start, r.prelim_start, r.weather_log FROM round r JOIN season s ON s.id = r.season_id
-      WHERE s.year = ? AND r.number = ?`,
-    [year, roundNumber],
-  )[0]!;
-  const list = kind === 'race' ? c.final : c.prelims;
-  const pole = c.prelims.find((r) => r.pole);
-  const winner = c.final.find((r) => r.position === 1);
-  const ref = (r: ResultRow | undefined): Ref | null =>
-    r ? { id: r.driverId, name: r.driver } : null;
-  const days = parseDays(String(round.weather_log ?? '[]'));
-  return {
-    kind,
-    year,
-    round: roundNumber,
-    course: c.course,
-    status: c.status,
-    practiceStart: round.practice_start as string,
-    prelimStart: round.prelim_start as string,
-    finalDate: c.finalDate,
-    days,
-    pole: ref(pole),
-    winner: ref(winner),
-    rows: list,
-  };
-}
-
 /** The keys (`driver:12`, `car:7`, `garage:3`) of everything greylinked: retired or folded without ever scoring. */
 export { greylinkedKeys } from './status';
 
@@ -743,7 +673,6 @@ export interface RegistryIndex {
   }[];
   cars: (CarRef & { status: RegistryStatus })[];
   garages: (Ref & { status: RegistryStatus })[];
-  rounds: { year: number; round: number; course: string; status: string }[];
   /** Executives, staff and shareholders. */
   people: PersonRef[];
 }
@@ -786,16 +715,6 @@ export function registryIndex(db: Database): RegistryIndex {
         status: status.garage.get(g.id as number) ?? 'active',
       }),
     ),
-    rounds: all(
-      db,
-      `SELECT s.year, r.number, c.name AS course, r.status FROM round r JOIN season s ON s.id = r.season_id
-         JOIN course c ON c.id = r.course_id ORDER BY s.year DESC, r.number`,
-    ).map((r) => ({
-      year: r.year as number,
-      round: r.number as number,
-      course: r.course as string,
-      status: r.status as string,
-    })),
     people: peopleIndex(db),
   };
 }
@@ -804,8 +723,7 @@ export function registryIndex(db: Database): RegistryIndex {
 export type RegistryTarget =
   | { kind: 'index' }
   | { kind: 'driver' | 'car' | 'garage'; id: number }
-  | { kind: 'person'; person: PersonKind; id: number }
-  | { kind: SessionKind; year: number; round: number };
+  | { kind: 'person'; person: PersonKind; id: number };
 
 /** A page of the Registry, loaded from the database. */
 export type RegistryPage =
@@ -813,8 +731,7 @@ export type RegistryPage =
   | { kind: 'driver'; data: DriverProfile }
   | { kind: 'car'; data: CarProfile }
   | { kind: 'garage'; data: GarageProfile }
-  | { kind: 'person'; data: PersonProfile }
-  | { kind: SessionKind; data: RoundProfile };
+  | { kind: 'person'; data: PersonProfile };
 
 /** Loads the page for a target. */
 export function registryPage(db: Database, target: RegistryTarget): RegistryPage {
@@ -829,10 +746,5 @@ export function registryPage(db: Database, target: RegistryTarget): RegistryPage
       return { kind: 'garage', data: garageProfile(db, target.id) };
     case 'person':
       return { kind: 'person', data: personProfile(db, target.person, target.id) };
-    default:
-      return {
-        kind: target.kind,
-        data: roundProfile(db, target.kind, target.year, target.round),
-      };
   }
 }

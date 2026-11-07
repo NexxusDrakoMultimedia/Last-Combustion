@@ -4,7 +4,7 @@ Nov 2, 2026 · @Pyra Drake
 
 ## Overview
 
-**Last Combustion** is a racing driver management and car upgrading game about a 2031 racing series for road-legal combustion cars, run on closed Australian public roads. It is loosely inspired by the anime/manga *MF Ghost*; all names and branding are original.
+**Last Combustion** is a racing driver management and car upgrading game about a 2031 racing series for road-legal combustion cars, run on closed Australian public roads. It is loosely inspired by the anime/manga *MF Ghost*; all names and branding are original. The short pitch is *Dwarf Fortress meets MF Ghost meets Aussie car culture*: a world that keeps running and remembers everything, a series of road-legal cars on closed roads, and a garage culture that is unmistakably Australian.
 
 The game's full name is **The Last Combustion of the Petrol Engine**, or **Last Combustion** for short. The series it is about has its own full name, **The Last Combustion of the Petrol Engine World Motorsports Championship**, also shortened to *Last Combustion* in everyday use.
 

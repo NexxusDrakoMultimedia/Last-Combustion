@@ -68,7 +68,7 @@ What each M6 slice left over for later is listed in the [M6 plan](M6_PLAN.md).
 
 From M6 on, each slice of a milestone ends in a beta, so there is something to play and test before the milestone is released. The beta for M6 is `0.2.0-beta1` after slice 1, `0.2.0-beta2` after slice 2, and so on; the final `0.2.0` follows the last slice and the documentation pass.
 
-1. Bump `version` in `package.json` and `APP_VERSION` in `src/db/session.ts` to the beta (for example `0.2.0-beta1`), and add a `[0.2.0-beta1]` section to `CHANGELOG.md` from what is under `[Unreleased]`. This is a pull request into the milestone branch.
+1. Bump `version` in `package.json` and `APP_VERSION` in `src/db/session.ts` to the beta (for example `0.2.0-beta1`). This is a pull request into the milestone branch. **A beta gets no changelog section**: the changelog lists releases only, and a beta's release notes are what stands under `[Unreleased]` (`scripts/release-notes.mjs` does this for any version with a hyphen).
 2. Tag the merge commit `v0.2.0-beta1`. A tag with a hyphen is published as a GitHub pre-release by the release workflow, with the web build zipped and checksummed.
 3. Players try the beta by downloading the web build from the pre-release's assets and serving it locally, or by playing from source. There is no hosted beta site.
 
@@ -101,6 +101,7 @@ Before every release, all of the documentation gets a thorough pass. It is slow 
 `CHANGELOG.md` begins at 0.1.0 (released 2026-11-06).
 
 - **0.1.0** is written as a simple list of the game's features, because nothing came before it.
+- **Betas are not in it.** An entry is a whole release: 0.2.0 lists everything that is new since 0.1.2, in one place, however many betas it took to get there. Under `[Unreleased]` the entry grows as the milestone is built.
 - **From then on** it follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/): each pull request adds a line under `[Unreleased]` (Added, Changed, Fixed, Removed, Security) on the milestone branch, and the release pull request turns `[Unreleased]` into the dated version heading.
 - Breaking changes to saves or mods are called out at the top of the entry.
 - Players read it: the About screen's Changelog tab shows `CHANGELOG.md` as it is, and its Credits tab shows `CREDITS.md`, so write both for players, in plain words.
