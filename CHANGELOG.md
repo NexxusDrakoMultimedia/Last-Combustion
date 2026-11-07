@@ -6,10 +6,26 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-07
+
+Milestone M6, depth: the garage as a business, its people and a calendar to run it on. Saves from 0.1.x still load: the game date moves from where the save left it, morale starts at 50, every garage is given its owners and every computer garage its business when the save opens, and years already played are summed into the ledger. The betas below (0.2.0-beta1 to beta6) list each step in more detail.
+
+### Added
+
+- **A calendar.** The game has a date. **Continue**, **+1 day**, **+1 week** and **Next event** in the top bar replace the buttons that ran the next prelims or final, and a Calendar panel lists what is coming. Daily life (delivery pay, road wear and driver training) is settled for each day that passes.
+- **Garage operations.** Sponsors and suppliers come in five tiers, from local to global, with a spot market. Suppliers can fail (outages), seven facilities can be built and upgraded, and executives retire, are poached and affect the garage's prestige.
+- **Ownership.** Every garage has a cap table, a valuation, a board and a season target. Raise money in funding rounds, pay dividends, buy shares back, buy stakes in other garages and take a garage over. Computer garages run as businesses with executives, facilities, a sponsor and a supplier.
+- **The ledger.** The Ledger panel has a year picker, a summary by category and a list of every transaction, with CSV export.
+- **People.** Mechanics and executives have morale. The Staff panel has Contacts, Social (five occasions a season, three conversations each) and Press (six journalists and the four commentators write a headline about you after each final).
+- **The Registry.** A Paddock tab by job, an Ex-Paddock tab with years active, and company profiles for every sponsor, manufacturer and supplier. Attention flags, fan and prestige rankings, and the logo on the start page.
+- **Names.** Many more names and 43 more nations and cultures, with a filter for offensive words.
+- A work-of-fiction disclaimer in the About screen, the README and the press kit.
+
 ### Changed
 
-- Builds on Cloudflare drop the telemetry keys unless the branch is `main`, ready for the release site to move there.
-- The release site is served by Cloudflare (Workers & Pages) from `main` instead of GitHub Pages.
+- The game is fully fictional, with no mapping to real cars or makers. The starting roster is unchanged, at 31 manufacturers and 96 models.
+- The release site is served by Cloudflare (Workers & Pages) from `main` instead of GitHub Pages. Builds on Cloudflare drop the telemetry keys unless the branch is `main`, so a preview collects nothing.
+- Scouting and fog of war, and the story and feedback layer, are planned for 0.3.0 (M7), and the 2036 expansion and the career modes move back one milestone each (0.4.0 and 0.5.0). Ratings stay exact until 0.3.0.
 
 ### Removed
 
