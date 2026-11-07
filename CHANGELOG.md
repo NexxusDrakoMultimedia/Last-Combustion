@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+## [0.2.0-beta6] - 2026-11-07
+
+A beta of the 0.2.0 release (M6, depth): the sixth slice, the calendar and time controls. Saves from 0.1.x still load; the game date moves from where the save left it, and the new per-day delivery pay and wear take over from the old lump before each round.
+
 ### Added
 
 - The social occasions are on real dates, and on the calendar: the season opening on 31 March, the sponsor dinner, press day and paddock party ten days after the finals of rounds 2, 3 and 4, and the closing ceremony from 11 November. Each stays open for a few days, Continue stops at each, and the Social tab says when the next one is.
