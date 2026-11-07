@@ -65,7 +65,13 @@ describe('the people the Registry keeps', () => {
     expect(people.every((p) => p.status === 'active')).toBe(true);
     // Someone who has left is listed among the retired.
     db.run("UPDATE staff SET left_on = '2031-06-01'");
-    expect(peopleIndex(db).find((p) => p.name === 'Crew Person')!.status).toBe('retired');
+    const crew = peopleIndex(db).find((p) => p.name === 'Crew Person')!;
+    expect(crew.status).toBe('retired');
+    // ...with the years they were active.
+    expect(crew.years).toBe('2031');
+    db.run("UPDATE staff SET left_on = '2033-06-01'");
+    expect(peopleIndex(db).find((p) => p.name === 'Crew Person')!.years).toBe('2031-2033');
+    expect(peopleIndex(db).find((p) => p.name === 'Hired Person')!.years).toMatch(/^\d{4}-$/);
   });
 
   it('is part of the Registry index', () => {

@@ -19,6 +19,16 @@ export interface PersonRef {
   role: string;
   garage: string | null;
   status: RegistryStatus;
+  /** The years they were active, "2031-2033" (just the first year if they began and left in it), or from when they began if they still are. */
+  years: string;
+}
+
+/** "2031-2033", "2031" or, for someone still active, "2031-". */
+function activeYears(from: string | null, to: string | null): string {
+  const first = from ? from.slice(0, 4) : '';
+  const last = to ? to.slice(0, 4) : '';
+  if (!last) return `${first}-`;
+  return first === last ? first : `${first}-${last}`;
 }
 
 const yearOf = (db: Database): number => Number(readCareer(db)?.gameDate.slice(0, 4) ?? 0);
@@ -31,7 +41,7 @@ export function peopleIndex(db: Database): PersonRef[] {
   ensureCapTables(db);
   const executives = all(
     db,
-    `SELECT e.id, e.name, e.role, e.status, g.name AS garage FROM executive e
+    `SELECT e.id, e.name, e.role, e.status, e.hired_on, e.left_on, g.name AS garage FROM executive e
        JOIN garage g ON g.id = e.garage_id WHERE e.status IN ('employed', 'left') ORDER BY e.name, e.id`,
   ).map((r): PersonRef => ({
     kind: 'executive',
@@ -40,10 +50,14 @@ export function peopleIndex(db: Database): PersonRef[] {
     role: r.role as string,
     garage: r.garage as string,
     status: r.status === 'employed' ? 'active' : 'retired',
+    years: activeYears(
+      r.hired_on as string | null,
+      r.status === 'employed' ? null : (r.left_on as string | null),
+    ),
   }));
   const staff = all(
     db,
-    `SELECT s.id, s.name, s.role, s.left_on, g.name AS garage FROM staff s
+    `SELECT s.id, s.name, s.role, s.hired_on, s.left_on, g.name AS garage FROM staff s
        JOIN garage g ON g.id = s.garage_id ORDER BY s.name, s.id`,
   ).map((r): PersonRef => ({
     kind: 'staff',
@@ -52,11 +66,12 @@ export function peopleIndex(db: Database): PersonRef[] {
     role: r.role as string,
     garage: r.garage as string,
     status: r.left_on === null ? 'active' : 'retired',
+    years: activeYears(r.hired_on as string, r.left_on as string | null),
   }));
   // A shareholder who holds in several garages is one person, listed once, at their first holding.
   const shareholders = all(
     db,
-    `SELECT MIN(s.id) AS id, s.holder_name, s.holder_type,
+    `SELECT MIN(s.id) AS id, MIN(s.since) AS since, s.holder_name, s.holder_type,
             GROUP_CONCAT(g.name, ', ') AS garages
        FROM shareholding s JOIN garage g ON g.id = s.garage_id
       GROUP BY ${HOLDER} ORDER BY s.holder_name, id`,
@@ -67,6 +82,7 @@ export function peopleIndex(db: Database): PersonRef[] {
     role: r.holder_type as string,
     garage: r.garages as string,
     status: 'active',
+    years: activeYears(r.since as string, null),
   }));
   return [...executives, ...staff, ...shareholders];
 }
