@@ -10,12 +10,14 @@ import {
   drawCapTable,
   drawInvestors,
   noConfidence,
+  reservePremium,
   roundName,
   roundTerms,
   seasonTarget,
   shareTotals,
   sharesPrice,
   splitDividend,
+  takeoverQuote,
   targetMet,
   valuationOf,
   votesOf,
@@ -354,5 +356,92 @@ describe('the board and its targets', () => {
     expect(noConfidence([true, false], 0.2)).toBe(false);
     expect(noConfidence([true], 0.2)).toBe(false);
     expect(noConfidence([false, true, true], 0.2)).toBe(false);
+  });
+});
+
+describe('what holders ask to sell', () => {
+  it('is drawn once, within the range for the kind of holder', () => {
+    for (let i = 0; i < 100; i++) {
+      const founder = reservePremium('owner', createRng('r').stream(`f${i}`));
+      expect(founder).toBeGreaterThanOrEqual(0.2);
+      expect(founder).toBeLessThanOrEqual(0.8);
+      const investor = reservePremium('investor', createRng('r').stream(`i${i}`));
+      expect(investor).toBeGreaterThanOrEqual(0);
+      expect(investor).toBeLessThanOrEqual(0.4);
+    }
+    expect(reservePremium('investor', createRng('r').stream('same'))).toBe(
+      reservePremium('investor', createRng('r').stream('same')),
+    );
+  });
+});
+
+describe('a takeover bid', () => {
+  const h = (
+    id: number,
+    type: string,
+    shares: number,
+    cls: 'ordinary' | 'preferred' | 'option',
+    reserve: number,
+    mine = false,
+  ) => ({ id, type, name: `H${id}`, shares, class: cls, reserve, mine });
+  const holders = [
+    h(1, 'owner', 600_000, 'ordinary', 0.5),
+    h(2, 'family', 100_000, 'ordinary', 0.1),
+    h(3, 'investor', 300_000, 'preferred', 0.2),
+  ];
+
+  it('is accepted by the holders whose reserve is at or below the premium', () => {
+    const q = takeoverQuote(holders, 1_000_000, 0.2);
+    expect(q.accepting).toEqual([2, 3]);
+    // Only ordinary shares vote: the family holds 100,000 of 700,000 votes.
+    expect(q.votes).toBeCloseTo(1 / 7, 10);
+    expect(q.success).toBe(false);
+  });
+
+  it('carries once the founder accepts, and buys everyone out at the same price', () => {
+    const q = takeoverQuote(holders, 1_000_000, 0.5);
+    expect(q.success).toBe(true);
+    expect(q.votes).toBe(1);
+    expect(q.pricePerShare).toBeCloseTo(1.5, 10);
+    expect(q.cost).toBe(1_500_000);
+    expect(q.boardSupports).toBe(true);
+  });
+
+  it('counts the bidder’s own shares and does not charge for them', () => {
+    const mine = [h(1, 'owner', 600_000, 'ordinary', 0.5, true), ...holders.slice(1)];
+    const q = takeoverQuote(mine, 1_000_000, 0);
+    expect(q.success).toBe(true);
+    expect(q.cost).toBe(Math.round(100_000) + Math.round(300_000));
+    expect(q.accepting).not.toContain(1);
+  });
+
+  it('says the board fights while the founder will not sell, even if the bid carries without them', () => {
+    const split = [
+      h(1, 'owner', 300_000, 'ordinary', 0.8),
+      h(2, 'family', 400_000, 'ordinary', 0.1),
+      h(3, 'investor', 300_000, 'ordinary', 0.1),
+    ];
+    const q = takeoverQuote(split, 1_000_000, 0.2);
+    expect(q.success).toBe(true);
+    expect(q.boardSupports).toBe(false);
+  });
+
+  it('never costs less than nothing, and costs more the higher the premium', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: -1e6, max: 1e8 }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        (value, a, b) => {
+          const low = Math.min(a, b);
+          const high = Math.max(a, b);
+          const qLow = takeoverQuote(holders, value, low);
+          const qHigh = takeoverQuote(holders, value, high);
+          expect(qLow.cost).toBeGreaterThanOrEqual(0);
+          expect(qHigh.cost).toBeGreaterThanOrEqual(qLow.cost - 3);
+          expect(qHigh.votes).toBeGreaterThanOrEqual(qLow.votes);
+        },
+      ),
+    );
   });
 });

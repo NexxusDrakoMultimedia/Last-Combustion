@@ -12,6 +12,7 @@ import { AuctionSection } from './AuctionSection';
 import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
 import { LedgerPanel } from './LedgerPanel';
+import { InvestmentsSection } from './InvestmentsSection';
 import { OwnershipPanel } from './OwnershipPanel';
 import { TransactionsSection } from './TransactionsSection';
 import { SponsorsPanel } from './SponsorsPanel';
@@ -83,6 +84,7 @@ export function Shell() {
   const [staffTab, setStaff] = useState('mechanics');
   const [operationsTab, setOperationsTab] = useState('suppliers');
   const [ledgerTab, setLedger] = useState('summary');
+  const [ownershipTab, setOwnershipTab] = useState('mine');
   const [almanacTab, setAlmanac] = useState('seasons');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
@@ -442,9 +444,15 @@ export function Shell() {
         <Panel
           title={t('rail.ownership')}
           subtitle={t('ownership.intro')}
+          tabs={[
+            { id: 'mine', label: t('ownership.tab.mine') },
+            { id: 'investments', label: t('ownership.tab.investments') },
+          ]}
+          tab={ownershipTab}
+          onTab={setOwnershipTab}
           onClose={() => setOpen(null)}
         >
-          <OwnershipPanel />
+          {ownershipTab === 'mine' ? <OwnershipPanel /> : <InvestmentsSection />}
         </Panel>
       )}
       {!locked && open === 'money' && (

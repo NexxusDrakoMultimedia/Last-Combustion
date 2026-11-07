@@ -97,6 +97,7 @@ describe('migrate', () => {
       'cap_table',
       'share_events',
       'board',
+      'investments',
     ]);
   });
 
@@ -349,7 +350,7 @@ describe('share events (schema version 42)', () => {
 describe('the board (schema version 43)', () => {
   it('adds a target for each garage and year, with the finish, whether it was met and any vote', () => {
     const db = openDatabase(SQL);
-    migrate(db);
+    migrate(db, migrations.slice(0, 43));
     expect(getSchemaVersion(db)).toBe(43);
     const columns = db.exec('PRAGMA table_info(board_target)')[0]!.values.map((v) => v[1]);
     expect(columns).toEqual(['garage_id', 'year', 'target', 'finish', 'met', 'vote']);
@@ -361,6 +362,42 @@ describe('the board (schema version 43)', () => {
     ).not.toThrow();
     expect(() =>
       db.exec('INSERT INTO board_target (garage_id, year, target) VALUES (1, 2031, 41)'),
+    ).toThrow();
+  });
+});
+
+describe('investments (schema version 44)', () => {
+  it('remembers who took a garage over, widens the share events and marks the owner’s shares', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 43));
+    db.exec(
+      "INSERT INTO owner (id, garage_id, name, identity, birth_date) VALUES (1, 5, 'Owner', 'masculine', '1990-01-01')",
+    );
+    db.exec(
+      "INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, since) VALUES (5, 'owner', 'Owner', 'ordinary', 1000000, '2031-02-01'), (6, 'owner', 'Founder', 'ordinary', 1000000, '2031-02-01')",
+    );
+    db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-02-01', 'round')");
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(44);
+    expect(db.exec('PRAGMA table_info(garage)')[0]!.values.map((v) => v[1])).toContain(
+      'acquired_by',
+    );
+    // The player’s own shares are recognised; another garage’s founder is not.
+    expect(
+      db.exec('SELECT garage_id, holder_id FROM shareholding ORDER BY garage_id')[0]!.values,
+    ).toEqual([
+      [5, 1],
+      [6, null],
+    ]);
+    // The history survives, and takes the two new kinds.
+    expect(db.exec('SELECT kind FROM share_event')[0]!.values).toEqual([['round']]);
+    expect(() =>
+      db.exec(
+        "INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-03-01', 'takeover')",
+      ),
+    ).not.toThrow();
+    expect(() =>
+      db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-03-01', 'heist')"),
     ).toThrow();
   });
 });

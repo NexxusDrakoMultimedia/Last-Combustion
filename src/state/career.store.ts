@@ -95,6 +95,17 @@ import {
   ownershipView,
   type OwnershipView,
 } from '../db/equity';
+import {
+  buyStake as dbBuyStake,
+  investmentTargets,
+  investmentView,
+  launchTakeover as dbLaunchTakeover,
+  sellStake as dbSellStake,
+  wealthOf,
+  type InvestmentTarget,
+  type InvestmentView,
+  type Wealth,
+} from '../db/investments';
 import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
 import type { FacilityKind } from '../sim/facilities';
 import {
@@ -254,6 +265,11 @@ interface CareerState {
   ledgerYears: number[];
   /** Who owns the player's garage, what it is worth and how that has moved. */
   ownership: OwnershipView | undefined;
+  /** The owner's own wealth: personal cash and shares held in other garages. */
+  wealth: Wealth | undefined;
+  /** The computer garages the owner could invest in (read when the Investments tab opens), and the one being looked at. */
+  investments: InvestmentTarget[];
+  investment: InvestmentView | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
   transactionsFilter: LedgerFilter | undefined;
@@ -330,6 +346,11 @@ interface CareerState {
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
   buildFacility(kind: FacilityKind): Promise<void>;
+  loadInvestments(): void;
+  lookAtInvestment(garageId: number | null): void;
+  buyStake(holdingId: number): Promise<void>;
+  sellStake(garageId: number): Promise<void>;
+  launchTakeover(garageId: number, premium: number): Promise<void>;
   issueShares(investor: number, amount: number): Promise<void>;
   declareDividend(amount: number): Promise<void>;
   buyBackShares(holdingId: number, shares: number, by: 'garage' | 'owner'): Promise<void>;
@@ -359,6 +380,16 @@ interface CareerState {
   loadSlot1(): Promise<void>;
   exportFile(): Promise<void>;
   refreshSlots(): Promise<void>;
+}
+
+/** The view of a garage the owner is looking at, or undefined if there is none or it has closed since. */
+function investmentNow(db: Database, garageId: number | undefined): InvestmentView | undefined {
+  if (garageId === undefined) return undefined;
+  try {
+    return investmentView(db, garageId);
+  } catch {
+    return undefined;
+  }
 }
 
 function describeError(error: unknown): Notice {
@@ -407,6 +438,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
       ledgerYears: playerGarageId(db) === null ? [] : ledgerYears(db, playerGarageId(db)!),
       ownership: playerGarageId(db) === null ? undefined : ownershipView(db, playerGarageId(db)!),
+      wealth: playerGarageId(db) === null ? undefined : wealthOf(db, playerGarageId(db)!),
+      // The garage being looked at moves on when money does; one that has closed is dropped.
+      investment: investmentNow(db, get().investment?.garageId),
       // The summary on show moves on when money does.
       transactionsView:
         playerGarageId(db) === null || !get().transactionsFilter
@@ -493,6 +527,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     money: undefined,
     ledgerYears: [],
     ownership: undefined,
+    wealth: undefined,
+    investments: [],
+    investment: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
     transactionsView: undefined,
@@ -970,6 +1007,54 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'BuyBackShares'),
+
+    loadInvestments: () => {
+      if (openDb && playerGarageId(openDb) !== null)
+        set({ investments: investmentTargets(openDb) });
+    },
+
+    lookAtInvestment: (garageId) => {
+      if (!openDb) return;
+      set({ investment: garageId === null ? undefined : investmentNow(openDb, garageId) });
+    },
+
+    buyStake: (holdingId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbBuyStake(openDb, garageId, holdingId);
+        refresh(openDb);
+        set({ investments: investmentTargets(openDb) });
+        return undefined;
+      }, 'BuyStake'),
+
+    sellStake: (targetId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbSellStake(openDb, garageId, targetId);
+        refresh(openDb);
+        set({ investments: investmentTargets(openDb) });
+        return undefined;
+      }, 'SellStake'),
+
+    launchTakeover: (targetId, premium) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        const name = investmentNow(openDb, targetId)?.name ?? '';
+        const result = dbLaunchTakeover(openDb, garageId, targetId, premium);
+        set({ investment: undefined });
+        refresh(openDb);
+        set({ investments: investmentTargets(openDb) });
+        return {
+          key: 'investments.takeoverDone',
+          values: { name, cars: result.cars, drivers: result.drivers },
+        };
+      }, 'LaunchTakeover'),
 
     buildFacility: (kind) =>
       run(async () => {

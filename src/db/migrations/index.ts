@@ -44,6 +44,7 @@ import { migration0040 } from './0040_ledger_year';
 import { migration0041 } from './0041_cap_table';
 import { migration0042 } from './0042_share_events';
 import { migration0043 } from './0043_board';
+import { migration0044 } from './0044_investments';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -90,4 +91,5 @@ export const migrations: readonly Migration[] = [
   migration0041,
   migration0042,
   migration0043,
+  migration0044,
 ];

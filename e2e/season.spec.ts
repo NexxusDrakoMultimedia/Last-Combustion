@@ -94,6 +94,12 @@ test('plays a whole season, ends it, reads the almanac and starts the next one',
   await page.getByLabel(messages['ownership.raise.amount']).fill('50000');
   await page.getByRole('button', { name: /^Raise/ }).click();
   await expect(page.getByText(/^Seed:/)).toBeVisible();
+  // The Investments tab lists the other garages and what a bid for one would do.
+  await page.getByRole('tab', { name: messages['ownership.tab.investments'] }).click();
+  await page.getByLabel(messages['investments.garage']).selectOption({ index: 1 });
+  await expect(page.getByRole('heading', { name: messages['investments.takeover'] })).toBeVisible();
+  await expect(page.getByText(messages['investments.takeover.closed'])).toBeVisible();
+  await page.getByRole('tab', { name: messages['ownership.tab.mine'] }).click();
   // The owner's name opens their profile in the Registry.
   await page.getByRole('button', { name: 'Season Owner' }).first().click();
   await expect(page.getByRole('heading', { name: messages['person.holdings'] })).toBeVisible();

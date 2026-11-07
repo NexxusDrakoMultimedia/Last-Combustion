@@ -40,8 +40,8 @@ import { valueOfCar } from './market';
 export function setSoleOwner(db: Database, garageId: number, owner: string, date: string): void {
   db.run('DELETE FROM shareholding WHERE garage_id = ?', [garageId]);
   db.run(
-    `INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, paid, since)
-     VALUES (?, 'owner', ?, 'ordinary', ?, 0, ?)`,
+    `INSERT INTO shareholding (garage_id, holder_type, holder_id, holder_name, class, shares, paid, since)
+     VALUES (?, 'owner', 1, ?, 'ordinary', ?, 0, ?)`,
     [garageId, owner, FOUNDING_SHARES, date],
   );
 }
@@ -82,7 +82,8 @@ export function ensureCapTables(db: Database): void {
   const missing = all(
     db,
     `SELECT g.id, g.flag, g.is_player, o.name AS owner FROM garage g LEFT JOIN owner o ON o.garage_id = g.id
-      WHERE g.kind = 'racing' AND NOT EXISTS (SELECT 1 FROM shareholding s WHERE s.garage_id = g.id)
+      WHERE g.kind = 'racing' AND g.acquired_by IS NULL
+        AND NOT EXISTS (SELECT 1 FROM shareholding s WHERE s.garage_id = g.id)
       ORDER BY g.id`,
   );
   if (missing.length === 0) return;
@@ -278,7 +279,7 @@ export function ownershipView(db: Database, garageId: number): OwnershipView {
 export interface ShareEventView {
   id: number;
   date: string;
-  kind: 'round' | 'dividend' | 'buyback';
+  kind: 'round' | 'dividend' | 'buyback' | 'stake' | 'takeover';
   detail: Record<string, unknown>;
 }
 
@@ -541,8 +542,8 @@ export function buyBackShares(
           all(db, 'SELECT name FROM owner WHERE garage_id = ?', [garageId])[0]!.name,
         );
         db.run(
-          `INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, paid, since)
-           VALUES (?, 'owner', ?, ?, ?, ?, ?)`,
+          `INSERT INTO shareholding (garage_id, holder_type, holder_id, holder_name, class, shares, paid, since)
+           VALUES (?, 'owner', 1, ?, ?, ?, ?, ?)`,
           [garageId, ownerName, holding.class as string, shares, price, date],
         );
       }
