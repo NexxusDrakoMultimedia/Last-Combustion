@@ -47,6 +47,7 @@ import { migration0043 } from './0043_board';
 import { migration0044 } from './0044_investments';
 import { migration0045 } from './0045_business';
 import { migration0046 } from './0046_morale';
+import { migration0047 } from './0047_conversations';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -96,4 +97,5 @@ export const migrations: readonly Migration[] = [
   migration0044,
   migration0045,
   migration0046,
+  migration0047,
 ];

@@ -26,6 +26,7 @@ import { AlmanacPanel } from './AlmanacPanel';
 import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
 import { ContactsSection } from './ContactsSection';
+import { SocialSection } from './SocialSection';
 import { ExecutivesSection } from './ExecutivesSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
@@ -390,6 +391,7 @@ export function Shell() {
             { id: 'mechanics', label: t('staff.mechanicsTab') },
             { id: 'executives', label: t('executive.tab') },
             { id: 'contacts', label: t('contacts.tab') },
+            { id: 'social', label: t('social.tab') },
           ]}
           tab={staffTab}
           onTab={setStaffTab}
@@ -398,6 +400,7 @@ export function Shell() {
           {staffTab === 'mechanics' && <StaffPanel />}
           {staffTab === 'executives' && <ExecutivesSection />}
           {staffTab === 'contacts' && <ContactsSection />}
+          {staffTab === 'social' && <SocialSection />}
         </Panel>
       )}
       {!locked && open === 'almanac' && (

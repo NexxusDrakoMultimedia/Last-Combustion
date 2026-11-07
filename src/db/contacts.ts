@@ -23,6 +23,13 @@ const NAME_SQL: Record<Exclude<ContactType, 'utility'>, string> = {
   executive: 'SELECT name FROM executive WHERE id = ?',
 };
 
+/** The name of a party, or undefined when it cannot be found. */
+export function partyName(db: Database, type: string, id: number): string | undefined {
+  if (type === 'utility') return supplierById(id)?.name;
+  const sql = NAME_SQL[type as Exclude<ContactType, 'utility'>];
+  return sql ? (all(db, sql, [id])[0]?.name as string | undefined) : undefined;
+}
+
 /**
  * The garage's contacts book: everyone it has dealt with, the best relationships first. A party
  * whose name cannot be found (a supplier no longer in the data) is left out.
@@ -37,12 +44,7 @@ export function contactsBook(db: Database, garageId: number): Contact[] {
   )) {
     const type = r.type as ContactType;
     const id = r.id as number;
-    const name =
-      type === 'utility'
-        ? supplierById(id)?.name
-        : NAME_SQL[type]
-          ? (all(db, NAME_SQL[type], [id])[0]?.name as string | undefined)
-          : undefined;
+    const name = partyName(db, type, id);
     if (!name) continue;
     const score = r.score as number;
     out.push({ type, id, name, score, kind: relationshipKind(score) });
