@@ -4,6 +4,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   FOUNDING_SHARES,
+  MAX_ROUND_STAKE,
   drawCapTable,
   drawInvestors,
   roundName,
@@ -157,10 +158,10 @@ describe('funding rounds', () => {
     expect(roundTerms(500_000, 1_000_000, 200_000, 1).stake).toBeGreaterThan(base.stake);
   });
 
-  it('never give away the whole garage, whatever the amount', () => {
+  it('never give away the whole garage, whatever the amount, for a garage that is worth something', () => {
     fc.assert(
       fc.property(
-        fc.integer({ min: 0, max: 1e8 }),
+        fc.integer({ min: 1, max: 1e8 }),
         fc.integer({ min: 1, max: 5e6 }),
         fc.integer({ min: 1, max: 1e9 }),
         fc.double({ min: 0.5, max: 1.5, noNaN: true }),
@@ -172,6 +173,13 @@ describe('funding rounds', () => {
         },
       ),
     );
+  });
+
+  it('would give a worthless garage away entirely, which the limit on a round refuses', () => {
+    const t = roundTerms(0, 1_000_000, 100_000, 1);
+    expect(t.stake).toBe(1);
+    expect(t.stake).toBeGreaterThan(MAX_ROUND_STAKE);
+    expect(roundTerms(-50_000, 1_000_000, 100_000, 1).stake).toBe(1);
   });
 
   it('are named by order', () => {
