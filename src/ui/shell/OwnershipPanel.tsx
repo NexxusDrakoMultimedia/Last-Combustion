@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { formatMoney, t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
+import { RegistryLink } from '../RegistryLink';
 
 const percent = (x: number): string => `${Math.round(x * 1000) / 10}%`;
 
@@ -55,7 +56,11 @@ export function OwnershipPanel() {
             {ownership.holders.map((h) => (
               <tr key={h.id} className="border-t border-lc-line">
                 <td className="py-1">
-                  <span className="font-medium">{h.name}</span>{' '}
+                  <span className="font-medium">
+                    <RegistryLink to={{ kind: 'person', person: 'shareholder', id: h.profileId }}>
+                      {h.name}
+                    </RegistryLink>
+                  </span>{' '}
                   <span className="text-lc-dim">{t(`ownership.type.${h.type}` as never)}</span>
                 </td>
                 <td className="py-1">{t(`ownership.class.${h.class}` as never)}</td>

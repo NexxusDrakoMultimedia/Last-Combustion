@@ -3,6 +3,7 @@
 import { formatMoney, t } from '../../i18n';
 import { partWearFactor, repairFactor, wagePerRound } from '../../sim/staff';
 import { useCareerStore } from '../../state/career.store';
+import { RegistryLink } from '../RegistryLink';
 import { button, quiet } from '../styles';
 
 /** The mechanics: who the garage employs, what they cost and save, and who could be hired. */
@@ -47,7 +48,11 @@ export function StaffPanel() {
               className="flex flex-wrap items-center justify-between gap-2 border border-lc-line p-2"
             >
               <span>
-                <span className="font-medium">{m.name}</span>{' '}
+                <span className="font-medium">
+                  <RegistryLink to={{ kind: 'person', person: 'staff', id: m.id }}>
+                    {m.name}
+                  </RegistryLink>
+                </span>{' '}
                 <span className="text-lc-dim">{t('staff.skill', { skill: m.skill })}</span>
               </span>
               <span className="flex items-center gap-2">
