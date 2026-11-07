@@ -1,0 +1,25 @@
+{
+  "source": "Ownership and the cap table (see the GDD, 'Ownership and the cap table'). All numbers are proposed and tunable. 'shares' is the capital of a garage at founding. 'valuation' is the formula for what a garage is worth. 'computerGarages' says how the starting world's garages are owned: 'familyShare' of them belong to their founder and family, 'investorShare' have an outside investor, and the rest are held in part by a sponsor or a manufacturer. Stakes are shares of the garage, as a range.",
+  "shares": 1000000,
+  "classes": {
+    "ordinary": { "votes": 1, "dividend": true },
+    "preferred": { "votes": 0, "dividend": true },
+    "option": { "votes": 0, "dividend": false }
+  },
+  "valuation": {
+    "profitYears": 3,
+    "profitMultiple": 4,
+    "perFan": 20,
+    "perPrestigeSquared": 2000,
+    "perTitle": 50000
+  },
+  "computerGarages": {
+    "familyShare": 0.7,
+    "investorShare": 0.2,
+    "founderStake": [0.55, 1],
+    "familyMembers": [1, 2],
+    "investorStake": [0.2, 0.4],
+    "strategicStake": [0.15, 0.35],
+    "manufacturerShare": 0.5
+  }
+}

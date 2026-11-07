@@ -139,7 +139,7 @@ describe('the ledger year migration (schema version 40)', () => {
         category,
         amount,
       ]);
-    migrate(db);
+    migrate(db, migrations.slice(0, 40));
     expect(getSchemaVersion(db)).toBe(40);
     expect(
       db.exec('SELECT year, category, income, spending FROM ledger_year ORDER BY category')[0]!
