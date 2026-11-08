@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
-import { recordDeaths, rollDeaths } from '../../src/db/deaths';
+import { passOnShares, recordDeaths, rollDeaths } from '../../src/db/deaths';
 import { playFinal } from '../../src/db/final';
 import { settleRound } from '../../src/db/finance';
 import { playPrelims } from '../../src/db/prelims';
@@ -127,4 +127,67 @@ describe('deaths in the database', () => {
       ).toBeGreaterThanOrEqual(300);
     });
   });
+});
+
+describe('the shares of someone who has died', () => {
+  const hold = (db: Database, garage: number, type: string, id: number | null, cls: string) =>
+    db.run(
+      `INSERT INTO shareholding (garage_id, holder_type, holder_id, holder_name, class, shares, paid, since)
+       VALUES (?, ?, ?, 'Holder', ?, 1000, 0, '2031-02-01')`,
+      [garage, type, id, cls],
+    );
+  const total = (db: Database, garage: number) =>
+    Number(
+      scalar(db, `SELECT COALESCE(SUM(shares), 0) FROM shareholding WHERE garage_id = ${garage}`),
+    );
+
+  it('pass to family, or go back to the garage and are cancelled, and do so the same way each time', () => {
+    const outcomes = new Set<string>();
+    for (let n = 0; n < 12; n++) {
+      const db = playedSeason(`deaths-shares-${n}`);
+      const driver = Number(scalar(db, 'SELECT id FROM driver LIMIT 1'));
+      hold(db, 1, 'family', null, 'ordinary');
+      hold(db, 1, 'driver', driver, 'ordinary');
+      const before = total(db, 1);
+      const a = passOnShares(db, `seed-${n}`, { kind: 'driver', id: driver }, 2031);
+      expect(
+        Number(
+          scalar(
+            db,
+            `SELECT COUNT(*) FROM shareholding WHERE holder_type = 'driver' AND holder_id = ${driver}`,
+          ),
+        ),
+      ).toBe(0);
+      if (a.toFamily > 0) {
+        expect(a).toEqual({ toFamily: 1000, toGarage: 0 });
+        expect(total(db, 1)).toBe(before);
+      } else {
+        expect(a).toEqual({ toFamily: 0, toGarage: 1000 });
+        expect(total(db, 1)).toBe(before - 1000);
+      }
+      outcomes.add(a.toFamily > 0 ? 'family' : 'garage');
+    }
+    expect(outcomes.size).toBe(2);
+  }, 240_000);
+
+  it('go back to the garage when there is no family, and options lapse', () => {
+    const db = playedSeason('deaths-shares-none');
+    const driver = Number(scalar(db, 'SELECT id FROM driver LIMIT 1'));
+    db.run("DELETE FROM shareholding WHERE holder_type = 'family' AND garage_id = 1");
+    hold(db, 1, 'driver', driver, 'ordinary');
+    hold(db, 1, 'executive', 77, 'option');
+    expect(passOnShares(db, 'seed', { kind: 'driver', id: driver }, 2031)).toEqual({
+      toFamily: 0,
+      toGarage: 1000,
+    });
+    hold(db, 1, 'family', null, 'ordinary');
+    expect(passOnShares(db, 'seed', { kind: 'executive', id: 77 }, 2031)).toEqual({
+      toFamily: 0,
+      toGarage: 1000,
+    });
+    expect(passOnShares(db, 'seed', { kind: 'mechanic', id: 1 }, 2031)).toEqual({
+      toFamily: 0,
+      toGarage: 0,
+    });
+  }, 240_000);
 });

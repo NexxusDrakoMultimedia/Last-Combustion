@@ -3,6 +3,7 @@
 import type { Database } from 'sql.js';
 import { rollDeath } from '../sim/deaths';
 import { createRng } from '../sim/rng';
+import { readCareer } from './career';
 import { all } from './entries';
 
 export type DeadKind = 'driver' | 'mechanic' | 'executive';
@@ -56,8 +57,51 @@ export function rollDeaths(db: Database, masterSeed: string, lastYear: number): 
   return out;
 }
 
+/**
+ * Passes on the shares of someone who has died. In a garage that has a family holder, half the time
+ * (drawn from a stream named for the year, the person and the holding) the family inherit them as
+ * ordinary shares; otherwise, and always for options, they go back to the garage and are cancelled, so
+ * every other holder's stake grows. Only drivers and executives hold shares under their own names.
+ * Returns the number of shares passed to family and the number given back to garages.
+ */
+export function passOnShares(
+  db: Database,
+  masterSeed: string,
+  d: Pick<Death, 'kind' | 'id'>,
+  lastYear: number,
+): { toFamily: number; toGarage: number } {
+  const out = { toFamily: 0, toGarage: 0 };
+  if (d.kind === 'mechanic') return out;
+  const rng = createRng(masterSeed);
+  const holdings = all(
+    db,
+    'SELECT id, garage_id, class, shares FROM shareholding WHERE holder_type = ? AND holder_id = ? ORDER BY id',
+    [d.kind, d.id],
+  );
+  for (const h of holdings) {
+    const shares = h.shares as number;
+    const family = all(
+      db,
+      "SELECT id FROM shareholding WHERE garage_id = ? AND holder_type = 'family' AND class = 'ordinary' ORDER BY id LIMIT 1",
+      [h.garage_id as number],
+    )[0];
+    const stream = rng.stream(`inherit:${lastYear}:${d.kind}:${d.id}:${h.id}`);
+    const toFamily = family !== undefined && h.class !== 'option' && stream.chance(0.5);
+    if (toFamily) {
+      db.run('UPDATE shareholding SET shares = shares + ? WHERE id = ?', [
+        shares,
+        family.id as number,
+      ]);
+      out.toFamily += shares;
+    } else out.toGarage += shares;
+    db.run('DELETE FROM shareholding WHERE id = ?', [h.id as number]);
+  }
+  return out;
+}
+
 /** Writes deaths: each is logged, and the person's own row says they have gone. */
 export function recordDeaths(db: Database, deaths: readonly Death[], lastYear: number): void {
+  const seed = readCareer(db)?.masterSeed ?? '';
   for (const d of deaths) {
     db.run('INSERT INTO death (person_type, person_id, name, date, cause) VALUES (?, ?, ?, ?, ?)', [
       d.kind,
@@ -79,5 +123,6 @@ export function recordDeaths(db: Database, deaths: readonly Death[], lastYear: n
         [d.date, lastYear, d.id],
       );
     }
+    passOnShares(db, seed, d, lastYear);
   }
 }
