@@ -11,7 +11,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-A good order to read in is the [README](README.md), then [How to play](docs/HOW_TO_PLAY.md) so you have seen the game, then the [architecture notes](docs/ARCHITECTURE.md) so you know where things live. The [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) is the source of truth for the rules and numbers, and says what is built and what is planned. The plan for the milestone being built is in [docs/M6_PLAN.md](docs/M6_PLAN.md) (and [docs/M7_PLAN.md](docs/M7_PLAN.md) for the one after).
+A good order to read in is the [README](README.md), then [How to play](docs/HOW_TO_PLAY.md) so you have seen the game, then the [architecture notes](docs/ARCHITECTURE.md) so you know where things live. The [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) is the source of truth for the rules and numbers, and says what is built and what is planned. The plan for the milestone being built is in [docs/M6_PLAN.md](docs/M6_PLAN.md) (and [docs/M7_PLAN.md](docs/M7_PLAN.md) and [docs/M8_PLAN.md](docs/M8_PLAN.md) for the ones after).
 
 ## How a change goes in
 

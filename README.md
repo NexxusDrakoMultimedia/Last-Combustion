@@ -35,7 +35,7 @@ You can already:
 - follow the standings, full race results, season awards and records, and look up any driver, car, garage, company or race in the Registry;
 - save, load and export your career.
 
-Still to come are the story and feedback layer and scouting (0.3.0), the 2036 expansion with the Junior Series and the other career modes. The Game Design Document lists what is built and what is planned, section by section.
+Still to come are the story and feedback layer, scouting and racing by the day (0.3.0), a living world of changing manufacturers, mortality and heirs, and the 2036 expansion with the Junior Series (0.4.0), and the other career modes (0.5.0). The Game Design Document lists what is built and what is planned, section by section.
 
 ## Screenshots
 
