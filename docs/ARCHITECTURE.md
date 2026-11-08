@@ -98,4 +98,4 @@ Most features come in pairs. A pure module in `src/sim` holds the rules and read
 
 ## Not built yet
 
-The simulation worker (`src/workers`), the story and feedback layer and scouting (M7), the 2036 expansion and the Junior Series (M8) and the other career modes (M9) arrive in later milestones. The GDD says which.
+The simulation worker (`src/workers`), the story and feedback layer, scouting and racing by the day (M7), the car industry, mortality, the 2036 expansion and the Junior Series (M8) and the other career modes (M9) arrive in later milestones. The GDD says which.

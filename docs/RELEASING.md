@@ -6,14 +6,14 @@ This is how Last Combustion is released to players. The [Game Design Document](G
 
 Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each milestone from M5 on ends in a release. The numbers for 0.1.0 and 0.2.0 are settled; from M7 on they are the current plan and move if the milestones do. **1.0.0 is not tied to any milestone**: the project owner declares it when the game is feature complete, so milestones after M9, or more releases between, are possible.
 
-| Milestone                | Release   | What players get                                                                                                                                  |
-| ------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M5 First playable season | **0.1.0** | The first release: start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season and begin 2032 with every record kept |
-| M6 Depth                 | 0.2.0     | A calendar, garage operations (tiers, outages, facilities), ownership, the ledger, the people layer and the press, and a bigger Registry          |
-| M7 Story and fog of war  | 0.3.0     | Rivalries, the storyline engine and event cards, media headlines, crash highlights and the live map, and scouting and fog of war                  |
-| M8 2036 expansion        | 0.4.0     | The Super Series rebrand, the 20-car final, the Junior Series and promotion                                                                       |
-| M9 Modes and release     | 0.5.0     | All career modes, polish, mods, desktop builds, listing on the exchange                                                                           |
-| Feature complete         | **1.0.0** | Not a milestone: the project owner declares 1.0.0 when the game is feature complete, whenever that is                                             |
+| Milestone                                  | Release   | What players get                                                                                                                                                                    |
+| ------------------------------------------ | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M5 First playable season                   | **0.1.0** | The first release: start a career, buy and upgrade a car, sign a driver, race six rounds, finish the season and begin 2032 with every record kept                                   |
+| M6 Depth                                   | 0.2.0     | A calendar, garage operations (tiers, outages, facilities), ownership, the ledger, the people layer and the press, and a bigger Registry                                            |
+| M7 Story and fog of war                    | 0.3.0     | Rivalries, the storyline engine and event cards, media headlines, crash highlights and the live map, scouting and fog of war, and racing by the day                                 |
+| M8 The living world and the 2036 expansion | 0.4.0     | Random manufacturer and model names, more part suppliers, mortality and legacies, the Super Series rebrand, the 20-car final, the Junior Series, mods, achievements and cloud saves |
+| M9 Modes and release                       | 0.5.0     | All career modes, family and dynasty, listing on the exchange, the tutorial, audio and desktop builds                                                                               |
+| Feature complete                           | **1.0.0** | Not a milestone: the project owner declares 1.0.0 when the game is feature complete, whenever that is                                                                               |
 
 M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load: schema changes are new numbered migrations and a released migration is never edited.
 
@@ -34,12 +34,12 @@ A branch made before the telemetry guard (`vite.telemetry.ts`) lacks it. Backpor
 
 **Where requests go.** Bugs are GitHub issues (the Feedback button opens the form). Ideas and feature requests are issues too, and are sorted into a patch series or a milestone when they are read. What is already decided to wait:
 
-| Waiting for | Item                                                                                                                                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| M7 (0.3.0)  | Scouting and fog of war, and the story and feedback layer (rivalries, the storyline engine, event cards, crash highlights and the live map)                                                                  |
-| M8 (0.4.0)  | The Junior Series, the 2036 expansion and the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior)                                                                                        |
-| M9 (0.5.0)  | The other career modes, listing garages on the exchange, mods, desktop builds and the rest of the polish                                                                                                     |
-| Later       | The thematic type (Orbitron and Exo 2) for the logo and special screens, the story, press and social layers that use the slab, serif and flexible fonts, and a way to give feedback without a GitHub account |
+| Waiting for | Item                                                                                                                                                                                                                                                                       |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M7 (0.3.0)  | Scouting and fog of war, the story and feedback layer (rivalries, the storyline engine, event cards, crash highlights and the live map) and racing by the day                                                                                                              |
+| M8 (0.4.0)  | Random manufacturer and model names, more part suppliers, executives offered to the player, mortality and legacies, the Junior Series, the 2036 expansion, the 2036 Garage Championship prizes ($15,000,000 Super, $10,000,000 Junior), mods, achievements and cloud saves |
+| M9 (0.5.0)  | The other career modes, family and dynasty, listing garages on the exchange, desktop builds, the tutorial, audio and the rest of the polish                                                                                                                                |
+| Later       | The thematic type (Orbitron and Exo 2) for the logo and special screens, the story, press and social layers that use the slab, serif and flexible fonts, and a way to give feedback without a GitHub account                                                               |
 
 What each M6 slice left over for later is listed in the [M6 plan](M6_PLAN.md).
 
