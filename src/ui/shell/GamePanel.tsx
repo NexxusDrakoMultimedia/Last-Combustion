@@ -51,7 +51,7 @@ function line(l: ChronicleLine): string {
 export function GamePanel({ tab }: { tab: string }) {
   const view = useCareerStore((s) => s.gameView);
   if (!view) return null;
-  const { facts, world, series, you, chronicle } = view;
+  const { facts, world, series, state, you, chronicle } = view;
 
   if (tab === 'world')
     return (
@@ -104,6 +104,45 @@ export function GamePanel({ tab }: { tab: string }) {
                 : t('game.series.none'),
             ],
             [t('game.series.deaths'), number(series.deaths)],
+            [t('game.series.seriesFans'), number(series.seriesFans)],
+            [t('game.series.driverFans'), number(series.driverFans)],
+            [t('game.series.garageFans'), number(series.garageFans)],
+            [t('game.series.carFans'), number(series.carFans)],
+          ]}
+        />
+        <Facts
+          title={t('game.section.state')}
+          rows={[
+            [t('game.state.garageCash'), formatMoney(state.garageCash)],
+            [t('game.state.averagePrestige'), String(state.averagePrestige)],
+            [t('game.state.averageDriverAge'), String(state.averageDriverAge)],
+            [
+              t('game.state.richestGarage'),
+              state.richestGarage
+                ? t('game.state.cashValue', {
+                    name: state.richestGarage.name,
+                    amount: formatMoney(state.richestGarage.cash),
+                  })
+                : t('game.series.none'),
+            ],
+            [
+              t('game.state.mostPrestigiousGarage'),
+              state.mostPrestigiousGarage
+                ? t('game.state.prestigeValue', {
+                    name: state.mostPrestigiousGarage.name,
+                    value: state.mostPrestigiousGarage.prestige,
+                  })
+                : t('game.series.none'),
+            ],
+            [
+              t('game.state.mostFamousDriver'),
+              state.mostFamousDriver
+                ? t('game.state.fansValue', {
+                    name: state.mostFamousDriver.name,
+                    fans: number(state.mostFamousDriver.fans),
+                  })
+                : t('game.series.none'),
+            ],
           ]}
         />
         <Facts

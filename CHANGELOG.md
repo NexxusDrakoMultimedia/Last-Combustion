@@ -30,7 +30,7 @@ Milestone M6, depth: the garage as a business, its people and a calendar to run 
 
 - **Ties in a championship** are broken by countback on final places (most wins, then most 2nds, through to most 15th places), then the better average prelim finishing position, then prestige, then valuation, then a draw from the career's seed. This applies to every table.
 - **Put your own cash into the garage.** The Ownership panel can move your personal cash into the team as capital (a gift, not shares, so nobody is diluted); it shows on the ledger's finance line. An Australian flag now puts your headquarters at your base, and the nation tables show flags.
-- **A Game screen.** A status page like Football Manager's: the facts of your save, counts for the world and the series, your garage's record, and a dated chronicle of every champion, your wins and deaths outside racing.
+- **A Game screen.** A status page like Football Manager's: the facts of your save, counts for the world and the series (fans included), the state of play, your garage's record, and a dated chronicle of every champion, your wins and deaths outside racing.
 - **Dividends are paid by themselves.** When the season closes your garage pays the year's dividend (half of the operating profit, within its cash, and nothing after a loss). The Pay button is gone.
 - **Missed conversations happen anyway.** When a social occasion ends with talks unspent, they are held at random (a random manner with a random contact, now and then someone new), and the Social tab says you missed them.
 - **The press moves your fans whatever it thinks of you.** A journalist who does not know the garage still reports the result: a win wins 60 fans, a podium 30, points 10, and a day with none loses 20.

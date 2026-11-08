@@ -50,6 +50,22 @@ export interface SeriesCounts {
   prizeMoney: number;
   fastestPrelim: { ms: number; driver: string; year: number } | null;
   deaths: number;
+  /** The series' own fans in the latest season, and the fans of everyone in it, added up. */
+  seriesFans: number;
+  driverFans: number;
+  garageFans: number;
+  carFans: number;
+}
+
+/** Figures that describe the state of the world at the game date. */
+export interface StateOfPlay {
+  /** The total cash held by every racing garage. */
+  garageCash: number;
+  averagePrestige: number;
+  averageDriverAge: number;
+  richestGarage: { name: string; cash: number } | null;
+  mostPrestigiousGarage: { name: string; prestige: number } | null;
+  mostFamousDriver: { name: string; fans: number } | null;
 }
 
 /** What the player's garage has done. */
@@ -74,6 +90,7 @@ export interface GameView {
   facts: GameFacts;
   world: WorldCounts;
   series: SeriesCounts;
+  state: StateOfPlay;
   you: YourCounts;
   chronicle: ChronicleLine[];
 }
@@ -151,6 +168,39 @@ export function gameView(db: Database): GameView {
       ? { ms: Number(fastest.ms), driver: String(fastest.driver), year: Number(fastest.year) }
       : null,
     deaths: count(db, 'SELECT COUNT(*) AS n FROM death'),
+    seriesFans: count(db, 'SELECT series_fans AS n FROM season ORDER BY year DESC LIMIT 1'),
+    driverFans: count(db, 'SELECT COALESCE(SUM(fans), 0) AS n FROM driver'),
+    garageFans: count(db, "SELECT COALESCE(SUM(fans), 0) AS n FROM garage WHERE kind = 'racing'"),
+    carFans: count(db, 'SELECT COALESCE(SUM(fans), 0) AS n FROM car'),
+  };
+
+  const richest = all(
+    db,
+    "SELECT name, cash FROM garage WHERE kind = 'racing' ORDER BY cash DESC, id LIMIT 1",
+  )[0];
+  const prestigious = all(
+    db,
+    "SELECT name, prestige FROM garage WHERE kind = 'racing' ORDER BY prestige DESC, id LIMIT 1",
+  )[0];
+  const famous = all(db, 'SELECT name, fans FROM driver ORDER BY fans DESC, id LIMIT 1')[0];
+  const ages = all(db, 'SELECT birth_date FROM driver WHERE retired_year IS NULL').map(
+    (r) => (dayNumber(career.gameDate) - dayNumber(String(r.birth_date))) / 365.25,
+  );
+  const state: StateOfPlay = {
+    garageCash: count(db, "SELECT COALESCE(SUM(cash), 0) AS n FROM garage WHERE kind = 'racing'"),
+    averagePrestige:
+      Math.round(
+        Number(all(db, "SELECT AVG(prestige) AS n FROM garage WHERE kind = 'racing'")[0]?.n ?? 0) *
+          10,
+      ) / 10,
+    averageDriverAge: ages.length
+      ? Math.round((ages.reduce((a, b) => a + b, 0) / ages.length) * 10) / 10
+      : 0,
+    richestGarage: richest ? { name: String(richest.name), cash: Number(richest.cash) } : null,
+    mostPrestigiousGarage: prestigious
+      ? { name: String(prestigious.name), prestige: Number(prestigious.prestige) }
+      : null,
+    mostFamousDriver: famous ? { name: String(famous.name), fans: Number(famous.fans) } : null,
   };
 
   const mine = all(
@@ -203,5 +253,5 @@ export function gameView(db: Database): GameView {
     })),
   ].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
 
-  return { facts, world, series, you, chronicle };
+  return { facts, world, series, state, you, chronicle };
 }
