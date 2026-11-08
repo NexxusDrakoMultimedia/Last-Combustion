@@ -23,6 +23,7 @@ import { Plate } from '../Plate';
 import { RaceNumber } from '../RaceNumber';
 import { RegistryLink } from '../RegistryLink';
 import { AlmanacPanel } from './AlmanacPanel';
+import { GamePanel } from './GamePanel';
 import { RegistryPanel } from './RegistryPanel';
 import { ResultsPanel, StandingsPanel } from './TablesPanel';
 import { CalendarPanel } from './CalendarPanel';
@@ -49,6 +50,7 @@ type PanelId =
   | 'money'
   | 'ownership'
   | 'calendar'
+  | 'game'
   | 'menu';
 
 const RAIL: { id: PanelId | null; label: MessageKey }[] = [
@@ -65,6 +67,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'money', label: 'rail.money' },
   { id: 'ownership', label: 'rail.ownership' },
   { id: 'calendar', label: 'rail.calendar' },
+  { id: 'game', label: 'rail.game' },
 ];
 
 /** The game shell: a top bar, a rail of panels, the garage floor and the news strip. */
@@ -84,6 +87,7 @@ export function Shell() {
   const [ledgerTab, setLedger] = useState('summary');
   const [ownershipTab, setOwnershipTab] = useState('mine');
   const [almanacTab, setAlmanac] = useState('seasons');
+  const [gameTab, setGameTab] = useState('info');
   /** Opens or closes a panel, counting which panels are used. */
   const setOpen = (id: PanelId | null) => {
     s.clearResultsFocus();
@@ -93,6 +97,7 @@ export function Shell() {
       return;
     }
     if (id === 'almanac') s.loadRecords();
+    if (id === 'game') s.loadGame();
     setPanel(id);
   };
   const setSeasonTab = (tab: string) => {
@@ -454,6 +459,23 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <CalendarPanel />
+        </Panel>
+      )}
+      {!locked && open === 'game' && (
+        <Panel
+          title={t('rail.game')}
+          subtitle={t('game.intro')}
+          tabs={[
+            { id: 'info', label: t('game.tab.info') },
+            { id: 'world', label: t('game.tab.world') },
+            { id: 'series', label: t('game.tab.series') },
+            { id: 'chronicle', label: t('game.tab.chronicle') },
+          ]}
+          tab={gameTab}
+          onTab={setGameTab}
+          onClose={() => setOpen(null)}
+        >
+          <GamePanel tab={gameTab} />
         </Panel>
       )}
       {!locked && open === 'almanac' && (
