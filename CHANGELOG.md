@@ -28,6 +28,7 @@ Milestone M6, depth: the garage as a business, its people and a calendar to run 
 
 ### Changed
 
+- **Declared AI:X.** The project declares its AI use on the [0rwx](https://0rwx.com/) scale at level X (AI made, the owner curates), with the logo in the README and the credit in `CREDITS.md`.
 - **Ties in a championship** are broken by countback on final places (most wins, then most 2nds, through to most 15th places), then the better average prelim finishing position, then prestige, then valuation, then a draw from the career's seed. This applies to every table.
 - **Put your own cash into the garage.** The Ownership panel can move your personal cash into the team as capital (a gift, not shares, so nobody is diluted); it shows on the ledger's finance line. An Australian flag now puts your headquarters at your base, and the nation tables show flags.
 - **A Game screen.** A status page like Football Manager's: the facts of your save, counts for the world and the series (fans included), the state of play, your garage's record, and a dated chronicle of every champion, your wins and deaths outside racing.

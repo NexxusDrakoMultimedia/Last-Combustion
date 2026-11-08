@@ -49,6 +49,13 @@ precedence = "override"
 SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
 
+# The 0rwx AI:X logo (0rwx.com by Namtao Productions), released by its author under CC0 (public domain).
+[[annotations]]
+path = "assets/0rwx/**"
+precedence = "override"
+SPDX-FileCopyrightText = "Namtao Productions"
+SPDX-License-Identifier = "CC0-1.0"
+
 # Screenshots are pictures of the game itself, so they stay under the GPL with the rest of the project, as does
 # the web manifest.
 [[annotations]]

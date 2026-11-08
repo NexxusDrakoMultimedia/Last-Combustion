@@ -100,6 +100,16 @@ The game has no accounts and no server of its own. The web build collects anonym
 
 Last Combustion is a work of fiction. The manufacturers, cars, sponsors, suppliers, garages, drivers, executives, journalists and every other character are invented, and any resemblance to real people, living or dead, or to real companies, products, brands or events is purely coincidental. Names are made up from lists and may by chance match a real person's. Real towns and roads are used only to set the scene. No real person, brand or organisation has endorsed this game or has any connection with it.
 
+## How AI was used
+
+<p>
+  <a href="https://0rwx.com/"><img src="assets/0rwx/AI-X.png" alt="0rwx level X: AI made" width="100" align="left" /></a>
+</p>
+
+Last Combustion is declared **AI:X** on the [0rwx](https://0rwx.com/) scale, the Execute level: **AI made, the owner curates.** The code, the tests and the documentation were written by Claude (Anthropic) working to the owner's direction, and the owner decides what the game is, plays the builds and chooses what ships. Commits written this way carry a `Co-Authored-By: Claude` trailer. The game's text, names and art are held to the same licences and rules as everything else here (see [Credits](CREDITS.md) and [Trademarks](TRADEMARKS.md)).
+
+<br clear="left" />
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md). The project follows [Semantic Versioning](https://semver.org/), starts its [changelog](CHANGELOG.md) at the first release, and uses Conventional Commits.
