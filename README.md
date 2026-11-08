@@ -106,7 +106,7 @@ Last Combustion is a work of fiction. The manufacturers, cars, sponsors, supplie
   <a href="https://0rwx.com/"><img src="assets/0rwx/AI-X.png" alt="0rwx level X: AI made" width="100" align="left" /></a>
 </p>
 
-Last Combustion is declared **AI:X** on the [0rwx](https://0rwx.com/) scale, the Execute level: **AI made, the owner curates.** The code, the tests and the documentation were written by Claude (Anthropic) working to the owner's direction, and the owner decides what the game is, plays the builds and chooses what ships. Commits written this way carry a `Co-Authored-By: Claude` trailer. The game's text, names and art are held to the same licences and rules as everything else here (see [Credits](CREDITS.md) and [Trademarks](TRADEMARKS.md)).
+Last Combustion is declared **AI:X** on the [0rwx](https://0rwx.com/) scale, the Execute level: **AI made, the owner curates.** The code, the tests and the documentation were written by Claude (Anthropic) working to the owner's direction, and the owner decides what the game is, plays the builds and chooses what ships. The owner has not read the code: the tests, the checks that run on every change and playing the game are how the work is judged. Commits written this way carry a `Co-Authored-By: Claude` trailer. The game's text, names and art are held to the same licences and rules as everything else here (see [Credits](CREDITS.md) and [Trademarks](TRADEMARKS.md)).
 
 <br clear="left" />
 
