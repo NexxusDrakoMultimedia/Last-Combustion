@@ -37,6 +37,7 @@ Press **Start career**. You then choose a **starter car** from three brand-new S
 | Operations | The suppliers of electricity, water and fuel, their contracts and the spot market, outages, and the garage's facilities                    |
 | Sponsors   | Your title sponsor                                                                                                                         |
 | Almanac    | Champions and awards for every season, and the record book with leaderboards, including who has the most fans and the most attention flags |
+| Game       | The save's facts, counts for the whole world and the series, your own record, and a dated chronicle of champions, your wins and deaths     |
 | Registry   | A profile for every driver, car, garage, prelim and race                                                                                   |
 | Ledger     | Your cash, income and spending by category and year, with a list of every transaction                                                      |
 | Ownership  | Who owns each garage, its valuation, dividends, the board and takeovers                                                                    |
@@ -101,6 +102,7 @@ Only the Garage owner mode, with one save slot and no race calls. There is no Ju
 ## Words you will see
 
 - **Almanac:** the book of every season's champions, awards and records.
+- **Game:** the status page for your save, with the facts of the world and the series and a dated chronicle.
 - **Base:** the Australian place your garage works from. Not the same as its flag.
 - **Black box:** the reigning champion's race number sits in a black box.
 - **Entry:** one car plus one driver. A garage can have up to eight.

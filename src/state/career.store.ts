@@ -141,6 +141,7 @@ import {
   type RegistryPage,
   type RegistryTarget,
 } from '../db/registry';
+import { gameView, type GameView } from '../db/gameinfo';
 import { recordBook, type RecordBook } from '../db/records';
 import {
   fullStandings,
@@ -307,6 +308,8 @@ interface CareerState {
   facilities: FacilityView[];
   /** The record book and the champions and awards of every finished season (read when the Almanac opens). */
   recordBook: RecordBook | undefined;
+  /** The Game screen's figures (read when the panel opens). */
+  gameView: GameView | undefined;
   /** The seasons in the save, and the full tables and round classification last asked for (read when the Season panel needs them). */
   years: number[];
   /** The Registry: where the player has been (newest last) and the page now showing. */
@@ -378,6 +381,7 @@ interface CareerState {
   buyBackShares(holdingId: number, shares: number, by: 'garage' | 'owner'): Promise<void>;
   injectCapital(amount: number): Promise<void>;
   loadRecords(): void;
+  loadGame(): void;
   openRegistry(target: RegistryTarget): void;
   openResults(year: number, round: number, session: 'prelims' | 'final'): void;
   clearResultsFocus(): void;
@@ -572,6 +576,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     facilities: [],
     supplyNegotiation: undefined,
     recordBook: undefined,
+    gameView: undefined,
     years: [],
     standingsView: undefined,
     registryTrail: [],
@@ -991,6 +996,10 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     },
 
     closeRegistry: () => set({ registryTrail: [], registryPage: undefined }),
+
+    loadGame: () => {
+      if (openDb) set({ gameView: gameView(openDb) });
+    },
 
     loadRecords: () => {
       if (openDb) set({ recordBook: recordBook(openDb) });
