@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { t } from '../i18n';
 import { readConsent, saveConsent, type Consent } from '../platform/analytics';
-import { applyTelemetryConsent, telemetryConfigured } from '../platform/consent';
+import { applyTelemetryConsent, effectiveConsent, telemetryConfigured } from '../platform/consent';
 import { APP_VERSION } from '../db/session';
 
 /**
- * Asks whether the web build may count how the game is used (GameAnalytics and the Google tag).
- * It appears only when the build has a telemetry key, nothing is loaded or sent before the
- * visitor accepts, and it can be reopened.
+ * Tells a visitor to the web build how the game counts its use (GameAnalytics, the Google tag, Better
+ * Stack and error reports) and lets them opt out. It appears only when the build has a telemetry key.
+ * Telemetry is opt-out: it runs from the first visit until the visitor opts out, and an opt-out is
+ * kept. The notice stays until the visitor has answered, and the choice can be reopened and changed.
  */
 export function ConsentBanner() {
   const configured = telemetryConfigured();
@@ -17,7 +18,7 @@ export function ConsentBanner() {
   const [open, setOpen] = useState(() => readConsent() === undefined);
 
   useEffect(() => {
-    applyTelemetryConsent(consent, { build: `web ${APP_VERSION}` });
+    applyTelemetryConsent(effectiveConsent(consent), { build: `web ${APP_VERSION}` });
   }, [consent]);
 
   if (!configured) return null;

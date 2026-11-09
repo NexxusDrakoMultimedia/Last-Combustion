@@ -163,10 +163,17 @@ describe('starting the next season', () => {
     for (const c of categories) expect(hasText(`money.category.${c}`), c).toBe(true);
   });
 
-  it('grows the series audience by 26% for the new season', () => {
+  it('grows the series audience by 26% for the new season, and half a percent more for each attention flag', () => {
     const s = (year: number) =>
       Number(scalar(db, `SELECT series_fans FROM season WHERE year = ${year}`));
-    expect(s(2032)).toBe(Math.round(s(2031) * 1.26));
+    const flags = Number(
+      scalar(
+        db,
+        `SELECT COUNT(*) FROM event_log ev JOIN round ro ON ro.id = ev.round_id
+          WHERE ev.type = 'attention' AND ro.season_id = (SELECT id FROM season WHERE year = 2031)`,
+      ),
+    );
+    expect(s(2032)).toBe(Math.round(s(2031) * (1.26 + 0.005 * flags)));
   });
 
   it('carries the flag fans over into the new season', () => {
@@ -253,13 +260,19 @@ describe('garages closing and opening at the rollover', () => {
     // One computer garage has been broke for a year already and is deep in debt; the player's garage is too.
     const row = db.exec(
       `SELECT g.id, e.driver_id, e.car_id FROM garage g JOIN entry e ON e.garage_id = g.id
-        WHERE g.kind = 'racing' AND g.is_player = 0 AND g.name <> 'Drake Motorsports'
+        WHERE g.kind = 'racing' AND g.is_player = 0
         GROUP BY g.id ORDER BY g.id LIMIT 1`,
     )[0]!.values[0] as number[];
     [doomed, doomedDriver, doomedCar] = row as [number, number, number];
     db.run('UPDATE garage SET cash = -90000000, broke_years = 1 WHERE id = ?', [doomed]);
-    playerId = Number(scalar(db, 'SELECT id FROM garage WHERE name = "Drake Motorsports"'));
-    db.run('UPDATE garage SET cash = -90000000, broke_years = 5 WHERE id = ?', [playerId]);
+    // A garage that began in an earlier version of the game as Drake Motorsports never folds, however broke.
+    playerId = Number(
+      scalar(db, `SELECT id FROM garage WHERE id <> ${doomed} ORDER BY id LIMIT 1`),
+    );
+    db.run(
+      "UPDATE garage SET name = 'Drake Motorsports', cash = -90000000, broke_years = 5 WHERE id = ?",
+      [playerId],
+    );
     result = startNextSeason(db);
   }, 180_000);
 
@@ -348,7 +361,10 @@ describe('garages closing and opening at the rollover', () => {
   it('gives the same garages for the same seed', () => {
     const again = playedSeason('garages-rollover');
     again.run('UPDATE garage SET cash = -90000000, broke_years = 1 WHERE id = ?', [doomed]);
-    again.run('UPDATE garage SET cash = -90000000, broke_years = 5 WHERE id = ?', [playerId]);
+    again.run(
+      "UPDATE garage SET name = 'Drake Motorsports', cash = -90000000, broke_years = 5 WHERE id = ?",
+      [playerId],
+    );
     startNextSeason(again);
     const names = (d: Database) =>
       d.exec('SELECT name FROM garage WHERE founded_year = 2032 ORDER BY id')[0]!.values.join('|');

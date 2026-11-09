@@ -9,7 +9,7 @@ TypeScript 7.0 is available, but `typescript-eslint` (needed for our lint rules)
 
 ## Decision
 
-Pin `typescript` to `~6` in `package.json`. Revisit when `typescript-eslint` supports TypeScript 7 (tracked at typescript-eslint issue 10940).
+Keep `typescript` on the 6.x line (`^6` in `package.json`, which stays below 7). Revisit when `typescript-eslint` supports TypeScript 7 (tracked at typescript-eslint issue 10940).
 
 ## Consequences
 

@@ -50,6 +50,37 @@ describe('career store', () => {
     expect(useCareerStore.getState().nextRound).toBeNull();
   });
 
+  it('moves through the calendar: Continue skips to the day of an event and then runs it', async () => {
+    useCareerStore.setState({ prelims: undefined });
+    await useCareerStore.getState().createTestCareer();
+    const cal = () => useCareerStore.getState().calendar!;
+    expect(cal().date).toBe('2031-02-01');
+    expect(cal().due).toBeNull();
+    // Continue stops at the season opening (an invitation), then at the day of the prelims.
+    await useCareerStore.getState().continueTime();
+    expect(cal().date).toBe('2031-03-31');
+    await useCareerStore.getState().continueTime();
+    expect(cal().date).toBe('2031-04-07');
+    expect(cal().due).toMatchObject({ kind: 'prelims', round: 1 });
+    expect(useCareerStore.getState().prelims).toBeUndefined();
+    // Day, week and Next event wait while something is due.
+    await useCareerStore.getState().skipTime('day');
+    expect(cal().date).toBe('2031-04-07');
+    // On the day, Continue runs the prelims, and the next thing is the final a week later.
+    await useCareerStore.getState().continueTime();
+    expect(useCareerStore.getState().prelims?.roundNumber).toBe(1);
+    expect(cal().due).toBeNull();
+    // (running the prelims fixes the final's date, which the calendar follows)
+    const final = cal().next!;
+    expect(final).toMatchObject({ kind: 'final', round: 1 });
+    expect(final.date > '2031-04-07').toBe(true);
+    await useCareerStore.getState().skipTime('week');
+    expect(cal().date <= final.date).toBe(true);
+    await useCareerStore.getState().skipTime('event');
+    expect(cal().date).toBe(final.date);
+    expect(cal().due).toMatchObject({ kind: 'final', round: 1 });
+  });
+
   it('exports a .lcsave file through the platform', async () => {
     await useCareerStore.getState().createTestCareer();
     await useCareerStore.getState().exportFile();
@@ -182,7 +213,11 @@ describe('career store', () => {
       await useCareerStore.getState().buyNewCar(offer.modelId);
       const spare = useCareerStore.getState().cars.find((c) => c.inEntry === null)!;
       await useCareerStore.getState().consign(spare.carId, 5_000_000_000);
-      const lot = useCareerStore.getState().auction!.lotViews.find((l) => !l.mine)!;
+      // The cheapest lot, so the bid is one the garage can afford whatever the world holds.
+      const lot = useCareerStore
+        .getState()
+        .auction!.lotViews.filter((l) => !l.mine)
+        .sort((x, y) => x.openingPrice - y.openingPrice)[0]!;
       await useCareerStore.getState().placeBid(lot.id, lot.openingPrice);
       const view = useCareerStore.getState().auction!;
       expect(view.lotViews.find((l) => l.id === lot.id)!.myBid).toBe(lot.openingPrice);

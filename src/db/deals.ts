@@ -13,6 +13,7 @@ import { dealBalance } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
+import { garageFacilityBonuses } from './facilities';
 import { adjustRelationship, relationshipScore, type Negotiation } from './negotiation';
 
 const TABLE = { supplier: 'supplier_deal', manufacturer: 'manufacturer_deal' } as const;
@@ -53,7 +54,11 @@ export const partPriceFor = (
 ): number =>
   Math.round(
     dealPrice(db, 'supplier', garageId, supplierId, price) *
-      (1 - garageBonuses(db, garageId).partPrice),
+      (1 -
+        Math.min(
+          1,
+          garageBonuses(db, garageId).partPrice + garageFacilityBonuses(db, garageId).partPrice,
+        )),
   );
 
 export const dealPrice = (

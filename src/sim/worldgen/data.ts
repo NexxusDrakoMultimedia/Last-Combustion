@@ -5,6 +5,8 @@ import carModelsJson from '../../../data/car_models.json';
 import coursesJson from '../../../data/courses.json';
 import commentatorsJson from '../../../data/commentators.json';
 import executivesJson from '../../../data/executives.json';
+import pressJson from '../../../data/press.json';
+import socialJson from '../../../data/social.json';
 import flagsJson from '../../../data/flags.json';
 import manufacturersJson from '../../../data/manufacturers.json';
 import namesJson from '../../../data/names.json';
@@ -16,6 +18,9 @@ import pointsJson from '../../../data/points.json';
 import prizesJson from '../../../data/prizes.json';
 import linksJson from '../../../data/links.json';
 import suppliersJson from '../../../data/suppliers.json';
+import equityJson from '../../../data/equity.json';
+import ledgerJson from '../../../data/ledger.json';
+import facilitiesJson from '../../../data/facilities.json';
 import type { CarModelData, Commentator, CourseData, ManufacturerData, PlaceData } from './types';
 
 export const places = placesJson as PlaceData[];
@@ -36,10 +41,19 @@ export const repairBalance = balanceJson.repairs;
 export const seasonBalance = balanceJson.season;
 export const fanBalance = balanceJson.fans;
 export const staffBalance = balanceJson.staff;
+export const jobsBalance = balanceJson.jobs;
+export const companyBalance = balanceJson.companies;
+export const pressData = pressJson;
+export const socialData = socialJson;
+export const moraleBalance = balanceJson.morale;
+export const relationshipKinds = balanceJson.relationshipKinds;
 export const dailyBalance = balanceJson.daily;
 export const executiveData = executivesJson;
 export const siteLinks = linksJson;
 export const supplyData = suppliersJson;
+export const facilityData = facilitiesJson;
+export const ledgerData = ledgerJson;
+export const equityData = equityJson;
 export const populations = flagsJson.populations as Record<string, number>;
 /** Short name (UI and general use) and long name (standings, celebrations) for each flag. */
 export interface FlagRegion {
@@ -58,7 +72,10 @@ export const excludedFlags = new Set(flagsJson.excluded);
 export interface NameLists {
   nationalityWeights: Record<string, number>;
   byNationality: Record<string, { male: string[]; female: string[]; surnames: string[] }>;
+  /** Infamous people, whose full names are never generated. */
   denyFullNames: string[];
+  /** Offensive words: a name with any of them as a part is never generated. */
+  denyWords: string[];
   /** Chance that a driver's or garage's nation is picked uniformly instead of by weight. */
   wildcardNationShare: number;
   /** Chance that a new driver has a nickname. */

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { moraleText } from '../moraleText';
 import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
 import { executiveBonuses, salaryPerRound, type ExecutiveRole } from '../../sim/executives';
 import { executiveData } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
+import { RegistryLink } from '../RegistryLink';
 import { button, field, quiet } from '../styles';
 
 const pct = (x: number): number => Math.round(x * 1000) / 10;
@@ -16,6 +18,7 @@ export function describeExecutive(role: ExecutiveRole, skill: number): string {
     case 'chief_executive':
       return t('executive.effect.chief_executive', {
         others: pct((executiveData.roles.chief_executive.max.othersBonus * skill) / 100),
+        prestige: pct(b.prestige),
       });
     case 'commercial_director':
       return t('executive.effect.commercial_director', {
@@ -50,7 +53,10 @@ export function describeExecutive(role: ExecutiveRole, skill: number): string {
         gear: pct(b.gearCost),
       });
     case 'operations_director':
-      return t('executive.effect.operations_director', { utilities: pct(b.utilities) });
+      return t('executive.effect.operations_director', {
+        utilities: pct(b.utilities),
+        outages: pct(b.outages),
+      });
     default:
       return t('executive.effect.none');
   }
@@ -60,6 +66,7 @@ export function describeExecutive(role: ExecutiveRole, skill: number): string {
 export function ExecutivesSection() {
   const {
     executives,
+    executiveDepartures,
     executiveCapacity,
     executiveOffers,
     executiveNegotiation,
@@ -162,6 +169,14 @@ export function ExecutivesSection() {
         })}
       </p>
       <section className="space-y-2">
+        {executiveDepartures.map((d) => (
+          <p key={`${d.role}-${d.name}`} className="border border-lc-line bg-lc-raised p-2">
+            {t(`executive.left.${d.reason}` as never, {
+              name: d.name,
+              role: t(`executive.role.${d.role}` as never),
+            })}
+          </p>
+        ))}
         <h3 className="lc-display text-sm text-lc-dim">{t('executive.employed')}</h3>
         {executives.length === 0 && <p className="text-lc-dim">{t('executive.none')}</p>}
         <ul className="space-y-1">
@@ -169,14 +184,19 @@ export function ExecutivesSection() {
             <li key={e.id} className="space-y-1 border border-lc-line p-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span>
-                  <span className="font-medium">{e.name}</span>{' '}
+                  <span className="font-medium">
+                    <RegistryLink to={{ kind: 'person', person: 'executive', id: e.id }}>
+                      {e.name}
+                    </RegistryLink>
+                  </span>{' '}
                   <span className="text-lc-dim">
                     {t('executive.who', {
                       role: t(`executive.role.${e.role}` as never),
                       age: e.age,
                       skill: e.skill,
                     })}
-                  </span>
+                  </span>{' '}
+                  <span className="text-lc-dim">{moraleText(e.morale)}</span>
                 </span>
                 <span className="flex items-center gap-2">
                   <span className="lc-num text-lc-dim">

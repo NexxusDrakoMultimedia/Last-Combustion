@@ -1,0 +1,14 @@
+{
+  "source": "How the ledger's categories group into the lines of a year's summary (see the GDD, 'The financial ledger'). Every ledger category belongs to exactly one group. A financial year runs with the season and closes on the day the season ends, 11 November; lines dated after that belong to the next year.",
+  "yearEnd": "11-11",
+  "groups": {
+    "racing_income": ["prize", "championship_prize", "bonuses"],
+    "commercial_income": ["sponsor", "merchandise", "delivery"],
+    "race_running": ["entry_fee", "tyres", "servicing", "travel", "race_fuel", "repairs"],
+    "premises": ["electricity", "water", "facilities"],
+    "people": ["wages", "salaries", "training", "release_fee", "relocation"],
+    "assets": ["car_purchase", "car_sale", "parts", "gear", "restoration"],
+    "finance": ["share_issue", "dividends", "buyback", "capital", "acquisitions"]
+  },
+  "operating": ["racing_income", "commercial_income", "race_running", "premises", "people"]
+}

@@ -11,13 +11,8 @@ import {
 } from '../../src/sim/worldgen';
 import { statesOfPlate } from '../../src/sim/plates';
 import { buildCalendar, addDays } from '../../src/sim/worldgen/calendar';
-import {
-  AUSTRALIAN_STATES,
-  carModels,
-  manufacturers,
-  nameLists,
-  places,
-} from '../../src/sim/worldgen/data';
+import { isOffensiveName, placeInName } from '../../src/sim/worldgen/names';
+import { AUSTRALIAN_STATES, carModels, manufacturers, places } from '../../src/sim/worldgen/data';
 
 const world = generateWorld('2031');
 const model = (id: string) => carModels.find((m) => m.id === id)!;
@@ -107,11 +102,8 @@ describe('cars', () => {
     expect(checked).toBeGreaterThan(100);
   });
 
-  it('gives the founder’s car its personalised Victorian plate', () => {
-    const spirit = world.cars.find((c) => c.modelId === 'homura-spirit-r-7')!;
-    expect(spirit.plate).toBe('NEXXUS');
-    expect(spirit.plateState).toBe('VIC');
-    expect(world.cars.filter((c) => c.plate === 'NEXXUS')).toHaveLength(1);
+  it('leaves the founder’s personalised plate unissued, as the founder’s car is not in the world', () => {
+    expect(world.cars.filter((c) => c.plate === 'NEXXUS')).toHaveLength(0);
   });
 
   it('give every chassis a model year, road kilometres and wear, and no racing history yet', () => {
@@ -146,12 +138,9 @@ describe('cars', () => {
     expect(meanPrestige('hypercar')).toBeGreaterThan(meanPrestige('supercar'));
   });
 
-  it('never enter the founder car, which Drake Motorsports keeps', () => {
-    const spirit = world.cars.find((c) => c.modelId === 'homura-spirit-r-7')!;
-    const drake = world.garages.find((g) => g.name === DRAKE_MOTORSPORTS)!;
-    expect(spirit.garageId).toBe(drake.id);
-    expect(world.entries.some((e) => e.carId === spirit.id)).toBe(false);
-    expect(world.cars.filter((c) => c.modelId === 'homura-spirit-r-7')).toHaveLength(1);
+  it('never include the founder’s car, which is not in the game until the founder is', () => {
+    expect(world.cars.some((c) => c.modelId === 'homura-spirit-r-7')).toBe(false);
+    expect(world.cars).toHaveLength(313);
   });
 });
 
@@ -192,15 +181,33 @@ describe('manufacturers and models', () => {
 });
 
 describe('garages', () => {
-  it('have unique names, and Drake Motorsports is based in Brisbane in its own colours', () => {
+  it('have unique names, and neither Drake Motorsports nor its chair is in the starting world', () => {
     expect(new Set(world.garages.map((g) => g.name)).size).toBe(96);
-    const drake = world.garages.find((g) => g.name === DRAKE_MOTORSPORTS)!;
-    expect(drake.flag).toBe('AU');
-    expect(drake.basePlaceId).toBe('au-brisbane');
-    // Pyra Drake lives in Queensland, so her garage is based and headquartered there.
-    expect(drake.hqPlaceId).toBe('au-brisbane');
-    expect(drake.homeState).toBe('Qld');
-    expect([drake.primaryColour, drake.secondaryColour]).toEqual(['#7f0000', '#ffd900']);
+    expect(world.garages.some((g) => g.name === DRAKE_MOTORSPORTS)).toBe(false);
+    expect(world.officials.map((o) => o.role)).toEqual(['technical', 'interpersonal']);
+  });
+
+  it('that carry a place name are from that place: its flag and its headquarters', () => {
+    const seen = { named: 0 };
+    for (const seed of ['place-a', 'place-b', 'place-c', 'place-d']) {
+      const w = generateWorld(seed);
+      for (const g of w.garages) {
+        const place = placeInName(g.name);
+        if (!place) continue;
+        seen.named++;
+        expect(g.hqPlaceId, g.name).toBe(place.id);
+        expect(g.flag, g.name).toBe(place.country);
+        // Whatever the flag, it still races from an Australian base.
+        expect(places.find((p) => p.id === g.basePlaceId)!.country).toBe('AU');
+      }
+    }
+    expect(seen.named).toBeGreaterThan(20);
+  });
+
+  it('are found in a name only as whole words', () => {
+    expect(placeInName('Mount Barker Coast Tuning')?.name).toBe('Mount Barker');
+    expect(placeInName('Fox & Kingi')).toBeUndefined();
+    expect(placeInName('Corkscrew Racing')).toBeUndefined();
   });
 
   it('are not the player', () => {
@@ -273,8 +280,8 @@ describe('drivers', () => {
     expect(share((d) => country(d.hometownPlaceId) !== d.flag)).toBeGreaterThan(0);
   });
 
-  it('have names that are not on the deny list of famous people', () => {
-    for (const d of world.drivers) expect(nameLists.denyFullNames).not.toContain(d.name);
+  it('have names that are not offensive', () => {
+    for (const d of world.drivers) expect(isOffensiveName(d.name)).toBe(false);
   });
 });
 

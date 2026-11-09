@@ -63,6 +63,14 @@ export function awardRoundFans(db: Database, roundId: number): void {
       Math.round((b.total as number) / finalBalance.overtakeBonus),
     ]),
   );
+  // Each attention flag in the round (practice has none; prelim and final runs can raise them).
+  const attention = new Map(
+    all(
+      db,
+      "SELECT entry_id, COUNT(*) AS n FROM event_log WHERE round_id = ? AND type = 'attention' GROUP BY entry_id",
+      [roundId],
+    ).map((a) => [a.entry_id as number, a.n as number]),
+  );
   const gone = departedFlags(db);
   // A Head of Marketing makes a garage's drivers win more fans from the same result.
   const marketing = new Map<number, number>();
@@ -108,6 +116,7 @@ export function awardRoundFans(db: Database, roundId: number): void {
       points: (r.points as number) ?? 0,
       pole: r.pole === 1,
       overtakes: overtakes.get(entryId) ?? 0,
+      attention: attention.get(entryId) ?? 0,
       home,
     });
     const gain = Math.round(base * fansFor(r.garage_id as number));

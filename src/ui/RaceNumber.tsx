@@ -94,10 +94,12 @@ export function RaceNumber({
         style={{
           color: digits,
           backgroundColor: black ? '#000000' : 'transparent',
-          textShadow: shadow,
         }}
       >
-        {number}
+        {/* Roboto Mono sits its digits a little low in the line, which a black box shows up, so nudge them up. */}
+        <span className="relative" style={{ top: '-0.035em', textShadow: shadow }}>
+          {number}
+        </span>
       </span>
     </span>
   );

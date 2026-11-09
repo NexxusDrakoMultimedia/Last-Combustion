@@ -1,24 +1,64 @@
 {
-  "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). Every supplier serves all of Australia for now, so only prestige (its tier) gates them. A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year.",
+  "source": "Operating suppliers for the garage-operations design (see the GDD, 'Garage operations'). Every company is fictional. 'states' lists the home regions a supplier serves (null means everywhere). Every supplier serves all of Australia for now, so only prestige (its tier) gates them. A category's market moves from year to year: 'trend' is the yearly drift, 'volatility' the spread of the yearly swing, and a shock (with its chance and size) is a headline year. 'outages' sets how often supply fails: a round's chance is (1 - reliability) times chanceScale, where reliability is the contracted supplier's, or spotReliability when the garage buys on the spot market; an outage lasts a second round with chance extendChance. The effects are the crew cover lost (electricity), the share of practice laps still run (race fuel) and the practice days lost (logistics).",
   "maxYears": 3,
-  "discount": { "base": 0.04, "perPrestige": 0.001, "cap": 0.15 },
+  "discount": {
+    "base": 0.04,
+    "perPrestige": 0.001,
+    "cap": 0.15
+  },
   "tiers": {
-    "local": { "minPrestige": 0, "strength": 35 },
-    "regional": { "minPrestige": 10, "strength": 50 },
-    "national": { "minPrestige": 30, "strength": 65 },
-    "global": { "minPrestige": 50, "strength": 80 }
+    "local": {
+      "minPrestige": 0,
+      "strength": 35
+    },
+    "regional": {
+      "minPrestige": 10,
+      "strength": 50
+    },
+    "national": {
+      "minPrestige": 30,
+      "strength": 65
+    },
+    "continental": {
+      "minPrestige": 40,
+      "strength": 72
+    },
+    "global": {
+      "minPrestige": 50,
+      "strength": 80
+    }
   },
   "categories": {
-    "electricity": { "trend": 0.0, "volatility": 0.07, "shockChance": 0.08, "shock": [0.2, 0.45] },
-    "water": { "trend": 0.01, "volatility": 0.05, "shockChance": 0.05, "shock": [0.15, 0.35] },
-    "race_fuel": { "trend": 0.03, "volatility": 0.06, "shockChance": 0.1, "shock": [0.2, 0.5] },
+    "electricity": {
+      "trend": 0.0,
+      "volatility": 0.07,
+      "shockChance": 0.08,
+      "shock": [0.2, 0.45]
+    },
+    "water": {
+      "trend": 0.01,
+      "volatility": 0.05,
+      "shockChance": 0.05,
+      "shock": [0.15, 0.35]
+    },
+    "race_fuel": {
+      "trend": 0.03,
+      "volatility": 0.06,
+      "shockChance": 0.1,
+      "shock": [0.2, 0.5]
+    },
     "travel_fuel": {
       "trend": 0.015,
       "volatility": 0.07,
       "shockChance": 0.08,
       "shock": [0.15, 0.4]
     },
-    "logistics": { "trend": 0.01, "volatility": 0.05, "shockChance": 0.06, "shock": [0.15, 0.35] }
+    "logistics": {
+      "trend": 0.01,
+      "volatility": 0.05,
+      "shockChance": 0.06,
+      "shock": [0.15, 0.35]
+    }
   },
   "suppliers": [
     {
@@ -155,6 +195,245 @@
       "priceIndex": 0.87,
       "reliability": 0.98,
       "states": null
+    },
+    {
+      "id": 16,
+      "name": "Southern Hemisphere Power",
+      "category": "electricity",
+      "tier": "continental",
+      "priceIndex": 0.93,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 17,
+      "name": "Pacific Rim Water",
+      "category": "water",
+      "tier": "continental",
+      "priceIndex": 0.94,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 18,
+      "name": "Austral Reserve Fuels",
+      "category": "race_fuel",
+      "tier": "continental",
+      "priceIndex": 0.96,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 19,
+      "name": "Trans-Tasman Biofuels",
+      "category": "travel_fuel",
+      "tier": "continental",
+      "priceIndex": 0.93,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 20,
+      "name": "Coral Sea Freight",
+      "category": "logistics",
+      "tier": "continental",
+      "priceIndex": 0.92,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 21,
+      "name": "Wattle Valley Electric",
+      "category": "electricity",
+      "tier": "local",
+      "priceIndex": 1.07,
+      "reliability": 0.89,
+      "states": null
+    },
+    {
+      "id": 22,
+      "name": "Snowy Ridge Hydro",
+      "category": "electricity",
+      "tier": "regional",
+      "priceIndex": 0.96,
+      "reliability": 0.95,
+      "states": null
+    },
+    {
+      "id": 23,
+      "name": "Nullarbor Solar Co-op",
+      "category": "electricity",
+      "tier": "national",
+      "priceIndex": 0.91,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 24,
+      "name": "Equinox Grid Partners",
+      "category": "electricity",
+      "tier": "global",
+      "priceIndex": 0.87,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 25,
+      "name": "Billy Tea Bore Water",
+      "category": "water",
+      "tier": "local",
+      "priceIndex": 1.12,
+      "reliability": 0.9,
+      "states": null
+    },
+    {
+      "id": 26,
+      "name": "Coolgardie Pipeline Co",
+      "category": "water",
+      "tier": "regional",
+      "priceIndex": 0.97,
+      "reliability": 0.94,
+      "states": null
+    },
+    {
+      "id": 27,
+      "name": "Reef Desal Partners",
+      "category": "water",
+      "tier": "national",
+      "priceIndex": 0.91,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 28,
+      "name": "Glacier Meltwater Supply",
+      "category": "water",
+      "tier": "global",
+      "priceIndex": 0.89,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 29,
+      "name": "Jerrycan Allocation",
+      "category": "race_fuel",
+      "tier": "local",
+      "priceIndex": 1.15,
+      "reliability": 0.88,
+      "states": null
+    },
+    {
+      "id": 30,
+      "name": "Hightail Fuels",
+      "category": "race_fuel",
+      "tier": "regional",
+      "priceIndex": 1.05,
+      "reliability": 0.93,
+      "states": null
+    },
+    {
+      "id": 31,
+      "name": "Meridian Octane",
+      "category": "race_fuel",
+      "tier": "national",
+      "priceIndex": 0.97,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 32,
+      "name": "Zenith Reserve Petroleum",
+      "category": "race_fuel",
+      "tier": "global",
+      "priceIndex": 0.85,
+      "reliability": 0.99,
+      "states": null
+    },
+    {
+      "id": 33,
+      "name": "Truckstop Diesel Co-op",
+      "category": "travel_fuel",
+      "tier": "local",
+      "priceIndex": 1.1,
+      "reliability": 0.92,
+      "states": null
+    },
+    {
+      "id": 34,
+      "name": "Bitumen Biofuels",
+      "category": "travel_fuel",
+      "tier": "regional",
+      "priceIndex": 0.98,
+      "reliability": 0.94,
+      "states": null
+    },
+    {
+      "id": 35,
+      "name": "Horizon Renewable Fuels",
+      "category": "travel_fuel",
+      "tier": "continental",
+      "priceIndex": 0.92,
+      "reliability": 0.97,
+      "states": null
+    },
+    {
+      "id": 36,
+      "name": "Equator Energy Fuels",
+      "category": "travel_fuel",
+      "tier": "global",
+      "priceIndex": 0.89,
+      "reliability": 0.98,
+      "states": null
+    },
+    {
+      "id": 37,
+      "name": "Dusty Boots Haulage",
+      "category": "logistics",
+      "tier": "local",
+      "priceIndex": 1.12,
+      "reliability": 0.87,
+      "states": null
+    },
+    {
+      "id": 38,
+      "name": "Stockroute Freight",
+      "category": "logistics",
+      "tier": "regional",
+      "priceIndex": 0.99,
+      "reliability": 0.93,
+      "states": null
+    },
+    {
+      "id": 39,
+      "name": "Meridian Road Train",
+      "category": "logistics",
+      "tier": "national",
+      "priceIndex": 0.95,
+      "reliability": 0.96,
+      "states": null
+    },
+    {
+      "id": 40,
+      "name": "Southern Cross Air Freight",
+      "category": "logistics",
+      "tier": "continental",
+      "priceIndex": 0.91,
+      "reliability": 0.97,
+      "states": null
     }
-  ]
+  ],
+  "outages": {
+    "spotReliability": 0.9,
+    "chanceScale": 1,
+    "extendChance": 0.35,
+    "electricity": {
+      "crewCoverLoss": 0.2
+    },
+    "race_fuel": {
+      "lapShare": 0.5
+    },
+    "logistics": {
+      "daysLost": 1
+    }
+  }
 }

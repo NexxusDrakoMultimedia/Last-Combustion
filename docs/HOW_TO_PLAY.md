@@ -1,6 +1,6 @@
 # How to play
 
-This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for the first release. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
+This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for 0.2.0. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
 
 ## The idea
 
@@ -21,24 +21,27 @@ Press **Start career**. You then choose a **starter car** from three brand-new S
 
 ## The screen
 
-- **The top bar** shows your garage and the year, your balance, the next round and one big button for the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. **Feedback** opens the game's issue form on GitHub in a new tab, for bug reports, feature requests and anything else (it needs a free GitHub account). **Menu** has saving, loading, exporting and the About screen.
+- **The top bar** shows your garage and the year, the date, your balance, the next round, the time controls (**+1 day**, **+1 week** and **Next event**) and one big button, **Continue**. Continue skips on to the next day something needs you, and on that day it becomes the next step: **Run next prelims**, **Run next final**, **End the season** or **Start next season**. The days and weeks stop early at any event, and wait while a race or the end of the season is due. **Feedback** opens the game's issue form on GitHub in a new tab, for bug reports, feature requests and anything else (it needs a free GitHub account). **Menu** has saving, loading, exporting and the About screen.
 - **The garage floor** shows each of your entries: race number (with its borders), licence plate, driver, car and the car's condition.
 - **The news strip** reports what has just happened.
 - **The rail** on the right opens the panels:
 
-| Panel      | What it is for                                                                             |
-| ---------- | ------------------------------------------------------------------------------------------ |
-| Season     | The calendar, full results of every round (prelims and final) and every championship table |
-| Cars       | The cars you own, their wear and value, full restorations, and your entries                |
-| Market     | Used cars, new cars from dealers, the auction house                                        |
-| Upgrades   | Fitting and servicing parts, and the road-legality score                                   |
-| Drivers    | Free agents to sign, driver training, gear, daily life and moving home                     |
-| Staff      | Mechanics and executives                                                                   |
-| Operations | The suppliers of electricity, water and fuel, and their contracts                          |
-| Sponsors   | Your title sponsor                                                                         |
-| Almanac    | Champions and awards for every season, and the record book with leaderboards               |
-| Registry   | A profile for every driver, car, garage, prelim and race                                   |
-| Money      | Your cash, income and spending by category                                                 |
+| Panel      | What it is for                                                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Season     | The calendar, full results of every round (prelims and final) and every championship table                                                 |
+| Cars       | The cars you own, their wear and value, full restorations, and your entries                                                                |
+| Market     | Used cars, new cars from dealers, the auction house                                                                                        |
+| Upgrades   | Fitting and servicing parts, and the road-legality score                                                                                   |
+| Drivers    | Free agents to sign, driver training, gear, daily life and moving home                                                                     |
+| Staff      | Mechanics and executives, your contacts, the season's social occasions and the press                                                       |
+| Operations | The suppliers of electricity, water and fuel, their contracts and the spot market, outages, and the garage's facilities                    |
+| Sponsors   | Your title sponsor                                                                                                                         |
+| Almanac    | Champions and awards for every season, and the record book with leaderboards, including who has the most fans and the most attention flags |
+| Game       | The save's facts, counts for the whole world and the series, your own record, and a dated chronicle of champions, your wins and deaths     |
+| Registry   | A profile for every driver, car, garage, prelim and race                                                                                   |
+| Ledger     | Your cash, income and spending by category and year, with a list of every transaction                                                      |
+| Ownership  | Who owns each garage, its valuation, dividends, the board and takeovers                                                                    |
+| Calendar   | The dates of what is coming: prelims, finals, social occasions and the end of the season                                                   |
 
 Names, licence plates, race numbers, garages and rounds are links almost everywhere. Click one to open its profile in the Registry.
 
@@ -51,19 +54,19 @@ Before the first prelims, in any order:
 3. **Check your driver and car** in Drivers and Cars. Better free agents may be worth their salary. You can change your entry until the first round starts.
 4. **Look at the Upgrades panel.** Parts add power or grip but each one counts against your road-legality score, and a car that fails scrutineering is disqualified.
 
-Then press **Run next prelims**. The prelims run over seven days: every entry sets one timed lap, and the 15 fastest reach the final. Press **Run next final** to race it. The final is simulated sector by sector; there are no race calls in this version.
+Then press **Continue** to skip to the day of the prelims, and again (it now says **Run next prelims**) to run them. The prelims run over seven days: every entry sets one timed lap, and the 15 fastest reach the final. Press **Continue** to skip to the final's day and **Run next final** to race it. The **Calendar** in the rail lists what is coming. The final is simulated sector by sector; there are no race calls in this version.
 
 Points come from the final for the top 15 and from the prelims for 16th to 31st. Prize money goes to the final's finishers. Pole and overtake bonuses add up through the year and are paid when the season ends. Open **Season**, then **Results** or **Standings**, to see every car and every table.
 
 After six rounds, press **End the season**. The champion's prize is paid, the season awards are given out and everything is recorded. Then press **Start next season**: some drivers retire and rookies take their seats, contracts roll over, a few new garages open and a few fold, and the calendar starts again.
 
-## Money
+## The ledger
 
-**Coming in:** prize money (the final's top finishers), your title sponsor, merchandise from your fans, delivery driving between rounds (each of your cars earns about $250 a day, more in a busy state), and the champion's prize.
+**Coming in:** prize money (the final's top finishers), your title sponsor, merchandise from your fans, delivery driving on the days between rounds (each of your cars earns about $167 a day that passes, more in a busy state), and the champion's prize.
 
 **Going out:** each round, an entry fee, tyres, servicing, travel to the venue, electricity, water and race fuel; wages for mechanics; salaries for executives; driver training; crash repairs. Buying and fitting cars and parts is spending too.
 
-The Money panel breaks it down by category. Suppliers charge the market rate unless you sign a contract in Operations, which fixes the price for one to three years at a discount the supplier agrees to.
+The Ledger panel breaks it down by category. Suppliers charge the market rate unless you sign a contract in Operations, which fixes the price for one to three years at a discount the supplier agrees to.
 
 ## Looking after the car
 
@@ -86,19 +89,20 @@ Open **Menu** and press **Save to slot 1**. The save is kept in your browser. **
 - **My save has gone.** Browser saves live in the browser's own storage, so clearing site data deletes them. Export a file now and then.
 - **The game is slow to run a round.** Each prelim simulates 313 cars, so give it a moment.
 - **A button is greyed out.** Entries and some deals are locked once a season has started, and money-spending buttons are off when you cannot afford them. The tooltip or the panel text says why.
-- **A privacy prompt appeared.** The web build asks before it collects anonymous usage data (see the README). Saying no sends nothing.
+- **A privacy prompt appeared.** The web build counts how the game is used and tells you so on your first visit (see the README). Press Opt out and nothing more is sent; Privacy settings, at the bottom left, changes it later.
 
 ## Where to play
 
 Last Combustion is built for a computer: a desktop or laptop with a mouse and a screen of at least about 1024 pixels across (a tall 1080 by 1920 screen works too). It is not meant for phones or tablets, and on one the game says so once, with a button to carry on anyway.
 
-## What the first release does not have
+## What the game does not have yet
 
-Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no ownership or cap table, no facilities, no outages, no story or press layer, and computer garages do not shop around for suppliers. The Game Design Document lists all of it, built and planned.
+Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no story or interviews, no scouting or fog of war (every profile is open), and companies do not yet start up or wind down. The Game Design Document lists all of it, built and planned.
 
 ## Words you will see
 
 - **Almanac:** the book of every season's champions, awards and records.
+- **Game:** the status page for your save, with the facts of the world and the series and a dated chronicle.
 - **Base:** the Australian place your garage works from. Not the same as its flag.
 - **Black box:** the reigning champion's race number sits in a black box.
 - **Entry:** one car plus one driver. A garage can have up to eight.

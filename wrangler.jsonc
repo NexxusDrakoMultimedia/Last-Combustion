@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+//
+// Cloudflare Workers & Pages builds previews of the game from this repository (the Worker is called
+// last-combustion). The game is a static site, so the Worker only serves the built files in `dist`.
+// The release site, lc.nexxusdrako.au, is the same Worker built from `main`; its domain is attached in the
+// dashboard, so there is no `routes` entry here.
+//
+// The Worker's build settings in the Cloudflare dashboard are:
+//   - build command:  pnpm run build   (Cloudflare finds pnpm and installs the dependencies itself)
+//   - deploy command: npx wrangler deploy for `main` (production), npx wrangler preview for other branches
+// `wrangler preview` needs the (empty) `previews` block below. The telemetry keys
+// (VITE_GTAG_ID, VITE_GA_GAME_KEY, VITE_GA_SECRET_KEY) go on the Worker only when the release site moves
+// here: vite.telemetry.ts drops them from every Cloudflare build that is not of `main`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "last-combustion",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  // Traces and logs go to Better Stack (the destinations are set up in the Cloudflare dashboard) and
+  // are not kept in Cloudflare.
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "traces": {
+      "enabled": true,
+      "destinations": ["betterstack"],
+      "head_sampling_rate": 1,
+      "persist": false
+    },
+    "logs": {
+      "enabled": true,
+      "destinations": ["betterstack-logs"],
+      "head_sampling_rate": 1,
+      "invocation_logs": true,
+      "persist": false
+    },
+    "issue_detection": {
+      "enabled": true
+    }
+  },
+  "previews": {}
+}

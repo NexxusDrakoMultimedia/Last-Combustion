@@ -37,7 +37,8 @@ describe('licence plates in the database', () => {
       0,
     );
     expect(scalar(db, 'SELECT COUNT(*) - COUNT(DISTINCT plate) FROM car')).toBe(0);
-    expect(scalar(db, "SELECT plate_state FROM car WHERE plate = 'NEXXUS'")).toBe('VIC');
+    // The founder's personalised plate is not issued: the founder's car is not in the world.
+    expect(scalar(db, "SELECT COUNT(*) FROM car WHERE plate = 'NEXXUS'")).toBe(0);
   });
 
   it('are unique within a state, but a personalised plate can be the same in two states', () => {
@@ -46,15 +47,13 @@ describe('licence plates in the database', () => {
       db.exec("SELECT id FROM car WHERE plate_state <> 'VIC' ORDER BY id LIMIT 3")[0]!
         .values as number[][]
     ).map((v) => v[0]!) as [number, number, number];
-    // The founder's car already has NEXXUS in Victoria; the same text in New South Wales is fine.
+    // The same personalised text in two states is fine.
     db.run("UPDATE car SET plate = 'NEXXUS', plate_state = 'NSW' WHERE id = ?", [a]);
+    db.run("UPDATE car SET plate = 'NEXXUS', plate_state = 'VIC' WHERE id = ?", [c]);
     expect(scalar(db, "SELECT COUNT(*) FROM car WHERE plate = 'NEXXUS'")).toBe(2);
     // But a second NEXXUS in the same state is refused.
     expect(() =>
       db.run("UPDATE car SET plate = 'NEXXUS', plate_state = 'NSW' WHERE id = ?", [b]),
-    ).toThrow();
-    expect(() =>
-      db.run("UPDATE car SET plate = 'NEXXUS', plate_state = 'VIC' WHERE id = ?", [c]),
     ).toThrow();
   });
 

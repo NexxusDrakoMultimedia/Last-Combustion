@@ -2,10 +2,10 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 
 /**
- * Optional, consent-gated telemetry for the hosted web build (see the GDD, "Telemetry"). The game
+ * Optional, opt-out telemetry for the hosted web build (see the GDD, "Telemetry"). The game
  * describes what happened as a small, fixed set of events; sinks (GameAnalytics first, the Google
  * tag second) turn them into their own calls. Nothing here sends anything unless a sink has been
- * added, and sinks are added only after the visitor accepts. Events carry categories, counts and
+ * added, and sinks are added unless the visitor has opted out. Events carry categories, counts and
  * amounts, never names, free text or save contents.
  */
 
@@ -108,6 +108,12 @@ export const LEDGER_CATEGORIES = [
   'training',
   'wages',
   'salaries',
+  'facilities',
+  'share_issue',
+  'dividends',
+  'buyback',
+  'capital',
+  'acquisitions',
   'car_purchase',
   'car_sale',
   'parts',
@@ -127,6 +133,12 @@ const ITEM_GROUP: Readonly<Record<string, string>> = {
   repairs: 'servicing',
   restoration: 'servicing',
   relocation: 'travel',
+  facilities: 'utilities',
+  share_issue: 'equity',
+  dividends: 'equity',
+  buyback: 'equity',
+  capital: 'equity',
+  acquisitions: 'equity',
 };
 
 const groupOf = (category: string): string => ITEM_GROUP[category] ?? category;

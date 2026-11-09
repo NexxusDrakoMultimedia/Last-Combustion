@@ -1,0 +1,49 @@
+{
+  "source": "Garage facilities for the garage-operations design (see the GDD, 'Garage operations'). Every facility has levels 1 to 5. 'buildCost' is the price of level 1 and each next level costs 'costGrowth' times the one before; 'running' is the cost each round per level held. 'effect' is what each level adds. A facility with 'needs' cannot be built until that facility is at level 1 or more.",
+  "maxLevel": 5,
+  "costGrowth": 1.6,
+  "facilities": {
+    "workshop_bays": {
+      "buildCost": 40000,
+      "running": 600,
+      "needs": null,
+      "effect": { "crewCover": 0.05 }
+    },
+    "data_room": {
+      "buildCost": 30000,
+      "running": 400,
+      "needs": null,
+      "effect": { "breakthrough": 0.15 }
+    },
+    "driver_simulator": {
+      "buildCost": 60000,
+      "running": 900,
+      "needs": "data_room",
+      "effect": { "training": 0.08 }
+    },
+    "parts_store": {
+      "buildCost": 25000,
+      "running": 300,
+      "needs": null,
+      "effect": { "partPrice": 0.015 }
+    },
+    "solar_array": {
+      "buildCost": 18000,
+      "running": 100,
+      "needs": null,
+      "effect": { "electricity": 0.08, "outageCover": 0.15 }
+    },
+    "water_tanks": {
+      "buildCost": 8000,
+      "running": 60,
+      "needs": null,
+      "effect": { "water": 0.08 }
+    },
+    "transporter_fleet": {
+      "buildCost": 45000,
+      "running": 800,
+      "needs": null,
+      "effect": { "logistics": 0.06, "lateDeliveries": 0.2 }
+    }
+  }
+}

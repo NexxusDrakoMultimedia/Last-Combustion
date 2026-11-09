@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import wordmark from '../assets/brand/logo-wordmark.svg';
 import { t } from './i18n';
 import { useCareerStore } from './state/career.store';
 import { About } from './ui/About';
@@ -17,7 +18,9 @@ export function App() {
       ) : (
         <main className="mx-auto max-w-3xl space-y-6 p-6">
           <header className="space-y-1">
-            <h1 className="lc-display text-3xl">{t('app.title')}</h1>
+            <h1 className="lc-display text-3xl">
+              <img src={wordmark} alt={t('app.title')} className="h-auto w-full max-w-md" />
+            </h1>
             <p className="text-lc-dim">{t('app.tagline')}</p>
           </header>
           <NewCareer />

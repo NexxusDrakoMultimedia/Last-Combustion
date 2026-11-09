@@ -14,6 +14,7 @@ import {
   openSponsorNegotiation,
 } from '../../src/db/sponsors';
 import { persistWorld } from '../../src/db/world';
+import { sponsors } from '../../src/sim/sponsors';
 import { generateWorld } from '../../src/sim/worldgen';
 
 let SQL: SqlJsStatic;
@@ -48,7 +49,22 @@ describe('which sponsors a garage can approach', () => {
     const db = newCareer();
     const low = approachableSponsors(db, garageWithPrestige(db, 'ASC'));
     const high = approachableSponsors(db, garageWithPrestige(db, 'DESC'));
-    expect(high.length).toBeGreaterThan(low.length);
+    // Three are offered at most, all within reach, and sorted by tier then name.
+    expect(low.length).toBeLessThanOrEqual(3);
+    expect(high).toHaveLength(3);
+    const reach = (id: number) =>
+      Number(scalar(db, `SELECT prestige FROM garage WHERE id = ${id}`));
+    const minOf = (stableId: string) => sponsors.find((s) => s.id === stableId)!.minPrestige;
+    for (const [id, list] of [
+      [garageWithPrestige(db, 'ASC'), low],
+      [garageWithPrestige(db, 'DESC'), high],
+    ] as const)
+      for (const s of list) expect(minOf(s.stableId)).toBeLessThanOrEqual(reach(id));
+    const tiers = ['local', 'regional', 'national', 'continental', 'global'];
+    const order = high.map((s) => tiers.indexOf(s.tier));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    // The same three wait all season.
+    expect(approachableSponsors(db, garageWithPrestige(db, 'DESC'))).toEqual(high);
     expect(() => approachableSponsors(db, 9999)).toThrow(/no garage/);
   });
 

@@ -90,6 +90,23 @@ describe('migrate', () => {
       'restorations',
       'garage_champions',
       'car_retirement',
+      'continental_tier',
+      'facilities',
+      'executive_departures',
+      'ledger_year',
+      'cap_table',
+      'share_events',
+      'board',
+      'investments',
+      'business',
+      'morale',
+      'conversations',
+      'press',
+      'conversations_auto',
+      'deaths',
+      'origins',
+      'job_market',
+      'company_breaks',
     ]);
   });
 
@@ -243,9 +260,220 @@ describe('car retirement (schema version 36)', () => {
     const db = openDatabase(SQL);
     migrate(db, migrations.slice(0, 35));
     expect(getSchemaVersion(db)).toBe(35);
-    migrate(db);
+    migrate(db, migrations.slice(0, 36));
     expect(getSchemaVersion(db)).toBe(36);
     const columns = db.exec('PRAGMA table_info(car)')[0]!.values.map((v) => v[1]);
     expect(columns).toContain('retired_year');
+  });
+});
+
+describe('the continental tier (schema version 37)', () => {
+  const tierRows = (db: ReturnType<typeof openDatabase>) =>
+    db.exec("SELECT stable_id FROM sponsor WHERE tier = 'continental' ORDER BY id")[0]?.values ??
+    [];
+
+  it('adds the continental sponsors to a career that already has its sponsors', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 36));
+    db.exec(
+      "INSERT INTO sponsor VALUES (1, 'wattle-hardware', 'Wattle Hardware Co.', 'AU', 'local', 1, 30)",
+    );
+    db.exec('INSERT INTO sponsor_deal VALUES (1, 1, 1, 2031, 2032, 40000, 1)');
+    migrate(db, migrations.slice(0, 37));
+    expect(getSchemaVersion(db)).toBe(37);
+    expect(tierRows(db)).toHaveLength(3);
+    expect(db.exec('SELECT sponsor_id FROM sponsor_deal')[0]!.values[0]![0]).toBe(1);
+    expect(db.exec('SELECT name FROM sponsor WHERE id = 1')[0]!.values[0]![0]).toBe(
+      'Wattle Hardware Co.',
+    );
+  });
+
+  it('adds nothing to a new world, which is filled in from the data files', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(db.exec('SELECT COUNT(*) FROM sponsor')[0]!.values[0]![0]).toBe(0);
+  });
+});
+
+describe('facilities (schema version 38)', () => {
+  it('adds a table of facilities that holds a level from 1 to 5', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 37));
+    migrate(db, migrations.slice(0, 38));
+    expect(getSchemaVersion(db)).toBe(38);
+    const columns = db.exec('PRAGMA table_info(facility)')[0]!.values.map((v) => v[1]);
+    expect(columns).toEqual(['garage_id', 'kind', 'level']);
+    expect(() => db.exec("INSERT INTO facility VALUES (1, 'data_room', 6)")).toThrow();
+  });
+});
+
+describe('executive departures (schema version 39)', () => {
+  it('adds a reason for leaving that only takes the known reasons', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 39));
+    expect(getSchemaVersion(db)).toBe(39);
+    const columns = db.exec('PRAGMA table_info(executive)')[0]!.values.map((v) => v[1]);
+    expect(columns).toContain('left_reason');
+    expect(() =>
+      db.exec(
+        "INSERT INTO executive (garage_id, role, name, birth_year, skill, left_reason) VALUES (1, 'chief_executive', 'X', 1970, 50, 'bored')",
+      ),
+    ).toThrow();
+  });
+});
+
+describe('the cap table (schema version 41)', () => {
+  it('adds holdings that take a known holder type and class, and a valuation history', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 41));
+    expect(getSchemaVersion(db)).toBe(41);
+    const insert = (type: string, cls: string, shares: number) =>
+      db.exec(
+        `INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, since) VALUES (1, '${type}', 'X', '${cls}', ${shares}, '2031-02-01')`,
+      );
+    expect(() => insert('owner', 'ordinary', 1000)).not.toThrow();
+    expect(() => insert('pirate', 'ordinary', 1000)).toThrow();
+    expect(() => insert('owner', 'golden', 1000)).toThrow();
+    expect(() => insert('owner', 'ordinary', 0)).toThrow();
+    const columns = db.exec('PRAGMA table_info(valuation)')[0]!.values.map((v) => v[1]);
+    expect(columns).toEqual(['garage_id', 'date', 'value']);
+  });
+});
+
+describe('share events (schema version 42)', () => {
+  it('adds a history of rounds, dividends and buy-backs, and personal cash for the owner', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 42));
+    expect(getSchemaVersion(db)).toBe(42);
+    expect(() =>
+      db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (1, '2031-02-01', 'round')"),
+    ).not.toThrow();
+    expect(() =>
+      db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (1, '2031-02-01', 'heist')"),
+    ).toThrow();
+    const columns = db.exec('PRAGMA table_info(owner)')[0]!.values.map((v) => v[1]);
+    expect(columns).toContain('personal_cash');
+  });
+});
+
+describe('the board (schema version 43)', () => {
+  it('adds a target for each garage and year, with the finish, whether it was met and any vote', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 43));
+    expect(getSchemaVersion(db)).toBe(43);
+    const columns = db.exec('PRAGMA table_info(board_target)')[0]!.values.map((v) => v[1]);
+    expect(columns).toEqual(['garage_id', 'year', 'target', 'finish', 'met', 'vote']);
+    expect(() =>
+      db.exec('INSERT INTO board_target (garage_id, year, target) VALUES (1, 2031, 0)'),
+    ).toThrow();
+    expect(() =>
+      db.exec('INSERT INTO board_target (garage_id, year, target) VALUES (1, 2031, 40)'),
+    ).not.toThrow();
+    expect(() =>
+      db.exec('INSERT INTO board_target (garage_id, year, target) VALUES (1, 2031, 41)'),
+    ).toThrow();
+  });
+});
+
+describe('investments (schema version 44)', () => {
+  it('remembers who took a garage over, widens the share events and marks the owner’s shares', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 43));
+    db.exec(
+      "INSERT INTO owner (id, garage_id, name, identity, birth_date) VALUES (1, 5, 'Owner', 'masculine', '1990-01-01')",
+    );
+    db.exec(
+      "INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, since) VALUES (5, 'owner', 'Owner', 'ordinary', 1000000, '2031-02-01'), (6, 'owner', 'Founder', 'ordinary', 1000000, '2031-02-01')",
+    );
+    db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-02-01', 'round')");
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(53);
+    expect(db.exec('PRAGMA table_info(garage)')[0]!.values.map((v) => v[1])).toContain(
+      'acquired_by',
+    );
+    // The player’s own shares are recognised; another garage’s founder is not.
+    expect(
+      db.exec('SELECT garage_id, holder_id FROM shareholding ORDER BY garage_id')[0]!.values,
+    ).toEqual([
+      [5, 1],
+      [6, null],
+    ]);
+    // The history survives, and takes the two new kinds.
+    expect(db.exec('SELECT kind FROM share_event')[0]!.values).toEqual([['round']]);
+    expect(() =>
+      db.exec(
+        "INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-03-01', 'takeover')",
+      ),
+    ).not.toThrow();
+    expect(() =>
+      db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-03-01', 'heist')"),
+    ).toThrow();
+  });
+});
+
+describe('business (schema version 45)', () => {
+  it('records a sponsor and a supplier for each garage', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(53);
+    expect(db.exec('PRAGMA table_info(business)')[0]!.values.map((v) => v[1])).toEqual([
+      'garage_id',
+      'sponsor_id',
+      'supplier_id',
+      'since_year',
+    ]);
+  });
+});
+
+describe('morale (schema version 46)', () => {
+  it('gives mechanics and executives a morale of 50 and keeps it within 0 to 100', () => {
+    const db = openDatabase(SQL);
+    migrate(db, migrations.slice(0, 45));
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(53);
+    for (const table of ['staff', 'executive'])
+      expect(db.exec(`PRAGMA table_info(${table})`)[0]!.values.map((v) => v[1])).toContain(
+        'morale',
+      );
+    expect(() =>
+      db.exec(
+        "INSERT INTO staff (garage_id, name, skill, wage_per_week, hired_on, morale) VALUES (1, 'M', 50, 500, '2031-02-01', 101)",
+      ),
+    ).toThrow();
+  });
+});
+
+describe('conversations (schema version 47)', () => {
+  it('keeps each conversation with its manner', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(53);
+    expect(() =>
+      db.exec(
+        "INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, date) VALUES (1, 1, 'season_opening', 'sponsor', 1, 'shouting', 3, '2031-03-01')",
+      ),
+    ).toThrow();
+    expect(() =>
+      db.exec(
+        "INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, date) VALUES (1, 1, 'season_opening', 'sponsor', 1, 'warm', 3, '2031-03-01')",
+      ),
+    ).not.toThrow();
+  });
+});
+
+describe('press (schema version 48)', () => {
+  it('keeps one headline for a garage and a round', () => {
+    const db = openDatabase(SQL);
+    migrate(db);
+    expect(getSchemaVersion(db)).toBe(53);
+    const insert =
+      "INSERT INTO headline (garage_id, round_id, journalist_id, kind, tone, driver, position, date) VALUES (1, 1, 1, 'win', 'warm', 'D', 1, '2031-04-01')";
+    expect(() => db.exec(insert)).not.toThrow();
+    expect(() => db.exec(insert)).toThrow();
+    expect(() =>
+      db.exec(
+        "INSERT INTO headline (garage_id, round_id, journalist_id, kind, tone, driver, position, date) VALUES (1, 2, 1, 'shock', 'warm', 'D', 1, '2031-04-01')",
+      ),
+    ).toThrow();
   });
 });

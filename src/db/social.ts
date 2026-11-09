@@ -1,0 +1,264 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import type { Database } from 'sql.js';
+import { JOURNALISTS } from '../sim/press';
+import { createRng } from '../sim/rng';
+import {
+  CONVERSATIONS,
+  MANNERS,
+  converseOutcome,
+  nextOccasion,
+  occasionOn,
+  occasionEnd,
+  occasionSchedule,
+  startingScore,
+  type Manner,
+  type OccasionDate,
+  type OccasionId,
+} from '../sim/social';
+import { readCareer } from './career';
+import { contactsBook, partyName, type Contact, type ContactType } from './contacts';
+import { all } from './entries';
+import { adjustRelationship } from './negotiation';
+
+export interface ConversationLine {
+  id: number;
+  occasion: string;
+  party: { type: string; id: number; name: string };
+  manner: Manner;
+  delta: number;
+  trouble: boolean;
+  /** The party was met for the first time in this conversation. */
+  met: boolean;
+  /** Someone else was introduced as well. */
+  introduced: boolean;
+  /** The occasion ended with this conversation unspent, so it was held by itself. */
+  auto: boolean;
+  date: string;
+}
+
+export interface SocialView {
+  /** The occasion open now, or null when none is. */
+  occasion: OccasionId | null;
+  /** The last day the open occasion is on. */
+  until: string | null;
+  /** The next occasion to come. */
+  next: { id: OccasionId; date: string } | null;
+  left: number;
+  total: number;
+  /** The people the player could talk to: their contacts book. */
+  contacts: Contact[];
+  /** How many people the garage has not met yet. */
+  strangers: number;
+  history: ConversationLine[];
+}
+
+interface SeasonNow {
+  id: number;
+  /** The game date. */
+  today: string;
+  schedule: OccasionDate[];
+}
+
+/** The latest season with its occasions, from the rounds' final dates, and the game date. */
+function seasonNow(db: Database): SeasonNow | undefined {
+  const s = all(db, 'SELECT id, year FROM season ORDER BY year DESC LIMIT 1')[0];
+  const career = readCareer(db);
+  if (!s || !career) return undefined;
+  const finals: Record<number, string> = {};
+  for (const r of all(db, 'SELECT number, final_date FROM round WHERE season_id = ?', [
+    s.id as number,
+  ]))
+    finals[r.number as number] = r.final_date as string;
+  return {
+    id: s.id as number,
+    today: career.gameDate,
+    schedule: occasionSchedule(s.year as number, finals),
+  };
+}
+
+/** Who the garage has not met: sponsors that would have it, manufacturers and journalists. */
+function strangersOf(db: Database, garageId: number): { type: ContactType; id: number }[] {
+  const prestige = Number(
+    all(db, 'SELECT prestige FROM garage WHERE id = ?', [garageId])[0]?.prestige ?? 0,
+  );
+  const met = new Set(
+    all(
+      db,
+      "SELECT party_b_type AS t, party_b_id AS i FROM relationship WHERE party_a_type = 'garage' AND party_a_id = ?",
+      [garageId],
+    ).map((r) => `${r.t as string}:${r.i as number}`),
+  );
+  const out: { type: ContactType; id: number }[] = [];
+  for (const r of all(db, 'SELECT id FROM sponsor WHERE min_prestige <= ? ORDER BY id', [prestige]))
+    out.push({ type: 'sponsor', id: r.id as number });
+  for (const r of all(db, 'SELECT id FROM manufacturer ORDER BY id'))
+    out.push({ type: 'manufacturer', id: r.id as number });
+  for (const j of JOURNALISTS) out.push({ type: 'journalist', id: j.id });
+  return out.filter((p) => !met.has(`${p.type}:${p.id}`));
+}
+
+const countFor = (db: Database, garageId: number, seasonId: number, occasion: string): number =>
+  Number(
+    all(
+      db,
+      'SELECT COUNT(*) AS n FROM conversation WHERE garage_id = ? AND season_id = ? AND occasion = ?',
+      [garageId, seasonId, occasion],
+    )[0]!.n,
+  );
+
+/** The social occasion open now, what is left to spend at it, and what has happened so far. */
+export function socialView(db: Database, garageId: number): SocialView {
+  const season = seasonNow(db);
+  const open = season ? occasionOn(season.schedule, season.today) : null;
+  const upcoming = season ? nextOccasion(season.schedule, season.today) : null;
+  const occasion = open?.id ?? null;
+  const used = season && occasion ? countFor(db, garageId, season.id, occasion) : 0;
+  return {
+    occasion,
+    until: open ? occasionEnd(open) : null,
+    next: upcoming ? { id: upcoming.id, date: upcoming.date } : null,
+    left: occasion ? Math.max(0, CONVERSATIONS - used) : 0,
+    total: CONVERSATIONS,
+    contacts: contactsBook(db, garageId),
+    strangers: strangersOf(db, garageId).length,
+    history: all(db, 'SELECT * FROM conversation WHERE garage_id = ? ORDER BY id DESC LIMIT 12', [
+      garageId,
+    ]).map((r) => ({
+      id: r.id as number,
+      occasion: r.occasion as string,
+      party: {
+        type: r.party_type as string,
+        id: r.party_id as number,
+        name: partyName(db, r.party_type as string, r.party_id as number) ?? '',
+      },
+      manner: r.manner as Manner,
+      delta: r.delta as number,
+      trouble: r.trouble === 1,
+      met: r.met === 1,
+      introduced: r.introduced === 1,
+      auto: r.auto === 1,
+      date: r.date as string,
+    })),
+  };
+}
+
+/** One conversation, held at an occasion on a date: the way it goes comes from the seed, the occasion and the count so far. */
+function hold(
+  db: Database,
+  garageId: number,
+  career: { masterSeed: string },
+  seasonId: number,
+  occasion: OccasionId,
+  target: { type: ContactType; id: number } | null,
+  manner: Manner,
+  date: string,
+  auto: boolean,
+): void {
+  const used = countFor(db, garageId, seasonId, occasion);
+  const stream = createRng(career.masterSeed).stream(`social:${seasonId}:${occasion}:${used}`);
+  const strangers = strangersOf(db, garageId);
+  let party: { type: ContactType; id: number };
+  let met = false;
+  if (target === null) {
+    if (strangers.length === 0) throw new Error('There is no one left to meet.');
+    party = stream.pick(strangers);
+    met = true;
+  } else {
+    if (!partyName(db, target.type, target.id)) throw new Error('There is no such contact.');
+    if (!contactsBook(db, garageId).some((c) => c.type === target.type && c.id === target.id))
+      throw new Error('That is not someone the garage has dealt with.');
+    party = target;
+  }
+  const outcome = converseOutcome(stream, manner);
+  const me = { type: 'garage', id: garageId };
+  adjustRelationship(db, me, party, met ? startingScore(outcome.delta) : outcome.delta);
+  let introduced = false;
+  if (outcome.introduces) {
+    const others = strangers.filter((p) => !(p.type === party.type && p.id === party.id));
+    if (others.length > 0) {
+      adjustRelationship(db, me, stream.pick(others), startingScore(0));
+      introduced = true;
+    }
+  }
+  db.run(
+    `INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, trouble, introduced, met, auto, date)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      garageId,
+      seasonId,
+      occasion,
+      party.type,
+      party.id,
+      manner,
+      outcome.delta,
+      outcome.trouble ? 1 : 0,
+      introduced ? 1 : 0,
+      met ? 1 : 0,
+      auto ? 1 : 0,
+      date,
+    ],
+  );
+}
+
+/**
+ * Spends one conversation at the open occasion. The target is someone in the contacts book, or null to
+ * meet someone new. The way it goes comes from the career's seed, the occasion and how many
+ * conversations came before.
+ */
+export function converse(
+  db: Database,
+  garageId: number,
+  target: { type: ContactType; id: number } | null,
+  manner: Manner,
+): ConversationLine {
+  const career = readCareer(db);
+  if (!career) throw new Error('There is no career in this database.');
+  if (!MANNERS.includes(manner)) throw new Error(`There is no manner "${manner}".`);
+  const season = seasonNow(db);
+  const occasion = season ? (occasionOn(season.schedule, season.today)?.id ?? null) : null;
+  if (!season || !occasion) throw new Error('There is no social occasion open now.');
+  if (countFor(db, garageId, season.id, occasion) >= CONVERSATIONS)
+    throw new Error('There are no conversations left at this occasion.');
+  hold(db, garageId, career, season.id, occasion, target, manner, career.gameDate, false);
+  return socialView(db, garageId).history[0]!;
+}
+
+/**
+ * Holds the conversations the player left unspent at an occasion that has now ended: each one is a
+ * random manner with a random contact (or, one time in three, someone new). It is idempotent, so it
+ * can run every day. Returns how many were held.
+ */
+export function fireMissedConversations(db: Database, garageId: number): number {
+  const career = readCareer(db);
+  const season = seasonNow(db);
+  if (!career || !season) return 0;
+  let held = 0;
+  for (const occasion of season.schedule) {
+    const end = occasionEnd(occasion);
+    if (end >= season.today) continue;
+    for (let used = countFor(db, garageId, season.id, occasion.id); used < CONVERSATIONS; used++) {
+      const pick = createRng(career.masterSeed).stream(
+        `socialauto:${season.id}:${occasion.id}:${used}`,
+      );
+      const book = contactsBook(db, garageId);
+      const canMeet = strangersOf(db, garageId).length > 0;
+      if (book.length === 0 && !canMeet) break;
+      const meet = canMeet && (book.length === 0 || pick.chance(1 / 3));
+      const contact = meet ? undefined : pick.pick(book);
+      hold(
+        db,
+        garageId,
+        career,
+        season.id,
+        occasion.id,
+        contact ? { type: contact.type, id: contact.id } : null,
+        pick.pick([...MANNERS]),
+        end,
+        true,
+      );
+      held++;
+    }
+  }
+  return held;
+}

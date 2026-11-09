@@ -13,16 +13,17 @@ import {
   fairSupplyDiscount,
   marketRate,
   supplierById,
+  supplierStrength,
 } from '../../src/sim/supply';
 
 const market = (seed: string, category: (typeof SUPPLY_CATEGORIES)[number], years: number) =>
   marketRate(createRng(seed).stream(`market:${category}:${2031 + years}`), category, years);
 
 describe('suppliers', () => {
-  it('are fictional companies with unique ids, three to a category, each with a believable price index', () => {
+  it('are fictional companies with unique ids, eight to a category, each with a believable price index', () => {
     expect(new Set(SUPPLIERS.map((s) => s.id)).size).toBe(SUPPLIERS.length);
     for (const category of SUPPLY_CATEGORIES) {
-      expect(SUPPLIERS.filter((s) => s.category === category)).toHaveLength(3);
+      expect(SUPPLIERS.filter((s) => s.category === category)).toHaveLength(8);
     }
     for (const s of SUPPLIERS) {
       expect(s.priceIndex).toBeGreaterThanOrEqual(0.8);
@@ -39,6 +40,15 @@ describe('suppliers', () => {
     for (const state of ['SA', 'WA', 'Tas', 'NT']) expect(canDealWith(local, 0, state)).toBe(true);
     expect(canDealWith(global, 49, 'Qld')).toBe(false);
     expect(canDealWith(global, 50, 'Qld')).toBe(true);
+  });
+
+  it('have a continental tier between national and global', () => {
+    const strengthOf = (tier: string) => supplierStrength(SUPPLIERS.find((s) => s.tier === tier)!);
+    expect(strengthOf('continental')).toBeGreaterThan(strengthOf('national'));
+    expect(strengthOf('continental')).toBeLessThan(strengthOf('global'));
+    const continental = SUPPLIERS.find((s) => s.tier === 'continental')!;
+    expect(canDealWith(continental, 39, 'Qld')).toBe(false);
+    expect(canDealWith(continental, 40, 'Qld')).toBe(true);
   });
 
   it('can still limit a supplier to some regions through its states', () => {

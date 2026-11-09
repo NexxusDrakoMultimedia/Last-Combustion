@@ -6,7 +6,9 @@ import {
   affinityGain,
   areaFactor,
   dailyKm,
-  daysBefore,
+  dailyLifeDaysBetween,
+  isDailyLifeDay,
+  type RoundSpan,
   deliveryIncome,
   relocationCost,
   roadTypeOfPlace,
@@ -18,48 +20,54 @@ import { readCareer } from './career';
 import { all } from './entries';
 import { wearParts } from './repairs';
 
-/** The days of daily life that come before a round, from the calendar in the database. */
-function gapDaysBefore(db: Database, seasonId: number, roundNumber: number): number {
-  const round = all(db, 'SELECT practice_start FROM round WHERE season_id = ? AND number = ?', [
-    seasonId,
-    roundNumber,
-  ])[0];
-  if (!round) throw new Error(`There is no round ${roundNumber}.`);
-  const previous = all(db, 'SELECT final_date FROM round WHERE season_id = ? AND number = ?', [
-    seasonId,
-    roundNumber - 1,
-  ])[0];
-  return daysBefore(
-    roundNumber,
-    round.practice_start as string,
-    (previous?.final_date as string | undefined) ?? null,
-  );
-}
-
-export interface DailyLife {
+export interface DailyLifeTotals {
   days: number;
   income: number;
   km: number;
 }
 
+interface SeasonDays {
+  id: number;
+  seasonStart: string;
+  rounds: RoundSpan[];
+}
+
+/** The latest season's start date and the span of each round, from the calendar in the database. */
+function seasonDays(db: Database): SeasonDays | undefined {
+  const season = all(db, 'SELECT id, year FROM season ORDER BY year DESC LIMIT 1')[0];
+  if (!season) return undefined;
+  return {
+    id: season.id as number,
+    seasonStart: `${season.year as number}-02-01`,
+    rounds: all(
+      db,
+      'SELECT practice_start, final_date FROM round WHERE season_id = ? ORDER BY number',
+      [season.id as number],
+    ).map((r) => ({
+      practiceStart: r.practice_start as string,
+      finalDate: r.final_date as string,
+    })),
+  };
+}
+
+/** A running total of daily life across the days of one skip, written to the ledger when the skip is done. */
+export type DailyLifeRun = Map<number, DailyLifeTotals>;
+
 /**
- * Settles the daily life of a garage in the days before a round (see the GDD, "Driver origins:
- * hometown and residence"). Each entered car is driven on everyday and delivery roads for those
- * days: it earns delivery income for the garage (more in a busy area, set by where its driver
- * lives), covers road kilometres that wear the chassis and its parts, and its driver gets better,
- * slowly, at the kind of road around their home. Called from `settleRound` inside its transaction,
- * for the player's garage only (the computer garages' costs and income are not modelled bill by bill).
+ * Settles one day of daily life for the player's garage (see the GDD, "Driver origins: hometown and
+ * residence"), if the date is a day of daily life. Each entered car is driven on everyday and delivery
+ * roads for the day: it earns delivery income for the garage (more in a busy area, set by where its
+ * driver lives), covers road kilometres that wear the chassis and its parts, and its driver gets
+ * better, slowly, at the kind of road around their home. The income is added to `run`, and
+ * `flushDailyLife` writes it to the ledger. The computer garages' costs and income are not modelled
+ * bill by bill, so only the player's garage has a daily life.
  */
-export function settleDailyLife(
-  db: Database,
-  garageId: number,
-  roundId: number,
-  roundNumber: number,
-  date: string,
-): DailyLife {
-  const round = all(db, 'SELECT season_id FROM round WHERE id = ?', [roundId])[0]!;
-  const seasonId = round.season_id as number;
-  const days = gapDaysBefore(db, seasonId, roundNumber);
+export function settleDay(db: Database, date: string, run: DailyLifeRun): void {
+  const season = seasonDays(db);
+  if (!season || !isDailyLifeDay(date, season.seasonStart, season.rounds)) return;
+  const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+  if (!player) return;
+  const garageId = player.id as number;
   const entries = all(
     db,
     `SELECT e.car_id, e.driver_id, c.road_km, c.race_km, c.wear_offset, c.restorations, m.tier,
@@ -67,14 +75,13 @@ export function settleDailyLife(
        FROM entry e JOIN car c ON c.id = e.car_id JOIN car_model m ON m.id = c.car_model_id
        JOIN driver d ON d.id = e.driver_id JOIN place p ON p.id = d.residence_place_id
       WHERE e.garage_id = ? AND e.season_id = ? AND e.series = 'main' ORDER BY e.id`,
-    [garageId, seasonId],
+    [garageId, season.id],
   );
-  let income = 0;
-  let km = 0;
-  if (days <= 0) return { days: 0, income: 0, km: 0 };
+  const totals = run.get(garageId) ?? { days: 0, income: 0, km: 0 };
+  totals.days += 1;
   const cap = affinityCap();
   for (const e of entries) {
-    const distance = dailyKm(days);
+    const distance = dailyKm(1);
     const roadKm = (e.road_km as number) + distance;
     const tier = e.tier as Tier;
     db.run('UPDATE car SET road_km = ?, wear = ? WHERE id = ?', [
@@ -89,8 +96,8 @@ export function settleDailyLife(
       e.car_id as number,
     ]);
     wearParts(db, e.car_id as number, distance, 'road', tier);
-    income += deliveryIncome(days, e.region as string);
-    km += distance;
+    totals.income += deliveryIncome(1, e.region as string);
+    totals.km += distance;
     // The roads around home slowly train that road type, up to a cap (a driver already above it keeps their rating).
     const type: RoadType = roadTypeOfPlace({ id: e.place as string });
     const rating = Number(
@@ -101,20 +108,31 @@ export function settleDailyLife(
     );
     if (rating < cap) {
       db.run('UPDATE driver_road_affinity SET rating = ? WHERE driver_id = ? AND road_type = ?', [
-        Math.round(Math.min(cap, rating + affinityGain(days)) * 10) / 10,
+        Math.round(Math.min(cap, rating + affinityGain(1)) * 1000) / 1000,
         e.driver_id as number,
         type,
       ]);
     }
   }
-  if (income > 0) {
+  run.set(garageId, totals);
+}
+
+/** Writes the delivery income of a skip to the ledger as one line, and adds it to the garage's cash. */
+export function flushDailyLife(db: Database, run: DailyLifeRun, date: string): void {
+  for (const [garageId, t] of run) {
+    if (t.income <= 0) continue;
     db.run(
-      'INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, ?, ?, ?, ?, ?)',
-      [garageId, roundId, date, 'delivery', income, `${days} days before round ${roundNumber}`],
+      'INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, ?, ?, ?, ?)',
+      [
+        garageId,
+        date,
+        'delivery',
+        t.income,
+        `${t.days} ${t.days === 1 ? 'day' : 'days'} of delivery work`,
+      ],
     );
-    db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [income, garageId]);
+    db.run('UPDATE garage SET cash = cash + ? WHERE id = ?', [t.income, garageId]);
   }
-  return { days, income, km };
 }
 
 export interface DriverHome {
@@ -172,19 +190,25 @@ export function dailyLifeView(db: Database, garageId: number): DailyLifeView {
       movingTo: r.move_name ? placeName(r.move_name, r.move_region) : null,
     };
   });
+  const days = seasonDays(db);
+  const career = readCareer(db);
   const next = all(
     db,
-    "SELECT number FROM round WHERE season_id = ? AND status = 'scheduled' ORDER BY number LIMIT 1",
+    "SELECT number, practice_start FROM round WHERE season_id = ? AND status = 'scheduled' ORDER BY number LIMIT 1",
     [season.id as number],
   )[0];
   let nextGap: DailyLifeView['nextGap'] = null;
-  if (next && season.status !== 'complete') {
-    const round = next.number as number;
-    const days = gapDaysBefore(db, season.id as number, round);
+  if (next && days && career && season.status !== 'complete') {
+    const n = dailyLifeDaysBetween(
+      career.gameDate,
+      next.practice_start as string,
+      days.seasonStart,
+      days.rounds,
+    );
     nextGap = {
-      round,
-      days,
-      income: drivers.reduce((sum, d) => sum + deliveryIncome(days, d.region), 0),
+      round: next.number as number,
+      days: n,
+      income: drivers.reduce((sum, d) => sum + deliveryIncome(n, d.region), 0),
     };
   }
   return { drivers, canMove: season.status === 'complete', cost: relocationCost(), nextGap };

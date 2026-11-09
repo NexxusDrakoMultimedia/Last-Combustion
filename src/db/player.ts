@@ -3,6 +3,8 @@
 import type { Database } from 'sql.js';
 import type { Identity } from '../sim/worldgen/types';
 import { AUSTRALIAN_STATES } from '../sim/worldgen/data';
+import { readCareer } from './career';
+import { setSoleOwner } from './equity';
 import { all } from './entries';
 
 export interface OwnerSetup {
@@ -61,7 +63,11 @@ export function foundPlayerGarage(db: Database, setup: OwnerSetup): number {
         [setup.baseState],
       )[0]
     : undefined;
-  const hq = all(db, 'SELECT id FROM place WHERE country = ? ORDER BY id LIMIT 1', [setup.flag])[0];
+  // An Australian flag means the headquarters are at the base itself: base, garage and HQ are one place.
+  const hq =
+    setup.flag === 'AU' && base
+      ? base
+      : all(db, 'SELECT id FROM place WHERE country = ? ORDER BY id LIMIT 1', [setup.flag])[0];
   db.exec('BEGIN');
   try {
     db.run(
@@ -75,16 +81,21 @@ export function foundPlayerGarage(db: Database, setup: OwnerSetup): number {
         base.region as string,
         id,
       ]);
-    db.run('UPDATE garage SET hq_place_id = COALESCE(?, hq_place_id, base_place_id) WHERE id = ?', [
-      (hq?.id as number | undefined) ?? null,
-      id,
-    ]);
+    if (setup.flag === 'AU')
+      db.run('UPDATE garage SET hq_place_id = base_place_id WHERE id = ?', [id]);
+    else
+      db.run(
+        'UPDATE garage SET hq_place_id = COALESCE(?, hq_place_id, base_place_id) WHERE id = ?',
+        [(hq?.id as number | undefined) ?? null, id],
+      );
     db.run('INSERT INTO owner (id, garage_id, name, identity, birth_date) VALUES (1, ?, ?, ?, ?)', [
       id,
       owner,
       setup.identity,
       setup.birthDate,
     ]);
+    // The owner starts with every share of the garage.
+    setSoleOwner(db, id, owner, readCareer(db)?.gameDate ?? `${setup.birthDate.slice(0, 4)}-02-01`);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');

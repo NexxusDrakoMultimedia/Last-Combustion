@@ -7,7 +7,7 @@ import type { TelemetrySink } from './telemetry';
  * GameAnalytics (the primary telemetry tool) through its open-source JavaScript SDK. The game
  * and secret keys are given at build time as `VITE_GA_GAME_KEY` and `VITE_GA_SECRET_KEY`; without
  * both nothing here does anything. The SDK is only fetched, and the keys only used, after the
- * visitor accepts.
+ * visitor has not opted out.
  */
 
 export interface GameAnalyticsKeys {
@@ -99,7 +99,7 @@ export function createGameAnalyticsSink(sdk: GameAnalyticsSdk): TelemetrySink {
   };
 }
 
-/** Fetches the SDK. It is a separate chunk, so it is not loaded unless the visitor accepts. */
+/** Fetches the SDK. It is a separate chunk, so it is not loaded once the visitor has opted out. */
 async function importSdk(): Promise<GameAnalyticsSdk> {
   const module = (await import('gameanalytics')) as unknown as { GameAnalytics: GameAnalyticsSdk };
   return module.GameAnalytics;

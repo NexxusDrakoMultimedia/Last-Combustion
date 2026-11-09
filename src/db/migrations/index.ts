@@ -37,6 +37,23 @@ import { migration0033 } from './0033_daily_life';
 import { migration0034 } from './0034_restorations';
 import { migration0035 } from './0035_garage_champions';
 import { migration0036 } from './0036_car_retirement';
+import { migration0037 } from './0037_continental_tier';
+import { migration0038 } from './0038_facilities';
+import { migration0039 } from './0039_executive_departures';
+import { migration0040 } from './0040_ledger_year';
+import { migration0041 } from './0041_cap_table';
+import { migration0042 } from './0042_share_events';
+import { migration0043 } from './0043_board';
+import { migration0044 } from './0044_investments';
+import { migration0045 } from './0045_business';
+import { migration0046 } from './0046_morale';
+import { migration0047 } from './0047_conversations';
+import { migration0048 } from './0048_press';
+import { migration0049 } from './0049_conversations_auto';
+import { migration0050 } from './0050_deaths';
+import { migration0051 } from './0051_origins';
+import { migration0052 } from './0052_job_market';
+import { migration0053 } from './0053_company_breaks';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -76,4 +93,21 @@ export const migrations: readonly Migration[] = [
   migration0034,
   migration0035,
   migration0036,
+  migration0037,
+  migration0038,
+  migration0039,
+  migration0040,
+  migration0041,
+  migration0042,
+  migration0043,
+  migration0044,
+  migration0045,
+  migration0046,
+  migration0047,
+  migration0048,
+  migration0049,
+  migration0050,
+  migration0051,
+  migration0052,
+  migration0053,
 ];

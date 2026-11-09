@@ -22,6 +22,12 @@ describe('fan gains', () => {
     expect(driverFanGain(200_000, { ...quiet, finalPos: 1, home: true })).toBe(2400);
   });
 
+  it('give 0.6% of the audience for each attention flag', () => {
+    expect(driverFanGain(200_000, { ...quiet, attention: 1 })).toBe(1200);
+    expect(driverFanGain(200_000, { ...quiet, finalPos: 1, attention: 2 })).toBe(2000 + 2400);
+    expect(driverFanGain(200_000, { ...quiet, attention: 0 })).toBe(0);
+  });
+
   it('scale with the series audience and never go negative', () => {
     fc.assert(
       fc.property(
@@ -57,5 +63,10 @@ describe('series growth', () => {
     expect(seriesGrowth(2032)).toBeCloseTo(0.26, 5);
     expect(seriesGrowth(2036)).toBeCloseTo(0.26, 5);
     expect(seriesGrowth(2037)).toBeCloseTo(0.09, 5);
+  });
+
+  it('adds half a percent for each attention flag raised the season before', () => {
+    expect(seriesGrowth(2032, 4)).toBeCloseTo(0.28, 5);
+    expect(seriesGrowth(2037, 2)).toBeCloseTo(0.1, 5);
   });
 });

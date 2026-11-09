@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import {
+  bringForwardTo,
+  calendarView,
+  skipTime as skipTimeDb,
+  type CalendarView,
+} from '../db/calendar';
+import type { SkipMode } from '../sim/calendar';
+import { contactsBook, type Contact, type ContactType } from '../db/contacts';
+import { pressView, type PressView } from '../db/press';
+import { converse as dbConverse, socialView, type SocialView } from '../db/social';
+import type { Manner } from '../sim/social';
 import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
@@ -81,13 +92,43 @@ import { persistWorld, readWorldSummary, type WorldSummary } from '../db/world';
 import { generateWorld } from '../sim/worldgen';
 import type { MessageKey, MessageValues } from '../i18n';
 import {
+  ledgerSummary,
+  ledgerYears,
+  transactions,
+  type LedgerSummary,
+  type TransactionsView,
+} from '../db/ledger';
+import { ledgerCsv, type LedgerFilter } from '../sim/ledger';
+import {
+  buyBackShares as dbBuyBackShares,
+  injectCapital as dbInjectCapital,
+  issueShares as dbIssueShares,
+  ownershipView,
+  type OwnershipView,
+} from '../db/equity';
+import {
+  buyStake as dbBuyStake,
+  investmentTargets,
+  investmentView,
+  launchTakeover as dbLaunchTakeover,
+  sellStake as dbSellStake,
+  wealthOf,
+  type InvestmentTarget,
+  type InvestmentView,
+  type Wealth,
+} from '../db/investments';
+import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
+import type { FacilityKind } from '../sim/facilities';
+import {
   dismissExecutive,
   executiveCandidates,
   executiveCapacity,
   garageExecutives,
+  recentDepartures,
   offerExecutiveContract,
   openExecutiveNegotiation,
   type Executive,
+  type ExecutiveDeparture,
   type ExecutiveOutcome,
 } from '../db/executives';
 import {
@@ -100,6 +141,7 @@ import {
   type RegistryPage,
   type RegistryTarget,
 } from '../db/registry';
+import { gameView, type GameView } from '../db/gameinfo';
 import { recordBook, type RecordBook } from '../db/records';
 import {
   fullStandings,
@@ -231,6 +273,23 @@ interface CareerState {
   entries: GarageEntry[];
   sponsors: SponsorsView | undefined;
   money: GarageFinance | undefined;
+  /** The financial years the player's garage has books for (newest first), and the summary of the one being looked at. */
+  ledgerYears: number[];
+  /** Who owns the player's garage, what it is worth and how that has moved. */
+  ownership: OwnershipView | undefined;
+  /** The owner's own wealth: personal cash and shares held in other garages. */
+  wealth: Wealth | undefined;
+  /** The computer garages the owner could invest in (read when the Investments tab opens), and the one being looked at. */
+  investments: InvestmentTarget[];
+  contacts: Contact[];
+  calendar: CalendarView | undefined;
+  social: SocialView | undefined;
+  press: PressView | undefined;
+  investment: InvestmentView | undefined;
+  ledgerView: LedgerSummary | undefined;
+  /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
+  transactionsFilter: LedgerFilter | undefined;
+  transactionsView: TransactionsView | undefined;
   /** The mechanics the garage employs, the ones on offer, and how well they cover its entries (0 to 1). */
   staff: Mechanic[];
   staffOffers: MechanicOffer[];
@@ -240,16 +299,24 @@ interface CareerState {
   executiveCapacity: { slots: number; used: number };
   executiveOffers: { role: ExecutiveRole; offers: ExecutiveOffer[] }[];
   executiveNegotiation: ActiveExecutiveNegotiation | undefined;
+  /** The executives lost to retirement or a rival this year. */
+  executiveDepartures: ExecutiveDeparture[];
   /** The garage's utility, fuel and logistics suppliers, markets and contracts. */
   supply: SupplyView | undefined;
   supplyNegotiation: ActiveSupplyNegotiation | undefined;
+  /** The garage's facilities, at their levels, with what the next level costs. */
+  facilities: FacilityView[];
   /** The record book and the champions and awards of every finished season (read when the Almanac opens). */
   recordBook: RecordBook | undefined;
+  /** The Game screen's figures (read when the panel opens). */
+  gameView: GameView | undefined;
   /** The seasons in the save, and the full tables and round classification last asked for (read when the Season panel needs them). */
   years: number[];
   /** The Registry: where the player has been (newest last) and the page now showing. */
   registryTrail: RegistryTarget[];
   registryPage: RegistryPage | undefined;
+  /** A round's results the player asked to see (from a link): the Season panel opens on them. */
+  resultsFocus: { year: number; round: number; session: 'prelims' | 'final' } | undefined;
   /** The dragon-blooded drivers, who carry the dragon mark wherever their name is a link. */
   dragonDrivers: ReadonlySet<number>;
   /** Everything greylinked (`driver:12`, `car:7`, `garage:3`): listed apart, with grey links. */
@@ -298,10 +365,31 @@ interface CareerState {
   negotiateSupply(supplierId: number): Promise<void>;
   offerSupply(discount: number, years: number): Promise<void>;
   endSupplyNegotiation(): void;
+  buildFacility(kind: FacilityKind): Promise<void>;
+  loadInvestments(): void;
+  loadContacts(): void;
+  continueTime(): Promise<void>;
+  skipTime(mode: SkipMode): Promise<void>;
+  loadSocial(): void;
+  loadPress(): void;
+  converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
+  lookAtInvestment(garageId: number | null): void;
+  buyStake(holdingId: number): Promise<void>;
+  sellStake(garageId: number): Promise<void>;
+  launchTakeover(garageId: number, premium: number): Promise<void>;
+  issueShares(investor: number, amount: number): Promise<void>;
+  buyBackShares(holdingId: number, shares: number, by: 'garage' | 'owner'): Promise<void>;
+  injectCapital(amount: number): Promise<void>;
   loadRecords(): void;
+  loadGame(): void;
   openRegistry(target: RegistryTarget): void;
+  openResults(year: number, round: number, session: 'prelims' | 'final'): void;
+  clearResultsFocus(): void;
   registryBack(): void;
   closeRegistry(): void;
+  loadLedger(year: number): void;
+  loadTransactions(filter: LedgerFilter): void;
+  exportLedger(): Promise<void>;
   loadStandings(year: number): void;
   loadClassification(year: number, round: number): void;
   dismissExecutive(executiveId: number): Promise<void>;
@@ -323,6 +411,16 @@ interface CareerState {
   refreshSlots(): Promise<void>;
 }
 
+/** The view of a garage the owner is looking at, or undefined if there is none or it has closed since. */
+function investmentNow(db: Database, garageId: number | undefined): InvestmentView | undefined {
+  if (garageId === undefined) return undefined;
+  try {
+    return investmentView(db, garageId);
+  } catch {
+    return undefined;
+  }
+}
+
 function describeError(error: unknown): Notice {
   return {
     key: 'debug.error',
@@ -340,6 +438,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       career: readCareer(db),
       world: readWorldSummary(db),
       nextRound: nextRoundNumber(db),
+      calendar: calendarView(db),
       nextFinal: nextFinalRound(db),
       hub: hubView(db),
       dragonDrivers: dragonDriverIds(db),
@@ -367,7 +466,25 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               approachable: approachableSponsors(db, playerGarageId(db)!),
             },
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
+      ledgerYears: playerGarageId(db) === null ? [] : ledgerYears(db, playerGarageId(db)!),
+      ownership: playerGarageId(db) === null ? undefined : ownershipView(db, playerGarageId(db)!),
+      wealth: playerGarageId(db) === null ? undefined : wealthOf(db, playerGarageId(db)!),
+      // The garage being looked at moves on when money does; one that has closed is dropped.
+      investment: investmentNow(db, get().investment?.garageId),
+      // The summary on show moves on when money does.
+      transactionsView:
+        playerGarageId(db) === null || !get().transactionsFilter
+          ? undefined
+          : transactions(db, playerGarageId(db)!, get().transactionsFilter),
+      ledgerView:
+        playerGarageId(db) === null ||
+        !get().ledgerView ||
+        !ledgerYears(db, playerGarageId(db)!).includes(get().ledgerView!.year)
+          ? undefined
+          : ledgerSummary(db, playerGarageId(db)!, get().ledgerView!.year),
       executives: playerGarageId(db) === null ? [] : garageExecutives(db, playerGarageId(db)!),
+      executiveDepartures:
+        playerGarageId(db) === null ? [] : recentDepartures(db, playerGarageId(db)!),
       executiveCapacity:
         playerGarageId(db) === null
           ? { slots: 0, used: 0 }
@@ -383,6 +500,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             })),
       years: seasonYears(db),
       supply: playerGarageId(db) === null ? undefined : supplyView(db, playerGarageId(db)!),
+      facilities: playerGarageId(db) === null ? [] : facilityViews(db, playerGarageId(db)!),
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
       staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
@@ -437,16 +555,32 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     entries: [],
     sponsors: undefined,
     money: undefined,
+    ledgerYears: [],
+    ownership: undefined,
+    wealth: undefined,
+    investments: [],
+    contacts: [],
+    calendar: undefined,
+    social: undefined,
+    press: undefined,
+    investment: undefined,
+    ledgerView: undefined,
+    transactionsFilter: undefined,
+    transactionsView: undefined,
     executives: [],
+    executiveDepartures: [],
     executiveCapacity: { slots: 0, used: 0 },
     executiveOffers: [],
     executiveNegotiation: undefined,
     supply: undefined,
+    facilities: [],
     supplyNegotiation: undefined,
     recordBook: undefined,
+    gameView: undefined,
     years: [],
     standingsView: undefined,
     registryTrail: [],
+    resultsFocus: undefined,
     dragonDrivers: new Set<number>(),
     greylinked: new Set<string>(),
     activeYears: new Map(),
@@ -792,6 +926,33 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         return undefined;
       }, 'SupplyOffer'),
 
+    loadLedger: (year) => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ ledgerView: ledgerSummary(openDb, garageId, year) });
+    },
+
+    loadTransactions: (filter) => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null)
+        set({
+          transactionsFilter: filter,
+          transactionsView: transactions(openDb, garageId, filter),
+        });
+    },
+
+    exportLedger: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        const rows = transactions(openDb, garageId, get().transactionsFilter ?? {}).rows;
+        await getServices().platform.files.exportFile(
+          'ledger.csv',
+          new TextEncoder().encode(ledgerCsv(rows)),
+        );
+        return undefined;
+      }, 'ExportLedger'),
+
     loadStandings: (year) => {
       if (openDb) set({ standingsView: fullStandings(openDb, year) });
     },
@@ -817,6 +978,13 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       }
     },
 
+    openResults: (year, round, session) => {
+      trackDesign(undefined, 'Registry', 'Open', session === 'final' ? 'race' : 'prelim');
+      set({ registryTrail: [], registryPage: undefined, resultsFocus: { year, round, session } });
+    },
+
+    clearResultsFocus: () => set({ resultsFocus: undefined }),
+
     registryBack: () => {
       const trail = get().registryTrail.slice(0, -1);
       const previous = trail[trail.length - 1];
@@ -828,6 +996,10 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     },
 
     closeRegistry: () => set({ registryTrail: [], registryPage: undefined }),
+
+    loadGame: () => {
+      if (openDb) set({ gameView: gameView(openDb) });
+    },
 
     loadRecords: () => {
       if (openDb) set({ recordBook: recordBook(openDb) });
@@ -852,6 +1024,142 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'DismissExecutive'),
+
+    issueShares: (investor, amount) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbIssueShares(openDb, garageId, investor, amount);
+        refresh(openDb);
+        return undefined;
+      }, 'IssueShares'),
+
+    buyBackShares: (holdingId, shares, by) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbBuyBackShares(openDb, garageId, holdingId, shares, by);
+        refresh(openDb);
+        return undefined;
+      }, 'BuyBackShares'),
+
+    injectCapital: (amount) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbInjectCapital(openDb, garageId, amount);
+        refresh(openDb);
+        return undefined;
+      }, 'InjectCapital'),
+
+    loadPress: () => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ press: pressView(openDb, garageId) });
+    },
+
+    loadSocial: () => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ social: socialView(openDb, garageId) });
+    },
+
+    converse: (target, manner) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbConverse(openDb, garageId, target, manner);
+        set({ social: socialView(openDb, garageId), contacts: contactsBook(openDb, garageId) });
+        return undefined;
+      }, 'Converse'),
+
+    skipTime: (mode) =>
+      run(
+        async () => {
+          if (!openDb) return undefined;
+          skipTimeDb(openDb, mode);
+          refresh(openDb);
+          return undefined;
+        },
+        mode === 'event' ? 'SkipToEvent' : mode === 'week' ? 'SkipWeek' : 'SkipDay',
+      ),
+
+    continueTime: async () => {
+      if (!openDb) return;
+      const view = calendarView(openDb);
+      if (!view) return;
+      const due = view.due;
+      if (!due) return get().skipTime('due');
+      if (due.kind === 'prelims') return get().runNextPrelims();
+      if (due.kind === 'final') return get().runNextFinal();
+      if (due.kind === 'end_season') return get().finishSeason();
+      if (due.kind === 'new_season') return get().newSeason();
+    },
+
+    loadContacts: () => {
+      const garageId = openDb ? playerGarageId(openDb) : null;
+      if (openDb && garageId !== null) set({ contacts: contactsBook(openDb, garageId) });
+    },
+
+    loadInvestments: () => {
+      if (openDb && playerGarageId(openDb) !== null)
+        set({ investments: investmentTargets(openDb) });
+    },
+
+    lookAtInvestment: (garageId) => {
+      if (!openDb) return;
+      set({ investment: garageId === null ? undefined : investmentNow(openDb, garageId) });
+    },
+
+    buyStake: (holdingId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbBuyStake(openDb, garageId, holdingId);
+        refresh(openDb);
+        set({ investments: investmentTargets(openDb) });
+        return undefined;
+      }, 'BuyStake'),
+
+    sellStake: (targetId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        dbSellStake(openDb, garageId, targetId);
+        refresh(openDb);
+        set({ investments: investmentTargets(openDb) });
+        return undefined;
+      }, 'SellStake'),
+
+    launchTakeover: (targetId, premium) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        const name = investmentNow(openDb, targetId)?.name ?? '';
+        const result = dbLaunchTakeover(openDb, garageId, targetId, premium);
+        set({ investment: undefined });
+        refresh(openDb);
+        set({ investments: investmentTargets(openDb) });
+        return {
+          key: 'investments.takeoverDone',
+          values: { name, cars: result.cars, drivers: result.drivers },
+        };
+      }, 'LaunchTakeover'),
+
+    buildFacility: (kind) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        buildFacility(openDb, garageId, kind);
+        refresh(openDb);
+        return undefined;
+      }, 'BuildFacility'),
 
     hireMechanic: (offer) =>
       run(async () => {
@@ -917,6 +1225,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     finishSeason: () =>
       run(async () => {
         if (!openDb) return undefined;
+        bringForwardTo(openDb, 'end_season');
         const seasonEnd = endSeason(openDb);
         refresh(openDb);
         track({
@@ -967,6 +1276,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (!openDb) return undefined;
         const round = nextRoundNumber(openDb);
         if (round === null) return undefined;
+        bringForwardTo(openDb, 'prelims', round);
         const summary = playPrelims(openDb, round);
         refresh(openDb);
         track({
@@ -983,6 +1293,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (!openDb) return undefined;
         const round = nextFinalRound(openDb);
         if (round === null) return undefined;
+        bringForwardTo(openDb, 'final', round);
         const summary = playFinal(openDb, round);
         const settlement = settleRound(openDb, round);
         // The auction house closes its auction between rounds and opens the next one.

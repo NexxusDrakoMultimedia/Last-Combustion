@@ -1,0 +1,427 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import type { RandomStream } from './rng';
+import { equityData } from './worldgen/data';
+
+export type ShareClass = keyof typeof equityData.classes;
+export const SHARE_CLASSES = Object.keys(equityData.classes) as ShareClass[];
+export const FOUNDING_SHARES = equityData.shares;
+
+export type HolderType = 'owner' | 'family' | 'investor' | 'sponsor' | 'manufacturer';
+
+export interface ValuationInput {
+  cash: number;
+  /** What the garage's cars are worth. */
+  cars: number;
+  /** The yearly profit of up to the last three closed years, newest first (missing years are left out). */
+  yearlyProfits: readonly number[];
+  fans: number;
+  prestige: number;
+  /** Titles in the trophy cabinet. */
+  titles: number;
+}
+
+export interface Valuation {
+  cash: number;
+  cars: number;
+  profit: number;
+  fans: number;
+  prestige: number;
+  titles: number;
+  total: number;
+}
+
+/**
+ * What a garage is worth: cash, its cars, four times its average yearly profit over three years (never
+ * less than zero), $20 a fan, $2,000 times prestige squared and $50,000 for each title.
+ */
+export function valuationOf(input: ValuationInput): Valuation {
+  const c = equityData.valuation;
+  const years = input.yearlyProfits.slice(0, c.profitYears);
+  const average = years.length === 0 ? 0 : years.reduce((a, b) => a + b, 0) / years.length;
+  const parts = {
+    cash: input.cash,
+    cars: input.cars,
+    profit: Math.round(Math.max(0, average) * c.profitMultiple),
+    fans: Math.round(input.fans * c.perFan),
+    prestige: Math.round(input.prestige ** 2 * c.perPrestigeSquared),
+    titles: input.titles * c.perTitle,
+  };
+  const total = Object.values(parts).reduce((a, b) => a + b, 0);
+  return { ...parts, total };
+}
+
+export interface HolderSpec {
+  type: HolderType;
+  /** A sponsor's or manufacturer's id, for a holder that is one. */
+  refId: number | null;
+  name: string;
+  class: ShareClass;
+  shares: number;
+}
+
+export interface DrawContext {
+  founder: string;
+  /** A given name for a relative of the founder, who shares the surname. */
+  relative: () => string;
+  surname: string;
+  /** A fictional business person for an outside investor. */
+  investor: () => string;
+  sponsors: readonly { id: number; name: string }[];
+  manufacturers: readonly { id: number; name: string }[];
+}
+
+/**
+ * The starting owners of a computer garage: most belong to their founder and family, a fifth have an
+ * outside investor on preferred shares, and a few are held in part by a sponsor or a manufacturer.
+ * The shares always add up to the founding capital.
+ */
+export function drawCapTable(rng: RandomStream, ctx: DrawContext): HolderSpec[] {
+  const c = equityData.computerGarages;
+  const total = FOUNDING_SHARES;
+  const outside: HolderSpec[] = [];
+  const kind = rng.float(0, 1);
+  const between = ([lo, hi]: readonly number[]) => rng.float(lo as number, hi as number);
+  const family: HolderSpec[] = [];
+  if (kind < c.familyShare) {
+    const founderStake = between(c.founderStake);
+    const members = rng.int(c.familyMembers[0] as number, c.familyMembers[1] as number);
+    if (founderStake < 1) {
+      const each = Math.floor((total * (1 - founderStake)) / members);
+      for (let i = 0; i < members; i++)
+        family.push({
+          type: 'family',
+          refId: null,
+          name: `${ctx.relative()} ${ctx.surname}`,
+          class: 'ordinary',
+          shares: each,
+        });
+    }
+  } else if (kind < c.familyShare + c.investorShare) {
+    const outsideStake = between(c.investorStake);
+    outside.push({
+      type: 'investor',
+      refId: null,
+      name: ctx.investor(),
+      class: 'preferred',
+      shares: Math.floor(total * outsideStake),
+    });
+  } else {
+    const outsideStake = between(c.strategicStake);
+    const maker = rng.chance(c.manufacturerShare) && ctx.manufacturers.length > 0;
+    const pool = maker ? ctx.manufacturers : ctx.sponsors;
+    const holder = pool.length > 0 ? rng.pick([...pool]) : undefined;
+    if (holder)
+      outside.push({
+        type: maker ? 'manufacturer' : 'sponsor',
+        refId: holder.id,
+        name: holder.name,
+        class: 'ordinary',
+        shares: Math.floor(total * outsideStake),
+      });
+  }
+  const others = [...family, ...outside];
+  const founderShares = total - others.reduce((sum, h) => sum + h.shares, 0);
+  return [
+    { type: 'owner', refId: null, name: ctx.founder, class: 'ordinary', shares: founderShares },
+    ...others,
+  ];
+}
+
+export interface Holding {
+  shares: number;
+  class: ShareClass;
+}
+
+/** The shares that are issued (ordinary and preferred) and the whole once the option pool is counted. */
+export function shareTotals(holdings: readonly Holding[]): {
+  outstanding: number;
+  diluted: number;
+} {
+  const outstanding = holdings
+    .filter((h) => h.class !== 'option')
+    .reduce((sum, h) => sum + h.shares, 0);
+  const diluted = holdings.reduce((sum, h) => sum + h.shares, 0);
+  return { outstanding, diluted };
+}
+
+/** The votes a holding carries. */
+export const votesOf = (h: Holding): number =>
+  h.shares * (equityData.classes[h.class] as { votes: number }).votes;
+
+/** The name of a funding round by its order: Seed, Series A, Series B and so on. */
+export function roundName(order: number): string {
+  const names = equityData.rounds.names;
+  return names[Math.min(order, names.length) - 1] ?? names[names.length - 1]!;
+}
+
+export interface InvestorOffer {
+  name: string;
+  /** How much they believe in the garage, as a multiple of its valuation. */
+  appetite: number;
+  /** The shares they take: preferred (no vote), or ordinary when they insist on a say. */
+  class: ShareClass;
+}
+
+/** The investors on offer for a round: fictional business people, each valuing the garage a little differently. */
+export function drawInvestors(rng: RandomStream, names: () => string): InvestorOffer[] {
+  const [lo, hi] = equityData.rounds.appetite as [number, number];
+  return Array.from({ length: equityData.rounds.offers }, () => {
+    const name = names();
+    const votes = rng.chance(equityData.rounds.votingShare);
+    const base = rng.float(lo, hi);
+    return {
+      name,
+      // An investor who wants votes pays a little more for the garage, because the votes are worth having.
+      appetite: Math.round(base * (votes ? equityData.rounds.votingPremium : 1) * 100) / 100,
+      class: votes ? ('ordinary' as const) : ('preferred' as const),
+    };
+  });
+}
+
+export interface RoundTerms {
+  /** The share of the garage (of its issued shares once the round is done) that the investor gets. */
+  stake: number;
+  newShares: number;
+  pricePerShare: number;
+  /** What the investor values the garage at before and after the money goes in. */
+  preMoney: number;
+  postMoney: number;
+}
+
+/**
+ * What an investor offers for a round: for `amount` they get the share of the garage that the money is
+ * of its value to them after it goes in, `amount ÷ (valuation × appetite + amount)`, as newly issued shares.
+ */
+export function roundTerms(
+  valuation: number,
+  issued: number,
+  amount: number,
+  appetite: number,
+): RoundTerms {
+  const preMoney = Math.max(0, valuation) * appetite;
+  const postMoney = preMoney + amount;
+  const stake = postMoney === 0 ? 0 : amount / postMoney;
+  const newShares = stake >= 1 ? 0 : Math.max(1, Math.round((issued * stake) / (1 - stake)));
+  return {
+    stake,
+    newShares,
+    pricePerShare: newShares === 0 ? 0 : amount / newShares,
+    preMoney,
+    postMoney,
+  };
+}
+
+export const MIN_ROUND = equityData.rounds.minAmount;
+export const MAX_ROUND_STAKE = equityData.rounds.maxStake;
+
+/**
+ * Splits a dividend between the holders of ordinary and preferred shares in proportion to their shares.
+ * The parts are whole dollars that add up to the dividend; the odd dollars go to the biggest holdings.
+ */
+export function splitDividend(
+  holdings: readonly { id: number; shares: number; class: ShareClass }[],
+  total: number,
+): Map<number, number> {
+  const paying = holdings.filter((h) => h.class !== 'option');
+  const shares = paying.reduce((sum, h) => sum + h.shares, 0);
+  const out = new Map<number, number>();
+  if (shares === 0 || total <= 0) return out;
+  let given = 0;
+  for (const h of paying) {
+    const part = Math.floor((total * h.shares) / shares);
+    out.set(h.id, part);
+    given += part;
+  }
+  let left = total - given;
+  for (const h of [...paying].sort((a, b) => b.shares - a.shares || a.id - b.id)) {
+    if (left <= 0) break;
+    out.set(h.id, (out.get(h.id) ?? 0) + 1);
+    left--;
+  }
+  return out;
+}
+
+/** What shares are worth now when bought or sold at the garage's valuation, in whole dollars. */
+export const sharesPrice = (valuation: number, issued: number, shares: number): number =>
+  issued === 0 ? 0 : Math.round((Math.max(0, valuation) * shares) / issued);
+
+export type ControlLevel = 'control' | 'blocking' | 'minority';
+
+export interface VoteHolder {
+  id: number;
+  name: string;
+  type: string;
+  shares: number;
+  class: ShareClass;
+}
+
+export interface ControlView {
+  /** The owner's share of all the votes. */
+  ownerVotes: number;
+  /** Over half the votes is control; a quarter or more can block the reserved matters; less is neither. */
+  level: ControlLevel;
+  /** Other holders with enough votes to block the reserved matters, with their share of the votes. */
+  blockers: { name: string; votes: number }[];
+}
+
+/** Who controls a garage: the owner's votes, and anyone else who can block the reserved matters. */
+export function controlOf(holders: readonly VoteHolder[]): ControlView {
+  const c = equityData.control;
+  const total = holders.reduce((sum, h) => sum + votesOf(h), 0);
+  const share = (h: VoteHolder): number => (total === 0 ? 0 : votesOf(h) / total);
+  const ownerVotes = holders.filter((h) => h.type === 'owner').reduce((s, h) => s + share(h), 0);
+  const byName = new Map<string, number>();
+  for (const h of holders)
+    if (h.type !== 'owner') byName.set(h.name, (byName.get(h.name) ?? 0) + share(h));
+  return {
+    ownerVotes,
+    level:
+      ownerVotes > c.majority
+        ? 'control'
+        : ownerVotes >= c.blockingMinority
+          ? 'blocking'
+          : 'minority',
+    blockers: [...byName]
+      .filter(([, v]) => v >= c.blockingMinority)
+      .map(([name, votes]) => ({ name, votes }))
+      .sort((a, b) => b.votes - a.votes),
+  };
+}
+
+export interface Director {
+  name: string;
+  /** Why they sit on the board. */
+  seat: 'owner' | 'investor' | 'chair';
+  /** The share of the issued shares they hold, for an owner or an investor. */
+  stake: number;
+}
+
+/**
+ * The board: the owner, a director for each outside holder with a tenth of the issued shares or more,
+ * and an independent chair.
+ */
+export function boardOf(
+  holders: readonly VoteHolder[],
+  ownerName: string,
+  chair: string,
+): Director[] {
+  const issued = shareTotals(holders).outstanding;
+  const stakeOf = (name: string) =>
+    issued === 0
+      ? 0
+      : holders
+          .filter((h) => h.name === name && h.class !== 'option')
+          .reduce((s, h) => s + h.shares, 0) / issued;
+  const seats = new Map<string, number>();
+  for (const h of holders)
+    if (h.type !== 'owner' && h.class !== 'option') seats.set(h.name, stakeOf(h.name));
+  return [
+    { name: ownerName, seat: 'owner', stake: stakeOf(ownerName) },
+    ...[...seats]
+      .filter(([, stake]) => stake >= equityData.control.directorStake)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, stake]): Director => ({ name, seat: 'investor', stake })),
+    { name: chair, seat: 'chair', stake: 0 },
+  ];
+}
+
+/**
+ * The finish the board expects of a garage this season: no worse than last season's, or, for a garage
+ * with no history, its place among the garages by prestige.
+ */
+export function seasonTarget(lastFinish: number | null, prestigeRank: number): number {
+  return lastFinish ?? prestigeRank;
+}
+
+/** Whether a finish meets the target (a lower place is better). */
+export const targetMet = (finish: number | null, target: number): boolean =>
+  finish !== null && finish <= target;
+
+/**
+ * Whether the board may call a vote of no confidence: the target missed this many seasons in a row
+ * (the newest first) while the owner holds no more than half the votes.
+ */
+export function noConfidence(missesNewestFirst: readonly boolean[], ownerVotes: number): boolean {
+  const need = equityData.control.missesForVote;
+  return (
+    missesNewestFirst.length >= need &&
+    missesNewestFirst.slice(0, need).every(Boolean) &&
+    ownerVotes <= equityData.control.majority
+  );
+}
+
+// ---- Holdings in other garages, and takeovers ----
+
+/** How much more than its share of the garage a holding is worth a holder asks to sell it: drawn once per holding. */
+export function reservePremium(holderType: string, stream: RandomStream): number {
+  const range = (equityData.holdings.reserve as Record<string, number[]>)[holderType] ?? [0, 0.4];
+  return Math.round(stream.float(range[0] as number, range[1] as number) * 100) / 100;
+}
+
+export interface TakeoverHolder {
+  id: number;
+  type: string;
+  name: string;
+  shares: number;
+  class: ShareClass;
+  /** The premium over their share's value at which they will sell. */
+  reserve: number;
+  /** Whether the shares are the bidder's own already. */
+  mine: boolean;
+}
+
+export interface TakeoverQuote {
+  pricePerShare: number;
+  /** The holdings (not the bidder's own) that accept at this premium. */
+  accepting: number[];
+  /** The share of all the votes that will have accepted, the bidder's own included. */
+  votes: number;
+  /** Whether the bid carries: over half the votes have accepted. */
+  success: boolean;
+  /** What the rest of the garage costs: every holding that is not the bidder's, at the offered price. */
+  cost: number;
+  /** Whether the founders and the directors (the board) are among those who accept. */
+  boardSupports: boolean;
+}
+
+/**
+ * A bid for a whole garage at a premium over its valuation. Every holder whose reserve is at or below
+ * the premium accepts. The bid carries when the acceptors and the bidder's own shares hold over half the
+ * votes; then the holders who did not accept are bought out at the same price.
+ */
+export function takeoverQuote(
+  holders: readonly TakeoverHolder[],
+  valuation: number,
+  premium: number,
+): TakeoverQuote {
+  const issued = shareTotals(holders).outstanding;
+  const price = issued === 0 ? 0 : (Math.max(0, valuation) * (1 + premium)) / issued;
+  const totalVotes = holders.reduce((sum, h) => sum + votesOf(h), 0);
+  const accepting = holders.filter((h) => !h.mine && h.reserve <= premium);
+  const voting = holders
+    .filter((h) => h.mine || h.reserve <= premium)
+    .reduce((sum, h) => sum + votesOf(h), 0);
+  const votes = totalVotes === 0 ? 0 : voting / totalVotes;
+  const cost = holders
+    .filter((h) => !h.mine && h.class !== 'option')
+    .reduce((sum, h) => sum + Math.round(price * h.shares), 0);
+  // The board is the founder and any outside holder with a tenth of the issued shares.
+  const board = holders.filter(
+    (h) =>
+      !h.mine &&
+      h.class !== 'option' &&
+      (h.type === 'owner' || (issued > 0 && h.shares / issued >= equityData.control.directorStake)),
+  );
+  return {
+    pricePerShare: price,
+    accepting: accepting.map((h) => h.id),
+    votes,
+    success: votes > equityData.holdings.takeoverVotes,
+    cost,
+    boardSupports: board.length === 0 || board.every((h) => h.reserve <= premium),
+  };
+}
+
+/** The most a bid can offer over a garage's valuation. */
+export const MAX_PREMIUM = equityData.holdings.maxPremium;
