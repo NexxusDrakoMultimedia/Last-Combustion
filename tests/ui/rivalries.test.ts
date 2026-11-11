@@ -40,7 +40,7 @@ describe('the rivalries section', () => {
     expect(out).toContain('Ayla Ward');
     expect(out).toContain('Tom Reid');
     expect(out).toContain(t('rivalry.level.rivalry'));
-    expect(out).toContain(t('rivalry.meeting.close_finish', { round: 2, year: 2031 }));
+    expect(out).toContain(t('rivalry.meeting.close_finish', { round: 2, year: 2031, seconds: 3 }));
     expect(out).toContain(t('rivalry.meeting.title_fight', { round: 3, year: 2031 }));
   });
 });

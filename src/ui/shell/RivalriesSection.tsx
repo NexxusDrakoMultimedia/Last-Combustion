@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useEffect } from 'react';
 import { t } from '../../i18n';
+import { rivalryBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
 
 /** The live rivalries of the player's drivers, with the meetings that built each one. */
@@ -35,7 +36,11 @@ export function RivalriesSection() {
               <ul className="text-xs text-lc-dim">
                 {r.meetings.map((m, i) => (
                   <li key={i}>
-                    {t(`rivalry.meeting.${m.kind}`, { round: m.round, year: m.year })}
+                    {t(`rivalry.meeting.${m.kind}`, {
+                      round: m.round,
+                      year: m.year,
+                      seconds: rivalryBalance.gains.closeFinishMs / 1000,
+                    })}
                   </li>
                 ))}
               </ul>

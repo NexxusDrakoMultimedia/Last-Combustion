@@ -34,7 +34,7 @@ const tidy = (n: number): number => Math.round(n * 100) / 100;
 
 /**
  * Applies what a finished final does to the world's rivalries (see the GDD, "Rivalries"), once for
- * each round: every open rivalry cools, finishing within half a second of another driver and a
+ * each round: every open rivalry cools, finishing within a few seconds of another driver and a
  * head-to-head between the two title leaders add heat, a pair that reaches Spark goes live if both
  * drivers have room (or if it is hotter than their coolest live rivalry), and rivalries end when
  * they cool under ten or when a driver has retired. Returns the level of each rivalry that went live.

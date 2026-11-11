@@ -1086,6 +1086,6 @@
   "rivalry.level.rivalry": "Rivalry",
   "rivalry.level.feud": "Feud",
   "rivalry.level.legendary": "Legendary",
-  "rivalry.meeting.close_finish": "Round {round}, {year}: finished within half a second",
+  "rivalry.meeting.close_finish": "Round {round}, {year}: finished within {seconds} seconds of each other",
   "rivalry.meeting.title_fight": "Round {round}, {year}: fought for the title"
 }

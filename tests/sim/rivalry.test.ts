@@ -63,11 +63,11 @@ describe('heat and fans', () => {
 });
 
 describe('shared moments', () => {
-  it('pairs adjacent finishers within half a second', () => {
+  it('pairs adjacent finishers within three seconds', () => {
     const pairs = closeFinishPairs([
       { driverId: 9, timeMs: 100_000 },
-      { driverId: 4, timeMs: 100_400 },
-      { driverId: 2, timeMs: 101_000 },
+      { driverId: 4, timeMs: 102_900 },
+      { driverId: 2, timeMs: 106_000 },
     ]);
     expect(pairs).toEqual([{ a: 4, b: 9 }]);
   });

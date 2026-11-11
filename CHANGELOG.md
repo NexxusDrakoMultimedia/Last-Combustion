@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Added
 
-- **Rivalries.** Drivers who finish a final within half a second of each other, or who lead the title fight together, build up heat that cools every round. A pair that reaches Spark, Rivalry or Feud is shown on a Rivalries list at the bottom of the Drivers panel with the meetings that built it, and a driver wins up to 50% more fans in a final the rival also races. A driver has at most three live rivalries, and one ends when it cools or a driver retires. Saves from 0.2.x still load and start with none.
+- **Rivalries.** Drivers who finish a final within three seconds of each other, or who lead the title fight together, build up heat that cools every round. A pair that reaches Spark, Rivalry or Feud is shown on a Rivalries list at the bottom of the Drivers panel with the meetings that built it, and a driver wins up to 50% more fans in a final the rival also races. A driver has at most three live rivalries, and one ends when it cools or a driver retires. Saves from 0.2.x still load and start with none.
 
 ## [0.2.0] - 2026-11-10
 

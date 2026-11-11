@@ -31,7 +31,7 @@ The rules are in "Incidents, rivalries and storylines" in the Game Design Docume
 **Calls made in this plan** (change them if you disagree):
 
 - Piece 1 covers driver rivalries only. Garage, manufacturer and flag rivalries use the same heat rules and arrive with the championship screens later in the slice.
-- Piece 1 applies only the heat gains the existing data can show: a finish within 0.5 s (`result.final_time_ms`) and a title-fight head-to-head. Moving to the other's rival garage and taking a rival's race number need transfer and number-change records the schema does not hold yet, and contact, final-race overtakes and press jabs need the incident and press-choice systems, so they join in pieces 2 and 3.
+- Piece 1 applies only the heat gains the existing data can show: a finish within 3 s (`result.final_time_ms`) and a title-fight head-to-head. Moving to the other's rival garage and taking a rival's race number need transfer and number-change records the schema does not hold yet, and contact, final-race overtakes and press jabs need the incident and press-choice systems, so they join in pieces 2 and 3.
 - The head-to-head composure and aggression change is also left to pieces 2 and 3, for the same reason. Piece 1 delivers the fan multipliers and the rivalry board.
 - Rivalry rows and meetings use the world's drivers, so computer garages' drivers have rivalries too, and only the player's drivers get the board.
 

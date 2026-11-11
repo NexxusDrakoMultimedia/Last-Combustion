@@ -114,7 +114,7 @@ describe('a round of rivalries', () => {
     spread(db, 1);
     setTime(db, 1, 1, 100_000);
     setTime(db, 1, 2, 100_400);
-    setTime(db, 1, 3, 101_000);
+    setTime(db, 1, 3, 104_000);
     updateRivalries(db, 1);
     const pair = pairKey(driverAt(db, 1, 1), driverAt(db, 1, 2));
     expect(rows(db, 'SELECT driver_a, driver_b, heat, live, level FROM rivalry')).toEqual([

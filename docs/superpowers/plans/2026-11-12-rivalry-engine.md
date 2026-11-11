@@ -18,7 +18,7 @@
 - A new numbered migration (0054); never edit a released migration. A save from 0.2.x must still load and play a final, with no rivalries until finals are played.
 - New files start with `SPDX-License-Identifier: GPL-3.0-or-later` and `SPDX-FileCopyrightText: Nexxus Drako Multimedia`.
 - No em dashes in docs, text or data (`pnpm docs:style`). No real names. Telemetry carries counts only, through `track()`.
-- Values: heat gains close finish +8 (finishing within 0.5 s of each other) and title fight +10 per round; decay 10% each round; levels Spark 30, Rivalry 60, Feud 90, Legendary (Feud heat plus five seasons of history); a rivalry ends below heat 10, when a party retires; at most 3 live rivalries per driver; fan multipliers x1.1 Spark, x1.25 Rivalry, x1.5 Feud.
+- Values: heat gains close finish +8 (finishing within 3 s of each other) and title fight +10 per round; decay 10% each round; levels Spark 30, Rivalry 60, Feud 90, Legendary (Feud heat plus five seasons of history); a rivalry ends below heat 10, when a party retires; at most 3 live rivalries per driver; fan multipliers x1.1 Spark, x1.25 Rivalry, x1.5 Feud.
 - Plan's own calls: heat ceiling 100; Legendary uses the Feud multiplier (x1.5); a pair reaches "live" at heat 30; when a driver is at the cap, a new pair only goes live by displacing that driver's coolest live rivalry if its heat is higher (end reason `displaced`); teammates can rival each other.
 
 ## Review Focus
