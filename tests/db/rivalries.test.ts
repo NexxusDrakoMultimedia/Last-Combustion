@@ -369,6 +369,47 @@ describe('the rivalry board', () => {
   });
 });
 
+describe('the fans of a driver who missed the final', () => {
+  /** Round 1 prelims run, a prelim-only driver given points, optionally in a Feud with a finalist. */
+  const gainOfMissingDriver = (withFeud: boolean): number => {
+    const db = createNewDatabase(SQL);
+    createCareer(db, {
+      mode: 'garage_owner',
+      masterSeed: 'rival-missed',
+      startYear: 2031,
+      difficulty: 'standard',
+    });
+    persistWorld(db, generateWorld('rival-missed'));
+    playPrelims(db, 1);
+    const at = (prelimPos: number) =>
+      rows(
+        db,
+        `SELECT e.driver_id, r.entry_id FROM result r JOIN entry e ON e.id = r.entry_id
+          WHERE r.round_id = 1 AND r.prelim_pos = ${prelimPos} AND e.series = 'main'`,
+      )[0]!;
+    const [missing, missingEntry] = at(16) as [number, number];
+    const [finalist] = at(1) as [number];
+    db.run('UPDATE result SET points = 5 WHERE entry_id = ?', [missingEntry]);
+    if (withFeud)
+      db.run(
+        `INSERT INTO rivalry (driver_a, driver_b, heat, peak, level, live, started_year)
+         VALUES (?, ?, 95, 95, 'feud', 1, 2031)`,
+        [Math.min(missing, finalist), Math.max(missing, finalist)],
+      );
+    playFinal(db, 1);
+    return (rows(
+      db,
+      `SELECT gained FROM driver_season_fans WHERE driver_id = ${missing}`,
+    )[0]?.[0] ?? 0) as number;
+  };
+
+  it('is not lifted by a rivalry with a driver who raced it', () => {
+    const plain = gainOfMissingDriver(false);
+    expect(plain).toBeGreaterThan(0);
+    expect(gainOfMissingDriver(true)).toBe(plain);
+  });
+});
+
 describe('a save from before rivalries', () => {
   it('plays a final and starts keeping rivalries', () => {
     const db = createNewDatabase(SQL);
