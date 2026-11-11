@@ -15,6 +15,8 @@ const PLANNED = new Set([
   'data/people.json',
   'data/scouting.json',
   'src/sim/scouting.ts',
+  'data/storylines.json',
+  'src/sim/storyline.ts',
   'data/themes.json',
   'docs/modding',
   'data/traits.json',

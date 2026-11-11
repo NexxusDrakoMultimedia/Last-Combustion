@@ -66,7 +66,7 @@
 
 **Interfaces:**
 
-- Consumes: the `Migration` type from `src/db/migrate`.
+- Consumes: the `Migration` type from `src/db/migrate.ts`.
 - Produces: tables `rivalry (id, driver_a, driver_b, heat REAL, peak REAL, level TEXT, live INTEGER, started_year, started_round_id, ended_year, end_reason)` and `rivalry_meeting (id, rivalry_id, round_id, kind, gain REAL)`. `driver_a < driver_b` is a `CHECK`; `level` is checked against the five levels; `end_reason` is NULL or one of `cooled`, `retired`, `reconciled`, `displaced`; `kind` is `close_finish` or `title_fight`; a unique partial index allows one open row (`ended_year IS NULL`) per pair; `rivalry_meeting` is unique on `(rivalry_id, round_id, kind)`.
 
 - [ ] **Step 1: Write the failing test** in `tests/db/rivalries.test.ts` (new file, shared with Task 3): a fresh `createNewDatabase` has both tables; inserting `driver_a = 5, driver_b = 3` throws; inserting a second open row for the same pair throws.
@@ -136,7 +136,7 @@
 
 **Interfaces:**
 
-- Consumes: `track()` from `src/platform/telemetry`.
+- Consumes: `track()` from `src/platform/telemetry.ts`.
 - Produces: one design event per rivalry that goes live (level and count only, no names).
 
 - [ ] **Step 1: Write the failing tests:** a migrated database from the previous schema version (use the helper `tests/db/migrate.test.ts` uses to open at an earlier version) opens, plays a final and ends with rival rows; a telemetry test beside `tests/telemetryGuard.test.ts` shows the event carries no names or free text.
