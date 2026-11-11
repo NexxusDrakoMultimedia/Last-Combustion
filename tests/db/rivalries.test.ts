@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
 import { playFinal } from '../../src/db/final';
 import { playPrelims } from '../../src/db/prelims';
-import { updateRivalries } from '../../src/db/rivalries';
+import { driverRivalryMultiplier, updateRivalries } from '../../src/db/rivalries';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
@@ -248,5 +248,59 @@ describe('rivalries from played finals', () => {
        ) GROUP BY d`,
     );
     for (const [, n] of counts) expect(n as number).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('the fans a rivalry draws', () => {
+  const addLevel = (db: Database, x: number, y: number, level: string) =>
+    db.run(
+      `INSERT INTO rivalry (driver_a, driver_b, heat, peak, level, live, started_year)
+       VALUES (?, ?, 70, 70, ?, 1, 2031)`,
+      [Math.min(x, y), Math.max(x, y), level],
+    );
+
+  it('multiplies by the hottest live rivalry whose rival is in the final', () => {
+    const db = createNewDatabase(SQL);
+    addLevel(db, 1, 2, 'rivalry');
+    expect(driverRivalryMultiplier(db, 1, new Set([1, 2]))).toBe(1.25);
+    expect(driverRivalryMultiplier(db, 2, new Set([1, 2]))).toBe(1.25);
+    expect(driverRivalryMultiplier(db, 1, new Set([1, 3]))).toBe(1);
+    addLevel(db, 1, 3, 'spark');
+    addLevel(db, 1, 4, 'feud');
+    expect(driverRivalryMultiplier(db, 1, new Set([1, 3]))).toBe(1.1);
+    expect(driverRivalryMultiplier(db, 1, new Set([1, 2, 3, 4]))).toBe(1.5);
+  });
+
+  it('ignores a rivalry that has ended or is not live yet', () => {
+    const db = createNewDatabase(SQL);
+    addLevel(db, 1, 2, 'feud');
+    db.run("UPDATE rivalry SET ended_year = 2031, end_reason = 'cooled'");
+    addLevel(db, 1, 3, 'feud');
+    db.run('UPDATE rivalry SET live = 0 WHERE driver_b = 3');
+    expect(driverRivalryMultiplier(db, 1, new Set([1, 2, 3]))).toBe(1);
+  });
+
+  it('lifts what the winner gains in a final the rival also races', () => {
+    const gained = (db: Database, driver: number) =>
+      rows(
+        db,
+        `SELECT gained FROM driver_season_fans WHERE driver_id = ${driver}`,
+      )[0]![0] as number;
+    const plain = playedWorld('rival-fans');
+    const winner = driverAt(plain, 1, 1);
+    const second = driverAt(plain, 1, 2);
+
+    const db = createNewDatabase(SQL);
+    createCareer(db, {
+      mode: 'garage_owner',
+      masterSeed: 'rival-fans',
+      startYear: 2031,
+      difficulty: 'standard',
+    });
+    persistWorld(db, generateWorld('rival-fans'));
+    playPrelims(db, 1);
+    addLevel(db, winner, second, 'feud');
+    playFinal(db, 1);
+    expect(gained(db, winner)).toBeGreaterThan(gained(plain, winner));
   });
 });

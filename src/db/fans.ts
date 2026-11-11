@@ -6,6 +6,7 @@ import { fameFromFans } from '../sim/worldgen';
 import { fanBalance, finalBalance, flagRegions, populations } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
 import { all } from './entries';
+import { driverRivalryMultiplier } from './rivalries';
 
 /** Adds fans to a flag in a season (the row is made if the flag has none yet). */
 function addFlagFans(db: Database, seasonId: number, flag: string, fans: number): void {
@@ -108,6 +109,9 @@ export function awardRoundFans(db: Database, roundId: number): void {
     }
   };
 
+  const finalists = new Set(
+    rows.filter((r) => r.final_pos !== null).map((r) => r.driver_id as number),
+  );
   for (const r of rows) {
     const entryId = r.entry_id as number;
     const home = String(round.state) === String(r.hometown_region);
@@ -121,7 +125,11 @@ export function awardRoundFans(db: Database, roundId: number): void {
     });
     const gain = Math.round(base * fansFor(r.garage_id as number));
     if (gain === 0) continue;
-    add('driver', r.driver_id as number, gain);
+    // A rival in the same final draws the driver extra fans (the garage and the rest follow the plain gain).
+    const driverGain = Math.round(
+      gain * driverRivalryMultiplier(db, r.driver_id as number, finalists),
+    );
+    add('driver', r.driver_id as number, driverGain);
     add('garage', r.garage_id as number, Math.round(gain * share.garage));
     add('car', r.car_id as number, Math.round(gain * share.car));
     addFlag(r.driver_flag as string, gain * share.flag, r.hometown_region as string);

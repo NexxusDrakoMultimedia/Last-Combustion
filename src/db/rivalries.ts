@@ -3,6 +3,7 @@
 import type { Database } from 'sql.js';
 import {
   closeFinishPairs,
+  fanMultiplier,
   decayHeat,
   levelFor,
   settleCap,
@@ -203,4 +204,26 @@ export function updateRivalries(db: Database, roundId: number): RivalryLevel[] {
     [roundId, round.final_date as string],
   );
   return wentLive;
+}
+
+/**
+ * How much a driver's fan gains grow in a final: the highest multiplier among the driver's live
+ * rivalries whose other driver also races it, and 1 when there is none.
+ */
+export function driverRivalryMultiplier(
+  db: Database,
+  driverId: number,
+  finalists: Set<number>,
+): number {
+  let best = 1;
+  for (const r of all(
+    db,
+    `SELECT driver_a, driver_b, level FROM rivalry
+      WHERE live = 1 AND ended_year IS NULL AND (driver_a = ? OR driver_b = ?)`,
+    [driverId, driverId],
+  )) {
+    const rival = (r.driver_a === driverId ? r.driver_b : r.driver_a) as number;
+    if (finalists.has(rival)) best = Math.max(best, fanMultiplier(r.level as RivalryLevel));
+  }
+  return best;
 }
