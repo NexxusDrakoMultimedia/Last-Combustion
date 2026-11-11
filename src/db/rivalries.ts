@@ -76,7 +76,7 @@ export function updateRivalries(db: Database, roundId: number): RivalryLevel[] {
          JOIN round ro ON ro.id = r.round_id
         WHERE ro.season_id = ? AND ro.number <= ?
         GROUP BY e.driver_id ORDER BY total DESC, e.driver_id LIMIT 2`,
-      [round.season_id, round.number],
+      [round.season_id as number, round.number as number],
     ).map((r) => r.driver_id as number);
     const fight = titleFightPair(
       leaders.length === 2 ? [leaders[0]!, leaders[1]!] : null,
