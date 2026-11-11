@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
+import { migrate } from '../../src/db/migrate';
 import { playFinal } from '../../src/db/final';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
 import { playPrelims } from '../../src/db/prelims';
@@ -365,5 +366,25 @@ describe('the rivalry board', () => {
     const board = rivalryBoard(db);
     expect(board).toHaveLength(1);
     expect(board[0]!.meetings).toEqual([{ round: 1, year: 2031, kind: 'close_finish' }]);
+  });
+});
+
+describe('a save from before rivalries', () => {
+  it('plays a final and starts keeping rivalries', () => {
+    const db = createNewDatabase(SQL);
+    createCareer(db, {
+      mode: 'garage_owner',
+      masterSeed: 'rival-old-save',
+      startYear: 2031,
+      difficulty: 'standard',
+    });
+    persistWorld(db, generateWorld('rival-old-save'));
+    playPrelims(db, 1);
+    // Put the database back as a 0.2.x save would be: no rivalry tables, one schema version behind.
+    db.exec('DROP TABLE rivalry_meeting; DROP TABLE rivalry; PRAGMA user_version = 53');
+    expect(migrate(db).applied).toEqual(['rivalries']);
+    expect(rows(db, 'SELECT COUNT(*) FROM rivalry')).toEqual([[0]]);
+    expect(() => playFinal(db, 1)).not.toThrow();
+    expect(rows(db, "SELECT COUNT(*) FROM event_log WHERE type = 'rivalry_update'")).toEqual([[1]]);
   });
 });

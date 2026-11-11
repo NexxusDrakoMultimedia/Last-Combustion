@@ -10,6 +10,7 @@ import {
 import type { SkipMode } from '../sim/calendar';
 import { contactsBook, type Contact, type ContactType } from '../db/contacts';
 import { pressView, type PressView } from '../db/press';
+import { liveRivalryCount } from '../db/rivalries';
 import { rivalryBoard, type RivalryBoardRow } from '../db/rivalryboard';
 import { converse as dbConverse, socialView, type SocialView } from '../db/social';
 import type { Manner } from '../sim/social';
@@ -1317,6 +1318,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           status: 'Complete',
           path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
         });
+        // How many rivalries the world holds after the race (a count, no names).
+        track({ kind: 'design', id: 'Rivalry:Live', value: liveRivalryCount(openDb) });
         set({ final: summary, settlement });
         return undefined;
       }, 'RunFinal'),

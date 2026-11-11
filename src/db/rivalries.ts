@@ -227,3 +227,9 @@ export function driverRivalryMultiplier(
   }
   return best;
 }
+
+/** How many rivalries are live in the world right now (for the telemetry count). */
+export function liveRivalryCount(db: Database): number {
+  return all(db, 'SELECT COUNT(*) AS n FROM rivalry WHERE live = 1 AND ended_year IS NULL')[0]!
+    .n as number;
+}
