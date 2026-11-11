@@ -79,6 +79,7 @@ Cars also have a lifespan. A car older than the limit for its class (25 years fo
 - **Training.** Set a level for each driver in Drivers. It is paid at the end of the season and helps them improve and keep their peak longer.
 - **Gear.** Suits, helmets and the like boost a driver's stats and wear out. You can have a maker refurbish an item for half its price in proportion to its wear.
 - **Daily life.** Between rounds each of your drivers drives their car on everyday and delivery roads, which earns money and slowly trains them on the kind of road around their home. In the off-season you can move a driver's home for $5,000, from the next season.
+- **Rivalries.** Drivers who finish within half a second of each other, or who lead the title fight together, build up heat. A pair that reaches Spark, Rivalry or Feud shows on the Rivalries list at the bottom of Drivers, with the meetings that built it, and a driver wins extra fans in a final the rival also races. Heat cools every round, and a rivalry ends when it cools or a driver retires.
 
 ## Saving
 

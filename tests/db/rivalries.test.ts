@@ -3,8 +3,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
 import { playFinal } from '../../src/db/final';
+import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
 import { playPrelims } from '../../src/db/prelims';
 import { driverRivalryMultiplier, updateRivalries } from '../../src/db/rivalries';
+import { rivalryBoard } from '../../src/db/rivalryboard';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
@@ -302,5 +304,66 @@ describe('the fans a rivalry draws', () => {
     addLevel(db, winner, second, 'feud');
     playFinal(db, 1);
     expect(gained(db, winner)).toBeGreaterThan(gained(plain, winner));
+  });
+});
+
+const OWNER: OwnerSetup = {
+  ownerName: 'Test Owner',
+  identity: 'masculine',
+  birthDate: '1990-06-01',
+  garageName: 'Rivalry Test Racing',
+  flag: 'AU',
+  primaryColour: '#112233',
+  secondaryColour: '#ddeeff',
+};
+
+describe('the rivalry board', () => {
+  const live = (db: Database, a: number, b: number, heat: number, level: string) =>
+    db.run(
+      `INSERT INTO rivalry (driver_a, driver_b, heat, peak, level, live, started_year)
+       VALUES (?, ?, ?, ?, ?, 1, 2031)`,
+      [Math.min(a, b), Math.max(a, b), heat, heat, level],
+    );
+
+  it('lists only the live rivalries of the player drivers, hottest first', () => {
+    const db = playedWorld('rival-board');
+    clear(db);
+    const garage = foundPlayerGarage(db, OWNER);
+    const [mine, other1, other2, stranger1, stranger2] = driverIds(db, 5);
+    db.run(
+      'INSERT INTO contract (driver_id, garage_id, start_year, end_year, salary, role, release_fee) VALUES (?, ?, 2031, 2033, 1000, ?, 0)',
+      [mine!, garage, 'lead'],
+    );
+    live(db, mine!, other1!, 45, 'spark');
+    live(db, mine!, other2!, 80, 'rivalry');
+    live(db, stranger1!, stranger2!, 95, 'feud');
+    db.run('UPDATE rivalry SET live = 0 WHERE driver_a = ? AND driver_b = ?', [
+      Math.min(mine!, other1!),
+      Math.max(mine!, other1!),
+    ]);
+    live(db, mine!, stranger1!, 30, 'spark');
+    db.run("UPDATE rivalry SET ended_year = 2031, end_reason = 'cooled' WHERE heat = 30");
+    const board = rivalryBoard(db);
+    expect(board.map((r) => [r.driverId, r.rivalId, r.level])).toEqual([[mine, other2, 'rivalry']]);
+    expect(board[0]!.rivalName).toEqual(expect.any(String));
+  });
+
+  it('carries the meetings that built the rivalry', () => {
+    const db = playedWorld('rival-board-meetings');
+    clear(db);
+    spread(db, 1);
+    const garage = foundPlayerGarage(db, OWNER);
+    const winner = driverAt(db, 1, 1);
+    db.run(
+      'INSERT INTO contract (driver_id, garage_id, start_year, end_year, salary, role, release_fee) VALUES (?, ?, 2031, 2033, 1000, ?, 0)',
+      [winner, garage, 'lead'],
+    );
+    setTime(db, 1, 1, 100_000);
+    setTime(db, 1, 2, 100_300);
+    updateRivalries(db, 1);
+    db.run('UPDATE rivalry SET live = 1, level = ?, heat = 40', ['spark']);
+    const board = rivalryBoard(db);
+    expect(board).toHaveLength(1);
+    expect(board[0]!.meetings).toEqual([{ round: 1, year: 2031, kind: 'close_finish' }]);
   });
 });

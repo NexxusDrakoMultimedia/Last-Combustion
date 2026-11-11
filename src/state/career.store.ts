@@ -10,6 +10,7 @@ import {
 import type { SkipMode } from '../sim/calendar';
 import { contactsBook, type Contact, type ContactType } from '../db/contacts';
 import { pressView, type PressView } from '../db/press';
+import { rivalryBoard, type RivalryBoardRow } from '../db/rivalryboard';
 import { converse as dbConverse, socialView, type SocialView } from '../db/social';
 import type { Manner } from '../sim/social';
 import { create } from 'zustand';
@@ -285,6 +286,8 @@ interface CareerState {
   calendar: CalendarView | undefined;
   social: SocialView | undefined;
   press: PressView | undefined;
+  /** The live rivalries of the player's drivers. */
+  rivalries: RivalryBoardRow[];
   investment: InvestmentView | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
@@ -372,6 +375,7 @@ interface CareerState {
   skipTime(mode: SkipMode): Promise<void>;
   loadSocial(): void;
   loadPress(): void;
+  loadRivalries(): void;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
   lookAtInvestment(garageId: number | null): void;
   buyStake(holdingId: number): Promise<void>;
@@ -563,6 +567,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     calendar: undefined,
     social: undefined,
     press: undefined,
+    rivalries: [],
     investment: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
@@ -1054,6 +1059,10 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'InjectCapital'),
+
+    loadRivalries: () => {
+      if (openDb) set({ rivalries: rivalryBoard(openDb) });
+    },
 
     loadPress: () => {
       const garageId = openDb ? playerGarageId(openDb) : null;
