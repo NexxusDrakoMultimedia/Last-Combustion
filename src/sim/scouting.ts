@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { createRng } from './rng';
+import { createRng, type RandomStream } from './rng';
 import { scoutingBalance } from './worldgen/data';
+import { personName } from './worldgen/names';
 
 /** What a scout looks at by default. */
 export type ScoutFocus = 'drivers' | 'cars' | 'garages';
@@ -170,4 +171,36 @@ export function readingMidpoint(reading: Reading): number {
   const i = band.findIndex((x) => x.name === reading.band);
   const lo = i === 0 ? 0 : band[i - 1]!.max + 1;
   return (lo + band[i]!.max) / 2;
+}
+
+/** A scout who could be hired. */
+export interface ScoutOffer {
+  name: string;
+  /** 0 to 100. */
+  skill: number;
+  /** What they ask for a year. */
+  wagePerYear: number;
+}
+
+/** A scout's yearly wage from their skill: $20,000 plus $600 a point, so $50,000 for a middling 50. */
+export function scoutWageFor(skill: number): number {
+  return Math.round(scoutingBalance.staff.wageBase + scoutingBalance.staff.wagePerSkill * skill);
+}
+
+/** What a scout is paid for one round: a year's wage shared over the season's rounds. */
+export function scoutWagePerRound(wagePerYear: number): number {
+  return Math.round(wagePerYear / scoutingBalance.staff.roundsPerSeason);
+}
+
+/** The scouts on offer, drawn from a stream. */
+export function scoutOffers(rng: RandomStream): ScoutOffer[] {
+  const [lo, hi] = scoutingBalance.staff.skill as [number, number];
+  return Array.from({ length: scoutingBalance.staff.candidates }, () => {
+    const skill = rng.int(lo, hi);
+    return {
+      name: personName(rng, 'AU', rng.chance(0.5) ? 'male' : 'female'),
+      skill,
+      wagePerYear: scoutWageFor(skill),
+    };
+  });
 }

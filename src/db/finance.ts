@@ -10,6 +10,7 @@ import { all } from './entries';
 import { crashRepairCost } from './repairs';
 import { roundSalaries } from './executives';
 import { roundFacilityCost } from './facilities';
+import { roundScoutWages } from './scouts';
 import { garageCrewStrength, roundWages } from './staff';
 import { supplyRates } from './supply';
 
@@ -106,8 +107,8 @@ export function settleRound(db: Database, roundNumber: number): RoundSettlement 
         lines.push(['repairs', repairs]);
         costs.total += repairs;
       }
-      // The mechanics' wages for the round.
-      const wages = roundWages(db, garageId);
+      // The mechanics' and scouts' wages for the round.
+      const wages = roundWages(db, garageId) + roundScoutWages(db, garageId);
       if (wages > 0) {
         lines.push(['wages', wages]);
         costs.total += wages;

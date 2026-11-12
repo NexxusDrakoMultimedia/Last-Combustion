@@ -183,6 +183,16 @@ import {
   mechanicCandidates,
   type Mechanic,
 } from '../db/staff';
+import {
+  assignScout,
+  clearAssignment,
+  fireScout,
+  garageScouts,
+  hireScout,
+  scoutCandidates,
+  type HiredScout,
+} from '../db/scouts';
+import type { ScoutFocus, ScoutOffer, Subject } from '../sim/scouting';
 import type { MechanicOffer } from '../sim/staff';
 import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
 import { getServices } from './services';
@@ -321,6 +331,9 @@ interface CareerState {
   staff: Mechanic[];
   staffOffers: MechanicOffer[];
   crew: number;
+  /** The scouts the garage employs and the ones on offer. */
+  scouts: HiredScout[];
+  scoutOffers: ScoutOffer[];
   /** The executives the garage employs, the slots its prestige allows, and who is on offer for each empty role. */
   executives: Executive[];
   executiveCapacity: { slots: number; used: number };
@@ -428,6 +441,9 @@ interface CareerState {
   dismissExecutive(executiveId: number): Promise<void>;
   hireMechanic(offer: number): Promise<void>;
   fireMechanic(staffId: number): Promise<void>;
+  hireScout(offer: number, focus: ScoutFocus): Promise<void>;
+  fireScout(scoutId: number): Promise<void>;
+  assignScout(scoutId: number, subject: Subject | null): Promise<void>;
   buyNewCar(modelId: number): Promise<void>;
   sellCar(carId: number): Promise<void>;
   placeBid(lotId: number, amount: number): Promise<void>;
@@ -537,6 +553,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
       staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
+      scouts: playerGarageId(db) === null ? [] : garageScouts(db, playerGarageId(db)!),
+      scoutOffers: playerGarageId(db) === null ? [] : scoutCandidates(db, playerGarageId(db)!),
       auction: playerGarageId(db) === null ? undefined : currentAuction(db, playerGarageId(db)!),
       dealer: playerGarageId(db) === null ? [] : dealerOffers(db, playerGarageId(db)!),
       upgrades:
@@ -628,6 +646,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     registryPage: undefined,
     classificationView: undefined,
     staff: [],
+    scouts: [],
+    scoutOffers: [],
     staffOffers: [],
     crew: 0,
     auction: undefined,
@@ -1259,6 +1279,37 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'FireMechanic'),
+
+    hireScout: (offer, focus) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        hireScout(openDb, garageId, offer, focus);
+        refresh(openDb);
+        return undefined;
+      }, 'HireScout'),
+
+    fireScout: (scoutId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        fireScout(openDb, garageId, scoutId);
+        refresh(openDb);
+        return undefined;
+      }, 'FireScout'),
+
+    assignScout: (scoutId, subject) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        if (subject) assignScout(openDb, garageId, scoutId, subject);
+        else clearAssignment(openDb, garageId, scoutId);
+        refresh(openDb);
+        return undefined;
+      }, 'AssignScout'),
 
     buyNewCar: (modelId) =>
       run(async () => {
