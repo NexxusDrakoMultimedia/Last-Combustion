@@ -23,6 +23,7 @@ import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
 import { generateWorld } from '../../src/sim/worldgen';
 import { seasonBalance } from '../../src/sim/worldgen/data';
+import { readingMidpoint } from '../../src/sim/scouting';
 
 let SQL: SqlJsStatic;
 beforeAll(async () => {
@@ -92,9 +93,9 @@ describe('signing and seating a driver', () => {
     const agents = freeAgents(db, garageId);
     expect(agents.length).toBeGreaterThanOrEqual(5);
     expect(agents.every((a) => !a.signed)).toBe(true);
-    expect(agents.map((a) => a.rating)).toEqual(
-      [...agents.map((a) => a.rating)].sort((x, y) => y - x),
-    );
+    // Best first as the player reads them: by the midpoint of each rating reading.
+    const mids = agents.map((a) => readingMidpoint(a.reading.rating));
+    expect(mids).toEqual([...mids].sort((x, y) => y - x));
     const target = agents[0]!;
     const number = playerView(db)!.entries[0]!.raceNumber;
     expect(() => setEntryDriver(db, garageId, number, target.driverId)).toThrow(
@@ -103,7 +104,7 @@ describe('signing and seating a driver', () => {
 
     db.run('UPDATE garage SET cash = 50000000 WHERE id = ?', [garageId]);
     const n = openDriverNegotiation(db, garageId, target.driverId);
-    const outcome = offerDriverContract(db, n.id, { salary: target.fairValue * 3, years: 2 });
+    const outcome = offerDriverContract(db, n.id, { salary: n.fairValue * 3, years: 2 });
     expect(outcome.kind).toBe('accepted');
     expect(freeAgents(db, garageId).find((a) => a.driverId === target.driverId)!.signed).toBe(true);
 
@@ -141,7 +142,7 @@ describe('a second entry', () => {
     const carId = ownedCars(db, garageId).find((c) => c.inEntry === null)!.carId;
     const target = freeAgents(db, garageId)[0]!;
     const n = openDriverNegotiation(db, garageId, target.driverId);
-    expect(offerDriverContract(db, n.id, { salary: target.fairValue * 3, years: 2 }).kind).toBe(
+    expect(offerDriverContract(db, n.id, { salary: n.fairValue * 3, years: 2 }).kind).toBe(
       'accepted',
     );
     return { db, garageId, carId, driverId: target.driverId };
@@ -173,8 +174,9 @@ describe('a second entry', () => {
     expect(() => addEntry(db, garageId, first.carId, driverId)).toThrow(/already racing/);
     expect(() => addEntry(db, garageId, carId, first.driverId)).toThrow(/already racing/);
     const stranger = Number(
-      db.exec(`SELECT id FROM driver WHERE id NOT IN (SELECT driver_id FROM entry) LIMIT 1`)[0]!
-        .values[0]![0],
+      db.exec(
+        `SELECT id FROM driver WHERE id NOT IN (SELECT driver_id FROM entry) AND id NOT IN (SELECT driver_id FROM contract WHERE garage_id = ${garageId}) LIMIT 1`,
+      )[0]!.values[0]![0],
     );
     expect(() => addEntry(db, garageId, carId, stranger)).toThrow(/not under contract/);
     const foreignCar = Number(

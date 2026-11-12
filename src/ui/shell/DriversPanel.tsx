@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState } from 'react';
+import { DriverStats, salaryText } from './DriverStats';
 import { formatMoney, t } from '../../i18n';
 import { IDENTITY_SIGN } from '../../sim/identity';
 import type { Identity } from '../../sim/worldgen/types';
@@ -54,11 +55,16 @@ export function DriversPanel() {
     return (
       <div className="space-y-4">
         <p className="text-sm">
-          {t('drivers.negotiating', {
-            name: negotiation.name,
-            fair: formatMoney(negotiation.fairValue),
-            patience: negotiation.patience,
-          })}
+          {negotiation.fair
+            ? t('drivers.negotiating', {
+                name: negotiation.name,
+                fair: salaryText(negotiation.fair),
+                patience: negotiation.patience,
+              })
+            : t('drivers.negotiatingBlind', {
+                name: negotiation.name,
+                patience: negotiation.patience,
+              })}
         </p>
         {counter && (
           <p className="border border-lc-line bg-lc-raised p-2 text-sm">
@@ -139,6 +145,7 @@ export function DriversPanel() {
   const cash = hub?.player?.cash ?? 0;
   return (
     <div className="space-y-6">
+      <p className="text-sm text-lc-dim">{t('drivers.fogNote')}</p>
       <ul className="space-y-2 text-sm">
         {agents.length === 0 && <li className="text-lc-dim">{t('drivers.none')}</li>}
         {agents.map((a) => (
@@ -152,20 +159,10 @@ export function DriversPanel() {
               </span>{' '}
               <span className="text-lc-dim">{t('drivers.age', { age: a.age })}</span>
               <br />
-              <span className="lc-num text-xs text-lc-dim">
-                {t('drivers.stats', {
-                  rating: a.rating,
-                  pace: a.pace,
-                  consistency: a.consistency,
-                  racecraft: a.racecraft,
-                  tyres: a.tyreManagement,
-                  composure: a.composure,
-                  wet: a.wetSkill,
-                })}
-              </span>
+              <DriverStats reading={a.reading} />
             </span>
             <span className="flex items-center gap-2">
-              <span className="lc-num text-lc-dim">{formatMoney(a.fairValue)}</span>
+              <span className="lc-num text-lc-dim">{salaryText(a.fairSalary)}</span>
               {a.signed ? (
                 <button
                   type="button"

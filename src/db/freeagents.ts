@@ -1,31 +1,50 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { readingMidpoint, type Reading } from '../sim/scouting';
 import { fairSalary, overallRating } from '../sim/worldgen/rating';
 import { ROAD_TYPES, type RoadType } from '../sim/worldgen/types';
 import { readCareer } from './career';
 import { all } from './entries';
+import { knowledgeContext, readDriver, type DriverReading } from './knowledge';
 
 export interface FreeAgent {
   driverId: number;
   name: string;
   age: number;
   identity: string;
-  rating: number;
-  /** A hint at a fair yearly salary, not the driver's lowest price. */
-  fairValue: number;
-  pace: number;
-  consistency: number;
-  racecraft: number;
-  tyreManagement: number;
-  composure: number;
-  wetSkill: number;
+  /** What the player knows of the driver: a word, a range or the exact value for each number. */
+  reading: DriverReading;
+  /**
+   * A hint at a fair yearly salary, not the driver's lowest price: a range that follows the rating's
+   * range, exact for a driver the player owns, and none while only a word is known.
+   */
+  fairSalary: SalaryHint | null;
   /** Whether this garage already has the driver under contract. */
   signed: boolean;
 }
 
+/** A fair salary as a low and a high (the same when the rating is exact). */
+export interface SalaryHint {
+  low: number;
+  high: number;
+}
+
+/** The salary hint that goes with a reading of the overall rating. */
+export function salaryHint(rating: Reading, gold: boolean): SalaryHint | null {
+  if (rating.kind === 'word') return null;
+  const [lo, hi] =
+    rating.kind === 'exact' ? [rating.value, rating.value] : [rating.low, rating.high];
+  return {
+    low: Math.round(fairSalary(lo, gold)),
+    high: Math.round(fairSalary(hi, gold)),
+  };
+}
+
 /**
- * Drivers who are not entered with any garage this season and have not retired, best first.
+ * Drivers who are not entered with any garage this season and have not retired, best first as the
+ * player reads them: the order follows the midpoint of each reading, never the true rating, so it
+ * does not give the truth away.
  * Drivers entered elsewhere cannot be signed until their season ends.
  */
 export function freeAgents(db: Database, garageId: number, limit = 25): FreeAgent[] {
@@ -46,6 +65,7 @@ export function freeAgents(db: Database, garageId: number, limit = 25): FreeAgen
         AND d.id NOT IN (SELECT driver_id FROM entry WHERE season_id = (SELECT MAX(id) FROM season))`,
     [garageId, year],
   );
+  const ctx = knowledgeContext(db, garageId);
   return rows
     .map((d) => {
       const a = affinities.get(d.id as number) ?? ({} as Record<RoadType, number>);
@@ -59,22 +79,32 @@ export function freeAgents(db: Database, garageId: number, limit = 25): FreeAgen
         wetSkill: d.wet_skill as number,
         affinities: a,
       });
-      return {
-        driverId: d.id as number,
-        name: d.name as string,
-        age: year - Number(String(d.birth_date).slice(0, 4)),
-        identity: d.identity as string,
-        rating: Math.round(rating),
-        fairValue: Math.round(fairSalary(rating, d.gold_border_year !== null)),
+      const reading = readDriver(ctx, {
+        id: d.id as number,
+        fame: d.fame as number,
+        rating,
         pace: d.pace as number,
         consistency: d.consistency as number,
         racecraft: d.racecraft as number,
         tyreManagement: d.tyre_management as number,
         composure: d.composure as number,
         wetSkill: d.wet_skill as number,
+        potential: d.potential as number,
+      });
+      return {
+        driverId: d.id as number,
+        name: d.name as string,
+        age: year - Number(String(d.birth_date).slice(0, 4)),
+        identity: d.identity as string,
+        reading,
+        fairSalary: salaryHint(reading.rating, d.gold_border_year !== null),
         signed: d.signed === 1,
       };
     })
-    .sort((x, y) => y.rating - x.rating || x.driverId - y.driverId)
+    .sort(
+      (x, y) =>
+        readingMidpoint(y.reading.rating) - readingMidpoint(x.reading.rating) ||
+        x.driverId - y.driverId,
+    )
     .slice(0, limit);
 }

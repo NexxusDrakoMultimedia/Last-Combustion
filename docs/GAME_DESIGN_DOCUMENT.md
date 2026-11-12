@@ -915,7 +915,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 
 ## Scouting and fog of war
 
-**Status: planned for M7 (story and fog of war).** Today every rating in the game is shown exactly. This section is the design for hiding them behind a fog that the player clears by scouting.
+**Status: in M7 (story and fog of war).** The knowledge engine, the scouts and the Head of Scouting are built, and the fog now covers drivers the player does not own (the Drivers panel's free agents, the negotiation hint and the Registry driver page). Cars, garages and deals are still shown exactly until their own pieces. This section is the design for hiding ratings behind a fog that the player clears by scouting.
 
 **The idea.** What the player knows about anything outside their own garage is an estimate. With almost no information it is a plain description in words. As the player learns more it becomes a range of values, and the range gets tighter and tighter until it is exact. Better scouts, more scouts, a bigger name, more fans and more success all clear the fog faster, and so does simply watching someone race season after season. Things the player owns are always exact, and so is everything public: results, points, numbers, plates, titles and records (the Registry's facts). The fog covers the hidden numbers behind them.
 
@@ -967,6 +967,8 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 - **Watching a rival race** every round adds to Evidence automatically; a driver who beats the field adds to it faster.
 - **An inspection** (planned fee) takes one car to exact for that sale, as at the used market and the auction house, where a car's wear and parts are ranges until it is inspected or bought.
 - **A trial or a former contract** gives Experience for the following years.
+
+**Built for drivers.** `src/db/knowledge.ts` gathers what the garage knows once (its scouts and their lift, its prestige and fame, scored finals in the last three seasons, attention flags this season and past contracts) and reads a driver's rating, six skills and potential into a word, a range or an exact value (`readDriver`); the player's own drivers, signed or entered, read exact. The shared `FogValue` component draws all three, with the knowledge score and a note on hover. The free-agent list is ordered by the midpoint of each rating reading, never the true rating, and the fair-salary hint is a range that follows the rating's range (none while only a word is known). The Drivers panel carries a standing note about the fog instead of a one-time note when an older save first opens. A driver's mood, road affinity and the walk-away value of a negotiation are not yet behind the fog. Before the player has a garage (the starter screen) nothing is hidden.
 
 **Where it shows.** The Drivers panel (free agents), the Market and auction listings (cars), the Sponsors, Operations and Executives panels (the other side of a deal), the Registry (any profile of something the player does not own) and the Negotiations screen all show the same three levels, with the knowledge score on hover and a short note on what would clear the fog (a scout, a season of watching, an inspection).
 

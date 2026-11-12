@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { FogValue } from '../FogValue';
 import { moraleText } from '../moraleText';
 import { useState, type ReactNode } from 'react';
 import { formatDate, formatMoney, formatPoints, hasText, t } from '../../i18n';
@@ -126,16 +127,31 @@ function DriverPage({ p }: { p: DriverProfile }) {
       <Section title={t('registry.skills')}>
         <Facts
           items={(
-            [
-              'pace',
-              'consistency',
-              'racecraft',
-              'tyreManagement',
-              'composure',
-              'wetSkill',
-              'potential',
-            ] as const
-          ).map((k) => [t(`registry.stat.${k}` as never), p.stats[k]] as [string, ReactNode])}
+            ['pace', 'consistency', 'racecraft', 'tyreManagement', 'composure', 'wetSkill'] as const
+          )
+            .map(
+              (k) =>
+                [
+                  t(`registry.stat.${k}` as never),
+                  <FogValue
+                    key={k}
+                    reading={p.skills.stats[k]}
+                    knowledge={p.skills.knowledge}
+                    confirmed={!p.skills.owned}
+                  />,
+                ] as [string, ReactNode],
+            )
+            .concat([
+              [
+                t('registry.stat.potential'),
+                <FogValue
+                  key="potential"
+                  reading={p.skills.potential}
+                  knowledge={Math.max(0, p.skills.knowledge - 10)}
+                  confirmed={!p.skills.owned}
+                />,
+              ],
+            ])}
         />
       </Section>
       <Section title={t('registry.driverDecals')}>
