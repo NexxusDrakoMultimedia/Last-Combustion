@@ -97,6 +97,8 @@ export function applyCrashHighlights(db: Database, roundId: number): void {
  */
 export function writeNews(db: Database, roundId: number): void {
   if (marked(db, roundId, 'news_update')) return;
+  // The crash news reads the highlights, so they are always applied first (a rerun changes nothing).
+  applyCrashHighlights(db, roundId);
   const round = all(db, 'SELECT final_date FROM round WHERE id = ?', [roundId])[0];
   const career = readCareer(db);
   if (!round || !career) return;

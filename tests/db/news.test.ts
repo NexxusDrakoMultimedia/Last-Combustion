@@ -269,3 +269,67 @@ describe('a played final', () => {
     expect(count(db, "SELECT COUNT(*) FROM event_log WHERE type = 'highlight_update'")).toBe(1);
   });
 });
+
+describe('what the news is limited to', () => {
+  it('writes the crash news even when the highlights were not applied first', () => {
+    const db = playedWorld('news-order', 1);
+    clear(db);
+    const [a] = pricedEntries(db, [1_000_000]) as { entry: number; driver: number }[];
+    const r = roundId(db, 1);
+    crash(db, r, 'final', a!.entry);
+    writeNews(db, r);
+    expect(rows(db, "SELECT kind, driver_id FROM news WHERE kind = 'crash'")).toEqual([
+      ['crash', a!.driver],
+    ]);
+    expect(highlightTotal(db)).toBe(1);
+  });
+
+  it('writes no news for a rivalry that is not live', () => {
+    const db = playedWorld('news-dead', 1);
+    clear(db);
+    const r = roundId(db, 1);
+    const [x, y] = rows(db, 'SELECT id FROM driver ORDER BY id LIMIT 2').map((q) => q[0] as number);
+    db.run(
+      `INSERT INTO rivalry (driver_a, driver_b, heat, peak, level, live, started_year)
+       VALUES (?, ?, 20, 40, 'spark', 0, 2031)`,
+      [x!, y!],
+    );
+    db.run(
+      "INSERT INTO rivalry_meeting (rivalry_id, round_id, kind, gain) VALUES ((SELECT id FROM rivalry), ?, 'close_finish', 8)",
+      [r],
+    );
+    writeNews(db, r);
+    expect(count(db, "SELECT COUNT(*) FROM news WHERE kind = 'rivalry'")).toBe(0);
+  });
+
+  it('keeps two crash items and two story items a round, the first beats first', () => {
+    const db = playedWorld('news-limits', 1);
+    clear(db);
+    const r = roundId(db, 1);
+    const entries = pricedEntries(db, [1_000_000, 900_000, 800_000]);
+    for (const e of entries) crash(db, r, 'final', e.entry);
+    const ids = rows(db, 'SELECT id FROM driver ORDER BY id LIMIT 8').map((q) => q[0] as number);
+    [0, 2, 4].forEach((i) => {
+      db.run(
+        `INSERT INTO rivalry (driver_a, driver_b, heat, peak, level, live, started_year)
+         VALUES (?, ?, 95, 95, 'feud', 1, 2031)`,
+        [ids[i]!, ids[i + 1]!],
+      );
+    });
+    db.run(
+      `INSERT INTO storyline (template, rivalry_id, driver_a, driver_b, started_round_id, step)
+       SELECT 'rivalry_feud', id, driver_a, driver_b, ?, 1 FROM rivalry`,
+      [r],
+    );
+    db.run(
+      "INSERT INTO storyline_beat (storyline_id, step, beat, round_id) SELECT id, 0, 'build_up', ? FROM storyline ORDER BY id",
+      [r],
+    );
+    writeNews(db, r);
+    expect(count(db, "SELECT COUNT(*) FROM news WHERE kind = 'crash'")).toBe(2);
+    expect(count(db, "SELECT COUNT(*) FROM news WHERE kind = 'story'")).toBe(2);
+    expect(
+      rows(db, "SELECT ref_id FROM news WHERE kind = 'story' ORDER BY id").map((q) => q[0]),
+    ).toEqual(rows(db, 'SELECT id FROM storyline_beat ORDER BY id LIMIT 2').map((q) => q[0]));
+  });
+});
