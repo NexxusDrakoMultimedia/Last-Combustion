@@ -108,3 +108,49 @@ describe('the map of a round', () => {
     expect(defaultMapRound(played)).toBe(1);
   });
 });
+
+describe('a busy round', () => {
+  let busy: Database;
+  let lap: number;
+  beforeAll(() => {
+    busy = world('map-busy', 1);
+    busy.run(
+      "DELETE FROM event_log WHERE type IN ('crash', 'spin', 'mistake', 'wildlife', 'contact')",
+    );
+    lap = courseMap(busy, 1)!.lapKm;
+  }, 300_000);
+
+  const id = () => Number(one(busy, 'SELECT id FROM round WHERE number = 1 LIMIT 1'));
+  const add = (scope: string, km: number | null, type = 'spin') =>
+    busy.run(
+      'INSERT INTO event_log (round_id, scope, occurred_on, km, type, entry_id) VALUES (?, ?, ?, ?, ?, 1)',
+      [id(), scope, '2031-03-01', km, type],
+    );
+
+  it('ignores events outside the prelims and the final, and events with no place', () => {
+    add('event', 4.4, 'crash');
+    add('season', 4.6, 'crash');
+    add('final', null, 'crash');
+    expect(courseMap(busy, 1)!.markers).toEqual([]);
+  });
+
+  it('puts an event past the end of the lap on the end, and one before the start on the start', () => {
+    add('final', 999, 'crash');
+    add('final', -4, 'spin');
+    const km = courseMap(busy, 1)!.markers.map((m) => m.km);
+    expect(km).toEqual([0, lap]);
+    busy.run('DELETE FROM event_log WHERE km = 999 OR km = -4');
+  });
+
+  it('keeps exactly 60 marks, spread over the whole lap, with the first and the last', () => {
+    for (let i = 0; i < 100; i++) add('prelim', i * 0.5);
+    add('final', lap - 0.1, 'crash');
+    const marks = courseMap(busy, 1)!.markers;
+    expect(marks).toHaveLength(60);
+    expect(marks[0]!.km).toBe(0);
+    expect(marks[59]!.km).toBe(lap - 0.1);
+    expect(marks[59]!.kind).toBe('crash');
+    expect(marks.map((m) => m.km)).toEqual([...marks.map((m) => m.km)].sort((a, b) => a - b));
+    expect(marks.filter((m) => m.km > 25).length).toBeGreaterThan(10);
+  });
+});

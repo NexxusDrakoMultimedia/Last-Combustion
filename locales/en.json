@@ -993,6 +993,7 @@
   "map.course": "{name}, {km} km a lap, {year}",
   "map.aria": "Map of {name}",
   "map.quiet": "Nothing has gone wrong on this course yet.",
+  "map.legend": "{kind}: {count}",
   "map.kind.crash": "Crash",
   "map.kind.spin": "Spin",
   "map.kind.mistake": "Mistake",

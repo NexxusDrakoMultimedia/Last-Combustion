@@ -52,3 +52,15 @@ export function pointAtKm(points: readonly OutlinePoint[], km: number): { x: num
   const f = span > 0 ? (km - a[2]) / span : 0;
   return { x: a[0] + (b[0] - a[0]) * f, y: a[1] + (b[1] - a[1]) * f };
 }
+
+/**
+ * At most `max` of the items, spaced evenly along the list and always including the first and the
+ * last, so a cap on a long list does not cut off the end of it (the list is in lap order).
+ */
+export function spread<T>(items: readonly T[], max: number): T[] {
+  if (items.length <= max) return [...items];
+  return Array.from(
+    { length: max },
+    (_, i) => items[Math.round((i * (items.length - 1)) / (max - 1))]!,
+  );
+}

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import { spread } from '../sim/courses/map';
 import { all } from './entries';
 
 /** The kinds of incident that are put on the map (a stopped field or an overtake is not a place). */
@@ -13,7 +14,7 @@ export const MAP_INCIDENTS = [
   'contact',
 ];
 
-/** The most incidents on one map. */
+/** The most incidents on one map; more are thinned out evenly along the lap. */
 const MAX_MARKERS = 60;
 
 export interface MapSector {
@@ -60,7 +61,8 @@ export function defaultMapRound(db: Database): number {
 /**
  * The map data for a round of the latest season (see the GDD, "Course outlines"): the course, its
  * sectors with the overtaking spots, and the incidents of the prelims and the final at the point of the
- * lap where they happened, in lap order and at most 60. A round that has not been run has none.
+ * lap where they happened, in lap order and at most 60 (more are spread evenly over the lap, keeping the
+ * first and the last). A round that has not been run has none.
  */
 export function courseMap(db: Database, roundNumber: number): CourseMapData | undefined {
   const round = all(
@@ -84,12 +86,15 @@ export function courseMap(db: Database, roundNumber: number): CourseMapData | un
       'SELECT start_km, overtake_spot FROM sector WHERE course_id = ? ORDER BY sector_order',
       [round.course_id as number],
     ).map((s) => ({ startKm: s.start_km as number, overtakeSpot: s.overtake_spot === 1 })),
-    markers: all(
-      db,
-      `SELECT km, type FROM event_log
-        WHERE round_id = ? AND km IS NOT NULL AND scope IN ('prelim', 'final') AND type IN (${marks})
-        ORDER BY km, id LIMIT ?`,
-      [round.id as number, ...MAP_INCIDENTS, MAX_MARKERS],
-    ).map((m) => ({ km: Math.min(Math.max(m.km as number, 0), lapKm), kind: m.type as string })),
+    markers: spread(
+      all(
+        db,
+        `SELECT km, type FROM event_log
+          WHERE round_id = ? AND km IS NOT NULL AND scope IN ('prelim', 'final') AND type IN (${marks})
+          ORDER BY km, id`,
+        [round.id as number, ...MAP_INCIDENTS],
+      ).map((m) => ({ km: Math.min(Math.max(m.km as number, 0), lapKm), kind: m.type as string })),
+      MAX_MARKERS,
+    ),
   };
 }

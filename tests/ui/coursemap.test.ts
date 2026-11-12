@@ -80,3 +80,29 @@ describe('the text of the map', () => {
       expect(hasText(`map.kind.${kind}`), kind).toBe(true);
   });
 });
+
+describe('the key to the marks', () => {
+  it('names each kind that is on the map with how many there are, as text', () => {
+    const { container } = render(
+      createElement(CourseMap, {
+        map: data({
+          markers: [
+            { km: 5, kind: 'crash' },
+            { km: 6, kind: 'crash' },
+            { km: 12, kind: 'spin' },
+          ],
+        }),
+      }),
+    );
+    const items = [...container.querySelectorAll('[data-legend] li')].map((n) => n.textContent);
+    expect(items).toEqual([
+      t('map.legend', { kind: t('map.kind.crash'), count: 2 }),
+      t('map.legend', { kind: t('map.kind.spin'), count: 1 }),
+    ]);
+  });
+
+  it('has no key when there is nothing to name', () => {
+    const { container } = render(createElement(CourseMap, { map: data({ markers: [] }) }));
+    expect(container.querySelector('[data-legend]')).toBeNull();
+  });
+});

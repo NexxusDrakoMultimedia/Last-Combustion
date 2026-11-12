@@ -25,7 +25,8 @@
 
 - A point outside the lap (negative, past the end) and points at the same distance do not break the map.
 - A round that has not been run shows the road and the overtaking spots and no marks, and a round that does not exist shows nothing.
-- More than 60 events show only 60, and events that are not incidents are never marked.
+- More than 60 events show 60 spread evenly over the lap, with the first and the last kept (not the 60 lowest km), and events that are not incidents are never marked.
+- The kinds are told apart by text too: a key under the map names each kind with its count.
 - Every kind of incident that can be marked has text and a name for people who cannot see the colour.
 
 ## Tasks

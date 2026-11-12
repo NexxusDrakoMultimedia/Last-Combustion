@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { outlineOf, pointAtKm } from '../../src/sim/courses/map';
+import { outlineOf, pointAtKm, spread } from '../../src/sim/courses/map';
 
 const line: [number, number, number][] = [
   [0, 0, 0],
@@ -64,5 +64,49 @@ describe('the saved outlines', () => {
 
   it('are unknown for a course that does not exist', () => {
     expect(outlineOf(99)).toBeUndefined();
+  });
+});
+
+describe('spreading marks over a lap', () => {
+  it('keeps everything when it fits', () => {
+    expect(spread([1, 2, 3], 5)).toEqual([1, 2, 3]);
+    expect(spread([], 5)).toEqual([]);
+  });
+
+  it('keeps the first and the last and spaces the rest evenly', () => {
+    const items = Array.from({ length: 100 }, (_, i) => i);
+    const kept = spread(items, 10);
+    expect(kept).toHaveLength(10);
+    expect(kept[0]).toBe(0);
+    expect(kept[9]).toBe(99);
+    expect(new Set(kept).size).toBe(10);
+  });
+
+  it('never gives more than the limit, never repeats and stays in order', () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 0, max: 400 }), fc.integer({ min: 2, max: 80 }), (n, max) => {
+        const kept = spread(
+          Array.from({ length: n }, (_, i) => i),
+          max,
+        );
+        expect(kept.length).toBe(Math.min(n, max));
+        expect(new Set(kept).size).toBe(kept.length);
+        expect([...kept].sort((a, b) => a - b)).toEqual(kept);
+        if (n > 0) {
+          expect(kept[0]).toBe(0);
+          expect(kept[kept.length - 1]).toBe(n - 1);
+        }
+      }),
+    );
+  });
+});
+
+describe('a point on a saved outline', () => {
+  it('is exactly the point when the distance is that of a point, whichever one', () => {
+    const o = outlineOf(1)!;
+    for (const i of [1, 50, 100, 150, o.points.length - 2]) {
+      const [x, y, km] = o.points[i]!;
+      expect(pointAtKm(o.points, km)).toEqual({ x, y });
+    }
   });
 });
