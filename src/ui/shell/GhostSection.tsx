@@ -14,6 +14,7 @@ function resultLine(r: GhostResult): string {
   if (r.mode === 'easy') return t('ghost.result.easy', who);
   if (r.deltaMs === null || r.ghostName === null)
     return t('ghost.result.nothing', { ...who, ghost: r.ghostName ?? '' });
+  if (r.deltaMs === 0) return t('ghost.result.tied', { ...who, ghost: r.ghostName });
   const common = { ...who, ghost: r.ghostName, seconds: seconds(r.deltaMs) };
   return r.beaten ? t('ghost.result.beat', common) : t('ghost.result.lost', common);
 }

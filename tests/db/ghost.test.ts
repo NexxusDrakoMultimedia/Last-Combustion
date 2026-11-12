@@ -196,6 +196,39 @@ describe('the second season', () => {
     expect(shown.deltaMs === null || shown.deltaMs === -2000).toBe(true);
   }, 300_000);
 
+  it('settles a Hard ghost from the times: beaten and by how much, lost to, a tie, and no time', () => {
+    playFinal(db, 2);
+    const [hard] = ghostOptions(db, 3);
+    setGhost(db, mine[0]!, { mode: 'hard', driverId: hard!.driverId });
+    const view = ghostView(db);
+    expect(view.entries[0]!.pick).toEqual({
+      mode: 'hard',
+      driverId: hard!.driverId,
+      ghostName: hard!.name,
+    });
+    playPrelims(db, 3);
+    const round = Number(one(db, 'SELECT id FROM round WHERE number = 3 ORDER BY id DESC LIMIT 1'));
+    const settle = (own: number | null) => {
+      db.run('UPDATE result SET prelim_time_ms = ? WHERE round_id = ? AND entry_id = ?', [
+        own,
+        round,
+        mine[0]!,
+      ]);
+      db.run('UPDATE ghost_choice SET settled = 0 WHERE round_id = ?', [round]);
+      settleGhosts(db, round);
+      return ghostView(db).results.find((r) => r.mode === 'hard')!;
+    };
+    const faster = settle(hard!.timeMs - 800);
+    expect([faster.beaten, faster.deltaMs, faster.ghostName]).toEqual([true, 800, hard!.name]);
+    expect(faster.ghostTimeMs).toBe(hard!.timeMs);
+    const slower = settle(hard!.timeMs + 500);
+    expect([slower.beaten, slower.deltaMs]).toEqual([false, -500]);
+    const tied = settle(hard!.timeMs);
+    expect([tied.beaten, tied.deltaMs]).toEqual([false, 0]);
+    const none = settle(null);
+    expect([none.beaten, none.deltaMs, none.ownTimeMs]).toEqual([false, null, null]);
+  }, 300_000);
+
   it('shows what is on offer, the choices and the results of the last settled ghosts', () => {
     const view = ghostView(db);
     expect(view.available).toBe(true);
@@ -206,5 +239,29 @@ describe('the second season', () => {
       expect(['easy', 'hard']).toContain(r.mode);
       if (r.mode === 'hard') expect(r.ghostName).not.toBeNull();
     }
+  });
+
+  it('still lets an Easy ghost be picked, and a pick be cleared, when no Hard ghost is on offer', () => {
+    const round = ghostView(db).round!;
+    const course = Number(
+      one(
+        db,
+        `SELECT course_id FROM round WHERE number = ${round}
+          AND season_id = (SELECT id FROM season ORDER BY year DESC LIMIT 1)`,
+      ),
+    );
+    // Nobody set a time on this course last season.
+    db.run(
+      `UPDATE result SET prelim_time_ms = NULL WHERE round_id IN
+         (SELECT ro.id FROM round ro JOIN season s ON s.id = ro.season_id
+           WHERE s.year = 2031 AND ro.course_id = ?)`,
+      [course],
+    );
+    expect(ghostOptions(db, round)).toEqual([]);
+    expect(() => setGhost(db, mine[0]!, { mode: 'easy' })).not.toThrow();
+    expect(ghostView(db).entries[0]!.pick!.mode).toBe('easy');
+    expect(() => setGhost(db, mine[0]!, { mode: 'hard', driverId: 1 })).toThrow();
+    expect(() => setGhost(db, mine[0]!, null)).not.toThrow();
+    expect(ghostView(db).entries[0]!.pick).toBeNull();
   });
 });

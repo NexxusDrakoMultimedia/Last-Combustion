@@ -1363,7 +1363,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           status: 'Start',
           path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
         });
-        set({ prelims: summary });
+        set({ prelims: summary, ghost: ghostView(openDb) });
         return undefined;
       }, 'RunPrelims'),
 

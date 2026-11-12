@@ -114,8 +114,8 @@ export function ghostOptions(db: Database, roundNumber: number): GhostOption[] {
 /**
  * Picks a ghost for one of the player's entries for the next round's prelims, or clears the pick. Easy
  * runs two seconds ahead of the entry; Hard is one of the ghosts on offer. The prelims settle it. A pick
- * for an entry that is not the player's, a ghost that is not on offer, a season with no ghosts (the
- * first) or a season with no round left to run is refused with an error and nothing changes.
+ * for an entry that is not the player's, a Hard ghost that is not on offer (there are none in the first
+ * season) or a season with no round left to run is refused with an error and nothing changes.
  */
 export function setGhost(db: Database, entryId: number, pick: GhostPick | null): void {
   const season = latestSeason(db);
@@ -127,10 +127,10 @@ export function setGhost(db: Database, entryId: number, pick: GhostPick | null):
     [entryId, season.id as number],
   )[0];
   if (!entry) throw new Error('That is not one of the garage entries this season.');
+  if (all(db, 'SELECT 1 FROM season WHERE year = ?', [(season.year as number) - 1]).length === 0)
+    throw new Error('There is no ghost in the first season.');
   const round = nextRound(db, season.id as number);
   if (round === null) throw new Error('Every round of the season has been run.');
-  const options = ghostOptions(db, round);
-  if (options.length === 0) throw new Error('There is no ghost to pick this season.');
   const roundId = all(db, 'SELECT id FROM round WHERE season_id = ? AND number = ?', [
     season.id as number,
     round,
@@ -139,7 +139,7 @@ export function setGhost(db: Database, entryId: number, pick: GhostPick | null):
     db.run('DELETE FROM ghost_choice WHERE round_id = ? AND entry_id = ?', [roundId, entryId]);
     return;
   }
-  if (pick.mode === 'hard' && !options.some((o) => o.driverId === pick.driverId))
+  if (pick.mode === 'hard' && !ghostOptions(db, round).some((o) => o.driverId === pick.driverId))
     throw new Error('That driver is not one of the ghosts on offer.');
   db.run(
     `INSERT INTO ghost_choice (round_id, entry_id, mode, ghost_driver_id) VALUES (?, ?, ?, ?)

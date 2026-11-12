@@ -92,6 +92,17 @@ describe('career store', () => {
     expect(useCareerStore.getState().notice?.key).toBe('debug.error');
   });
 
+  describe('the ghost record', () => {
+    it('is reloaded when the prelims have been run, so it is for the next round', async () => {
+      await useCareerStore.getState().createTestCareer();
+      useCareerStore.setState({
+        ghost: { available: true, round: 99, options: [], entries: [], results: [] },
+      });
+      await useCareerStore.getState().runNextPrelims();
+      expect(useCareerStore.getState().ghost.round).toBe(2);
+    });
+  });
+
   describe('telemetry', () => {
     const seen: TelemetryEvent[] = [];
     beforeEach(() => {

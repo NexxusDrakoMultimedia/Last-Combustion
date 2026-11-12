@@ -996,6 +996,7 @@
   "ghost.pick.hard": "Hard: {name}, {time}",
   "ghost.result.beat": "#{number} {driver} beat the ghost of {ghost} by {seconds} seconds.",
   "ghost.result.lost": "#{number} {driver} lost to the ghost of {ghost} by {seconds} seconds.",
+  "ghost.result.tied": "#{number} {driver} matched the ghost of {ghost} exactly.",
   "ghost.result.easy": "#{number} {driver} ran against the easy ghost.",
   "ghost.result.nothing": "#{number} {driver} set no time against the ghost of {ghost}.",
   "map.title": "Course map",

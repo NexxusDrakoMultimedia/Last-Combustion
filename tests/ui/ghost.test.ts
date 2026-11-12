@@ -126,6 +126,41 @@ describe('the ghost section', () => {
   });
 });
 
+describe('a tie with a ghost', () => {
+  it('is said to be a tie, not a loss by nothing', () => {
+    useCareerStore.setState({
+      ghost: view({
+        results: [
+          {
+            round: 1,
+            year: 2032,
+            raceNumber: 42,
+            driver: 'Sam Hale',
+            mode: 'hard',
+            ghostName: 'Ayla Ward',
+            ghostTimeMs: 600_000,
+            ownTimeMs: 600_000,
+            beaten: false,
+            deltaMs: 0,
+          },
+        ],
+      }),
+    });
+    const out = html();
+    expect(out).toContain(
+      t('ghost.result.tied', { number: 42, driver: 'Sam Hale', ghost: 'Ayla Ward' }),
+    );
+    expect(out).not.toContain(
+      t('ghost.result.lost', {
+        number: 42,
+        driver: 'Sam Hale',
+        ghost: 'Ayla Ward',
+        seconds: '0.000',
+      }),
+    );
+  });
+});
+
 describe('the text of the ghost record', () => {
   it('has every line the section can show', () => {
     for (const key of [
@@ -141,6 +176,7 @@ describe('the text of the ghost record', () => {
       'ghost.result.lost',
       'ghost.result.easy',
       'ghost.result.nothing',
+      'ghost.result.tied',
     ])
       expect(hasText(key), key).toBe(true);
   });
