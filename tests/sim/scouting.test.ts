@@ -20,7 +20,7 @@ const subject = { kind: 'drivers', id: 7 } as const;
 const blank: KnowledgeInput = {
   subject,
   scouts: [],
-  headSkill: null,
+  scoutLift: 0,
   scoredFinals: 0,
   fame: 0,
   prestige: 0,
@@ -101,9 +101,13 @@ describe('knowledgeOf', () => {
 
   it('lets a Head of Scouting lift scouts by up to a quarter', () => {
     const scout: Scout = { skill: 40, focus: 'drivers', assignedTo: null };
-    expect(scoutSkill(scout, 100)).toBeCloseTo(50);
-    expect(scoutSkill(scout, null)).toBe(40);
-    expect(scoutSkill({ ...scout, skill: 100 }, 100)).toBe(100);
+    expect(scoutSkill(scout, 0.25)).toBeCloseTo(50);
+    expect(scoutSkill(scout, 0)).toBe(40);
+    expect(scoutSkill({ ...scout, skill: 100 }, 0.25)).toBe(100);
+    const part = (lift: number) =>
+      knowledgeOf({ ...blank, scouts: [{ ...scout, assignedTo: 'drivers:7' }], scoutLift: lift })
+        .scouts;
+    expect(part(0.25)).toBeGreaterThan(part(0));
   });
 
   it('caps at 100 and reads potential ten lower', () => {

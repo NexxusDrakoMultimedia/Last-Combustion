@@ -31,16 +31,16 @@ export function coverOf(scout: Scout, subject: Subject): Cover {
   return scout.focus === subject.kind ? 'kind' : 'other';
 }
 
-/** A scout's skill once the Head of Scouting (skill 0 to 100, or none) has lifted it. */
-export function scoutSkill(scout: Scout, headSkill: number | null): number {
-  const lift = headSkill === null ? 0 : (scoutingBalance.headBonusMax * headSkill) / 100;
-  return Math.min(100, scout.skill * (1 + lift));
+/** A scout's skill once the Head of Scouting has lifted it (`lift` is 0.25 at most, 0 with no head). */
+export function scoutSkill(scout: Scout, lift: number): number {
+  return Math.min(100, scout.skill * (1 + Math.max(0, lift)));
 }
 
 export interface KnowledgeInput {
   subject: Subject;
   scouts: Scout[];
-  headSkill: number | null;
+  /** The Head of Scouting's lift to every scout (`executiveBonuses(...).scouts`), 0 with none. */
+  scoutLift: number;
   /** Scored finals of the subject in the last three seasons. */
   scoredFinals: number;
   /** The subject's fame, 0 to 100. */
@@ -73,7 +73,7 @@ export function knowledgeOf(input: KnowledgeInput): KnowledgeParts {
   const b = scoutingBalance;
   const unknown = input.scouts.reduce((left, scout) => {
     const weight = b.scouts[coverOf(scout, input.subject)];
-    const skill = (scoutSkill(scout, input.headSkill) * weight) / 100;
+    const skill = (scoutSkill(scout, input.scoutLift) * weight) / 100;
     return left * (1 - clamp(skill, 0, 1));
   }, 1);
   const scouts = b.scouts.max * (1 - unknown);

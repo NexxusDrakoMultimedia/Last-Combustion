@@ -362,7 +362,7 @@ describe('career store', () => {
         .chooseStarter(starter.cars[0]!.carId, starter.drivers[0]!.driverId);
       const state = useCareerStore.getState();
       expect(state.executiveCapacity).toEqual({ slots: 0, used: 0 });
-      expect(state.executiveOffers).toHaveLength(8);
+      expect(state.executiveOffers).toHaveLength(9);
       expect(state.executiveOffers.every((o) => o.offers.length === 3)).toBe(true);
       expect(state.executives).toEqual([]);
       expect(state.supply?.categories.map((c) => c.category)).toEqual([
