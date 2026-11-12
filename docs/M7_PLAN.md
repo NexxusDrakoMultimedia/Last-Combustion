@@ -17,7 +17,25 @@ M7 is built on `feature/0.3.x`, made from `main` once 0.2.0 is out. It follows t
 | 2   | Scouting and fog of war                 | Scouts, the Head of Scouting, and descriptions and ranges that tighten into exact values on every screen that shows a rating ("Scouting and fog of war")                                                  | It hides ratings on every screen, so it comes after the screens, and the story, exist |
 | 3   | Racing by the day and the final in view | Every prelim day and every final can be watched, raced and managed, not only seen in a tactical view (see "Slice 3 in detail")                                                                            | It needs the calendar (built in M6) and the story layer's incidents                   |
 
-Slice 1 is planned in detail when M7 starts. Slice 3 is planned below. The work after M7 (the car industry, mortality and legacies, the 2036 expansion) is in [the M8 plan](M8_PLAN.md).
+Slices 1, 2 and 3 are planned in detail below. The work after M7 (the car industry, mortality and legacies, the 2036 expansion) is in [the M8 plan](M8_PLAN.md).
+
+## Slice 1 in detail: story and feedback
+
+The rules are in "Incidents, rivalries and storylines" in the Game Design Document. This slice builds them in four pieces, people and memory first, screens last (the race screens are reworked in slice 3, so the live map and the drone events wait until then). Piece 1 has its own step-by-step plan in [the rivalry engine plan](superpowers/plans/2026-11-12-rivalry-engine.md).
+
+1. **Rivalry engine (built).** `data/rivalries.json` and a pure `src/sim/rivalry.ts`: the heat gains, the 10% decay each round, the levels (Spark 30, Rivalry 60, Feud 90, Legendary for a pair with five seasons of history), the end rules (heat under 10, a party retires, a reconciliation) and the cap of three live rivalries for a driver. Migration 0054 adds `rivalry` (the pair, heat, peak, level, start and end, end reason) and `rivalry_meeting` (the history of shared moments). `src/db/rivalries.ts` runs after each final beside `writeHeadline` in `src/db/final.ts`, reads the results and applies the round. The Drivers panel gets a rivalry board for the player's drivers and the fan multipliers (x1.1, x1.25, x1.5) feed the fan gains. Headlines that mention a rivalry wait for piece 3, which reworks the press. Property tests: heat never goes below zero or past its ceiling, the same results give the same heat, a driver never has more than three live rivalries, and a save made mid-season resumes to the same rivalries.
+2. **Storyline engine and event cards.** `data/storylines.json` templates (a trigger, up to five beats, an outcome), a pure `src/sim/storyline.ts`, a migration for storyline progress, the cap of three highlighted storylines, and event cards between rounds with choices that move fans, reputation and relationships. _Rivalry feud_ is the first template, because it reads from piece 1; _Rookie on the rise_ and _Underdog garage_ follow, as they need only results.
+3. **Press and crash highlights.** Headlines beyond the garage's own (the world's results, rivalries and storylines), and crash highlights that raise a driver's notoriety and cost reputation on top of the repair bill.
+4. **Ghost record, drone events and the live map.** The ghost choice before a prelim run, the drone signals as incidents, and the live map on the course outline.
+
+**Calls made in this plan** (change them if you disagree):
+
+- Piece 1 covers driver rivalries only. Garage, manufacturer and flag rivalries use the same heat rules and arrive with the championship screens later in the slice.
+- Piece 1 applies only the heat gains the existing data can show: a finish within 3 s (`result.final_time_ms`) and a title-fight head-to-head. Moving to the other's rival garage and taking a rival's race number need transfer and number-change records the schema does not hold yet, and contact, final-race overtakes and press jabs need the incident and press-choice systems, so they join in pieces 2 and 3.
+- The head-to-head composure and aggression change is also left to pieces 2 and 3, for the same reason. Piece 1 delivers the fan multipliers and the rivalry board.
+- Rivalry rows and meetings use the world's drivers, so computer garages' drivers have rivalries too, and only the player's drivers get the board.
+
+**Risks.** The heat rules read from results held in several modules, so the round update must run in one place and in one order or two saves of the same seed could differ; a save from 0.2.x starts with no rivalries, and they build up from the first final played (no back-filling from history, which keeps old saves loading unchanged).
 
 ## Slice 2 in detail: scouting and fog of war
 

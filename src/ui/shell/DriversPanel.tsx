@@ -7,6 +7,7 @@ import type { Identity } from '../../sim/worldgen/types';
 import { useCareerStore } from '../../state/career.store';
 import { places, seasonBalance } from '../../sim/worldgen/data';
 import { button, field, quiet } from '../styles';
+import { RivalriesSection } from './RivalriesSection';
 
 /** Every place a driver could move to: Australia first, then the rest by country and name. */
 const PLACE_OPTIONS = [...places]
@@ -316,6 +317,7 @@ export function DriversPanel() {
           </ul>
         </section>
       )}
+      <RivalriesSection />
     </div>
   );
 }

@@ -54,6 +54,7 @@ import { migration0050 } from './0050_deaths';
 import { migration0051 } from './0051_origins';
 import { migration0052 } from './0052_job_market';
 import { migration0053 } from './0053_company_breaks';
+import { migration0054 } from './0054_rivalries';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -110,4 +111,5 @@ export const migrations: readonly Migration[] = [
   migration0051,
   migration0052,
   migration0053,
+  migration0054,
 ];

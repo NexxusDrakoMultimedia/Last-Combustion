@@ -1075,5 +1075,17 @@
   "executive.back": "Back to the list",
   "executive.counter": "They counter: {salary} a year for {years, plural, one {# year} other {# years}}.",
   "executive.accepted": "{name} has joined the garage.",
-  "executive.walked": "{name} has walked away and will not talk again this year."
+  "executive.walked": "{name} has walked away and will not talk again this year.",
+  "rivalry.title": "Rivalries",
+  "rivalry.intro": "Drivers who keep meeting at the front become rivals. A rivalry heats up with close finishes and title fights, cools every round, and draws extra fans when both race the same final.",
+  "rivalry.none": "None of your drivers has a rival yet.",
+  "rivalry.pair": "{driver} and {rival}",
+  "rivalry.since": "since {year}, heat {heat}",
+  "rivalry.level.none": "Simmering",
+  "rivalry.level.spark": "Spark",
+  "rivalry.level.rivalry": "Rivalry",
+  "rivalry.level.feud": "Feud",
+  "rivalry.level.legendary": "Legendary",
+  "rivalry.meeting.close_finish": "Round {round}, {year}: finished within {seconds} seconds of each other",
+  "rivalry.meeting.title_fight": "Round {round}, {year}: fought for the title"
 }

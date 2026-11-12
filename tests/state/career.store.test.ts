@@ -123,6 +123,16 @@ describe('career store', () => {
       expect(seen.some((e) => e.kind === 'resource')).toBe(false);
     });
 
+    it('reports how many rivalries are live after a final, as a count and nothing else', async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().runNextPrelims();
+      await useCareerStore.getState().runNextFinal();
+      const events = seen.filter((e) => e.kind === 'design' && e.id === 'Rivalry:Live');
+      expect(events).toHaveLength(1);
+      expect(Object.keys(events[0]!).sort()).toEqual(['id', 'kind', 'value']);
+      expect(typeof (events[0] as { value: number }).value).toBe('number');
+    });
+
     it('reports a player garage’s money as sources and sinks once a round is settled', async () => {
       await useCareerStore.getState().startCareer({
         ownerName: 'Test Owner',
