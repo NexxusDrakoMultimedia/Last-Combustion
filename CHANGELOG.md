@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - **Around the series and crash highlights.** The press now writes about the whole series after every final: the winner, the big crashes, rivalry meetings and story beats, in the Press tab under Around the series. A crash in a final, or a prelim crash that wrecks an expensive car (a repair bill of 15,000 or more), can make the highlight reel: the two dearest a round give the driver fans, and so fame, and cost 2 reputation points on top of the repair bill.
 - **Course map.** The Calendar panel has a map of each course, drawn from its road, with a ring on every overtaking spot and a coloured mark where the crashes, spins, mistakes, wildlife encounters, failures and contact of a played round happened.
 - **Ghost record.** From the second season you can pick a ghost for each entry before a round's prelims: an easy ghost two seconds ahead of the run, or a hard one, a top driver's run on the same course last season. The prelims settle it, and the Entries panel says whether the run beat it.
+- **Scouting engine (no screens yet).** The rules for how much you know about a driver, car or garage you do not own are built and tested: a knowledge score from scouts, what you have watched, fame, your own standing and past dealings, and how it turns into a word, a range or an exact value. Nothing is hidden on screen yet.
 
 ## [0.2.0] - 2026-11-10
 

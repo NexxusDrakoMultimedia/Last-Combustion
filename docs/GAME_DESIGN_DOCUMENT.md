@@ -956,7 +956,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 | 94 | The tightest range | 2 |
 | 95–100 | Exact | none |
 
-**The range is stable and honest.** Where the true value sits inside the range is drawn once for each player, subject and season from a named stream (`scout:<subject>:<year>`), so a range never jumps about between screens or on a reload, and more knowledge always gives a range inside the narrower-knowledge one (it only tightens, one whole point at a time). A range never excludes the truth.
+**The range is stable and honest.** Where the true value sits inside the range is drawn once for each player, subject, season and stat from a named stream (`scout:<subject>:<year>:<stat>`, one for each stat so that a screen showing only some of them agrees with every other), so a range never jumps about between screens or on a reload, and more knowledge always gives a range inside the narrower-knowledge one (it only tightens, one whole point at a time). A range never excludes the truth.
 
 **Scouts.** A scout is a member of staff, hired in the Staff panel like a mechanic. Each has a skill from 0 to 100, a wage that rises with it, a notice period and a focus (drivers, cars or garages). The player can assign a scout to a particular subject, which is how to chase a prospect or size up a rival. A **Head of Scouting** is planned as a ninth executive: their skill adds to every scout the garage has, up to 25%, and they are the first to hear of rising drivers. Computer garages do not scout for now; they decide as if they knew the true values.
 
@@ -969,7 +969,7 @@ Drivers, garages, sponsors, manufacturers and suppliers all negotiate with each 
 
 **Where it shows.** The Drivers panel (free agents), the Market and auction listings (cars), the Sponsors, Operations and Executives panels (the other side of a deal), the Registry (any profile of something the player does not own) and the Negotiations screen all show the same three levels, with the knowledge score on hover and a short note on what would clear the fog (a scout, a season of watching, an inspection).
 
-**Data and rules.** A `scout` staff table and a `scout_assignment` table are planned, and the weights and bands above live in `data/scouting.json` (planned), so mods can tune them. The calculation is pure (`src/sim/scouting.ts`, planned) and its draws use named streams, so a save replays identically. Telemetry reports counts and amounts only (scouts hired, assignments made), never names.
+**Data and rules.** A `scout` staff table and a `scout_assignment` table are planned, and the weights and bands above live in `data/scouting.json`, so mods can tune them. The calculation is pure (`src/sim/scouting.ts`, built, with `data/scouting.json`; the screens, scouts and Head of Scouting are still to come) and its draws use named streams, so a save replays identically. Telemetry reports counts and amounts only (scouts hired, assignments made), never names.
 
 ## Career and economy systems
 
