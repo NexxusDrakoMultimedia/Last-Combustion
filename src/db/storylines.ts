@@ -151,9 +151,12 @@ export function updateStorylines(db: Database, roundId: number): void {
   }
 
   // New storylines from the rivalries that have reached their trigger.
+  // A highlighted storyline only holds a slot while one of its drivers is still the player's.
   let slots = highlightSlots(
-    all(db, "SELECT COUNT(*) AS n FROM storyline WHERE status = 'open' AND highlighted = 1")[0]!
-      .n as number,
+    all(
+      db,
+      "SELECT driver_a, driver_b FROM storyline WHERE status = 'open' AND highlighted = 1",
+    ).filter((s) => mine.has(s.driver_a as number) || mine.has(s.driver_b as number)).length,
   );
   for (const [name, template] of Object.entries(storylineData.templates)) {
     const levels = template.trigger.rivalryLevels;
@@ -291,18 +294,20 @@ export function storyBoard(db: Database): StoryBoard {
   const stories = all(
     db,
     "SELECT id, template, driver_a, driver_b, step FROM storyline WHERE status = 'open' AND highlighted = 1 ORDER BY id",
-  ).map((s): StoryRow => {
-    const a = s.driver_a as number;
-    const b = s.driver_b as number;
-    const own = mine.has(a) ? a : b;
-    return {
-      id: s.id as number,
-      template: s.template as string,
-      driverName: name(own),
-      rivalName: name(own === a ? b : a),
-      step: s.step as number,
-      beats: templateOf(s.template as string)?.beats.length ?? 0,
-    };
-  });
+  )
+    .filter((s) => mine.has(s.driver_a as number) || mine.has(s.driver_b as number))
+    .map((s): StoryRow => {
+      const a = s.driver_a as number;
+      const b = s.driver_b as number;
+      const own = mine.has(a) ? a : b;
+      return {
+        id: s.id as number,
+        template: s.template as string,
+        driverName: name(own),
+        rivalName: name(own === a ? b : a),
+        step: s.step as number,
+        beats: templateOf(s.template as string)?.beats.length ?? 0,
+      };
+    });
   return { cards, stories };
 }

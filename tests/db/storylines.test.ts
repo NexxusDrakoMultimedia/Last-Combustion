@@ -338,3 +338,136 @@ describe('a played final', () => {
     expect(count(db, "SELECT COUNT(*) FROM event_log WHERE type = 'storyline_update'")).toBe(1);
   }, 300_000);
 });
+
+describe('whose story it is', () => {
+  it('works when the player driver has the higher id, with the names the right way round', () => {
+    const db = playedWorld('story-high', 2);
+    const [x, y] = finalistsOf(db, [2]) as [number, number];
+    clear(db);
+    signForPlayer(db, y);
+    feud(db, x, y);
+    updateStorylines(db, roundId(db, 2));
+    const board = storyBoard(db);
+    expect(board.cards[0]).toMatchObject({ driverId: y, rivalId: x });
+    expect(board.stories[0]!.driverName).toBe(one(db, `SELECT name FROM driver WHERE id = ${y}`));
+    answerCard(db, board.cards[0]!.id, 'fuel');
+    expect(rows(db, 'SELECT status FROM event_card')).toEqual([['answered']]);
+  });
+
+  it('gives a card to each of two drivers who are both the player drivers', () => {
+    const db = playedWorld('story-both', 2);
+    const [x, y] = finalistsOf(db, [2]) as [number, number];
+    clear(db);
+    signForPlayer(db, x);
+    signForPlayer(db, y);
+    feud(db, x, y);
+    updateStorylines(db, roundId(db, 2));
+    expect(rows(db, 'SELECT driver_id FROM event_card ORDER BY driver_id')).toEqual([[x], [y]]);
+    expect(storyBoard(db).stories).toHaveLength(1);
+  });
+
+  it('stops counting a storyline once its player driver has left the garage', () => {
+    const db = playedWorld('story-left', 3);
+    const [x, y, a, b, c] = finalistsOf(db, [2]).slice(0, 5) as number[];
+    clear(db);
+    signForPlayer(db, x!);
+    feud(db, x!, y!);
+    updateStorylines(db, roundId(db, 2));
+    expect(storyBoard(db).stories).toHaveLength(1);
+    // The driver leaves; three new feuds for another player driver all get a slot.
+    db.run('DELETE FROM contract WHERE driver_id = ?', [x!]);
+    expect(storyBoard(db).stories).toHaveLength(0);
+    signForPlayer(db, a!);
+    for (const other of [b!, c!, y!]) feud(db, a!, other);
+    updateStorylines(db, roundId(db, 3));
+    expect(
+      count(
+        db,
+        "SELECT COUNT(*) FROM storyline WHERE highlighted = 1 AND status = 'open' AND (driver_a = " +
+          a! +
+          ' OR driver_b = ' +
+          a! +
+          ')',
+      ),
+    ).toBe(3);
+  });
+});
+
+describe('every choice on a card', () => {
+  const setup = (seed: string, beat: string) => {
+    const db = playedWorld(seed, 2);
+    const [x, y] = finalistsOf(db, [2]) as [number, number];
+    clear(db);
+    signForPlayer(db, x);
+    feud(db, x, y);
+    updateStorylines(db, roundId(db, 2));
+    db.run('UPDATE event_card SET beat = ?', [beat]);
+    return { db, x, y, id: Number(one(db, 'SELECT id FROM event_card')) };
+  };
+  const audienceOf = (db: Database) =>
+    Number(one(db, 'SELECT series_fans FROM season ORDER BY year DESC LIMIT 1'));
+
+  it('keeps the grudge: fans up, the relationship down', () => {
+    const { db, x, y, id } = setup('story-grudge', 'aftermath');
+    const fans = Number(one(db, `SELECT fans FROM driver WHERE id = ${x}`));
+    answerCard(db, id, 'grudge');
+    expect(Number(one(db, `SELECT fans FROM driver WHERE id = ${x}`))).toBe(
+      fans + Math.round(audienceOf(db) * 0.003),
+    );
+    expect(
+      relationshipScore(
+        db,
+        { type: 'driver', id: Math.min(x, y) },
+        { type: 'driver', id: Math.max(x, y) },
+      ),
+    ).toBe(-10);
+  });
+
+  it('takes the high road: reputation up, never past 100', () => {
+    const { db, x, id } = setup('story-road', 'build_up');
+    db.run('UPDATE driver SET reputation = 99 WHERE id = ?', [x]);
+    answerCard(db, id, 'high_road');
+    expect(Number(one(db, `SELECT reputation FROM driver WHERE id = ${x}`))).toBe(100);
+  });
+
+  it('rolls back everything when an effect fails', () => {
+    const { db, x, id } = setup('story-rollback', 'build_up');
+    const before = JSON.stringify([
+      rows(db, `SELECT fans, reputation FROM driver WHERE id = ${x}`),
+      rows(db, 'SELECT status FROM event_card'),
+    ]);
+    // A broken reputation column makes the second effect throw after the fans were added.
+    db.exec(
+      "DROP TRIGGER IF EXISTS story_break; CREATE TRIGGER story_break BEFORE UPDATE OF reputation ON driver BEGIN SELECT RAISE(ABORT, 'broken'); END",
+    );
+    expect(() => answerCard(db, id, 'fuel')).toThrow(/broken/);
+    db.exec('DROP TRIGGER story_break');
+    expect(
+      JSON.stringify([
+        rows(db, `SELECT fans, reputation FROM driver WHERE id = ${x}`),
+        rows(db, 'SELECT status FROM event_card'),
+      ]),
+    ).toBe(before);
+  });
+});
+
+describe('storyline tables, constraints', () => {
+  it('keep the lower driver id first and allow one storyline for a template and rivalry', () => {
+    const db = playedWorld('story-constraints', 1);
+    clear(db);
+    const [a, b] = rows(db, 'SELECT id FROM driver ORDER BY id LIMIT 2').map(
+      (r) => r[0],
+    ) as number[];
+    feud(db, a!, b!);
+    const rivalry = Number(one(db, 'SELECT id FROM rivalry'));
+    const round = roundId(db, 1);
+    const add = (x: number, y: number) =>
+      db.run(
+        'INSERT INTO storyline (template, rivalry_id, driver_a, driver_b, started_round_id) VALUES (?, ?, ?, ?, ?)',
+        ['rivalry_feud', rivalry, x, y, round],
+      );
+    expect(() => add(b!, a!)).toThrow(/CHECK constraint/);
+    add(a!, b!);
+    expect(() => add(a!, b!)).toThrow(/UNIQUE constraint/);
+  });
+});
