@@ -65,7 +65,7 @@ describe('prestige', () => {
     );
     const agent = freeAgents(db, garageId)[0]!;
     const n = openDriverNegotiation(db, garageId, agent.driverId);
-    offerDriverContract(db, n.id, { salary: agent.fairValue * 3, years: 2 });
+    offerDriverContract(db, n.id, { salary: n.fairValue * 3, years: 2 });
     const entry = addEntry(db, garageId, carId, agent.driverId);
     expect(scalar(db, `SELECT prestige FROM garage WHERE id = ${garageId}`)).toBe(5);
     removeEntry(db, garageId, entry.raceNumber);

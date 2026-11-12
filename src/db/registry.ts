@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { readDriverById, type DriverReading } from './knowledge';
 import type { Database } from 'sql.js';
 import { restorationFloor } from '../sim/wear';
 import type { Tier } from '../sim/worldgen/types';
@@ -174,16 +175,8 @@ export interface DriverProfile {
   badge: NumberBadge;
   goldBorderYear: number | null;
   silverBorderYear: number | null;
-  stats: Record<
-    | 'pace'
-    | 'consistency'
-    | 'racecraft'
-    | 'tyreManagement'
-    | 'composure'
-    | 'wetSkill'
-    | 'potential',
-    number
-  >;
+  /** What the player reads of the driver's hidden numbers (see "Scouting and fog of war"). */
+  skills: DriverReading;
   fans: number;
   fame: number;
   reputation: number;
@@ -284,15 +277,7 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
     badge: badgesFor(db, latestYear(db)).get(driverId) ?? NO_BADGE,
     goldBorderYear: (d.gold_border_year as number | null) ?? null,
     silverBorderYear: (d.silver_border_year as number | null) ?? null,
-    stats: {
-      pace: d.pace as number,
-      consistency: d.consistency as number,
-      racecraft: d.racecraft as number,
-      tyreManagement: d.tyre_management as number,
-      composure: d.composure as number,
-      wetSkill: d.wet_skill as number,
-      potential: d.potential as number,
-    },
+    skills: readDriverById(db, driverId),
     fans: d.fans as number,
     fame: Math.round(Number(d.fame)),
     reputation: d.reputation as number,
