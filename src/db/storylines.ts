@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
-import { clampReputation, highlightSlots, nextBeat, templateOf } from '../sim/storyline';
+import { highlightSlots, nextBeat, templateOf } from '../sim/storyline';
 import { storylineData } from '../sim/worldgen/data';
 import { all } from './entries';
 import { addFans } from './fans';
 import { adjustRelationship } from './negotiation';
+import { adjustReputation } from './reputation';
 
 /** One pending event card for one of the player's drivers. */
 export interface StoryCard {
@@ -231,13 +232,7 @@ export function answerCard(db: Database, cardId: number, choice: string): void {
         season.series_fans as number,
         season.id as number,
       );
-    if (fx.reputation) {
-      const row = all(db, 'SELECT reputation FROM driver WHERE id = ?', [driverId])[0]!;
-      db.run('UPDATE driver SET reputation = ? WHERE id = ?', [
-        clampReputation(row.reputation as number, fx.reputation),
-        driverId,
-      ]);
-    }
+    if (fx.reputation) adjustReputation(db, driverId, fx.reputation);
     if (fx.relationship)
       adjustRelationship(
         db,

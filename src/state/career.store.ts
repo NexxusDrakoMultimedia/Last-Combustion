@@ -10,6 +10,7 @@ import {
 import type { SkipMode } from '../sim/calendar';
 import { contactsBook, type Contact, type ContactType } from '../db/contacts';
 import { pressView, type PressView } from '../db/press';
+import { highlightTotal, newsFeed, type NewsLine } from '../db/news';
 import { liveRivalryCount } from '../db/rivalries';
 import { rivalryBoard, type RivalryBoardRow } from '../db/rivalryboard';
 import {
@@ -293,6 +294,8 @@ interface CareerState {
   calendar: CalendarView | undefined;
   social: SocialView | undefined;
   press: PressView | undefined;
+  /** The latest news of the whole world, newest first. */
+  news: NewsLine[];
   /** The live rivalries of the player's drivers. */
   rivalries: RivalryBoardRow[];
   /** The pending event cards and the live storylines of the player's drivers. */
@@ -578,6 +581,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     calendar: undefined,
     social: undefined,
     press: undefined,
+    news: [],
     rivalries: [],
     story: { cards: [], stories: [] },
     investment: undefined,
@@ -1091,6 +1095,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       }, 'AnswerStoryCard'),
 
     loadPress: () => {
+      if (openDb) set({ news: newsFeed(openDb) });
       const garageId = openDb ? playerGarageId(openDb) : null;
       if (openDb && garageId !== null) set({ press: pressView(openDb, garageId) });
     },
@@ -1347,6 +1352,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         track({ kind: 'design', id: 'Rivalry:Live', value: liveRivalryCount(openDb) });
         // How many storylines are running (a count, no names), and the cards they hold for the player.
         track({ kind: 'design', id: 'Story:Live', value: liveStoryCount(openDb) });
+        // How many crashes have made the highlight reel so far (a count, no names).
+        track({ kind: 'design', id: 'Crash:Highlights', value: highlightTotal(openDb) });
         set({ story: storyBoard(openDb) });
         set({ final: summary, settlement });
         return undefined;

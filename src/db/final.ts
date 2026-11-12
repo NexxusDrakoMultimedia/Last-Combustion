@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { writeHeadline } from './press';
+import { applyCrashHighlights, writeNews } from './news';
 import { updateRivalries } from './rivalries';
 import { updateStorylines } from './storylines';
 import type { Database } from 'sql.js';
@@ -299,6 +300,9 @@ export function playFinal(
     updateRivalries(db, roundId);
     // A rivalry that has reached a Feud becomes a storyline, and running ones play their next beat.
     updateStorylines(db, roundId);
+    // The round's big crashes make the highlight reel, and the press writes the world's news.
+    applyCrashHighlights(db, roundId);
+    writeNews(db, roundId);
     // Reaching a final earns gold borders, which lift the player's garage.
     refreshPlayerPrestige(db);
     db.exec('COMMIT');
