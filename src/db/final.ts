@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { writeHeadline } from './press';
 import { updateRivalries } from './rivalries';
+import { updateStorylines } from './storylines';
 import type { Database } from 'sql.js';
 import { FinalRace, type Call, type FinalEntry } from '../sim/final/engine';
 import { createRng } from '../sim/rng';
@@ -296,6 +297,8 @@ export function playFinal(
     writeHeadline(db, roundId);
     // Close finishes and the title fight heat up the rivalries between drivers.
     updateRivalries(db, roundId);
+    // A rivalry that has reached a Feud becomes a storyline, and running ones play their next beat.
+    updateStorylines(db, roundId);
     // Reaching a final earns gold borders, which lift the player's garage.
     refreshPlayerPrestige(db);
     db.exec('COMMIT');

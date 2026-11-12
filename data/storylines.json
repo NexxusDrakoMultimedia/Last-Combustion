@@ -1,0 +1,24 @@
+{
+  "source": "Storyline templates (see the GDD, 'Incidents, rivalries and storylines'). A storyline is a short arc of beats. 'trigger' says what starts it, each beat in 'beats' has a 'when' (start: as soon as the storyline starts, meeting: once both drivers race the same final, next_round: the round after the last beat), and 'cards' holds the choices an event card offers at a beat. A choice's 'effects' are 'fans' (a share of the series audience, gained by the driver), 'reputation' (points, 0 to 100 for the driver) and 'relationship' (points between the two drivers, -100 to 100). At most 'highlightCap' storylines are highlighted for the player at a time; an unanswered card expires when the next round is run.",
+  "highlightCap": 3,
+  "templates": {
+    "rivalry_feud": {
+      "trigger": { "rivalryLevels": ["feud", "legendary"] },
+      "beats": [
+        { "key": "build_up", "when": "start" },
+        { "key": "showdown", "when": "meeting" },
+        { "key": "aftermath", "when": "next_round" }
+      ],
+      "cards": {
+        "build_up": [
+          { "key": "fuel", "effects": { "fans": 0.004, "reputation": -2 } },
+          { "key": "high_road", "effects": { "fans": 0.001, "reputation": 3 } }
+        ],
+        "aftermath": [
+          { "key": "handshake", "effects": { "reputation": 2, "relationship": 10 } },
+          { "key": "grudge", "effects": { "fans": 0.003, "relationship": -10 } }
+        ]
+      }
+    }
+  }
+}

@@ -541,6 +541,7 @@ A storyline is a short arc of connected beats, built from the records and shown 
 - **Pacing.** At most three storylines are highlighted for the player at a time, and the rest play out in the headlines. AI garages and drivers have storylines too.
 - **Events.** Between rounds and at the festival, event cards bring stories to the player: press days, charity drives, a visit from Pyra Drake, technical bulletins from Declan Marsh and disputes handled by Ingrid Halloran.
 - **Seasons.** Season-level arcs track the title fight, the Garage and Manufacturer Championships, driver retirements and new entrants, and the yearly lineup refreshes.
+- **Built so far (M7).** The engine reads templates from `data/storylines.json` and runs once after each final. The first template, *Rivalry feud*, starts when a live rivalry reaches Feud (or Legendary) and has three beats: a build-up when it starts, a showdown the next time both drivers are classified in the same final, and an aftermath the round after that. A feud that cools before the showdown ends the storyline. A storyline that involves one of the player's drivers is highlighted (three at a time, the rest play out in the history) and gives that driver an event card at the build-up (answer the press: fuel the fire, or take the high road) and at the aftermath (shake hands, or keep the grudge). A choice moves the driver's fans (a share of the series audience, within the cap), the driver's reputation (0 to 100) and the relationship between the two drivers; the card does not stop the calendar, and one nobody answers passes after the next round with no effect. Every beat and every answer is written to the event log as a `story` event. The Drivers panel lists the stories and the pending cards. Still to come: the other templates, the cards for press days and the festival, and headlines for beats.
 - **Moddable.** Templates, incident tables and rivalry weights are data files, so mods can add or change them.
 
 ## Core gameplay loop and progression
@@ -1467,8 +1468,9 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `result` | round_id, entry_id, run_day, run_slot, prelim_time_ms, prelim_pos, final_pos, final_time_ms, points, prize, pole, dnf_reason, tyre_pct_at_flag |
 | `event_log` | round_id, scope (`practice` / `prelim` / `final` / `event` / `season`), timestamp, km (distance along the lap, nullable), type (incident, flag, crash, penalty, overtake, rivalry, story), entries involved, payload JSON |
 | `rivalry` | kind (`driver` / `garage` / `manufacturer` / `flag`), party_a_id, party_b_id, heat, level, started, last_event, ended (nullable) |
-| `storyline` | template_id, subject_type, subject_id, status (`active` / `resolved` / `abandoned`), started, resolved |
-| `storyline_beat` | storyline_id, step, scope, happened_on, event_log_id, choice (nullable), outcome |
+| `storyline` | template, rivalry_id, driver_a, driver_b (the lower id first), started_round_id, step (beats played), status (`open` / `complete` / `ended`), highlighted, ended_round_id; one for each template and rivalry |
+| `storyline_beat` | storyline_id, step, beat, round_id, event_log_id; one for each step of a storyline |
+| `event_card` | storyline_id, beat, driver_id (one of the player's), round_id, status (`pending` / `answered` / `expired`), choice (nullable); one for each beat and driver |
 | `sponsor`, `sponsor_deal` | tier, min_prestige, base_fee, bonuses; garage_id, years, targets |
 | `supplier`, `supplier_deal` | brand, categories, discount, contingency; garage_id, car_id |
 | `trophy` | owner_type (`driver` / `car`), owner_id, kind (`win` / `title`), series, round_id / season_id |

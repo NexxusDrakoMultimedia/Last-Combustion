@@ -28,6 +28,34 @@ function departedFlags(db: Database): Set<string> {
 }
 
 /**
+ * Adds fans to a driver, a garage or a car (a loss is allowed), never past the cap for the series
+ * audience. A driver's fans also count toward their season's gains, and their fame follows their fans.
+ * Returns the fans actually gained.
+ */
+export function addFans(
+  db: Database,
+  table: 'driver' | 'garage' | 'car',
+  id: number,
+  gain: number,
+  audience: number,
+  seasonId: number,
+): number {
+  if (gain === 0) return 0;
+  const row = all(db, `SELECT fans FROM ${table} WHERE id = ?`, [id])[0]!;
+  const fans = capFans(Math.max(0, (row.fans as number) + gain), audience);
+  db.run(`UPDATE ${table} SET fans = ? WHERE id = ?`, [fans, id]);
+  if (table === 'driver') {
+    db.run(
+      `INSERT INTO driver_season_fans (season_id, driver_id, gained) VALUES (?, ?, ?)
+       ON CONFLICT (season_id, driver_id) DO UPDATE SET gained = gained + excluded.gained`,
+      [seasonId, id, fans - (row.fans as number)],
+    );
+    db.run('UPDATE driver SET fame = ? WHERE id = ?', [Math.round(fameFromFans(fans)), id]);
+  }
+  return fans - (row.fans as number);
+}
+
+/**
  * Gives out the fans a round earns once its final is run (see the GDD, "Fans"): each driver gains
  * a share of the series audience for wins, podiums, the final, points, pole and overtakes (a
  * bonus at home), and the driver's garage, car and flag gain their shares of it. Nobody goes over
@@ -80,20 +108,8 @@ export function awardRoundFans(db: Database, roundId: number): void {
     return marketing.get(garageId)!;
   };
 
-  const add = (table: 'driver' | 'garage' | 'car', id: number, gain: number) => {
-    if (gain === 0) return;
-    const row = all(db, `SELECT fans FROM ${table} WHERE id = ?`, [id])[0]!;
-    const fans = capFans(Math.max(0, (row.fans as number) + gain), audience);
-    db.run(`UPDATE ${table} SET fans = ? WHERE id = ?`, [fans, id]);
-    if (table === 'driver')
-      db.run(
-        `INSERT INTO driver_season_fans (season_id, driver_id, gained) VALUES (?, ?, ?)
-         ON CONFLICT (season_id, driver_id) DO UPDATE SET gained = gained + excluded.gained`,
-        [seasonId, id, fans - (row.fans as number)],
-      );
-    if (table === 'driver')
-      db.run('UPDATE driver SET fame = ? WHERE id = ?', [Math.round(fameFromFans(fans)), id]);
-  };
+  const add = (table: 'driver' | 'garage' | 'car', id: number, gain: number) =>
+    void addFans(db, table, id, gain, audience, seasonId);
   const addFlag = (flag: string, fans: number, hometownRegion?: string) => {
     addFlagFans(db, seasonId, flag, fans);
     const def = flagRegions[flag];
