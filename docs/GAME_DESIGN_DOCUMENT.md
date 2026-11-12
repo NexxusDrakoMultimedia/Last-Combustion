@@ -430,6 +430,7 @@ Every upgrade changes some mix of power, weight, handling, cost and road legalit
 - **Ghost Record:** Before every prelim session, a giant version of the series drones hovers over the course to project a ghost car. Each driver picks their ghost from six cars at the start of their own run: one of the top 5 drivers from last year's main series, or Pyra Drake's #313 Homura Spirit R-7 from the course's demo runs. In Season 1 there is no last year, so the ghost is Pyra Drake's #313 demo run only.
   - **Easy.** The ghost runs at the driver's own pace, always staying 2 seconds ahead, giving hints and assistance.
   - **Hard.** The ghost faithfully recreates the original driver's qualifying run.
+  - **Built so far (M7).** The prelims are simulated in one batch, so the ghost is a pick made before a round's prelims and settled after them, not a car on a live view. From the second season the Entries panel offers, for each of the garage's entries, no ghost, the Easy ghost, or a Hard ghost from last season's top five drivers by points who set a time on the same course (the six cars of the design are five drivers and Pyra Drake's #313 demo run, which is not in the game yet, so the first season has no ghost at all). A Hard ghost's time is that driver's prelim time on the course last season; a run that is faster beats it, and an equal or slower one, or one that ended without a time, does not. The Easy ghost's time is the entry's own run less 2 seconds (`ghost` in `data/balance.json`), so it is always ahead and is neither beaten nor lost to; its hints and assistance wait for the live view of slice 3. The picks are for the next round whose prelims have not been run, and the list under them shows how the last round's ghosts went. A ghost changes nothing else: not pace, fans, reputation or rivalries.
 
 ## Attention flags
 
@@ -1492,6 +1493,7 @@ Core tables (SQLite). The schema version is stored in SQLite's `user_version`, n
 | `share_class`, `shareholding`, `share_event`, `valuation`, `board_member` | garage_id, class, holder, shares, price; issues, transfers, dividends, listings; date, value; director and seat (see "Ownership and the cap table") |
 | `person`, `relationship_kind`, `contact`, `conversation`, `journalist`, `family_link` | the unified record of everyone in the paddock and the ties between them (see "People and relationships") |
 | `headline` | date, text, driver_id / garage_id (nullable) |
+| `ghost_choice` | round_id, entry_id, mode (`easy` / `hard`), ghost_driver_id (Hard only), ghost_time_ms, own_time_ms, beaten (Hard only), settled; one for each round and entry |
 | `news` | round_id, kind (`winner` / `crash` / `rivalry` / `story`), driver_id, other_driver_id (nullable), detail, ref_id, journalist_id, date; one for each round, kind, thing and detail |
 
 Records described in "Records and history" are all derivable from these tables; nothing is deleted when a driver retires or a garage folds.

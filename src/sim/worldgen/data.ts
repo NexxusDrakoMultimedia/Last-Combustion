@@ -31,6 +31,7 @@ export const carModels = carModelsJson as CarModelData[];
 export const courses = coursesJson as CourseData[];
 export const balance = balanceJson.worldgen;
 export const wearBalance = balanceJson.wear;
+export const ghostBalance = balanceJson.ghost;
 export const simBalance = balanceJson.sim;
 export const juniorBalance = balanceJson.junior;
 export const finalBalance = balanceJson.final;

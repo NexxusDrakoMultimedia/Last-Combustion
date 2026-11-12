@@ -8,6 +8,7 @@ import { courses } from '../sim/worldgen/data';
 import { readCareer } from './career';
 import { all, loadEntries, type Row } from './entries';
 import { garageFacilityBonuses } from './facilities';
+import { settleGhosts } from './ghost';
 import { garageOutages, practiceHandicaps, recordOutages } from './outages';
 import { wearGear, wearParts } from './repairs';
 import { scrutineerCar } from './upgrades';
@@ -178,6 +179,8 @@ export function playPrelims(db: Database, roundNumber: number): PrelimSummary {
       wearParts(db, entry.carId, added, 'race', entry.tier, roundId);
       wearGear(db, entry.driver.id, added);
     }
+    // The player's ghost picks for the round are settled against the runs just written.
+    settleGhosts(db, roundId);
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
