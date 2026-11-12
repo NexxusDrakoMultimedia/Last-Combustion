@@ -52,6 +52,8 @@ export function describeExecutive(role: ExecutiveRole, skill: number): string {
         training: pct(b.training),
         gear: pct(b.gearCost),
       });
+    case 'head_of_scouting':
+      return t('executive.effect.head_of_scouting', { scouts: pct(b.scouts) });
     case 'operations_director':
       return t('executive.effect.operations_director', {
         utilities: pct(b.utilities),

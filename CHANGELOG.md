@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - **Ghost record.** From the second season you can pick a ghost for each entry before a round's prelims: an easy ghost two seconds ahead of the run, or a hard one, a top driver's run on the same course last season. The prelims settle it, and the Entries panel says whether the run beat it.
 - **Scouting engine (no screens yet).** The rules for how much you know about a driver, car or garage you do not own are built and tested: a knowledge score from scouts, what you have watched, fame, your own standing and past dealings, and how it turns into a word, a range or an exact value. Nothing is hidden on screen yet.
 - **Scouts.** A Scouts tab in the Staff panel lets you hire up to four scouts, each with a skill, a focus (drivers, cars or garages) and a yearly wage paid by the round. A scout can be assigned to a driver. What a scout learns is not shown on screen yet.
+- **Head of Scouting.** A ninth executive role: their skill makes every scout you employ up to 25% better. Saves from 0.2.x still load.
 
 ## [0.2.0] - 2026-11-10
 

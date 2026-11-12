@@ -11,6 +11,7 @@ import {
   type Subject,
 } from '../sim/scouting';
 import { scoutingBalance } from '../sim/worldgen/data';
+import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
 
@@ -75,6 +76,11 @@ export function scoutsForEngine(db: Database, garageId: number): Scout[] {
     focus: s.focus,
     assignedTo: s.assignment ? `${s.assignment.kind}:${s.assignment.id}` : null,
   }));
+}
+
+/** What the Head of Scouting adds to every scout's skill, from 0 (none appointed) to 0.25. */
+export function garageScoutLift(db: Database, garageId: number): number {
+  return garageBonuses(db, garageId).scouts;
 }
 
 /** What a garage pays its scouts for one round. */
