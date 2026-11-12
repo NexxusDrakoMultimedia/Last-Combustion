@@ -1,0 +1,39 @@
+{
+  "source": "Scouting and fog of war (see the GDD, 'Scouting and fog of war'). Knowledge of a subject (0 to 100) is the sum of five parts, capped at 'cap': scouts ('scouts.max' shared out by 1 minus the product of what each scout leaves unknown; a scout counts at 'assigned', 'kind' or 'other' of their skill, and a Head of Scouting lifts every scout's skill by up to 'headBonusMax'), evidence ('perFinal' for each scored final in the last 'seasons' seasons, up to 'max'), visibility ('visibility' times fame), standing (prestige and fame of the player's garage) and experience. An attention flag adds 'attentionFlag'. Below 'rangeFrom' only a word is shown; from 'rangeFrom' a range of whole numbers whose half-width falls from 'widest' to 'narrowest'; from 'exactFrom' the exact value. Potential reads 'potentialPenalty' lower. 'bands' name a value: a word for each, up to its 'max'.",
+  "cap": 100,
+  "scouts": {
+    "max": 50,
+    "assigned": 1,
+    "kind": 0.5,
+    "other": 0.25
+  },
+  "headBonusMax": 0.25,
+  "evidence": {
+    "max": 25,
+    "perFinal": 2.5,
+    "seasons": 3
+  },
+  "visibility": 15,
+  "standing": {
+    "prestige": 5,
+    "fame": 5
+  },
+  "experience": {
+    "owned": 30,
+    "year": 20,
+    "threeYears": 10
+  },
+  "attentionFlag": 25,
+  "rangeFrom": 15,
+  "exactFrom": 95,
+  "widest": 20,
+  "narrowest": 2,
+  "potentialPenalty": 10,
+  "bands": [
+    { "name": "weak", "max": 24 },
+    { "name": "modest", "max": 44 },
+    { "name": "solid", "max": 64 },
+    { "name": "strong", "max": 84 },
+    { "name": "elite", "max": 100 }
+  ]
+}
