@@ -69,5 +69,36 @@
     "play_by_play": "results",
     "roads": "human_interest",
     "money": "gossip"
+  },
+  "news": {
+    "source": "The world's headlines beyond the player garage's own (see the GDD, 'The press' and 'Around the series'). After each final, up to 'cap' items of each kind are written: the winner, the crash highlights, the rivalry meetings and the storyline beats. 'weights' say which journalists' tastes write which kind. A crash is a highlight when it happens in a final, or in the prelims with a repair bill of at least 'minRepair' (3% of the car's new price); at most 'cap' highlights a round, the dearest first. A highlight gives the driver 'fans' of the series audience (fame follows the fans, which is the driver's notoriety) and costs 'reputation' points.",
+    "cap": {
+      "winner": 1,
+      "crash": 2,
+      "rivalry": 2,
+      "story": 2
+    },
+    "weights": {
+      "winner": {
+        "results": 4
+      },
+      "crash": {
+        "gossip": 4,
+        "technical": 2
+      },
+      "rivalry": {
+        "gossip": 3,
+        "results": 2
+      },
+      "story": {
+        "human_interest": 4
+      }
+    },
+    "highlights": {
+      "minRepair": 15000,
+      "cap": 2,
+      "fans": 0.0015,
+      "reputation": -2
+    }
   }
 }

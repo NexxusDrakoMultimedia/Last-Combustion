@@ -57,6 +57,7 @@ import { migration0053 } from './0053_company_breaks';
 import { migration0054 } from './0054_rivalries';
 import { migration0055 } from './0055_season_buzz';
 import { migration0056 } from './0056_storylines';
+import { migration0057 } from './0057_news';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -116,4 +117,5 @@ export const migrations: readonly Migration[] = [
   migration0054,
   migration0055,
   migration0056,
+  migration0057,
 ];
