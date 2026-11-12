@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 - **Rivalries.** Drivers who finish a final within three seconds of each other, or who lead the title fight together, build up heat that cools every round. A pair that reaches Spark, Rivalry or Feud is shown on a Rivalries list at the bottom of the Drivers panel with the meetings that built it, and a driver wins up to 50% more fans in a final the rival also races. A driver has at most three live rivalries, and one ends when it cools or a driver retires. Saves from 0.2.x still load and start with none.
 - **Series buzz.** The audience of the series grows faster after an exciting season: a title race decided by a small points gap, a different winner in most rounds and live rivalries each add growth, and half of a season's buzz carries into the next as word of mouth. Everyone's fan gains are a share of the audience, so they all get bigger. The Game panel shows the last season's buzz.
+- **Stories and event cards.** A rivalry that reaches a Feud becomes a story with a build-up, a showdown the next time both drivers race the same final, and an aftermath. When it involves one of your drivers, a card at the build-up and at the aftermath lets you choose how to answer: your choice moves the driver's fans and reputation and how the two drivers get on. A card you leave passes after the next round, and nothing stops the calendar while it waits. The Drivers panel lists the stories and the cards, and storylines are set in `data/storylines.json`.
 
 ## [0.2.0] - 2026-11-10
 

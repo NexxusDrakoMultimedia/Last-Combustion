@@ -1089,5 +1089,19 @@
   "rivalry.level.feud": "Feud",
   "rivalry.level.legendary": "Legendary",
   "rivalry.meeting.close_finish": "Round {round}, {year}: finished within {seconds} seconds of each other",
-  "rivalry.meeting.title_fight": "Round {round}, {year}: fought for the title"
+  "rivalry.meeting.title_fight": "Round {round}, {year}: fought for the title",
+  "story.title": "Stories",
+  "story.intro": "Rivalries and careers turn into stories that run over several rounds. Now and then a story asks you for a decision; if you leave it, it passes after the next round.",
+  "story.none": "No story involves your drivers right now.",
+  "story.line": "{name}: {driver} and {rival}",
+  "story.progress": "{step} of {beats}",
+  "story.rivalry_feud.name": "Rivalry feud",
+  "story.rivalry_feud.build_up.title": "{driver} and {rival}: the feud is public",
+  "story.rivalry_feud.build_up.body": "The paddock is talking about {driver} and {rival}, and the press wants {driver} to say something. How do you want it answered?",
+  "story.rivalry_feud.build_up.fuel": "Fuel the fire",
+  "story.rivalry_feud.build_up.high_road": "Take the high road",
+  "story.rivalry_feud.aftermath.title": "{driver} and {rival}: after the showdown",
+  "story.rivalry_feud.aftermath.body": "{driver} and {rival} have settled it on the track. What happens between them now?",
+  "story.rivalry_feud.aftermath.handshake": "Shake hands",
+  "story.rivalry_feud.aftermath.grudge": "Keep the grudge"
 }

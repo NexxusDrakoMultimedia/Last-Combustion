@@ -109,6 +109,7 @@ describe('migrate', () => {
       'company_breaks',
       'rivalries',
       'season_buzz',
+      'storylines',
     ]);
   });
 
@@ -389,7 +390,7 @@ describe('investments (schema version 44)', () => {
     );
     db.exec("INSERT INTO share_event (garage_id, date, kind) VALUES (5, '2031-02-01', 'round')");
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(55);
+    expect(getSchemaVersion(db)).toBe(56);
     expect(db.exec('PRAGMA table_info(garage)')[0]!.values.map((v) => v[1])).toContain(
       'acquired_by',
     );
@@ -417,7 +418,7 @@ describe('business (schema version 45)', () => {
   it('records a sponsor and a supplier for each garage', () => {
     const db = openDatabase(SQL);
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(55);
+    expect(getSchemaVersion(db)).toBe(56);
     expect(db.exec('PRAGMA table_info(business)')[0]!.values.map((v) => v[1])).toEqual([
       'garage_id',
       'sponsor_id',
@@ -432,7 +433,7 @@ describe('morale (schema version 46)', () => {
     const db = openDatabase(SQL);
     migrate(db, migrations.slice(0, 45));
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(55);
+    expect(getSchemaVersion(db)).toBe(56);
     for (const table of ['staff', 'executive'])
       expect(db.exec(`PRAGMA table_info(${table})`)[0]!.values.map((v) => v[1])).toContain(
         'morale',
@@ -449,7 +450,7 @@ describe('conversations (schema version 47)', () => {
   it('keeps each conversation with its manner', () => {
     const db = openDatabase(SQL);
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(55);
+    expect(getSchemaVersion(db)).toBe(56);
     expect(() =>
       db.exec(
         "INSERT INTO conversation (garage_id, season_id, occasion, party_type, party_id, manner, delta, date) VALUES (1, 1, 'season_opening', 'sponsor', 1, 'shouting', 3, '2031-03-01')",
@@ -467,7 +468,7 @@ describe('press (schema version 48)', () => {
   it('keeps one headline for a garage and a round', () => {
     const db = openDatabase(SQL);
     migrate(db);
-    expect(getSchemaVersion(db)).toBe(55);
+    expect(getSchemaVersion(db)).toBe(56);
     const insert =
       "INSERT INTO headline (garage_id, round_id, journalist_id, kind, tone, driver, position, date) VALUES (1, 1, 1, 'win', 'warm', 'D', 1, '2031-04-01')";
     expect(() => db.exec(insert)).not.toThrow();

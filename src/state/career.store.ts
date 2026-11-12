@@ -12,6 +12,12 @@ import { contactsBook, type Contact, type ContactType } from '../db/contacts';
 import { pressView, type PressView } from '../db/press';
 import { liveRivalryCount } from '../db/rivalries';
 import { rivalryBoard, type RivalryBoardRow } from '../db/rivalryboard';
+import {
+  answerCard as dbAnswerCard,
+  liveStoryCount,
+  storyBoard,
+  type StoryBoard,
+} from '../db/storylines';
 import { converse as dbConverse, socialView, type SocialView } from '../db/social';
 import type { Manner } from '../sim/social';
 import { create } from 'zustand';
@@ -289,6 +295,8 @@ interface CareerState {
   press: PressView | undefined;
   /** The live rivalries of the player's drivers. */
   rivalries: RivalryBoardRow[];
+  /** The pending event cards and the live storylines of the player's drivers. */
+  story: StoryBoard;
   investment: InvestmentView | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
@@ -377,6 +385,8 @@ interface CareerState {
   loadSocial(): void;
   loadPress(): void;
   loadRivalries(): void;
+  loadStory(): void;
+  answerStoryCard(cardId: number, choice: string): Promise<void>;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
   lookAtInvestment(garageId: number | null): void;
   buyStake(holdingId: number): Promise<void>;
@@ -569,6 +579,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     social: undefined,
     press: undefined,
     rivalries: [],
+    story: { cards: [], stories: [] },
     investment: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
@@ -1065,6 +1076,20 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       if (openDb) set({ rivalries: rivalryBoard(openDb) });
     },
 
+    loadStory: () => {
+      if (openDb) set({ story: storyBoard(openDb) });
+    },
+
+    answerStoryCard: (cardId, choice) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        dbAnswerCard(openDb, cardId, choice);
+        track({ kind: 'design', id: 'Story:CardAnswered', value: 1 });
+        refresh(openDb);
+        set({ story: storyBoard(openDb) });
+        return undefined;
+      }, 'AnswerStoryCard'),
+
     loadPress: () => {
       const garageId = openDb ? playerGarageId(openDb) : null;
       if (openDb && garageId !== null) set({ press: pressView(openDb, garageId) });
@@ -1320,6 +1345,9 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         });
         // How many rivalries the world holds after the race (a count, no names).
         track({ kind: 'design', id: 'Rivalry:Live', value: liveRivalryCount(openDb) });
+        // How many storylines are running (a count, no names), and the cards they hold for the player.
+        track({ kind: 'design', id: 'Story:Live', value: liveStoryCount(openDb) });
+        set({ story: storyBoard(openDb) });
         set({ final: summary, settlement });
         return undefined;
       }, 'RunFinal'),
