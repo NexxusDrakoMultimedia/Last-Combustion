@@ -10,6 +10,12 @@ import {
 import type { SkipMode } from '../sim/calendar';
 import { contactsBook, type Contact, type ContactType } from '../db/contacts';
 import { pressView, type PressView } from '../db/press';
+import {
+  courseMap as dbCourseMap,
+  defaultMapRound,
+  mapRounds as dbMapRounds,
+  type CourseMapData,
+} from '../db/coursemap';
 import { highlightTotal, newsFeed, type NewsLine } from '../db/news';
 import { liveRivalryCount } from '../db/rivalries';
 import { rivalryBoard, type RivalryBoardRow } from '../db/rivalryboard';
@@ -296,6 +302,9 @@ interface CareerState {
   press: PressView | undefined;
   /** The latest news of the whole world, newest first. */
   news: NewsLine[];
+  /** The map of a round's course, and the rounds that can be looked at. */
+  courseMap: CourseMapData | undefined;
+  mapRounds: number[];
   /** The live rivalries of the player's drivers. */
   rivalries: RivalryBoardRow[];
   /** The pending event cards and the live storylines of the player's drivers. */
@@ -389,6 +398,7 @@ interface CareerState {
   loadPress(): void;
   loadRivalries(): void;
   loadStory(): void;
+  loadCourseMap(round?: number): void;
   answerStoryCard(cardId: number, choice: string): Promise<void>;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
   lookAtInvestment(garageId: number | null): void;
@@ -582,6 +592,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     social: undefined,
     press: undefined,
     news: [],
+    courseMap: undefined,
+    mapRounds: [],
     rivalries: [],
     story: { cards: [], stories: [] },
     investment: undefined,
@@ -1078,6 +1090,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
 
     loadRivalries: () => {
       if (openDb) set({ rivalries: rivalryBoard(openDb) });
+    },
+
+    loadCourseMap: (round) => {
+      if (!openDb) return;
+      set({
+        courseMap: dbCourseMap(openDb, round ?? defaultMapRound(openDb)),
+        mapRounds: dbMapRounds(openDb),
+      });
     },
 
     loadStory: () => {

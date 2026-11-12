@@ -3,6 +3,7 @@
 import { formatDate, t } from '../../i18n';
 import type { CalendarEvent } from '../../sim/calendar';
 import { useCareerStore } from '../../state/career.store';
+import { CourseMapSection } from './CourseMapSection';
 
 const MS_PER_DAY = 86_400_000;
 
@@ -65,6 +66,7 @@ export function CalendarPanel() {
           </ul>
         </section>
       )}
+      <CourseMapSection />
     </div>
   );
 }
