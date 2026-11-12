@@ -399,7 +399,17 @@
       "earlyGrowth": 0.25,
       "lateGrowth": 0.08,
       "festivalGrowth": 0.01,
-      "attentionGrowth": 0.005
+      "attentionGrowth": 0.005,
+      "buzz": {
+        "closeTitleGap": 0.1,
+        "titleRace": 0.03,
+        "winnerVariety": 0.02,
+        "levelPoints": { "spark": 1, "rivalry": 2, "feud": 3, "legendary": 4 },
+        "rivalryPoint": 0.004,
+        "rivalryCap": 0.03,
+        "wordOfMouth": 0.5,
+        "ceiling": 0.15
+      }
     }
   },
   "staff": {

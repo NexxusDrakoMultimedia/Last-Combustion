@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
-import { capFans, driverFanGain } from '../sim/fans';
+import { capFans, driverFanGain, type SeasonStory } from '../sim/fans';
 import { fameFromFans } from '../sim/worldgen';
 import { fanBalance, finalBalance, flagRegions, populations } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
@@ -138,4 +138,42 @@ export function awardRoundFans(db: Database, roundId: number): void {
     addFlag(r.driver_flag as string, gain * share.flag, r.hometown_region as string);
     addFlag(r.garage_flag as string, gain * share.garage * share.flag);
   }
+}
+
+/**
+ * What a season gave the audience to talk about, from its results and the rivalries live now: the
+ * points gap between the top two drivers, how many different drivers won a final, and the live
+ * rivalries weighed by level (see `seasonBuzz`).
+ */
+export function readSeasonStory(db: Database, seasonId: number): SeasonStory {
+  const table = all(
+    db,
+    `SELECT e.driver_id, SUM(r.points) AS total FROM result r
+       JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
+       JOIN round ro ON ro.id = r.round_id
+      WHERE ro.season_id = ? GROUP BY e.driver_id ORDER BY total DESC, e.driver_id LIMIT 2`,
+    [seasonId],
+  );
+  const lead = (table[0]?.total as number | undefined) ?? 0;
+  const second = (table[1]?.total as number | undefined) ?? 0;
+  const per = all(
+    db,
+    `SELECT COUNT(DISTINCT ro.id) AS rounds,
+            COUNT(DISTINCT CASE WHEN r.final_pos = 1 THEN e.driver_id END) AS winners
+       FROM round ro LEFT JOIN result r ON r.round_id = ro.id
+       LEFT JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
+      WHERE ro.season_id = ? AND ro.status = 'complete'`,
+    [seasonId],
+  )[0]!;
+  const points = fanBalance.series.buzz.levelPoints as Record<string, number>;
+  const rivalryPoints = all(
+    db,
+    'SELECT level FROM rivalry WHERE live = 1 AND ended_year IS NULL',
+  ).reduce((sum, r) => sum + (points[r.level as string] ?? 0), 0);
+  return {
+    titleGapShare: table.length === 2 && lead > 0 ? (lead - second) / lead : null,
+    rounds: per.rounds as number,
+    winners: per.winners as number,
+    rivalryPoints,
+  };
 }

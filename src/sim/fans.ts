@@ -36,14 +36,46 @@ export function capFans(fans: number, audience: number): number {
   return Math.min(Math.round(fans), Math.round(audience * fanBalance.capShare));
 }
 
+/** What happened in a season that the audience talks about, read from its results by the database. */
+export interface SeasonStory {
+  /** The points gap between the top two drivers as a share of the leader's points, or null with no table. */
+  titleGapShare: number | null;
+  /** Rounds that were run. */
+  rounds: number;
+  /** Different drivers who won a final. */
+  winners: number;
+  /** Live rivalries weighed by level (Spark 1, Rivalry 2, Feud 3, Legendary 4). */
+  rivalryPoints: number;
+}
+
+/**
+ * The buzz a season leaves behind, as extra growth for the series audience: a title race that went to
+ * the wire, a different winner in most rounds and live rivalries, plus half of the season before's buzz
+ * (word of mouth, so a good year keeps paying off for a while). Never more than the ceiling.
+ */
+export function seasonBuzz(story: SeasonStory, previousBuzz = 0): number {
+  const b = fanBalance.series.buzz;
+  const race =
+    story.titleGapShare === null
+      ? 0
+      : b.titleRace * (1 - Math.min(story.titleGapShare / b.closeTitleGap, 1));
+  const variety =
+    story.rounds > 0 ? b.winnerVariety * Math.min(story.winners / story.rounds, 1) : 0;
+  const rivalry = Math.min(b.rivalryCap, story.rivalryPoints * b.rivalryPoint);
+  return Math.min(b.ceiling, Math.max(0, race + variety + rivalry + b.wordOfMouth * previousBuzz));
+}
+
 /**
  * How much the series audience grows when it enters a season: 25% a year at first, then 8%, plus 1% for
- * the festival and 0.5% for each attention flag raised in the season that has just ended.
+ * the festival, 0.5% for each attention flag raised in the season that has just ended, and the buzz.
  */
-export function seriesGrowth(year: number, attentionFlags = 0): number {
+export function seriesGrowth(year: number, attentionFlags = 0, buzz = 0): number {
   const s = fanBalance.series;
   const early = year - s.firstYear <= s.earlyYears;
   return (
-    (early ? s.earlyGrowth : s.lateGrowth) + s.festivalGrowth + attentionFlags * s.attentionGrowth
+    (early ? s.earlyGrowth : s.lateGrowth) +
+    s.festivalGrowth +
+    attentionFlags * s.attentionGrowth +
+    buzz
   );
 }

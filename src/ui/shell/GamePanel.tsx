@@ -105,6 +105,10 @@ export function GamePanel({ tab }: { tab: string }) {
             ],
             [t('game.series.deaths'), number(series.deaths)],
             [t('game.series.seriesFans'), number(series.seriesFans)],
+            [
+              t('game.series.seriesBuzz'),
+              t('game.series.buzzValue', { percent: series.seriesBuzz }),
+            ],
             [t('game.series.driverFans'), number(series.driverFans)],
             [t('game.series.garageFans'), number(series.garageFans)],
             [t('game.series.carFans'), number(series.carFans)],

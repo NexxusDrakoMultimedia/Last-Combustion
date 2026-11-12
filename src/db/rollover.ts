@@ -3,7 +3,7 @@
 import type { Database } from 'sql.js';
 import { rankingNumbers, RANKED_NUMBERS } from '../sim/numbers';
 import { createRng } from '../sim/rng';
-import { seriesGrowth } from '../sim/fans';
+import { seasonBuzz, seriesGrowth } from '../sim/fans';
 import { develop, driverCurve } from '../sim/progression';
 import { retires } from '../sim/rollover';
 import { ageOn } from '../sim/junior';
@@ -14,6 +14,7 @@ import { readCareer } from './career';
 import { insertDriver, placeIdMap } from './drivers';
 import { applyWorldChanges, type AppliedChange } from './worldchanges';
 import { all } from './entries';
+import { readSeasonStory } from './fans';
 import { applyMoves } from './daily';
 import { retireOldCars } from './carage';
 import { createUsedCar } from './market';
@@ -225,6 +226,17 @@ export function startNextSeason(db: Database): Rollover {
       [year + seasonBalance.contractRenewalYears - 1, year],
     );
 
+    // The buzz the ended season leaves: its story, and word of mouth from the season before. It is
+    // kept on that season and added to the growth of the audience the new season starts with.
+    const buzz = seasonBuzz(
+      readSeasonStory(db, lastId),
+      Number(
+        all(db, 'SELECT buzz FROM season WHERE year = ?', [(last.year as number) - 1])[0]?.buzz ??
+          0,
+      ),
+    );
+    db.run('UPDATE season SET buzz = ? WHERE id = ?', [buzz, lastId]);
+
     // The new season, its calendar and the entries.
     db.run(
       'INSERT INTO season (year, era, final_size, series_fans, status) VALUES (?, ?, ?, ?, ?)',
@@ -243,6 +255,7 @@ export function startNextSeason(db: Database): Rollover {
                       WHERE ro.season_id = ${String(last.id)} AND ev.type = 'attention'`,
                   )[0]!.values[0]![0],
                 ),
+                buzz,
               )),
         ),
         'scheduled',

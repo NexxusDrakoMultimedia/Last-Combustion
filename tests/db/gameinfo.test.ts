@@ -58,6 +58,7 @@ describe('the Game screen', () => {
     expect(view.series).toMatchObject({ roundsRun: 0, classified: 0, fastestPrelim: null });
     expect(view.you).toMatchObject({ titles: 0, wins: 0, races: 0 });
     expect(view.series.seriesFans).toBeGreaterThan(0);
+    expect(view.series.seriesBuzz).toBeGreaterThanOrEqual(0);
     expect(view.series.driverFans).toBeGreaterThan(0);
     expect(view.state.garageCash).toBeGreaterThan(0);
     expect(view.state.averageDriverAge).toBeGreaterThan(17);
