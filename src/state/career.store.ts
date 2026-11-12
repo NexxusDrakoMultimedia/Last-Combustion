@@ -16,6 +16,7 @@ import {
   mapRounds as dbMapRounds,
   type CourseMapData,
 } from '../db/coursemap';
+import { ghostView, setGhost as dbSetGhost, type GhostPick, type GhostView } from '../db/ghost';
 import { highlightTotal, newsFeed, type NewsLine } from '../db/news';
 import { liveRivalryCount } from '../db/rivalries';
 import { rivalryBoard, type RivalryBoardRow } from '../db/rivalryboard';
@@ -304,6 +305,8 @@ interface CareerState {
   news: NewsLine[];
   /** The map of a round's course, and the rounds that can be looked at. */
   courseMap: CourseMapData | undefined;
+  /** The ghost record: what is on offer for the next prelims, the picks and how the last ones went. */
+  ghost: GhostView;
   mapRounds: number[];
   /** The live rivalries of the player's drivers. */
   rivalries: RivalryBoardRow[];
@@ -398,6 +401,8 @@ interface CareerState {
   loadPress(): void;
   loadRivalries(): void;
   loadStory(): void;
+  loadGhost(): void;
+  setGhostPick(entryId: number, pick: GhostPick | null): Promise<void>;
   loadCourseMap(round?: number): void;
   answerStoryCard(cardId: number, choice: string): Promise<void>;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
@@ -593,6 +598,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     press: undefined,
     news: [],
     courseMap: undefined,
+    ghost: { available: false, round: null, options: [], entries: [], results: [] },
     mapRounds: [],
     rivalries: [],
     story: { cards: [], stories: [] },
@@ -1100,6 +1106,19 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       });
     },
 
+    loadGhost: () => {
+      if (openDb) set({ ghost: ghostView(openDb) });
+    },
+
+    setGhostPick: (entryId, pick) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        dbSetGhost(openDb, entryId, pick);
+        if (pick !== null) track({ kind: 'design', id: 'Ghost:Picked', value: 1 });
+        set({ ghost: ghostView(openDb) });
+        return undefined;
+      }, 'SetGhost'),
+
     loadStory: () => {
       if (openDb) set({ story: storyBoard(openDb) });
     },
@@ -1344,7 +1363,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           status: 'Start',
           path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
         });
-        set({ prelims: summary });
+        set({ prelims: summary, ghost: ghostView(openDb) });
         return undefined;
       }, 'RunPrelims'),
 

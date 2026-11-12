@@ -11,6 +11,7 @@ import { Panel } from './Panel';
 import { AuctionSection } from './AuctionSection';
 import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
+import { GhostSection } from './GhostSection';
 import { LedgerPanel } from './LedgerPanel';
 import { InvestmentsSection } from './InvestmentsSection';
 import { OwnershipPanel } from './OwnershipPanel';
@@ -390,6 +391,7 @@ export function Shell() {
           <div className="space-y-6">
             <OwnedCars locked={locked} />
             <EntriesSection locked={locked} />
+            <GhostSection />
           </div>
         </Panel>
       )}

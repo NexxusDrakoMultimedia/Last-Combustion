@@ -624,5 +624,9 @@
     },
     "prestigeGap": 20,
     "relationshipScale": 50
+  },
+  "ghost": {
+    "candidates": 5,
+    "easyLeadMs": 2000
   }
 }
