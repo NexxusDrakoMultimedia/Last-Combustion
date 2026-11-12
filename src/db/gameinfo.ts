@@ -52,6 +52,8 @@ export interface SeriesCounts {
   deaths: number;
   /** The series' own fans in the latest season, and the fans of everyone in it, added up. */
   seriesFans: number;
+  /** The extra audience growth, in percent, that the last finished season's buzz gave the series. */
+  seriesBuzz: number;
   driverFans: number;
   garageFans: number;
   carFans: number;
@@ -169,6 +171,13 @@ export function gameView(db: Database): GameView {
       : null,
     deaths: count(db, 'SELECT COUNT(*) AS n FROM death'),
     seriesFans: count(db, 'SELECT series_fans AS n FROM season ORDER BY year DESC LIMIT 1'),
+    seriesBuzz:
+      Math.round(
+        count(
+          db,
+          "SELECT buzz AS n FROM season WHERE status = 'complete' ORDER BY year DESC LIMIT 1",
+        ) * 1000,
+      ) / 10,
     driverFans: count(db, 'SELECT COALESCE(SUM(fans), 0) AS n FROM driver'),
     garageFans: count(db, "SELECT COALESCE(SUM(fans), 0) AS n FROM garage WHERE kind = 'racing'"),
     carFans: count(db, 'SELECT COALESCE(SUM(fans), 0) AS n FROM car'),

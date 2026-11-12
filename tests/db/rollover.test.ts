@@ -7,11 +7,13 @@ import { playFinal } from '../../src/db/final';
 import { addEntry } from '../../src/db/garage';
 import { settleRound } from '../../src/db/finance';
 import { playPrelims } from '../../src/db/prelims';
+import { readSeasonStory } from '../../src/db/fans';
 import { startNextSeason } from '../../src/db/rollover';
 import { endSeason } from '../../src/db/season';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
+import { seasonBuzz, seriesGrowth } from '../../src/sim/fans';
 import { generateWorld } from '../../src/sim/worldgen';
 
 let SQL: SqlJsStatic;
@@ -163,7 +165,7 @@ describe('starting the next season', () => {
     for (const c of categories) expect(hasText(`money.category.${c}`), c).toBe(true);
   });
 
-  it('grows the series audience by 26% for the new season, and half a percent more for each attention flag', () => {
+  it('grows the series audience by 26% for the new season, half a percent more for each attention flag and the buzz', () => {
     const s = (year: number) =>
       Number(scalar(db, `SELECT series_fans FROM season WHERE year = ${year}`));
     const flags = Number(
@@ -173,7 +175,8 @@ describe('starting the next season', () => {
           WHERE ev.type = 'attention' AND ro.season_id = (SELECT id FROM season WHERE year = 2031)`,
       ),
     );
-    expect(s(2032)).toBe(Math.round(s(2031) * (1.26 + 0.005 * flags)));
+    const buzz = Number(scalar(db, 'SELECT buzz FROM season WHERE year = 2031'));
+    expect(s(2032)).toBe(Math.round(s(2031) * (1.26 + 0.005 * flags + buzz)));
   });
 
   it('carries the flag fans over into the new season', () => {
@@ -205,6 +208,63 @@ describe('starting the next season', () => {
 
   it('cannot start twice, or before the season ends', () => {
     expect(() => startNextSeason(db)).toThrow(/not ended/);
+  });
+  describe('the buzz the season left', () => {
+    const id = () => Number(scalar(db, 'SELECT id FROM season WHERE year = 2031'));
+
+    it('is kept on the season and is within bounds', () => {
+      const buzz = Number(scalar(db, 'SELECT buzz FROM season WHERE year = 2031'));
+      expect(buzz).toBeGreaterThanOrEqual(0);
+      expect(buzz).toBeLessThanOrEqual(0.15);
+      expect(Number(scalar(db, 'SELECT buzz FROM season WHERE year = 2032'))).toBe(0);
+      // Winners and the title gap are fixed once the season ends, so they are a floor for the buzz.
+      const story = readSeasonStory(db, id());
+      expect(buzz).toBeGreaterThanOrEqual(seasonBuzz({ ...story, rivalryPoints: 0 }) - 1e-9);
+      expect(buzz).toBeGreaterThan(0);
+    });
+
+    it('is added to the growth of the series audience', () => {
+      const flags = Number(
+        scalar(
+          db,
+          `SELECT COUNT(*) FROM event_log ev JOIN round ro ON ro.id = ev.round_id
+            WHERE ro.season_id = ${id()} AND ev.type = 'attention'`,
+        ),
+      );
+      const buzz = Number(scalar(db, 'SELECT buzz FROM season WHERE year = 2031'));
+      const before = Number(scalar(db, 'SELECT series_fans FROM season WHERE year = 2031'));
+      expect(Number(scalar(db, 'SELECT series_fans FROM season WHERE year = 2032'))).toBe(
+        Math.round(before * (1 + seriesGrowth(2032, flags, buzz))),
+      );
+    });
+
+    it('reads the story of the season, with live rivalries weighed by level', () => {
+      const story = readSeasonStory(db, id());
+      expect(story.rounds).toBe(6);
+      expect(story.winners).toBeGreaterThan(0);
+      expect(story.winners).toBeLessThanOrEqual(6);
+      expect(story.titleGapShare).toBeGreaterThanOrEqual(0);
+      expect(story.titleGapShare).toBeLessThanOrEqual(1);
+      const [a, b] = (
+        db.exec('SELECT id FROM driver ORDER BY id DESC LIMIT 2')[0]!.values as number[][]
+      )
+        .map((r) => r[0]!)
+        .sort((x, y) => x - y);
+      db.run(
+        `INSERT INTO rivalry (driver_a, driver_b, heat, peak, level, live, started_year)
+         VALUES (?, ?, 95, 95, 'feud', 1, 2031)`,
+        [a!, b!],
+      );
+      expect(readSeasonStory(db, id()).rivalryPoints).toBe(story.rivalryPoints + 3);
+      db.run('DELETE FROM rivalry WHERE driver_a = ? AND driver_b = ?', [a!, b!]);
+    });
+
+    it('matches the pure rule for the first season, which has no word of mouth to carry', () => {
+      expect(seasonBuzz({ titleGapShare: 0, rounds: 6, winners: 6, rivalryPoints: 0 })).toBeCloseTo(
+        0.05,
+        5,
+      );
+    });
   });
 });
 

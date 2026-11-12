@@ -257,7 +257,8 @@ describe('season awards over two seasons', () => {
     }
     const total = flags.reduce((sum, [, n]) => sum + n, 0);
     const [, next] = season(2032) as [number, number];
-    expect(next).toBe(Math.round(audience * (1 + 0.25 + 0.01 + 0.005 * total)));
+    const buzz = Number(scalar(db, `SELECT buzz FROM season WHERE id = ${id}`));
+    expect(next).toBe(Math.round(audience * (1 + 0.25 + 0.01 + 0.005 * total + buzz)));
   });
 
   it('gives every record a leaderboard of everyone with a non-zero score, best first', () => {

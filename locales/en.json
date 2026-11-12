@@ -688,6 +688,8 @@
   "game.series.fastestPrelim": "Fastest prelim lap time",
   "game.series.fastestPrelimValue": "{time}, {driver} ({year})",
   "game.series.seriesFans": "Fans of the series",
+  "game.series.seriesBuzz": "Buzz from the last season",
+  "game.series.buzzValue": "+{percent, number}% audience growth",
   "game.series.driverFans": "Fans of all drivers",
   "game.series.garageFans": "Fans of all garages",
   "game.series.carFans": "Fans of all cars",
