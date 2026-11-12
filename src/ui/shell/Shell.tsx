@@ -32,6 +32,7 @@ import { ContactsSection } from './ContactsSection';
 import { PressSection } from './PressSection';
 import { SocialSection } from './SocialSection';
 import { ExecutivesSection } from './ExecutivesSection';
+import { ScoutsSection } from './ScoutsSection';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
 import { FacilitiesSection } from './FacilitiesSection';
@@ -438,6 +439,7 @@ export function Shell() {
           subtitle={t('staff.intro')}
           tabs={[
             { id: 'mechanics', label: t('staff.mechanicsTab') },
+            { id: 'scouts', label: t('scouts.tab') },
             { id: 'executives', label: t('executive.tab') },
             { id: 'contacts', label: t('contacts.tab') },
             { id: 'social', label: t('social.tab') },
@@ -448,6 +450,7 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           {staffTab === 'mechanics' && <StaffPanel />}
+          {staffTab === 'scouts' && <ScoutsSection />}
           {staffTab === 'executives' && <ExecutivesSection />}
           {staffTab === 'contacts' && <ContactsSection />}
           {staffTab === 'social' && <SocialSection />}

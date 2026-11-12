@@ -305,6 +305,24 @@ describe('career store', () => {
       expect(useCareerStore.getState().staff).toEqual([]);
     });
 
+    it('hires, assigns and lets go a scout', async () => {
+      await started();
+      const offers = useCareerStore.getState().scoutOffers;
+      expect(offers).toHaveLength(4);
+      await useCareerStore.getState().hireScout(0, 'drivers');
+      const [scout] = useCareerStore.getState().scouts;
+      expect(scout).toMatchObject({ focus: 'drivers', skill: offers[0]!.skill });
+      const agent = useCareerStore.getState().agents[0]!;
+      await useCareerStore
+        .getState()
+        .assignScout(scout!.id, { kind: 'drivers', id: agent.driverId });
+      expect(useCareerStore.getState().scouts[0]!.subjectName).toBe(agent.name);
+      await useCareerStore.getState().assignScout(scout!.id, null);
+      expect(useCareerStore.getState().scouts[0]!.assignment).toBeNull();
+      await useCareerStore.getState().fireScout(scout!.id);
+      expect(useCareerStore.getState().scouts).toEqual([]);
+    }, 120_000);
+
     it('pays the wages when a round is settled, and reports hiring', async () => {
       await started();
       const seen: TelemetryEvent[] = [];
