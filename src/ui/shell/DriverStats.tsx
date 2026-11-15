@@ -28,9 +28,15 @@ export function DriverStats({ reading }: { reading: DriverReading }) {
   );
 }
 
-/** A fair salary hint as text: one amount when it is known exactly, a range, or "unknown". */
-export function salaryText(hint: SalaryHint | null): string {
+/** A hint at an amount as text: one amount when it is known exactly, a range, or "unknown". */
+export function amountText(
+  hint: SalaryHint | null,
+  format: (n: number) => string = formatMoney,
+): string {
   if (!hint) return t('fog.salaryUnknown');
-  if (hint.low === hint.high) return formatMoney(hint.low);
-  return t('fog.salary', { low: formatMoney(hint.low), high: formatMoney(hint.high) });
+  if (hint.low === hint.high) return format(hint.low);
+  return t('fog.salary', { low: format(hint.low), high: format(hint.high) });
 }
+
+/** A fair salary hint as text. */
+export const salaryText = (hint: SalaryHint | null): string => amountText(hint);

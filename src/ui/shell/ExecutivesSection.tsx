@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { salaryText } from './DriverStats';
 import { moraleText } from '../moraleText';
 import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
@@ -96,7 +97,7 @@ export function ExecutivesSection() {
           {t('executive.negotiating', {
             name: n.name,
             role: t(`executive.role.${n.role}` as never),
-            fair: formatMoney(n.fairValue),
+            fair: salaryText(n.fair),
             patience: n.patience,
           })}
         </p>

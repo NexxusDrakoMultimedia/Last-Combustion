@@ -184,6 +184,8 @@ import {
   type Mechanic,
 } from '../db/staff';
 import { inspectCar } from '../db/inspection';
+import { negotiationHint } from '../db/knowledge';
+import type { AmountRange } from '../sim/scouting';
 import {
   assignScout,
   clearAssignment,
@@ -241,7 +243,8 @@ export interface ActiveSponsorNegotiation {
   id: number;
   stableId: string;
   name: string;
-  fairValue: number;
+  /** What the player reads of a fair fee: a range that narrows with what they know of the sponsor. */
+  fair: AmountRange | null;
   patience: number;
   last?: SponsorOutcome;
 }
@@ -257,7 +260,8 @@ export interface ActiveExecutiveNegotiation {
   role: ExecutiveRole;
   name: string;
   skill: number;
-  fairValue: number;
+  /** What the player reads of a fair salary. */
+  fair: AmountRange | null;
   patience: number;
   last?: ExecutiveOutcome;
 }
@@ -267,8 +271,8 @@ export interface ActiveSupplyNegotiation {
   supplierId: number;
   name: string;
   category: SupplyCategory;
-  /** The fair discount, as a fraction. */
-  fairValue: number;
+  /** What the player reads of the fair discount, as fractions. */
+  fair: AmountRange | null;
   patience: number;
   last?: SupplyOutcome;
 }
@@ -776,7 +780,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             id: n.id,
             stableId,
             name: sponsor.name,
-            fairValue: n.fairValue,
+            fair: negotiationHint(openDb, n.id),
             patience: n.patience,
           },
         });
@@ -934,7 +938,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             role,
             name: chosen.name,
             skill: chosen.skill,
-            fairValue: n.fairValue,
+            fair: negotiationHint(openDb, n.id),
             patience: n.patience,
           },
         });
@@ -975,7 +979,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             supplierId,
             name: chosen.name,
             category: category.category,
-            fairValue: n.fairValue,
+            fair: negotiationHint(openDb, n.id, 0.0001),
             patience: n.patience,
           },
         });
