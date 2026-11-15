@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { readStaffSkill } from './knowledge';
+import type { Reading } from '../sim/scouting';
 import type { Database } from 'sql.js';
 import { shareTotals, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
@@ -213,6 +215,13 @@ interface GarageRef {
   name: string;
 }
 
+/** A skill as the player reads it, with the knowledge behind it. */
+export interface SkillReading {
+  reading: Reading;
+  knowledge: number;
+  owned: boolean;
+}
+
 export interface ExecutiveProfile {
   kind: 'executive';
   id: number;
@@ -220,7 +229,8 @@ export interface ExecutiveProfile {
   role: ExecutiveRole;
   garage: GarageRef;
   age: number;
-  skill: number;
+  /** What the player reads of their skill: exact at their own garage, otherwise behind the fog. */
+  skill: SkillReading;
   salary: number;
   employed: boolean;
   hiredOn: string | null;
@@ -239,7 +249,7 @@ export interface StaffProfile {
   name: string;
   role: string;
   garage: GarageRef;
-  skill: number;
+  skill: SkillReading;
   wagePerWeek: number;
   hiredOn: string;
   leftOn: string | null;
@@ -420,7 +430,7 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       role: r.role as ExecutiveRole,
       garage: { id: r.garage_id as number, name: r.garage as string },
       age: yearOf(db) - (r.birth_year as number),
-      skill: r.skill as number,
+      skill: readStaffSkill(db, r.garage_id as number, 'executive', id, r.skill as number),
       salary: r.salary as number,
       employed: r.status === 'employed',
       hiredOn: (r.hired_on as string | null) ?? null,
@@ -444,7 +454,7 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       name: r.name as string,
       role: r.role as string,
       garage: { id: r.garage_id as number, name: r.garage as string },
-      skill: r.skill as number,
+      skill: readStaffSkill(db, r.garage_id as number, 'staff', id, r.skill as number),
       wagePerWeek: r.wage_per_week as number,
       hiredOn: r.hired_on as string,
       leftOn: (r.left_on as string | null) ?? null,

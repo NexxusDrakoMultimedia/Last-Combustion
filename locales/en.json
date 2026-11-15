@@ -288,6 +288,7 @@
   "registry.active": "Active",
   "registry.retired": "Retired {year}",
   "registry.closed": "Closed {year}",
+  "registry.following": "Following (fame, 0 to 100)",
   "registry.fans": "Fans",
   "registry.career": "Career",
   "registry.podiums": "Podiums",

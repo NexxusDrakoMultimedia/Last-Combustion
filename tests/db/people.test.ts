@@ -165,7 +165,8 @@ describe('a person’s profile', () => {
       kind: 'executive',
       name: 'Gone Person',
       role: 'finance_director',
-      skill: 70,
+      // The player's own people are exact.
+      skill: { owned: true, knowledge: 100, reading: { kind: 'exact', value: 70 } },
       salary: 100_000,
       employed: false,
       contractEnds: 2033,
@@ -186,7 +187,7 @@ describe('a person’s profile', () => {
       kind: 'staff',
       name: 'Crew Person',
       role: 'mechanic',
-      skill: 55,
+      skill: { owned: true, knowledge: 100, reading: { kind: 'exact', value: 55 } },
       wagePerWeek: 800,
       hiredOn: '2031-02-01',
       leftOn: null,
