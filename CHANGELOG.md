@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - **Fog on drivers.** Drivers you do not own are now an estimate: a word (weak, modest, solid, strong or elite) when you know little, then a range that tightens, then the exact number. Scouts (a scout assigned to a driver counts the most), a bigger name, success and watching drivers race all clear the fog, and your own drivers are always exact. The free-agent list and the fair-salary hint follow what you can read, and the Registry driver page shows the same.
 - **Fog on cars.** Cars for sale, at the used market, the auction and in the Registry, now show their condition as a word or a range until you know them: scouts, a name and past dealings clear it. An inspection ($1,500) takes one car to exact while its seller still owns it, and a car you own is always exact.
 - **Fog on garages.** A garage that is not yours shows its prestige and following as a word or a range in the Registry until you know it well, who its sponsor and supplier are stay hidden until then, and the skill of the executives and mechanics who work for it reads the same way. Your own garage and the people who work for you are exact.
+- **Fog on deals.** What a sponsor, an executive or a supplier is worth in a negotiation is now a range rather than a single figure. It narrows as you build a relationship with them, hire scouts and make deals with them again.
 
 ## [0.2.0] - 2026-11-10
 

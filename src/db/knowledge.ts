@@ -5,7 +5,9 @@ import {
   knowledgeOf,
   placement,
   potentialKnowledge,
+  readAmount,
   readScaled,
+  type AmountRange,
   readValue,
   type Reading,
   type Scout,
@@ -19,6 +21,7 @@ import { overallRating } from '../sim/worldgen/rating';
 import { ROAD_TYPES, type RoadType } from '../sim/worldgen/types';
 import { readCareer } from './career';
 import { all } from './entries';
+import { relationshipScore } from './negotiation';
 import { garageScoutLift, scoutsForEngine } from './scouts';
 
 /** What the player's garage knows, gathered once so a list of drivers does not ask the database for each. */
@@ -556,4 +559,67 @@ export function readStaffSkill(
     knowledge,
     owned: false,
   };
+}
+
+/**
+ * How well the player's garage knows the other side of a deal (a sponsor, a supplier, an executive):
+ * the relationship stands in for visibility (people tell a partner more, a friend or an enemy alike),
+ * scouts that cover garages in general count at their kind rate, and past accepted deals with the same
+ * party give the experience part.
+ */
+export function dealKnowledge(
+  db: Database,
+  garageId: number,
+  party: { type: string; id: number },
+): number {
+  const ctx = knowledgeContext(db, garageId);
+  const dealt = all(
+    db,
+    `SELECT MAX(CAST(window AS INTEGER)) AS year FROM negotiation
+      WHERE status = 'accepted' AND party_a_type = 'garage' AND party_a_id = ?
+        AND party_b_type = ? AND party_b_id = ?`,
+    [garageId, party.type, party.id],
+  )[0];
+  const last = dealt?.year === null || dealt?.year === undefined ? null : Number(dealt.year);
+  return knowledgeOf({
+    // A scout assigned to a garage is not assigned to a deal, so only what they cover in general counts.
+    subject: { kind: 'garages', id: -1 },
+    scouts: ctx.scouts,
+    scoutLift: ctx.scoutLift,
+    scoredFinals: 0,
+    fame: Math.min(100, Math.abs(relationshipScore(db, { type: 'garage', id: garageId }, party))),
+    prestige: ctx.prestige,
+    playerFame: ctx.playerFame,
+    owned: false,
+    yearsSinceWorked: last === null ? null : ctx.year - last,
+    flagged: false,
+  }).total;
+}
+
+/**
+ * The hint the player gets of a negotiation's fair value, as a range that narrows with their
+ * relationship with the other side, their scouts and past deals: the widest range at least, and one
+ * amount once they know the other side well. `step` rounds it outward (1 for money,
+ * 0.0001 for a discount).
+ */
+export function negotiationHint(db: Database, negotiationId: number, step = 1): AmountRange | null {
+  const n = all(
+    db,
+    `SELECT party_a_id, party_b_type, party_b_id, fair_value FROM negotiation WHERE id = ?`,
+    [negotiationId],
+  )[0];
+  if (!n) throw new Error(`There is no negotiation ${negotiationId}.`);
+  const garageId = n.party_a_id as number;
+  const party = { type: n.party_b_type as string, id: n.party_b_id as number };
+  const career = readCareer(db);
+  if (!career) throw new Error('There is no career in this database.');
+  // A negotiation always opens with at least the widest range: the other side's counters say something.
+  const knowledge = Math.max(scoutingBalance.rangeFrom, dealKnowledge(db, garageId, party));
+  const place = placement(
+    career.masterSeed,
+    { kind: 'garages', id: party.id },
+    Number(career.gameDate.slice(0, 4)),
+    `deal:${party.type}:${party.id}:fair`,
+  );
+  return readAmount(n.fair_value as number, knowledge, place, step);
 }

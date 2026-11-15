@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { salaryText } from './DriverStats';
 import { useState } from 'react';
 import { formatMoney, hasText, t } from '../../i18n';
 import { useCareerStore } from '../../state/career.store';
@@ -30,7 +31,7 @@ export function SponsorsPanel() {
         <p className="text-sm">
           {t('sponsors.negotiating', {
             name: sponsorNegotiation.name,
-            fair: formatMoney(sponsorNegotiation.fairValue),
+            fair: salaryText(sponsorNegotiation.fair),
             patience: sponsorNegotiation.patience,
           })}
         </p>

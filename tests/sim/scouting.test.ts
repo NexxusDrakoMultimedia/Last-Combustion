@@ -10,6 +10,7 @@ import {
   placement,
   potentialKnowledge,
   readingMidpoint,
+  readAmount,
   readScaled,
   readValue,
   scoutSkill,
@@ -255,5 +256,33 @@ describe('readScaled', () => {
     );
     expect(readScaled(200, 10, 0.5, 120, 460).kind).toBe('word');
     expect(readScaled(200, 95, 0.5, 120, 460)).toEqual({ kind: 'exact', value: 200 });
+  });
+});
+
+describe('readAmount', () => {
+  it('always holds the truth, rounded outward, and only tightens as knowledge rises', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 1, max: 5_000_000 }),
+        fc.integer({ min: 15, max: 93 }),
+        fc.double({ min: 0, max: 0.999999, noNaN: true }),
+        (value, k, place) => {
+          const a = readAmount(value, k, place)!;
+          const b = readAmount(value, k + 1, place)!;
+          expect(a.low).toBeLessThanOrEqual(value);
+          expect(a.high).toBeGreaterThanOrEqual(value);
+          expect(b.low).toBeGreaterThanOrEqual(a.low);
+          expect(b.high).toBeLessThanOrEqual(a.high);
+        },
+      ),
+    );
+  });
+
+  it('keeps a fraction inside its range at a fine step, and is none or exact at the ends', () => {
+    const r = readAmount(0.0734, 40, 0.3, 0.0001)!;
+    expect(r.low).toBeLessThanOrEqual(0.0734);
+    expect(r.high).toBeGreaterThanOrEqual(0.0734);
+    expect(readAmount(1000, 10, 0.5)).toBeNull();
+    expect(readAmount(1000, 95, 0.5)).toEqual({ low: 1000, high: 1000 });
   });
 });

@@ -190,6 +190,37 @@ export function readScaled(
   };
 }
 
+/** A range around a true amount (a fair salary, a fee, a discount): low and high, the same when exact. */
+export interface AmountRange {
+  low: number;
+  high: number;
+}
+
+/**
+ * What the player reads of a true amount: the same range as for any value, but laid on the amount
+ * itself, so `half` points either side means that many percent of it, rounded outward to a multiple of
+ * `step` so it never excludes the truth. None below the first range (the player cannot tell), and one
+ * amount from the exact threshold. Each rise in knowledge leaves the range inside the one before.
+ */
+export function readAmount(
+  truth: number,
+  knowledge: number,
+  place: number,
+  step = 1,
+): AmountRange | null {
+  const half = halfWidth(knowledge);
+  if (half === null) return null;
+  if (half === 0) return { low: truth, high: truth };
+  const width = 2 * half;
+  const below = Math.floor(width * place);
+  const out = (v: number, up: boolean): number =>
+    (up ? Math.ceil(v / step - 1e-9) : Math.floor(v / step + 1e-9)) * step;
+  return {
+    low: Math.max(0, out(truth * (1 - below / 100), false)),
+    high: out(truth * (1 + (width - below) / 100), true),
+  };
+}
+
 /** A reading as one number for sorting and filtering, so the order never gives the truth away. */
 export function readingMidpoint(reading: Reading): number {
   if (reading.kind === 'exact') return reading.value;
