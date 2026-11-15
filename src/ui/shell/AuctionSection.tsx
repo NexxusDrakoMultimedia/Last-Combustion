@@ -5,6 +5,7 @@ import { formatMoney, t } from '../../i18n';
 import { buyerPays, sellerReceives } from '../../sim/auction';
 import { useCareerStore } from '../../state/career.store';
 import { Plate } from '../Plate';
+import { ConditionFog, InspectButton } from './panels';
 import { button, field, quiet } from '../styles';
 
 /** The auction house: bid on the lots of the open auction, consign a car, and see how the last auction went. */
@@ -73,12 +74,10 @@ export function AuctionSection({ locked }: { locked: boolean }) {
                       <Plate plate={l.plate} state={l.plateState} carId={l.carId} />{' '}
                       <span className="font-medium">{l.modelName}</span>{' '}
                       <span className="text-lc-dim">
-                        {t('auction.lotDetail', {
-                          year: l.modelYear,
-                          km: l.roadKm,
-                          wear: l.wear,
-                        })}
-                      </span>
+                        {t('auction.lotDetail', { year: l.modelYear, km: l.roadKm })}
+                      </span>{' '}
+                      <ConditionFog reading={l.reading} />{' '}
+                      <InspectButton carId={l.carId} reading={l.reading} />
                     </span>
                     <span className="lc-num text-lc-dim">
                       {t('auction.opening', { price: formatMoney(l.openingPrice) })}

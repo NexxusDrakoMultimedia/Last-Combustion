@@ -73,7 +73,7 @@ describe('the used market', () => {
     for (const l of list) {
       expect(l.tier).not.toBe('unique');
       expect(l.modelYear).toBeLessThan(2031);
-      expect(l.wear).toBeGreaterThanOrEqual(0);
+      expect(l.reading.condition.kind).toBe('exact');
       expect(l.price).toBeGreaterThan(0);
     }
   });

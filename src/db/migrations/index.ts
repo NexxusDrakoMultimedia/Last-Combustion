@@ -61,6 +61,7 @@ import { migration0057 } from './0057_news';
 import { migration0058 } from './0058_ghost';
 import { migration0059 } from './0059_scouts';
 import { migration0060 } from './0060_head_of_scouting';
+import { migration0061 } from './0061_car_inspection';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -124,4 +125,5 @@ export const migrations: readonly Migration[] = [
   migration0058,
   migration0059,
   migration0060,
+  migration0061,
 ];

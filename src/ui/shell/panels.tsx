@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import type { CarReading } from '../../db/knowledge';
+import { inspectionFee } from '../../db/inspection';
+import { FogValue } from '../FogValue';
 import { useState } from 'react';
 import { formatDate, formatMoney, t } from '../../i18n';
 import { repairBalance } from '../../sim/worldgen/data';
@@ -142,6 +145,31 @@ export function OwnedCars({ locked }: { locked: boolean }) {
   );
 }
 
+/** A car's condition as the player reads it: the bar when exact, otherwise a range or a word. */
+export function ConditionFog({ reading }: { reading: CarReading }) {
+  const c = reading.condition;
+  if (c.kind === 'exact') return <ConditionBar wear={100 - c.value} />;
+  return <FogValue reading={c} knowledge={reading.knowledge} />;
+}
+
+/** The paid inspection of a car for sale, shown while the car is still behind the fog. */
+export function InspectButton({ carId, reading }: { carId: number; reading: CarReading }) {
+  const { hub, status, inspectCar } = useCareerStore();
+  if (reading.owned || reading.inspected || reading.condition.kind === 'exact') return null;
+  const fee = inspectionFee();
+  return (
+    <button
+      type="button"
+      className={quiet}
+      disabled={status === 'busy' || fee > (hub?.player?.cash ?? 0)}
+      title={t('market.inspectHint')}
+      onClick={() => void inspectCar(carId)}
+    >
+      {t('market.inspect', { fee: formatMoney(fee) })}
+    </button>
+  );
+}
+
 export function UsedMarket({ locked }: { locked: boolean }) {
   const { listings, hub, status, buyListing } = useCareerStore();
   const cash = hub?.player?.cash ?? 0;
@@ -159,7 +187,8 @@ export function UsedMarket({ locked }: { locked: boolean }) {
               {t('market.listingDetail', { year: l.modelYear, km: l.roadKm })}
             </span>
           </span>
-          <ConditionBar wear={l.wear} />
+          <ConditionFog reading={l.reading} />
+          <InspectButton carId={l.carId} reading={l.reading} />
           <span className="lc-num">{formatMoney(l.price)}</span>
           <button
             type="button"

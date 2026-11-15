@@ -163,6 +163,33 @@ export function readValue(truth: number, knowledge: number, place: number): Read
   };
 }
 
+/**
+ * What the player sees of a true value on another scale (a kerb weight in kilograms, a tyre width in
+ * millimetres) between `lo` and `hi`: the same range as for a 0 to 100 value, laid over that scale, and
+ * rounded outward so it never excludes the truth. Below the first range only a word is shown.
+ */
+export function readScaled(
+  truth: number,
+  knowledge: number,
+  place: number,
+  lo: number,
+  hi: number,
+): Reading {
+  const unit = (v: number): number => ((v - lo) / (hi - lo)) * 100;
+  const back = (u: number): number => lo + (u / 100) * (hi - lo);
+  const half = halfWidth(knowledge);
+  if (half === null) return { kind: 'word', band: bandFor(unit(truth)) };
+  if (half === 0) return { kind: 'exact', value: Math.round(truth) };
+  const width = 2 * half;
+  const low = unit(truth) - width * place;
+  return {
+    kind: 'range',
+    low: Math.max(Math.floor(lo), Math.floor(back(Math.max(0, low)))),
+    high: Math.min(Math.ceil(hi), Math.ceil(back(Math.min(100, low + width)))),
+    band: bandFor(unit(truth)),
+  };
+}
+
 /** A reading as one number for sorting and filtering, so the order never gives the truth away. */
 export function readingMidpoint(reading: Reading): number {
   if (reading.kind === 'exact') return reading.value;

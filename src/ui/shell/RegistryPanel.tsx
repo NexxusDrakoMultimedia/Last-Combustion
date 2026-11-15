@@ -258,14 +258,52 @@ function CarPage({ p }: { p: CarProfile }) {
           ],
           [t('registry.roadKm'), p.roadKm.toLocaleString('en')],
           [t('registry.raceKm'), p.raceKm.toLocaleString('en')],
-          [t('registry.wear'), p.wear],
+          [
+            t('registry.wear'),
+            <FogValue
+              key="condition"
+              reading={p.reading.condition}
+              knowledge={p.reading.knowledge}
+              confirmed={p.reading.inspected}
+            />,
+          ],
+          [
+            t('registry.bestCondition'),
+            <FogValue
+              key="best"
+              reading={p.reading.bestCondition}
+              knowledge={p.reading.knowledge}
+              confirmed={p.reading.inspected}
+            />,
+          ],
           [
             t('registry.restorations'),
-            p.restorations === 0
-              ? t('registry.none')
-              : t('registry.restorationsValue', { count: p.restorations, floor: p.wearFloor }),
+            p.reading.restorations === null
+              ? t('registry.notKnown')
+              : p.reading.restorations === 0
+                ? t('registry.none')
+                : t('registry.restorationsValue', { count: p.reading.restorations }),
           ],
-          [t('registry.weight'), t('registry.weightValue', { kg: p.kerbKg, mm: p.tyreWidthMm })],
+          [
+            t('registry.kerb'),
+            p.reading.kerbKg ? (
+              <FogValue key="kerb" reading={p.reading.kerbKg} knowledge={p.reading.knowledge} />
+            ) : (
+              t('registry.notKnown')
+            ),
+          ],
+          [
+            t('registry.tyreWidth'),
+            p.reading.tyreWidthMm ? (
+              <FogValue
+                key="tyre"
+                reading={p.reading.tyreWidthMm}
+                knowledge={p.reading.knowledge}
+              />
+            ) : (
+              t('registry.notKnown')
+            ),
+          ],
           [t('registry.fans'), p.fans.toLocaleString('en')],
         ]}
       />
