@@ -423,7 +423,7 @@ describe('a save from before rivalries', () => {
     playPrelims(db, 1);
     // Put the database back as a 0.2.x save would be: no storyline or rivalry tables and no season buzz, three schema versions behind.
     db.exec(
-      'DROP TABLE car_inspection; DROP TABLE scout_assignment; DROP TABLE scout; DROP TABLE ghost_choice; DROP TABLE news; DROP TABLE event_card; DROP TABLE storyline_beat; DROP TABLE storyline; DROP TABLE rivalry_meeting; DROP TABLE rivalry; ALTER TABLE season DROP COLUMN buzz; PRAGMA user_version = 53',
+      'DROP TABLE race_state; DROP TABLE car_inspection; DROP TABLE scout_assignment; DROP TABLE scout; DROP TABLE ghost_choice; DROP TABLE news; DROP TABLE event_card; DROP TABLE storyline_beat; DROP TABLE storyline; DROP TABLE rivalry_meeting; DROP TABLE rivalry; ALTER TABLE season DROP COLUMN buzz; PRAGMA user_version = 53',
     );
     expect(migrate(db).applied).toEqual([
       'rivalries',
@@ -434,6 +434,7 @@ describe('a save from before rivalries', () => {
       'scouts',
       'head_of_scouting',
       'car_inspection',
+      'race_state',
     ]);
     expect(rows(db, 'SELECT buzz FROM season')).toEqual([[0]]);
     expect(rows(db, 'SELECT COUNT(*) FROM rivalry')).toEqual([[0]]);
