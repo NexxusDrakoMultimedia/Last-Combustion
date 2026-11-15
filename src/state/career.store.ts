@@ -51,7 +51,7 @@ import {
   type UpgradeView,
 } from '../db/upgrades';
 import type { PartCategory } from '../sim/upgrades';
-import { freeAgents, type FreeAgent } from '../db/freeagents';
+import { freeAgents, type FreeAgent, type SalaryHint } from '../db/freeagents';
 import {
   addEntry as dbAddEntry,
   garageEntries,
@@ -230,7 +230,8 @@ export interface ActiveNegotiation {
   id: number;
   driverId: number;
   name: string;
-  fairValue: number;
+  /** What the player reads of a fair salary: a range, exact for their own drivers, or none. */
+  fair: SalaryHint | null;
   patience: number;
   last?: ContractOutcome;
 }
@@ -720,7 +721,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             id: n.id,
             driverId,
             name: agent.name,
-            fairValue: n.fairValue,
+            fair: agent.fairSalary,
             patience: n.patience,
           },
         });
