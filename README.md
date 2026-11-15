@@ -80,18 +80,21 @@ The game is TypeScript, React, Tailwind CSS and Zustand, with SQLite (SQL.js) ru
 
 ## Documents
 
-| Read                                                 | For                                                          |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| [How to play](docs/HOW_TO_PLAY.md)                   | A first season, the screens, a glossary and known limits     |
-| [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) | The rules and numbers, the source of truth for what to build |
-| [Architecture](docs/ARCHITECTURE.md)                 | How the code is organised                                    |
-| [Data files](docs/DATA_FILES.md)                     | What each file in `data/` holds, and how mods use them       |
-| [Press kit](docs/PRESS.md)                           | The description, facts, logo files and screenshots           |
-| [Releasing](docs/RELEASING.md)                       | Versions, milestone branches and the release steps           |
-| [Contributing](CONTRIBUTING.md)                      | How to help, from set-up to pull request                     |
-| [Credits](CREDITS.md)                                | Third-party assets and their licences                        |
-| [Trademarks](TRADEMARKS.md)                          | What is reserved and what you may do                         |
-| [Security](SECURITY.md)                              | How to report a vulnerability                                |
+| Read                                                 | For                                                             |
+| ---------------------------------------------------- | --------------------------------------------------------------- |
+| [How to play](docs/HOW_TO_PLAY.md)                   | A first season, the screens, a glossary and known limits        |
+| [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) | The rules and numbers, the source of truth for what to build    |
+| [Architecture](docs/ARCHITECTURE.md)                 | How the code is organised                                       |
+| [Data files](docs/DATA_FILES.md)                     | What each file in `data/` holds, and how mods use them          |
+| [Press kit](docs/PRESS.md)                           | The description, facts, logo files and screenshots              |
+| [Releasing](docs/RELEASING.md)                       | Versions, milestone branches and the release steps              |
+| [Contributing](CONTRIBUTING.md)                      | How to help, from set-up to pull request                        |
+| [Contributors](CONTRIBUTORS.md)                      | Who makes the game, and how to be listed                        |
+| [Code of conduct](CODE_OF_CONDUCT.md)                | The Contributor Covenant, and how to report a problem           |
+| [Agent guide](AGENTS.md)                             | Rules and commands for AI coding agents (and a quick reference) |
+| [Credits](CREDITS.md)                                | Third-party assets and their licences                           |
+| [Trademarks](TRADEMARKS.md)                          | What is reserved and what you may do                            |
+| [Security](SECURITY.md)                              | How to report a vulnerability                                   |
 
 ## Privacy
 
