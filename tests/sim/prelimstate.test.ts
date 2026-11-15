@@ -1,0 +1,126 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import fc from 'fast-check';
+import { describe, expect, it } from 'vitest';
+import { buildSectors } from '../../src/sim/courses/sectors';
+import {
+  PrelimRoundRun,
+  simulateRoundPrelims,
+  type PrelimRound,
+  type RoundInput,
+} from '../../src/sim/prelim/round';
+import { generateWorld } from '../../src/sim/worldgen';
+import { carModels, courses, simBalance } from '../../src/sim/worldgen/data';
+
+function roundInput(seed: string, courseIndex: number): RoundInput {
+  const w = generateWorld(seed);
+  const course = courses[courseIndex]!;
+  const entries = w.entries.map((e) => {
+    const car = w.cars[e.carId - 1]!;
+    const m = carModels.find((x) => x.id === car.modelId)!;
+    return {
+      entryId: e.id,
+      carId: car.id,
+      raceNumber: e.raceNumber,
+      driver: w.drivers[e.driverId - 1]!,
+      car: {
+        ps: m.ps,
+        kerbKg: car.kerbKg,
+        tyreWidthMm: car.tyreWidthMm,
+        layout: m.layout,
+        wear: car.wear,
+      },
+      points: 0,
+    };
+  });
+  return {
+    seed,
+    season: 2031,
+    roundNumber: courseIndex + 1,
+    course,
+    sectors: buildSectors(course),
+    practiceStart: '2031-03-31',
+    finalSize: 15,
+    entries,
+  };
+}
+
+const SEEDS = ['prelim-state-a', 'prelim-state-b', 'prelim-state-c'];
+const inputs = new Map(SEEDS.map((seed, i) => [seed, roundInput(seed, i)]));
+const DAYS = simBalance.prelims.days;
+
+// Compared as a save would carry them (a JSON round trip turns a negative zero into a zero).
+const outcome = (r: PrelimRound) => JSON.parse(JSON.stringify({ ...r, raceKm: [...r.raceKm] }));
+
+describe('prelims played a day at a time', () => {
+  it('give exactly what the single run gives, with no calls from the player', () => {
+    for (const seed of SEEDS) {
+      const input = inputs.get(seed)!;
+      const run = new PrelimRoundRun(input);
+      let days = 0;
+      while (!run.finished) {
+        run.playDay();
+        days += 1;
+        expect(run.daysPlayed).toBe(days);
+      }
+      expect(days).toBe(DAYS);
+      expect(outcome(run.result())).toEqual(outcome(simulateRoundPrelims(input)));
+    }
+  });
+
+  it('are the same however many times they are saved and picked up again, from any day', () => {
+    fc.assert(
+      fc.property(fc.constantFrom(...SEEDS), fc.integer({ min: 0, max: DAYS }), (seed, stop) => {
+        const input = inputs.get(seed)!;
+        const first = new PrelimRoundRun(input);
+        while (first.daysPlayed < stop) first.playDay();
+        const resumed = PrelimRoundRun.restore(input, JSON.parse(JSON.stringify(first.snapshot())));
+        expect(resumed.daysPlayed).toBe(stop);
+        resumed.playToEnd();
+        expect(outcome(resumed.result())).toEqual(outcome(simulateRoundPrelims(input)));
+      }),
+      { numRuns: 20 },
+    );
+  });
+
+  it('can be saved again after every day', () => {
+    const input = inputs.get(SEEDS[0]!)!;
+    let run = new PrelimRoundRun(input);
+    while (!run.finished) {
+      run.playDay();
+      run = PrelimRoundRun.restore(input, JSON.parse(JSON.stringify(run.snapshot())));
+    }
+    expect(outcome(run.result())).toEqual(outcome(simulateRoundPrelims(input)));
+  });
+
+  it('report the events of the day they happened on, and each run is on one day only', () => {
+    const input = inputs.get(SEEDS[1]!)!;
+    const run = new PrelimRoundRun(input);
+    const made = run.playDay();
+    const firstDay = run.schedule.days.find((d) => d.prelimDay === 1)!.date;
+    expect(made.every((e) => e.date === firstDay)).toBe(true);
+    expect(run.daysPlayed).toBe(1);
+    expect(new PrelimRoundRun(input).snapshot().outcomes.every((o) => o === null)).toBe(true);
+  });
+
+  it('take a copy: playing on does not change a snapshot already taken', () => {
+    const run = new PrelimRoundRun(inputs.get(SEEDS[2]!)!);
+    run.playDay();
+    const snap = run.snapshot();
+    const before = JSON.stringify(snap);
+    run.playToEnd();
+    expect(JSON.stringify(snap)).toBe(before);
+  });
+
+  it('refuse a result before every day is run, a snapshot from another field, and extra days', () => {
+    const input = inputs.get(SEEDS[0]!)!;
+    const run = new PrelimRoundRun(input);
+    run.playDay();
+    expect(() => run.result()).toThrow(/days still to run/);
+    const other = { ...input, entries: input.entries.slice(0, 10) };
+    expect(() => PrelimRoundRun.restore(other, run.snapshot())).toThrow(/different field/);
+    run.playToEnd();
+    expect(run.playDay()).toEqual([]);
+    expect(run.daysPlayed).toBe(DAYS);
+  });
+});
