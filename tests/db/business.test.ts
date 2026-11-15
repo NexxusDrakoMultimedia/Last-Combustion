@@ -199,8 +199,13 @@ describe('computer garages as businesses', () => {
     );
     const profile = garageProfile(db, top);
     expect(profile.business).not.toBeNull();
-    expect(profile.business).toEqual(businessView(db, top));
-    expect(profile.business!.sponsor).not.toBeNull();
+    // The people are public; who the sponsor and supplier are and what it builds are known only once
+    // enough is known of the garage (see "Scouting and fog of war").
+    const truth = businessView(db, top)!;
+    expect(profile.business).toEqual(
+      profile.reading.detail ? truth : { ...truth, sponsor: null, supplier: null, facilities: [] },
+    );
+    expect(profile.business!.executives).toEqual(truth.executives);
     expect(garageProfile(db, id).business).toBeNull();
   });
 });

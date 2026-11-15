@@ -417,8 +417,24 @@ function GaragePage({ p }: { p: GarageProfile }) {
           [t('registry.base'), p.base],
           [t('registry.headquarters'), p.headquarters],
           [t('registry.founded'), p.foundedYear],
-          [t('registry.prestige'), p.prestige],
-          [t('registry.fans'), p.fans.toLocaleString('en')],
+          [
+            t('registry.prestige'),
+            <FogValue
+              key="prestige"
+              reading={p.reading.prestige}
+              knowledge={p.reading.knowledge}
+              confirmed={!p.reading.owned}
+            />,
+          ],
+          [
+            t('registry.following'),
+            <FogValue
+              key="following"
+              reading={p.reading.following}
+              knowledge={p.reading.knowledge}
+              confirmed={!p.reading.owned}
+            />,
+          ],
           [
             t('registry.status'),
             p.closedYear !== null
@@ -447,25 +463,35 @@ function GaragePage({ p }: { p: GarageProfile }) {
           <dl className="space-y-1">
             <div>
               <dt className="inline text-lc-dim">{t('registry.business.sponsor')} </dt>
-              <dd className="inline">{p.business.sponsor ?? t('registry.none')}</dd>
+              <dd className="inline">
+                {!p.reading.detail
+                  ? t('registry.notKnown')
+                  : (p.business.sponsor ?? t('registry.none'))}
+              </dd>
             </div>
             <div>
               <dt className="inline text-lc-dim">{t('registry.business.supplier')} </dt>
-              <dd className="inline">{p.business.supplier ?? t('registry.none')}</dd>
+              <dd className="inline">
+                {!p.reading.detail
+                  ? t('registry.notKnown')
+                  : (p.business.supplier ?? t('registry.none'))}
+              </dd>
             </div>
             <div>
               <dt className="inline text-lc-dim">{t('registry.business.facilities')} </dt>
               <dd className="inline">
-                {p.business.facilities.length === 0
-                  ? t('registry.none')
-                  : p.business.facilities
-                      .map((f) =>
-                        t('registry.business.facility', {
-                          name: t(`facility.name.${f.kind}` as never),
-                          level: f.level,
-                        }),
-                      )
-                      .join(', ')}
+                {!p.reading.detail
+                  ? t('registry.notKnown')
+                  : p.business.facilities.length === 0
+                    ? t('registry.none')
+                    : p.business.facilities
+                        .map((f) =>
+                          t('registry.business.facility', {
+                            name: t(`facility.name.${f.kind}` as never),
+                            level: f.level,
+                          }),
+                        )
+                        .join(', ')}
               </dd>
             </div>
           </dl>
@@ -835,7 +861,15 @@ function PersonPage({ p }: { p: PersonProfile }) {
             ],
             ...originFacts(p.origin),
             [t('person.age'), p.age],
-            [t('person.skill'), p.skill],
+            [
+              t('person.skill'),
+              <FogValue
+                key="skill"
+                reading={p.skill.reading}
+                knowledge={p.skill.knowledge}
+                confirmed={!p.skill.owned}
+              />,
+            ],
             [t('person.salary'), formatMoney(p.salary)],
             [
               t('person.status'),
@@ -869,7 +903,15 @@ function PersonPage({ p }: { p: PersonProfile }) {
               </RegistryLink>,
             ],
             ...originFacts(p.origin),
-            [t('person.skill'), p.skill],
+            [
+              t('person.skill'),
+              <FogValue
+                key="skill"
+                reading={p.skill.reading}
+                knowledge={p.skill.knowledge}
+                confirmed={!p.skill.owned}
+              />,
+            ],
             [t('person.wage'), formatMoney(p.wagePerWeek)],
             [t('person.hiredOn'), formatDate(p.hiredOn)],
             [

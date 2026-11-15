@@ -42,6 +42,9 @@ export interface KnowledgeContext {
   carFinals: Map<number, number>;
   carFlagged: Set<number>;
   carLastOwned: Map<number, number>;
+  /** Garages: scored finals of their entries in the last three seasons and attention flags this season. */
+  garageFinals: Map<number, number>;
+  garageFlagged: Set<number>;
   /** Cars the garage owns now. */
   carsOwned: Set<number>;
   /** Cars with a paid inspection that still counts (the car has the same owner as when it was inspected). */
@@ -132,6 +135,28 @@ export function knowledgeContext(db: Database, garageId: number): KnowledgeConte
           WHERE garage_id = ? GROUP BY car_id`,
         [career.gameDate, garageId],
       ).map((r) => [r.id as number, Number(String(r.last).slice(0, 4))]),
+    ),
+    garageFinals: toMap(
+      all(
+        db,
+        `SELECT e.garage_id AS id, COUNT(*) AS n
+           FROM result r JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
+           JOIN round ro ON ro.id = r.round_id JOIN season s ON s.id = ro.season_id
+          WHERE r.final_pos IS NOT NULL AND s.year > ? GROUP BY e.garage_id`,
+        [year - scoutingBalance.evidence.seasons],
+      ),
+      'id',
+      'n',
+    ),
+    garageFlagged: new Set(
+      all(
+        db,
+        `SELECT DISTINCT e.garage_id AS id
+           FROM event_log ev JOIN entry e ON e.id = ev.entry_id AND e.series = 'main'
+           JOIN round ro ON ro.id = ev.round_id JOIN season s ON s.id = ro.season_id
+          WHERE ev.type = 'attention' AND s.year = ?`,
+        [year],
+      ).map((r) => r.id as number),
     ),
     carsOwned: new Set(
       all(db, 'SELECT id FROM car WHERE garage_id = ?', [garageId]).map((r) => r.id as number),
@@ -418,4 +443,117 @@ export function readCarById(db: Database, carId: number): CarReading {
   return player
     ? readCar(knowledgeContext(db, player.id as number), truth)
     : exactCar(truth, false, false);
+}
+
+/** A garage's true numbers, as the database holds them. */
+export interface GarageTruth {
+  id: number;
+  prestige: number;
+  fans: number;
+}
+
+/** What the player sees of a garage: its prestige and following, and whether its business is known. */
+export interface GarageReading {
+  /** The player's own garage: nothing is hidden. */
+  owned: boolean;
+  /** 0 to 100. */
+  knowledge: number;
+  prestige: Reading;
+  /** The garage's fame (0 to 100, which follows its fans), read in place of an exact fan count. */
+  following: Reading;
+  /** Enough is known to say who its sponsor and supplier are and what facilities it runs. */
+  detail: boolean;
+}
+
+/** The knowledge score for a garage that is not the player's. */
+export function garageKnowledge(ctx: KnowledgeContext, truth: GarageTruth): number {
+  return knowledgeOf({
+    subject: { kind: 'garages', id: truth.id },
+    scouts: ctx.scouts,
+    scoutLift: ctx.scoutLift,
+    scoredFinals: ctx.garageFinals.get(truth.id) ?? 0,
+    fame: fameFromFans(truth.fans),
+    prestige: ctx.prestige,
+    playerFame: ctx.playerFame,
+    owned: false,
+    yearsSinceWorked: null,
+    flagged: ctx.garageFlagged.has(truth.id),
+  }).total;
+}
+
+/** What the player sees of a garage: exact for their own, behind the fog for any other. */
+export function readGarage(ctx: KnowledgeContext, truth: GarageTruth): GarageReading {
+  const fame = Math.round(fameFromFans(truth.fans));
+  if (truth.id === ctx.garageId)
+    return {
+      owned: true,
+      knowledge: 100,
+      prestige: exact(truth.prestige),
+      following: exact(fame),
+      detail: true,
+    };
+  const knowledge = garageKnowledge(ctx, truth);
+  const subject: Subject = { kind: 'garages', id: truth.id };
+  const place = (stat: string): number => placement(ctx.seed, subject, ctx.year, stat);
+  return {
+    owned: false,
+    knowledge,
+    prestige: readValue(Math.round(truth.prestige), knowledge, place('prestige')),
+    following: readValue(fame, knowledge, place('following')),
+    detail: knowledge >= scoutingBalance.rangeFrom,
+  };
+}
+
+/** What the player's garage reads of a garage, by id. With no player garage yet nothing is hidden. */
+export function readGarageById(db: Database, garageId: number): GarageReading {
+  const g = all(db, 'SELECT id, prestige, fans FROM garage WHERE id = ?', [garageId])[0];
+  if (!g) throw new Error(`There is no garage ${garageId}.`);
+  const truth: GarageTruth = {
+    id: garageId,
+    prestige: g.prestige as number,
+    fans: g.fans as number,
+  };
+  const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+  if (!player)
+    return {
+      owned: false,
+      knowledge: 100,
+      prestige: exact(truth.prestige),
+      following: exact(fameFromFans(truth.fans)),
+      detail: true,
+    };
+  return readGarage(knowledgeContext(db, player.id as number), truth);
+}
+
+/**
+ * What the player reads of the skill (0 to 100) of someone who works for a garage (an executive, a
+ * mechanic): they are known as well as their garage is, and exact at the player's own garage.
+ */
+export function readStaffSkill(
+  db: Database,
+  garageId: number,
+  kind: 'executive' | 'staff',
+  personId: number,
+  skill: number,
+): { reading: Reading; knowledge: number; owned: boolean } {
+  const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+  if (!player || (player.id as number) === garageId)
+    return { reading: exact(skill), knowledge: 100, owned: (player?.id as number) === garageId };
+  const ctx = knowledgeContext(db, player.id as number);
+  const g = all(db, 'SELECT id, prestige, fans FROM garage WHERE id = ?', [garageId])[0];
+  const knowledge = garageKnowledge(ctx, {
+    id: garageId,
+    prestige: Number(g?.prestige ?? 0),
+    fans: Number(g?.fans ?? 0),
+  });
+  const subject: Subject = { kind: 'garages', id: garageId };
+  return {
+    reading: readValue(
+      Math.round(skill),
+      knowledge,
+      placement(ctx.seed, subject, ctx.year, `skill:${kind}:${personId}`),
+    ),
+    knowledge,
+    owned: false,
+  };
 }

@@ -1,6 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { readCarById, readDriverById, type CarReading, type DriverReading } from './knowledge';
+import {
+  readCarById,
+  readDriverById,
+  readGarageById,
+  type CarReading,
+  type DriverReading,
+  type GarageReading,
+} from './knowledge';
 import type { Database } from 'sql.js';
 import { registryStatuses, type RegistryStatus } from './status';
 import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
@@ -455,8 +462,8 @@ export interface GarageProfile {
   headquarters: string;
   homeState: string;
   colours: [string, string];
-  prestige: number;
-  fans: number;
+  /** What the player reads of the garage's prestige and following (see "Scouting and fog of war"). */
+  reading: GarageReading;
   foundedYear: number;
   closedYear: number | null;
   isPlayer: boolean;
@@ -475,6 +482,12 @@ export interface GarageProfile {
   drivers: (Ref & { years: string })[];
   /** The executives, facilities, sponsor and supplier of a computer garage; null for the player's. */
   business: BusinessView | null;
+}
+
+/** Who a garage's sponsor and supplier are and what it builds are known only once enough is known of it. */
+function fogBusiness(business: BusinessView | null, known: boolean): BusinessView | null {
+  if (!business || known) return business;
+  return { ...business, sponsor: null, supplier: null, facilities: [] };
 }
 
 /** The profile of a garage: where it is, who and what it races now, its seasons, its cars and its past drivers. */
@@ -507,6 +520,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     [garageId],
   );
   const player = g.is_player === 1;
+  const reading = readGarageById(db, garageId);
   // A garage from an older save, or a new one, is given its business the first time it is looked at.
   const career = readCareer(db);
   if (career && !player) ensureBusinesses(db, Number(career.gameDate.slice(0, 4)));
@@ -520,8 +534,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
       : `${g.base as string}, ${g.region as string}`,
     homeState: g.home_state as string,
     colours: [g.primary_colour as string, g.secondary_colour as string],
-    prestige: g.prestige as number,
-    fans: g.fans as number,
+    reading,
     foundedYear: g.founded_year as number,
     closedYear: (g.closed_year as number | null) ?? null,
     isPlayer: player,
@@ -574,7 +587,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
       name: d.name as string,
       years: d.first === d.last ? String(d.first) : `${d.first as number}-${d.last as number}`,
     })),
-    business: player ? null : businessView(db, garageId),
+    business: player ? null : fogBusiness(businessView(db, garageId), reading.detail),
   };
 }
 
