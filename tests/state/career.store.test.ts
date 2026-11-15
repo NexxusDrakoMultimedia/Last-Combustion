@@ -315,6 +315,38 @@ describe('career store', () => {
       expect(after.reading.condition.kind).toBe('exact');
     }, 120_000);
 
+    it('reports scouts and inspections as design events, counts only', async () => {
+      await started();
+      const seen: TelemetryEvent[] = [];
+      let scoutName: string | undefined;
+      addSink({ send: (e) => void seen.push(e) });
+      try {
+        await useCareerStore.getState().hireScout(0, 'drivers');
+        const scout = useCareerStore.getState().scouts[0]!;
+        scoutName = scout.name;
+        await useCareerStore.getState().assignScout(scout.id, {
+          kind: 'drivers',
+          id: useCareerStore.getState().agents[0]!.driverId,
+        });
+        await useCareerStore.getState().inspectCar(useCareerStore.getState().listings[0]!.carId);
+        await useCareerStore.getState().fireScout(scout.id);
+      } finally {
+        clearSinks();
+      }
+      const ids = seen.flatMap((e) => (e.kind === 'design' ? [e.id] : []));
+      expect(ids).toEqual(
+        expect.arrayContaining([
+          'Action:HireScout',
+          'Action:AssignScout',
+          'Action:InspectCar',
+          'Action:FireScout',
+        ]),
+      );
+      // No names or ids travel with an event.
+      expect(scoutName).toBeDefined();
+      expect(JSON.stringify(seen)).not.toContain(scoutName ?? 'no scout was hired');
+    }, 120_000);
+
     it('hires, assigns and lets go a scout', async () => {
       await started();
       const offers = useCareerStore.getState().scoutOffers;

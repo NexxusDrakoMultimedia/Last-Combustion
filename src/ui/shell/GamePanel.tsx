@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import type { ReactNode } from 'react';
 import { formatDate, formatLapTime, formatMoney, t } from '../../i18n';
 import type { ChronicleLine } from '../../db/gameinfo';
 import { useCareerStore } from '../../state/career.store';
+import { FogValue } from '../FogValue';
 import { dataTable } from '../styles';
 
-type Row = [label: string, value: string];
+type Row = [label: string, value: ReactNode];
 
 function Facts({ title, rows }: { title: string; rows: Row[] }) {
   return (
@@ -123,20 +125,27 @@ export function GamePanel({ tab }: { tab: string }) {
             [
               t('game.state.richestGarage'),
               state.richestGarage
-                ? t('game.state.cashValue', {
-                    name: state.richestGarage.name,
-                    amount: formatMoney(state.richestGarage.cash),
-                  })
+                ? state.richestGarage.cash === null
+                  ? state.richestGarage.name
+                  : t('game.state.cashValue', {
+                      name: state.richestGarage.name,
+                      amount: formatMoney(state.richestGarage.cash),
+                    })
                 : t('game.series.none'),
             ],
             [
               t('game.state.mostPrestigiousGarage'),
-              state.mostPrestigiousGarage
-                ? t('game.state.prestigeValue', {
-                    name: state.mostPrestigiousGarage.name,
-                    value: state.mostPrestigiousGarage.prestige,
-                  })
-                : t('game.series.none'),
+              state.mostPrestigiousGarage ? (
+                <span>
+                  {t('game.state.garageNamed', { name: state.mostPrestigiousGarage.name })}
+                  <FogValue
+                    reading={state.mostPrestigiousGarage.reading.prestige}
+                    knowledge={state.mostPrestigiousGarage.reading.knowledge}
+                  />
+                </span>
+              ) : (
+                t('game.series.none')
+              ),
             ],
             [
               t('game.state.mostFamousDriver'),

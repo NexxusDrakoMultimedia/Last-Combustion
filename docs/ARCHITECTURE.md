@@ -98,4 +98,6 @@ Most features come in pairs. A pure module in `src/sim` holds the rules and read
 
 ## Not built yet
 
-The simulation worker (`src/workers`), the story and feedback layer, scouting and racing by the day (M7), the car industry, mortality, the 2036 expansion and the Junior Series (M8) and the other career modes (M9) arrive in later milestones. The GDD says which.
+Scouting and fog of war are built: `src/sim/scouting.ts` is the pure engine (knowledge from scouts, evidence, visibility, standing and experience, and how it becomes a word, a range or an exact value), `src/db/knowledge.ts` gathers what the player's garage knows and reads drivers, cars, garages and deals through it, `src/db/scouts.ts` and `src/db/inspection.ts` hold the scouts and paid inspections, and `FogValue` (`src/ui/FogValue.tsx`) draws a reading. A screen that shows another party's hidden number takes a reading from there, never the database row.
+
+The simulation worker (`src/workers`), racing by the day (M7), the car industry, mortality, the 2036 expansion and the Junior Series (M8) and the other career modes (M9) arrive in later milestones. The GDD says which.

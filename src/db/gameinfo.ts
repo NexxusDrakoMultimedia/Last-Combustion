@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { readGarageById, type GarageReading } from './knowledge';
 import type { Database } from 'sql.js';
 import { all } from './entries';
 import { readCareer, type CareerMode, type Difficulty } from './career';
@@ -65,8 +66,10 @@ export interface StateOfPlay {
   garageCash: number;
   averagePrestige: number;
   averageDriverAge: number;
-  richestGarage: { name: string; cash: number } | null;
-  mostPrestigiousGarage: { name: string; prestige: number } | null;
+  /** The richest garage: its cash is shown only when it is the player's own (see "Scouting and fog of war"). */
+  richestGarage: { name: string; cash: number | null } | null;
+  /** The most prestigious garage, with what the player reads of its prestige. */
+  mostPrestigiousGarage: { name: string; reading: GarageReading } | null;
   mostFamousDriver: { name: string; fans: number } | null;
 }
 
@@ -185,11 +188,11 @@ export function gameView(db: Database): GameView {
 
   const richest = all(
     db,
-    "SELECT name, cash FROM garage WHERE kind = 'racing' ORDER BY cash DESC, id LIMIT 1",
+    "SELECT name, cash, is_player FROM garage WHERE kind = 'racing' ORDER BY cash DESC, id LIMIT 1",
   )[0];
   const prestigious = all(
     db,
-    "SELECT name, prestige FROM garage WHERE kind = 'racing' ORDER BY prestige DESC, id LIMIT 1",
+    "SELECT id, name FROM garage WHERE kind = 'racing' ORDER BY prestige DESC, id LIMIT 1",
   )[0];
   const famous = all(db, 'SELECT name, fans FROM driver ORDER BY fans DESC, id LIMIT 1')[0];
   const ages = all(db, 'SELECT birth_date FROM driver WHERE retired_year IS NULL').map(
@@ -205,9 +208,18 @@ export function gameView(db: Database): GameView {
     averageDriverAge: ages.length
       ? Math.round((ages.reduce((a, b) => a + b, 0) / ages.length) * 10) / 10
       : 0,
-    richestGarage: richest ? { name: String(richest.name), cash: Number(richest.cash) } : null,
+    richestGarage: richest
+      ? {
+          name: String(richest.name),
+          // Another garage's cash is hidden behind the fog, so only the name is known.
+          cash: richest.is_player === 1 ? Number(richest.cash) : null,
+        }
+      : null,
     mostPrestigiousGarage: prestigious
-      ? { name: String(prestigious.name), prestige: Number(prestigious.prestige) }
+      ? {
+          name: String(prestigious.name),
+          reading: readGarageById(db, Number(prestigious.id)),
+        }
       : null,
     mostFamousDriver: famous ? { name: String(famous.name), fans: Number(famous.fans) } : null,
   };

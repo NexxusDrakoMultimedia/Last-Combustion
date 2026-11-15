@@ -85,6 +85,16 @@ Cars also have a lifespan. A car older than the limit for its class (25 years fo
 - **Stories.** A rivalry that reaches a Feud becomes a story: the build-up, a showdown the next time both drivers race the same final, and an aftermath. When it involves one of your drivers, the Stories list under Rivalries in Drivers gives you a card to answer at the build-up and at the aftermath. Your choice moves the driver's fans and reputation, and how the two drivers get on. A card you leave passes after the next round, and nothing stops the calendar while it waits.
 - **Rivalries.** Drivers who finish within three seconds of each other, or who lead the title fight together, build up heat. A pair that reaches Spark, Rivalry or Feud shows on the Rivalries list at the bottom of Drivers, with the meetings that built it, and a driver wins extra fans in a final the rival also races. Heat cools every round, and a rivalry ends when it cools or a driver retires.
 
+## What you know about others
+
+Only your own drivers, cars and garage are open to you. For everyone else, the game shows what you could know, not the truth.
+
+- **Words, ranges and exact numbers.** A hidden number (a driver's pace, a car's condition, a garage's prestige) shows first as a word (weak, modest, solid, strong or elite), then as a range such as 48 to 62 with a small bar, then as the exact number with a tick. The true value is always inside a range. Hover over a number to see how well you know the subject and what would help.
+- **What clears the fog.** Scouts (hired in Staff, under Scouts), a bigger name for your garage, more success, watching a driver, car or garage race season after season, an attention flag a driver earned this season, and having worked with them before. A scout counts for the most on the one subject you assign them to (the Scouts tab can assign one to a free-agent driver), and a Head of Scouting, one of the executives, makes every scout up to a quarter better.
+- **Inspections.** At the used market and the auction, an inspection ($1,500) takes one car for sale to exact for as long as its seller owns it. A car you buy is yours, so it is exact.
+- **Deals.** In a negotiation with a sponsor, an executive or a supplier you see a range for what a fair deal is worth. It narrows as your relationship with them grows, with your scouts, and when you have dealt with them before. Their walk-away price is never shown.
+- **What stays open.** Results, points, race numbers, plates, titles, records, the people themselves and anything public are always exact.
+
 ## Saving
 
 Open **Menu** and press **Save to slot 1**. The save is kept in your browser. **Load slot 1** brings it back. **Export .lcsave file** downloads a save as a file you can keep. A save from an older version of the game loads and is upgraded; a save from a newer version will not load.
@@ -102,7 +112,7 @@ Last Combustion is built for a computer: a desktop or laptop with a mouse and a 
 
 ## What the game does not have yet
 
-Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no story or interviews, no scouting or fog of war (every profile is open), and companies do not yet start up or wind down. The Game Design Document lists all of it, built and planned.
+Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no interviews, and companies do not yet start up or wind down. The Game Design Document lists all of it, built and planned.
 
 ## Words you will see
 
@@ -119,6 +129,7 @@ Only the Garage owner mode, with one save slot and no race calls. There is no Ju
 - **Prelims:** seven days of timed laps before each final. Every entry runs one lap; the fastest start the final.
 - **Prestige:** a garage's standing, from its entries, its gold-bordered drivers and its titles. It decides which sponsors, suppliers and executives will deal with you.
 - **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds. Each tab is split into Champions, Race winners, Active, Retired and Obscure, and each name shows the years it was active, such as (2031-present).
+- **Fog:** what you do not know about someone else's numbers. It clears as you scout, race and deal. See What you know about others.
 - **Greylinked (Obscure):** a driver, car or garage that retired or folded without ever scoring a point. It is listed apart and its links are grey, but its profile still opens.
 - **Road affinity:** how good a driver is on forest, coast, mountain and night roads.
 - **Wear:** from 0 (new) to 100 (worn out), for the chassis and for each part.

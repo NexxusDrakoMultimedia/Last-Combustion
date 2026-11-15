@@ -725,7 +725,7 @@
   "game.state.mostPrestigiousGarage": "Most prestigious garage",
   "game.state.mostFamousDriver": "Driver with the most fans",
   "game.state.cashValue": "{name}, {amount}",
-  "game.state.prestigeValue": "{name}, {value}",
+  "game.state.garageNamed": "{name}, ",
   "game.state.fansValue": "{name}, {fans} fans",
   "game.series.deaths": "Deaths outside racing",
   "game.series.none": "None yet",
