@@ -2,6 +2,16 @@
 
 Thank you for helping. This page is the short route from "I want to change something" to a merged pull request. If you are an AI coding agent, read [AGENTS.md](AGENTS.md) first.
 
+## Ways to help
+
+You do not have to write code.
+
+- **Play and report.** Play a few seasons and open an issue for anything that is wrong, unclear or unfair. A career seed and the game version (Menu, then About) make a bug much easier to fix.
+- **Check the numbers.** Balance is meant to be tuned from evidence. A suggestion with the seed, what you saw and what you expected is worth more than an opinion.
+- **Improve the documents.** Corrections to [How to play](docs/HOW_TO_PLAY.md), the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) and these pages are welcome, and a small pull request is enough.
+- **Review.** Reading an open pull request and saying what you found is a real contribution.
+- **Write code.** Start with a small open issue, or the plan for the milestone being built (see below).
+
 ## Get it running
 
 You need Node.js 22 and pnpm 10 (`corepack enable` sets pnpm up from `package.json`).
@@ -20,6 +30,19 @@ A good order to read in is the [README](README.md), then [How to play](docs/HOW_
 3. **Keep it focused.** One change per pull request. A bug fix does not need a refactor next to it.
 4. **Change the design with the code.** If behaviour changes, update the Game Design Document in the same pull request.
 5. **Open the pull request** using the template, and wait for the checks to go green. Cloudflare also builds a preview of your branch, which you can use to try the change in a browser.
+
+## What a pull request needs
+
+Before you ask for a review, check that your pull request:
+
+- is focused on one change and targets the right branch (step 2 above);
+- passes the checks below, with tests added or updated and fixed seeds in them;
+- updates the Game Design Document if behaviour or design changed, and adds a line under `[Unreleased]` in `CHANGELOG.md` for anything a player would notice;
+- has no literal player text outside `locales/en.json`, and no real people's names or brands anywhere;
+- lists any new dependency or asset in [CREDITS.md](CREDITS.md) with a GPL-compatible licence;
+- has signed-off commits with Conventional Commit subjects.
+
+The pull request template carries the same checklist.
 
 ## Before you push
 
@@ -53,6 +76,14 @@ A pre-commit hook formats staged files and checks your commit message. CI runs e
 - **Licences.** Only add GPL-compatible dependencies and assets, and list them in [CREDITS.md](CREDITS.md). New source files start with the SPDX header (see `AGENTS.md`).
 - **Telemetry.** Events carry categories, counts and amounts only, never names, free text or save contents. Never commit an analytics key, and never write one in a document, test or log.
 
+## Review
+
+Every pull request is reviewed by a maintainer (the repository's `CODEOWNERS` asks for it). Expect questions and requests for changes: they are about the change, not about you. A draft pull request is a good way to ask for early feedback. Answer review comments in the thread, push your fixes as new commits, and say so when you are ready for another look. Maintainers review as time allows. Never skip or disable a test to get a check green, and do not force-push over a review in progress.
+
+## Your contribution's licence
+
+The project is licensed GPL-3.0-or-later (see [LICENSE](LICENSE)). By opening a pull request you agree that your contribution is licensed under the same terms, and signing off your commits certifies the Developer Certificate of Origin. New source files start with the SPDX header described in [AGENTS.md](AGENTS.md). [CONTRIBUTORS.md](CONTRIBUTORS.md) says how to be listed.
+
 ## Writing
 
 Documents and player text are plain, direct and human: short sentences, active voice, specific examples, no filler. No em dashes (use a comma, colon, full stop or brackets), and an en dash only in a number range. `pnpm docs:style` checks it. `pnpm docs:check` checks the facts a machine can check: links, anchors, file paths and commands. Every release gets a full documentation pass first, which [Releasing](docs/RELEASING.md) describes.
@@ -61,8 +92,12 @@ Documents and player text are plain, direct and human: short sentences, active v
 
 The game's names, places and cars are fictional or original. Do not add real people's surnames or personal details, or real brands. The name, the logo, Pyra Drake, the two series administrators, the four commentators and the dragon-blooded driver characters belong to Nexxus Drako Multimedia and are reserved, so mods and forks may not use them (see [TRADEMARKS.md](TRADEMARKS.md)).
 
+## Getting help
+
+If you are stuck, open an issue or a draft pull request and ask. Say what you tried and what happened, with the command and its output. The [architecture notes](docs/ARCHITECTURE.md) and [Data files](docs/DATA_FILES.md) answer most "where does this live" questions, and the Game Design Document answers "what should it do".
+
 ## Reporting problems and ideas
 
 - A bug or an idea: open an issue with the template (or press Feedback in the game, which opens the same form). For a bug, say what you expected and what happened, and include the game version (Menu, then About) and the career seed if you have it.
 - A security problem: do not open a public issue. Follow [SECURITY.md](SECURITY.md).
-- Behaviour that is not welcome: see the [code of conduct](CODE_OF_CONDUCT.md).
+- Behaviour that is not welcome: see the [code of conduct](CODE_OF_CONDUCT.md). It covers every space where the project is discussed, and says how to report a problem in private.
