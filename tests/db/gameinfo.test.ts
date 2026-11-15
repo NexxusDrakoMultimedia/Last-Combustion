@@ -45,7 +45,8 @@ function world(seed: string): Database {
 
 describe('the Game screen', () => {
   it('counts a new world and has nothing written in its chronicle', () => {
-    const view = gameView(world('game-new'));
+    const db = world('game-new');
+    const view = gameView(db);
     expect(view.facts).toMatchObject({
       garage: 'Summary Test Racing',
       owner: 'Test Owner',
@@ -62,7 +63,14 @@ describe('the Game screen', () => {
     expect(view.series.driverFans).toBeGreaterThan(0);
     expect(view.state.garageCash).toBeGreaterThan(0);
     expect(view.state.averageDriverAge).toBeGreaterThan(17);
-    expect(view.state.richestGarage?.cash).toBeGreaterThanOrEqual(0);
+    // Another garage's cash is hidden behind the fog: only the player's own is shown.
+    const richest = db.exec("SELECT is_player FROM garage WHERE name = ? AND kind = 'racing'", [
+      view.state.richestGarage!.name,
+    ])[0]!.values[0]![0];
+    expect(view.state.richestGarage!.cash === null).toBe(richest !== 1);
+    // Its prestige is read through the fog unless it is the player's own garage.
+    const top = view.state.mostPrestigiousGarage!.reading;
+    expect(top.prestige.kind === 'exact').toBe(top.owned);
     expect(view.chronicle).toEqual([]);
   });
 

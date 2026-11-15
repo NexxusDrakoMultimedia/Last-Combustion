@@ -32,10 +32,11 @@ You can already:
 - earn delivery money and train your drivers on the roads between rounds, and watch the other garages run as businesses of their own;
 - read the ledger by year and category, and follow each garage's cap table, valuation, dividends, board and takeovers in Ownership;
 - keep your people happy, make contacts, go to the season's social occasions and read what the press says about you;
+- scout drivers, cars and garages you do not own, so that what you know about them sharpens from a word to a range to the exact number, and negotiate against a range rather than a known price;
 - follow the standings, full race results, season awards and records, and look up any driver, car, garage, company or race in the Registry;
 - save, load and export your career.
 
-Still to come are the story and feedback layer, scouting and racing by the day (0.3.0), a living world of changing manufacturers, mortality and heirs, and the 2036 expansion with the Junior Series (0.4.0), and the other career modes (0.5.0). The Game Design Document lists what is built and what is planned, section by section.
+Still to come are racing by the day (0.3.0), a living world of changing manufacturers, mortality and heirs, and the 2036 expansion with the Junior Series (0.4.0), and the other career modes (0.5.0). The Game Design Document lists what is built and what is planned, section by section.
 
 ## Screenshots
 
