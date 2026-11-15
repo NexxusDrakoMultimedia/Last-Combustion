@@ -115,6 +115,42 @@ interface CarState {
   finishedAt: number | null;
 }
 
+/** What a car carries from one sector to the next, as plain data (the entry and ratings come from the input). */
+export interface CarSnapshot {
+  entryId: number;
+  time: number;
+  tyre: number;
+  call: Call;
+  controlled: boolean;
+  stance: Stance;
+  alive: boolean;
+  retired: RetireReason | null;
+  retiredAt: number;
+  sectorsDone: number;
+  overtakes: number;
+  penalty: number;
+  slowdown: number;
+  warning: boolean;
+  lostGripReported: boolean;
+  finishedAt: number | null;
+}
+
+/**
+ * The whole state of a final in progress as plain data, so it can be saved between sectors and picked
+ * up again. Randomness needs no state of its own: every sector draws from a stream named for the
+ * race, the car and the sector, so a restored race plays on exactly as one that was never saved.
+ */
+export interface FinalSnapshot {
+  /** The sector the race is about to run. */
+  progress: number;
+  order: number[];
+  weatherReported: boolean;
+  teamOrders: [garageId: number, order: TeamOrder][];
+  cars: CarSnapshot[];
+  events: RaceEvent[];
+  timing: TimingRow[];
+}
+
 /**
  * The final race (see the GDD, "Weekend format" and "Simulation model"). The race is played
  * one sector at a time for the whole field, so the player can pause when something happens,
@@ -182,6 +218,76 @@ export class FinalRace {
   private stream(name: string): RandomStream {
     const i = this.input;
     return this.rng.stream(`final:${i.season}:R${i.roundNumber}:${name}`);
+  }
+
+  /** The race as plain data, deep-copied, ready to be written to a save. */
+  snapshot(): FinalSnapshot {
+    return {
+      progress: this.g,
+      order: [...this.order],
+      weatherReported: this.weatherReported,
+      teamOrders: [...this.teamOrders],
+      cars: this.cars.map((c) => ({
+        entryId: c.entry.entryId,
+        time: c.time,
+        tyre: c.tyre,
+        call: c.call,
+        controlled: c.controlled,
+        stance: c.stance,
+        alive: c.alive,
+        retired: c.retired,
+        retiredAt: c.retiredAt,
+        sectorsDone: c.sectorsDone,
+        overtakes: c.overtakes,
+        penalty: c.penalty,
+        slowdown: c.slowdown,
+        warning: c.warning,
+        lostGripReported: c.lostGripReported,
+        finishedAt: c.finishedAt,
+      })),
+      events: structuredClone(this.events),
+      timing: structuredClone(this.timing),
+    };
+  }
+
+  /**
+   * A race picked up from a snapshot, with the same input it was started with. It then plays on
+   * exactly as the race that was saved would have.
+   */
+  static restore(input: FinalInput, snapshot: FinalSnapshot): FinalRace {
+    const race = new FinalRace(input);
+    if (snapshot.cars.length !== race.cars.length)
+      throw new Error('The saved race has a different field from this one.');
+    for (const saved of snapshot.cars) {
+      const car = race.byId.get(saved.entryId);
+      if (!car)
+        throw new Error(`The saved race has an entry that is not in this one: ${saved.entryId}`);
+      Object.assign(car, {
+        time: saved.time,
+        tyre: saved.tyre,
+        call: saved.call,
+        controlled: saved.controlled,
+        stance: saved.stance,
+        alive: saved.alive,
+        retired: saved.retired,
+        retiredAt: saved.retiredAt,
+        sectorsDone: saved.sectorsDone,
+        overtakes: saved.overtakes,
+        penalty: saved.penalty,
+        slowdown: saved.slowdown,
+        warning: saved.warning,
+        lostGripReported: saved.lostGripReported,
+        finishedAt: saved.finishedAt,
+      });
+    }
+    race.g = snapshot.progress;
+    race.order = [...snapshot.order];
+    race.weatherReported = snapshot.weatherReported;
+    race.teamOrders.clear();
+    for (const [garageId, order] of snapshot.teamOrders) race.teamOrders.set(garageId, order);
+    race.events.push(...structuredClone(snapshot.events));
+    race.timing.push(...structuredClone(snapshot.timing));
+    return race;
   }
 
   /** The sector the race is about to run (0-based over the whole race). */
