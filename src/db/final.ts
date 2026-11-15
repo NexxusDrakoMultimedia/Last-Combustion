@@ -5,16 +5,23 @@ import { applyCrashHighlights, writeNews } from './news';
 import { updateRivalries } from './rivalries';
 import { updateStorylines } from './storylines';
 import type { Database } from 'sql.js';
-import { FinalRace, type Call, type FinalEntry } from '../sim/final/engine';
+import {
+  FinalRace,
+  type Call,
+  type FinalEntry,
+  type FinalInput,
+  type FinalSnapshot,
+} from '../sim/final/engine';
 import { createRng } from '../sim/rng';
 import { chassisWear } from '../sim/wear';
 import { courses, finalBalance, pointsTables, prizeTables } from '../sim/worldgen/data';
 import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
-import { all, loadEntries } from './entries';
+import { all, loadEntries, type LoadedEntry } from './entries';
 import { awardRoundFans } from './fans';
 import { refreshPlayerPrestige } from './prestige';
 import { splitPrize } from './prizes';
+import { clearRace, loadRace, saveRace } from './racestate';
 import { wearGear, wearParts } from './repairs';
 import { awardTitles } from './titles';
 
@@ -52,14 +59,72 @@ export function nextFinalRound(db: Database): number | null {
 }
 
 /**
- * Plays the final race of a round (the fastest prelim runners, gridded in prelim order) and
- * writes the results, points, prize money, timing, events and car wear to the database.
+ * What a final was started with, frozen as plain data so the race can be played a few sectors at a
+ * time, across saves, whatever the player does in between.
  */
-export function playFinal(
+interface FinalContext {
+  roundId: number;
+  roundNumber: number;
+  seasonId: number;
+  year: number;
+  era: string;
+  courseId: string;
+  seed: string;
+  /** The date the final is run, from the prelims' weather log. */
+  date: string;
+  sectors: Sector[];
+  entries: FinalEntry[];
+  temperatureBias: number;
+  /** The finalists as the database loaded them, for the wear written at the flag. */
+  loaded: LoadedEntry[];
+  /** The entry that took pole in the prelims, if any. */
+  poleEntryId: number | null;
+}
+
+/** Where a final stands. */
+export interface FinalProgress {
+  roundNumber: number;
+  /** Sectors run so far, over the whole field. */
+  sectorsRun: number;
+  totalSectors: number;
+  /** Set when the flag falls: the results are written. */
+  summary: FinalSummary | null;
+}
+
+const finalInput = (ctx: FinalContext): FinalInput => {
+  const course = courses.find((c) => c.id === ctx.courseId);
+  if (!course) throw new Error(`Unknown course "${ctx.courseId}"`);
+  return {
+    seed: ctx.seed,
+    season: ctx.year,
+    roundNumber: ctx.roundNumber,
+    course,
+    sectors: ctx.sectors,
+    entries: ctx.entries,
+    temperatureBias: ctx.temperatureBias,
+  };
+};
+
+const roundIdOf = (db: Database, roundNumber: number): number => {
+  const row = all(
+    db,
+    'SELECT ro.id FROM round ro WHERE ro.number = ? AND ro.season_id = (SELECT id FROM season ORDER BY year DESC LIMIT 1)',
+    [roundNumber],
+  )[0];
+  if (!row) throw new Error(`There is no round ${roundNumber}.`);
+  return row.id as number;
+};
+
+/**
+ * Starts the final of a round whose prelims are done: the finalists are gridded in prelim order and the
+ * race, with the player's calls if any, is saved at the start so it can be played a few sectors at a
+ * time (see `stepFinal`). Nothing is written to the results yet.
+ */
+export function startFinal(
   db: Database,
   roundNumber: number,
   options: FinalOptions = {},
-): FinalSummary {
+): FinalProgress {
   const career = readCareer(db);
   if (!career) throw new Error('There is no career in this database.');
   const season = all(
@@ -75,6 +140,9 @@ export function playFinal(
   if (round.status === 'scheduled')
     throw new Error(`The prelims of round ${roundNumber} have not been run yet.`);
   if (round.status === 'complete') throw new Error(`Round ${roundNumber} has already been run.`);
+  const roundId = round.id as number;
+  if (loadRace(db, roundId, 'final'))
+    throw new Error(`The final of round ${roundNumber} is already under way.`);
 
   const courseRow = all(db, 'SELECT stable_id FROM course WHERE id = ?', [
     round.course_id as number,
@@ -100,47 +168,108 @@ export function playFinal(
     refSeconds: s.ref_seconds as number,
   }));
 
-  const roundId = round.id as number;
   const finalSize = season.final_size as number;
   const qualifiers = all(
     db,
     'SELECT entry_id, prelim_pos, pole FROM result WHERE round_id = ? AND prelim_pos <= ? AND prelim_pos IS NOT NULL ORDER BY prelim_pos',
     [roundId, finalSize],
   );
-  const loaded = new Map(loadEntries(db, season.id as number).map((e) => [e.entryId, e]));
-  const entries: FinalEntry[] = qualifiers.map((q, index) => {
-    const e = loaded.get(q.entry_id as number)!;
-    return {
-      entryId: e.entryId,
-      garageId: e.garageId,
-      raceNumber: e.raceNumber,
-      grid: index + 1,
-      driver: e.driver,
-      car: e.car,
-    };
-  });
+  const loadedAll = new Map(loadEntries(db, season.id as number).map((e) => [e.entryId, e]));
+  const finalists = qualifiers.map((q) => loadedAll.get(q.entry_id as number)!);
+  const entries: FinalEntry[] = finalists.map((e, index) => ({
+    entryId: e.entryId,
+    garageId: e.garageId,
+    raceNumber: e.raceNumber,
+    grid: index + 1,
+    driver: e.driver,
+    car: e.car,
+  }));
 
   const seed = career.masterSeed;
-  const season_ = season.year as number;
-  const bias = createRng(seed).stream(`final:${season_}:R${roundNumber}:day`).normal(0, 0.001);
-  const race = new FinalRace({
-    seed,
-    season: season_,
+  const year = season.year as number;
+  const ctx: FinalContext = {
+    roundId,
     roundNumber,
-    course,
+    seasonId: season.id as number,
+    year,
+    era: season.era as string,
+    courseId: course.id,
+    seed,
+    date: round.final_date as string,
     sectors,
     entries,
-    temperatureBias: bias,
-  });
+    temperatureBias: createRng(seed).stream(`final:${year}:R${roundNumber}:day`).normal(0, 0.001),
+    loaded: finalists,
+    poleEntryId: (qualifiers.find((q) => q.pole === 1)?.entry_id as number | undefined) ?? null,
+  };
+  const race = new FinalRace(finalInput(ctx));
   for (const [entryId, call] of options.calls ?? []) race.setCall(entryId, call);
-  race.runToEnd();
-  const classification = race.classification();
+  saveRace(db, roundId, 'final', ctx, race.snapshot(), race.progress);
+  return { roundNumber, sectorsRun: race.progress, totalSectors: race.totalSectors, summary: null };
+}
 
-  const era = season.era as string;
-  const pointsTable = pointsTables[era] ?? pointsTables.original!;
-  const prizeTable = prizeTables[era] ?? prizeTables.original!;
+/**
+ * Plays up to `sectors` more sectors of a final that has been started (stopping at the flag), and saves
+ * where it got to. When the flag falls the results, points, prize money, timing, events and car wear are
+ * written, as `playFinal` always did, and the saved state is deleted.
+ */
+export function stepFinal(db: Database, roundNumber: number, sectors = 1): FinalProgress {
+  if (!Number.isInteger(sectors) || sectors < 1)
+    throw new Error('A final is played one sector or more at a time.');
+  const roundId = roundIdOf(db, roundNumber);
+  const saved = loadRace<FinalContext, FinalSnapshot>(db, roundId, 'final');
+  if (!saved) throw new Error(`The final of round ${roundNumber} has not been started.`);
+  const race = FinalRace.restore(finalInput(saved.input), saved.state);
+  for (let i = 0; i < sectors && !race.finished; i++) race.step();
+  if (!race.finished) {
+    saveRace(db, roundId, 'final', saved.input, race.snapshot(), race.progress);
+    return {
+      roundNumber,
+      sectorsRun: race.progress,
+      totalSectors: race.totalSectors,
+      summary: null,
+    };
+  }
+  const summary = finishFinal(db, saved.input, race);
+  return { roundNumber, sectorsRun: race.progress, totalSectors: race.totalSectors, summary };
+}
+
+/**
+ * Plays the final race of a round (the fastest prelim runners, gridded in prelim order) in one go and
+ * writes the results, points, prize money, timing, events and car wear to the database. It is
+ * `startFinal` and then every `stepFinal`, so a final already started carries on from where it stood
+ * (and any calls given are set on it first).
+ */
+export function playFinal(
+  db: Database,
+  roundNumber: number,
+  options: FinalOptions = {},
+): FinalSummary {
+  const roundId = roundIdOf(db, roundNumber);
+  const saved = loadRace<FinalContext, FinalSnapshot>(db, roundId, 'final');
+  if (!saved) startFinal(db, roundNumber, options);
+  else if (options.calls && options.calls.size > 0) {
+    const race = FinalRace.restore(finalInput(saved.input), saved.state);
+    for (const [entryId, call] of options.calls) race.setCall(entryId, call);
+    saveRace(db, roundId, 'final', saved.input, race.snapshot(), race.progress);
+  }
+  for (;;) {
+    const progress = stepFinal(db, roundNumber, 1_000_000);
+    if (progress.summary) return progress.summary;
+  }
+}
+
+/** Writes a finished final's results, points, prizes, timing, events and wear, and forgets the saved state. */
+function finishFinal(db: Database, ctx: FinalContext, race: FinalRace): FinalSummary {
+  const roundNumber = ctx.roundNumber;
+  const roundId = ctx.roundId;
+  const loaded = new Map(ctx.loaded.map((e) => [e.entryId, e]));
+  const classification = race.classification();
+  const course = courses.find((c) => c.id === ctx.courseId)!;
+  const pointsTable = pointsTables[ctx.era] ?? pointsTables.original!;
+  const prizeTable = prizeTables[ctx.era] ?? prizeTables.original!;
   const raceKm = course.finalLaps * course.lapKm;
-  const date = round.final_date as string;
+  const date = ctx.date;
 
   const podium: FinalSummary['podium'] = [];
   let goldBorders = 0;
@@ -175,7 +304,7 @@ export function playFinal(
       ]);
       if (prize > 0) {
         // The garage keeps the share its contract with the driver gives it; the driver keeps the rest.
-        const split = splitPrize(db, entry.garageId, entry.driver.id, season.year as number, prize);
+        const split = splitPrize(db, entry.garageId, entry.driver.id, ctx.year, prize);
         ledger.run([
           entry.garageId,
           roundId,
@@ -188,7 +317,7 @@ export function playFinal(
       }
       if (c.overtakes > 0) {
         bonus.run([
-          season.id as number,
+          ctx.seasonId,
           roundId,
           entry.garageId,
           c.entryId,
@@ -207,11 +336,10 @@ export function playFinal(
         });
       }
     }
-    const pole = qualifiers.find((q) => q.pole === 1);
-    if (pole) {
-      const entry = loaded.get(pole.entry_id as number)!;
+    if (ctx.poleEntryId !== null) {
+      const entry = loaded.get(ctx.poleEntryId)!;
       bonus.run([
-        season.id as number,
+        ctx.seasonId,
         roundId,
         entry.garageId,
         entry.entryId,
@@ -225,7 +353,7 @@ export function playFinal(
 
     // Everything the race earns is given out at the flag: gold borders for reaching a final, and a
     // trophy decal for the winning driver and the winning car.
-    const year = season.year as number;
+    const year = ctx.year;
     for (const c of classification) {
       const entry = loaded.get(c.entryId)!;
       const driverId = entry.driver.id;
@@ -245,7 +373,7 @@ export function playFinal(
         ] as const) {
           db.run(
             "INSERT INTO trophy (owner_type, owner_id, kind, series, season_id, round_id, earned_on) VALUES (?, ?, 'win', 'main', ?, ?, ?)",
-            [ownerType, ownerId, season.id as number, roundId, date],
+            [ownerType, ownerId, ctx.seasonId, roundId, date],
           );
         }
       }
@@ -305,6 +433,7 @@ export function playFinal(
     writeNews(db, roundId);
     // Reaching a final earns gold borders, which lift the player's garage.
     refreshPlayerPrestige(db);
+    clearRace(db, roundId, 'final');
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
