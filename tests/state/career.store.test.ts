@@ -305,6 +305,16 @@ describe('career store', () => {
       expect(useCareerStore.getState().staff).toEqual([]);
     });
 
+    it('inspects a car for sale, which takes it to exact', async () => {
+      await started();
+      const listing = useCareerStore.getState().listings[0]!;
+      expect(listing.reading.condition.kind).not.toBe('exact');
+      await useCareerStore.getState().inspectCar(listing.carId);
+      const after = useCareerStore.getState().listings.find((l) => l.id === listing.id)!;
+      expect(after.reading.inspected).toBe(true);
+      expect(after.reading.condition.kind).toBe('exact');
+    }, 120_000);
+
     it('hires, assigns and lets go a scout', async () => {
       await started();
       const offers = useCareerStore.getState().scoutOffers;

@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { readDriverById, type DriverReading } from './knowledge';
+import { readCarById, readDriverById, type CarReading, type DriverReading } from './knowledge';
 import type { Database } from 'sql.js';
-import { restorationFloor } from '../sim/wear';
-import type { Tier } from '../sim/worldgen/types';
 import { registryStatuses, type RegistryStatus } from './status';
 import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
@@ -334,12 +332,8 @@ export interface CarProfile {
   fans: number;
   roadKm: number;
   raceKm: number;
-  wear: number;
-  /** How many full restorations the chassis has had, and the least wear it can have now. */
-  restorations: number;
-  wearFloor: number;
-  kerbKg: number;
-  tyreWidthMm: number;
+  /** What the player reads of the car's hidden numbers (see "Scouting and fog of war"). */
+  reading: CarReading;
   /** The season it retired after, if it did (too old, never scored). */
   retiredYear: number | null;
   /** The garage that has it now, or null while it is for sale or once it has retired. */
@@ -401,11 +395,7 @@ export function carProfile(db: Database, carId: number): CarProfile {
     fans: c.fans as number,
     roadKm: c.road_km as number,
     raceKm: c.race_km as number,
-    wear: Math.round(Number(c.wear) * 10) / 10,
-    restorations: c.restorations as number,
-    wearFloor: restorationFloor(c.restorations as number, c.tier as Tier),
-    kerbKg: c.kerb_kg_current as number,
-    tyreWidthMm: c.tyre_width_mm as number,
+    reading: readCarById(db, carId),
     retiredYear: (c.retired_year as number | null) ?? null,
     garage:
       c.garage_kind === 'market'

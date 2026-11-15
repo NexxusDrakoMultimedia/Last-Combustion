@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { carTruthOf, exactCar, knowledgeContext, readCar, type CarReading } from './knowledge';
 import type { Database } from 'sql.js';
 import {
   aiMaxBid,
@@ -80,7 +81,8 @@ export interface Lot {
   id: number;
   carId: number;
   roadKm: number;
-  wear: number;
+  /** What the player reads of the chassis: its condition (100 is new) as a word, a range or exact. */
+  reading: CarReading;
   /** The garage that put the car up, or null for a private seller. */
   sellerGarageId: number | null;
   plate: string;
@@ -94,11 +96,12 @@ export interface Lot {
 }
 
 /** The lots of an auction that is still open. */
-export function openLots(db: Database, auctionId: number): Lot[] {
+export function openLots(db: Database, auctionId: number, garageId?: number): Lot[] {
   const market = ensureMarketGarage(db);
+  const ctx = garageId === undefined ? undefined : knowledgeContext(db, garageId);
   return all(
     db,
-    `SELECT l.id, l.car_id, l.reserve, l.seller_garage_id, c.plate, c.plate_state, c.model_year, c.road_km, c.wear, m.name,
+    `SELECT l.id, l.car_id, l.reserve, l.seller_garage_id, c.plate, c.plate_state, c.model_year, c.road_km, m.name,
             (SELECT MAX(amount) FROM auction_bid b WHERE b.lot_id = l.id) AS top
        FROM auction_lot l
        JOIN auction a ON a.id = l.auction_id AND a.status = 'open'
@@ -110,7 +113,9 @@ export function openLots(db: Database, auctionId: number): Lot[] {
     id: r.id as number,
     carId: r.car_id as number,
     roadKm: r.road_km as number,
-    wear: Math.round((r.wear as number) * 10) / 10,
+    reading: ctx
+      ? readCar(ctx, carTruthOf(db, r.car_id as number))
+      : exactCar(carTruthOf(db, r.car_id as number), false, false),
     sellerGarageId: r.seller_garage_id === market ? null : (r.seller_garage_id as number),
     plate: r.plate as string,
     plateState: r.plate_state as string,
@@ -357,7 +362,7 @@ export function currentAuction(db: Database, garageId: number): AuctionView | un
       [id, garageId],
     ).map((r) => [r.lot_id as number, r.top as number]),
   );
-  const lots = openLots(db, id).map((l) => ({
+  const lots = openLots(db, id, garageId).map((l) => ({
     ...l,
     myBid: mine.get(l.id) ?? null,
     mine: l.sellerGarageId === garageId,

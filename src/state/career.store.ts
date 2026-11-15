@@ -183,6 +183,7 @@ import {
   mechanicCandidates,
   type Mechanic,
 } from '../db/staff';
+import { inspectCar } from '../db/inspection';
 import {
   assignScout,
   clearAssignment,
@@ -385,6 +386,8 @@ interface CareerState {
   startCareer(setup: OwnerSetup): Promise<void>;
   chooseStarter(carId: number, driverId: number): Promise<void>;
   buyListing(listingId: number): Promise<void>;
+  /** Pays to inspect a car for sale, which takes it to exact for this sale. */
+  inspectCar(carId: number): Promise<void>;
   negotiate(driverId: number): Promise<void>;
   offerContract(salary: number, years: number, garageShare?: number): Promise<void>;
   endNegotiation(): void;
@@ -498,7 +501,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       vyktory: vyktoryHappened(db),
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
-      listings: openListings(db),
+      listings: openListings(db, playerGarageId(db) ?? undefined),
       agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
       gear: playerGarageId(db) === null ? [] : garageGear(db, playerGarageId(db)!),
       trained: playerGarageId(db) === null ? [] : trainedDrivers(db, playerGarageId(db)!),
@@ -698,6 +701,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'ChooseStarter'),
+
+    inspectCar: (carId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        inspectCar(openDb, garageId, carId);
+        refresh(openDb);
+        return undefined;
+      }, 'InspectCar'),
 
     buyListing: (listingId) =>
       run(async () => {

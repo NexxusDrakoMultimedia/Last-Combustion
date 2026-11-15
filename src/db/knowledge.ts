@@ -5,6 +5,7 @@ import {
   knowledgeOf,
   placement,
   potentialKnowledge,
+  readScaled,
   readValue,
   type Reading,
   type Scout,
@@ -12,6 +13,8 @@ import {
 } from '../sim/scouting';
 import { scoutingBalance } from '../sim/worldgen/data';
 import { fameFromFans } from '../sim/worldgen';
+import { restorationFloor } from '../sim/wear';
+import type { Tier } from '../sim/worldgen/types';
 import { overallRating } from '../sim/worldgen/rating';
 import { ROAD_TYPES, type RoadType } from '../sim/worldgen/types';
 import { readCareer } from './career';
@@ -35,6 +38,14 @@ export interface KnowledgeContext {
   lastContractEnd: Map<number, number>;
   /** Drivers in one of this garage's entries this season. */
   entered: Set<number>;
+  /** Cars: scored finals in the last three seasons, attention flags this season, and the last year the garage owned each. */
+  carFinals: Map<number, number>;
+  carFlagged: Set<number>;
+  carLastOwned: Map<number, number>;
+  /** Cars the garage owns now. */
+  carsOwned: Set<number>;
+  /** Cars with a paid inspection that still counts (the car has the same owner as when it was inspected). */
+  inspected: Set<number>;
 }
 
 export function knowledgeContext(db: Database, garageId: number): KnowledgeContext {
@@ -89,6 +100,47 @@ export function knowledgeContext(db: Database, garageId: number): KnowledgeConte
         db,
         `SELECT driver_id AS id FROM entry
           WHERE garage_id = ? AND season_id = (SELECT MAX(id) FROM season)`,
+        [garageId],
+      ).map((r) => r.id as number),
+    ),
+    carFinals: toMap(
+      all(
+        db,
+        `SELECT e.car_id AS id, COUNT(*) AS n
+           FROM result r JOIN entry e ON e.id = r.entry_id AND e.series = 'main'
+           JOIN round ro ON ro.id = r.round_id JOIN season s ON s.id = ro.season_id
+          WHERE r.final_pos IS NOT NULL AND s.year > ? GROUP BY e.car_id`,
+        [year - scoutingBalance.evidence.seasons],
+      ),
+      'id',
+      'n',
+    ),
+    carFlagged: new Set(
+      all(
+        db,
+        `SELECT DISTINCT e.car_id AS id
+           FROM event_log ev JOIN entry e ON e.id = ev.entry_id AND e.series = 'main'
+           JOIN round ro ON ro.id = ev.round_id JOIN season s ON s.id = ro.season_id
+          WHERE ev.type = 'attention' AND s.year = ?`,
+        [year],
+      ).map((r) => r.id as number),
+    ),
+    carLastOwned: new Map(
+      all(
+        db,
+        `SELECT car_id AS id, MAX(COALESCE(to_date, ?)) AS last FROM car_ownership
+          WHERE garage_id = ? GROUP BY car_id`,
+        [career.gameDate, garageId],
+      ).map((r) => [r.id as number, Number(String(r.last).slice(0, 4))]),
+    ),
+    carsOwned: new Set(
+      all(db, 'SELECT id FROM car WHERE garage_id = ?', [garageId]).map((r) => r.id as number),
+    ),
+    inspected: new Set(
+      all(
+        db,
+        `SELECT i.car_id AS id FROM car_inspection i JOIN car c ON c.id = i.car_id
+          WHERE i.garage_id = ? AND c.garage_id = i.seller_garage_id`,
         [garageId],
       ).map((r) => r.id as number),
     ),
@@ -228,4 +280,142 @@ export function readDriverById(db: Database, driverId: number): DriverReading {
   return player
     ? readDriver(knowledgeContext(db, player.id as number), truth)
     : exactReading(truth, false);
+}
+
+/** A car's true numbers, as the database holds them. */
+export interface CarTruth {
+  id: number;
+  fans: number;
+  /** Chassis wear, 0 (new) to 100. */
+  wear: number;
+  restorations: number;
+  /** The least wear the chassis can have now. */
+  wearFloor: number;
+  kerbKg: number;
+  tyreWidthMm: number;
+}
+
+/** What the player sees of a car: its condition (100 minus wear) and the hidden numbers behind its profile. */
+export interface CarReading {
+  /** The garage owns it, or has paid to inspect it, so nothing is hidden. */
+  owned: boolean;
+  inspected: boolean;
+  /** 0 to 100. */
+  knowledge: number;
+  /** 100 is new, 0 is worn out. */
+  condition: Reading;
+  /** The best condition a restoration could still reach: 100 minus the wear floor. */
+  bestCondition: Reading;
+  /** How many full restorations it has had: known only when exact, else null. */
+  restorations: number | null;
+  /** Kerb weight in kilograms and tyre width in millimetres: none while only a word is known. */
+  kerbKg: Reading | null;
+  tyreWidthMm: Reading | null;
+}
+
+/** The scale kerb weight and tyre width are read on (kilograms and millimetres). */
+const KG_SCALE: [number, number] = [400, 2500];
+const MM_SCALE: [number, number] = [120, 460];
+
+export const exactCar = (truth: CarTruth, owned: boolean, inspected: boolean): CarReading => ({
+  owned,
+  inspected,
+  knowledge: 100,
+  condition: exact(100 - truth.wear),
+  bestCondition: exact(100 - truth.wearFloor),
+  restorations: truth.restorations,
+  kerbKg: exact(truth.kerbKg),
+  tyreWidthMm: exact(truth.tyreWidthMm),
+});
+
+/** The knowledge score for a car the player does not own and has not inspected. */
+export function carKnowledge(ctx: KnowledgeContext, truth: CarTruth): number {
+  const last = ctx.carLastOwned.get(truth.id);
+  return knowledgeOf({
+    subject: { kind: 'cars', id: truth.id },
+    scouts: ctx.scouts,
+    scoutLift: ctx.scoutLift,
+    scoredFinals: ctx.carFinals.get(truth.id) ?? 0,
+    fame: fameFromFans(truth.fans),
+    prestige: ctx.prestige,
+    playerFame: ctx.playerFame,
+    owned: false,
+    yearsSinceWorked: last === undefined ? null : ctx.year - last,
+    flagged: ctx.carFlagged.has(truth.id),
+  }).total;
+}
+
+/** What the player sees of a car: exact if owned or inspected, otherwise behind the fog. */
+export function readCar(ctx: KnowledgeContext, truth: CarTruth): CarReading {
+  if (ctx.carsOwned.has(truth.id)) return exactCar(truth, true, false);
+  if (ctx.inspected.has(truth.id)) return exactCar(truth, false, true);
+  const knowledge = carKnowledge(ctx, truth);
+  const subject: Subject = { kind: 'cars', id: truth.id };
+  const place = (stat: string): number => placement(ctx.seed, subject, ctx.year, stat);
+  const condition = readValue(Math.round(100 - truth.wear), knowledge, place('condition'));
+  const bestCondition = readValue(
+    Math.round(100 - truth.wearFloor),
+    knowledge,
+    place('bestCondition'),
+  );
+  const known = condition.kind === 'exact';
+  return {
+    owned: false,
+    inspected: false,
+    knowledge,
+    condition,
+    bestCondition,
+    restorations: known ? truth.restorations : null,
+    kerbKg:
+      known || knowledge >= scoutingBalance.rangeFrom
+        ? readScaled(truth.kerbKg, knowledge, place('kerb'), ...KG_SCALE)
+        : null,
+    tyreWidthMm:
+      known || knowledge >= scoutingBalance.rangeFrom
+        ? readScaled(truth.tyreWidthMm, knowledge, place('tyre'), ...MM_SCALE)
+        : null,
+  };
+}
+
+/** Whether a car is for sale (on the used market or in the open auction): the only cars that can be inspected. */
+export function isForSale(db: Database, carId: number): boolean {
+  return (
+    all(db, "SELECT 1 FROM market_listing WHERE car_id = ? AND status = 'open'", [carId]).length >
+      0 ||
+    all(
+      db,
+      `SELECT 1 FROM auction_lot l JOIN auction a ON a.id = l.auction_id AND a.status = 'open'
+        WHERE l.car_id = ?`,
+      [carId],
+    ).length > 0
+  );
+}
+
+/** A car's true numbers from its row, for the Registry page and the lists. */
+export function carTruthOf(db: Database, carId: number): CarTruth {
+  const c = all(
+    db,
+    `SELECT c.id, c.fans, c.wear, c.restorations, c.kerb_kg_current, c.tyre_width_mm, m.tier
+       FROM car c JOIN car_model m ON m.id = c.car_model_id WHERE c.id = ?`,
+    [carId],
+  )[0];
+  if (!c) throw new Error(`There is no car ${carId}.`);
+  return {
+    id: carId,
+    fans: c.fans as number,
+    wear: c.wear as number,
+    restorations: c.restorations as number,
+    wearFloor: restorationFloor(c.restorations as number, c.tier as Tier),
+    kerbKg: c.kerb_kg_current as number,
+    tyreWidthMm: c.tyre_width_mm as number,
+  };
+}
+
+/** What the player's garage reads of any car, by id. With no player garage yet nothing is hidden. */
+export function readCarById(db: Database, carId: number): CarReading {
+  const truth = carTruthOf(db, carId);
+  const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
+  return player
+    ? readCar(knowledgeContext(db, player.id as number), truth)
+    : exactCar(truth, false, false);
 }

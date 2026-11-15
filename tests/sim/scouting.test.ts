@@ -10,6 +10,7 @@ import {
   placement,
   potentialKnowledge,
   readingMidpoint,
+  readScaled,
   readValue,
   scoutSkill,
   type KnowledgeInput,
@@ -215,5 +216,44 @@ describe('placement', () => {
       placement('other', subject, 2032, 'pace'),
     ];
     expect(others.every((o) => o !== a)).toBe(true);
+  });
+});
+
+describe('readScaled', () => {
+  it('lays the same range over another scale, rounded outward so it holds the truth', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 400, max: 2500 }),
+        fc.integer({ min: 15, max: 94 }),
+        fc.double({ min: 0, max: 0.999999, noNaN: true }),
+        (kg, k, place) => {
+          const r = readScaled(kg, k, place, 400, 2500);
+          if (r.kind !== 'range') throw new Error('expected a range');
+          expect(r.low).toBeLessThanOrEqual(kg);
+          expect(r.high).toBeGreaterThanOrEqual(kg);
+          expect(r.low).toBeGreaterThanOrEqual(400);
+          expect(r.high).toBeLessThanOrEqual(2500);
+        },
+      ),
+    );
+  });
+
+  it('only tightens as knowledge rises, and is a word or exact at the ends', () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 120, max: 460 }),
+        fc.integer({ min: 15, max: 93 }),
+        fc.double({ min: 0, max: 0.999999, noNaN: true }),
+        (mm, k, place) => {
+          const a = readScaled(mm, k, place, 120, 460);
+          const b = readScaled(mm, k + 1, place, 120, 460);
+          if (a.kind !== 'range' || b.kind !== 'range') throw new Error('expected ranges');
+          expect(b.low).toBeGreaterThanOrEqual(a.low);
+          expect(b.high).toBeLessThanOrEqual(a.high);
+        },
+      ),
+    );
+    expect(readScaled(200, 10, 0.5, 120, 460).kind).toBe('word');
+    expect(readScaled(200, 95, 0.5, 120, 460)).toEqual({ kind: 'exact', value: 200 });
   });
 });
