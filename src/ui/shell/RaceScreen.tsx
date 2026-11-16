@@ -408,6 +408,16 @@ export function RaceScreen() {
     newest.lap === Math.floor(lastPlayed / finalWatch.sectorCount) + 1 &&
     newest.sector === (lastPlayed % finalWatch.sectorCount) + 1;
   const playing = playFrom !== null && finalWatch !== null && !incidentStopped;
+  // The race has stopped at something that involves one of the player's cars: ask what to do about it.
+  const asking =
+    finalWatch !== null &&
+    progress > 0 &&
+    !!newest?.pause &&
+    newest.mine &&
+    newest.lap === Math.floor(lastPlayed / finalWatch.sectorCount) + 1 &&
+    newest.sector === (lastPlayed % finalWatch.sectorCount) + 1
+      ? newest
+      : null;
   useEffect(() => {
     if (!playing || busy) return;
     const every = SPEEDS.find((s) => s.id === speed)?.every ?? 900;
@@ -526,6 +536,29 @@ export function RaceScreen() {
         </button>
       </div>
       {finalWatch.map && <LiveMap map={finalWatch.map} />}
+      {asking && (
+        <section role="status" className="space-y-1 border border-lc-warn p-3">
+          <p className="font-semibold">{feedText(asking)}</p>
+          <p className="text-lc-dim">{t(`race.ask.${asking.type}` as never)}</p>
+          {finalWatch.rows
+            .filter(
+              (r) =>
+                r.mine &&
+                r.retired === null &&
+                (r.raceNumber === asking.raceNumber || r.raceNumber === asking.otherRaceNumber),
+            )
+            .map((r) => (
+              <div key={r.entryId} className="flex flex-wrap items-center gap-2">
+                <span className="lc-num">{r.raceNumber}</span>
+                <CallPicker
+                  row={r}
+                  onCall={(id, call) => void callFinal(id, call)}
+                  disabled={busy}
+                />
+              </div>
+            ))}
+        </section>
+      )}
       <p className="text-sm text-lc-dim">{t('race.callsHint')}</p>
       <Tower
         rows={finalWatch.rows}
