@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import type { Sector } from '../sim/courses/sectors';
+import type { RunPlan } from '../sim/prelim/lap';
 import type { PracticeEffect } from '../sim/prelim/practice';
 import {
   PrelimRoundRun,
@@ -77,7 +78,7 @@ export interface PrelimProgress {
   summary: PrelimSummary | null;
 }
 
-const roundInput = (ctx: PrelimContext): RoundInput => {
+export const roundInput = (ctx: PrelimContext): RoundInput => {
   const course = courses.find((c) => c.id === ctx.courseId);
   if (!course) throw new Error(`Unknown course "${ctx.courseId}"`);
   return {
@@ -262,6 +263,29 @@ export function playPrelimRuns(db: Database, roundNumber: number, runs: number):
   }
   const summary = finishPrelims(db, saved.input, run);
   return { roundNumber, daysPlayed: run.daysPlayed, summary };
+}
+
+/**
+ * Gives one of the player's runs in a round whose prelims are under way a plan (null goes back to steady) and
+ * saves the round. Refuses prelims not started, an entry that is not in the round or is not the player's,
+ * and a run that has already been run.
+ */
+export function setPrelimPlan(
+  db: Database,
+  roundNumber: number,
+  entryId: number,
+  plan: RunPlan | null,
+): void {
+  const roundId = roundIdOf(db, roundNumber);
+  const saved = loadRace<PrelimContext, PrelimSnapshot>(db, roundId, 'prelims');
+  if (!saved) throw new Error(`The prelims of round ${roundNumber} have not been started.`);
+  const entry = saved.input.loaded.find((e) => e.entryId === entryId);
+  if (!entry) throw new Error(`Entry ${entryId} is not in the prelims of round ${roundNumber}.`);
+  if (entry.garageId !== saved.input.playerGarage)
+    throw new Error('Only the player can plan their own runs.');
+  const run = PrelimRoundRun.restore(roundInput(saved.input), saved.state);
+  run.setPlan(entryId, plan);
+  saveRace(db, roundId, 'prelims', saved.input, run.snapshot(), run.daysPlayed);
 }
 
 /** Writes a finished round's results, events and wear, and forgets the saved state. */

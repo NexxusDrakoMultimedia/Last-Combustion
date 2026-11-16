@@ -170,3 +170,56 @@ describe('prelims played a run at a time', () => {
     expect(JSON.stringify(a.snapshot())).toBe(JSON.stringify(b.snapshot()));
   });
 });
+
+describe('plans for a prelim run', () => {
+  const planned = (seed: string, plan: 'attack' | 'steady' | 'conserve' | null) => {
+    const input = inputs.get(seed)!;
+    const run = new PrelimRoundRun(input);
+    for (const e of input.entries) run.setPlan(e.entryId, plan);
+    run.playToEnd();
+    return run.result();
+  };
+
+  it('are steady when none is given: a steady plan is the round with no plans', () => {
+    for (const seed of SEEDS) {
+      const none = outcome(simulateRoundPrelims(inputs.get(seed)!));
+      expect(outcome(planned(seed, 'steady'))).toEqual(none);
+      expect(outcome(planned(seed, null))).toEqual(none);
+    }
+  });
+
+  it('make attack quicker and riskier, and conserve slower and safer, over the whole field', () => {
+    const mean = (r: PrelimRound) => {
+      const times = r.results.map((x) => x.timeMs).filter((x): x is number => x !== null);
+      return times.reduce((a, b) => a + b, 0) / times.length;
+    };
+    const crashes = (r: PrelimRound) => r.results.filter((x) => x.timeMs === null).length;
+    let attackCrashes = 0;
+    let conserveCrashes = 0;
+    for (const seed of SEEDS) {
+      const attack = planned(seed, 'attack');
+      const conserve = planned(seed, 'conserve');
+      expect(mean(attack)).toBeLessThan(mean(conserve));
+      attackCrashes += crashes(attack);
+      conserveCrashes += crashes(conserve);
+    }
+    expect(attackCrashes).toBeGreaterThanOrEqual(conserveCrashes);
+  });
+
+  it('are kept in a saved round, and a run already run cannot be planned again', () => {
+    const input = inputs.get(SEEDS[0]!)!;
+    const run = new PrelimRoundRun(input);
+    const first = input.entries[0]!.entryId;
+    run.setPlan(first, 'attack');
+    run.playDay();
+    const restored = PrelimRoundRun.restore(input, JSON.parse(JSON.stringify(run.snapshot())));
+    expect(restored.planOf(first)).toBe('attack');
+    const day1 = run.runOf(first)!;
+    if (day1.played) expect(() => restored.setPlan(first, 'conserve')).toThrow(/already been run/);
+    expect(() => restored.setPlan(-1, 'attack')).toThrow(/No such entry/);
+    // Picked up and played to the end, it is the round that was never saved.
+    run.playToEnd();
+    restored.playToEnd();
+    expect(outcome(restored.result())).toEqual(outcome(run.result()));
+  });
+});

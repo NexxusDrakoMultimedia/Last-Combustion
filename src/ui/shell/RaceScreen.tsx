@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react';
 import { formatDate, formatLapTime, t } from '../../i18n';
 import type { PrelimStep } from '../../db/raceday';
-import type { FeedLine, PrelimView, TowerRow } from '../../db/racewatch';
+import type { FeedLine, PrelimMine, PrelimView, TowerRow } from '../../db/racewatch';
 import type { Call } from '../../sim/final/engine';
+import type { RunPlan } from '../../sim/prelim/lap';
 import { useCareerStore, type WatchStep } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
 import { LiveMap } from './LiveMap';
@@ -166,6 +167,60 @@ function Tower({
   );
 }
 
+const PLANS: RunPlan[] = ['attack', 'steady', 'conserve'];
+
+/** The player's runs in the prelims: when each is, the plan for it (until it is run) and the lap it set. */
+function MyRuns({
+  runs,
+  onPlan,
+  disabled,
+}: {
+  runs: PrelimMine[];
+  onPlan: (entryId: number, plan: RunPlan | null) => void;
+  disabled: boolean;
+}) {
+  if (runs.length === 0) return null;
+  return (
+    <section className="space-y-1">
+      <h3 className="lc-display text-sm text-lc-dim">{t('race.yourRuns')}</h3>
+      <p className="text-sm text-lc-dim">{t('race.plansHint')}</p>
+      <ul className="space-y-1">
+        {runs.map((r) => (
+          <li key={r.entryId} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            <span className="lc-num font-semibold">{r.raceNumber}</span>
+            <span>{r.driver}</span>
+            <span className="text-lc-dim">
+              {t('race.runWhen', { day: r.day, slot: r.slot + 1 })}
+            </span>
+            {r.played ? (
+              <span className="lc-num">{r.crashed ? t('race.crashed') : lap(r.timeMs)}</span>
+            ) : (
+              <span
+                role="group"
+                aria-label={t('race.planFor', { number: r.raceNumber })}
+                className="flex gap-1"
+              >
+                {PLANS.map((plan) => (
+                  <button
+                    key={plan}
+                    type="button"
+                    disabled={disabled}
+                    aria-pressed={r.plan === plan}
+                    onClick={() => onPlan(r.entryId, plan)}
+                    className={`${r.plan === plan ? button : quiet} px-2! py-0.5! text-xs!`}
+                  >
+                    {t(`race.plan.${plan}` as never)}
+                  </button>
+                ))}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** Milliseconds between runs while the prelims play themselves, at each speed. */
 const RUN_EVERY: Record<1 | 2 | 4, number> = { 1: 600, 2: 300, 4: 100 };
 
@@ -177,6 +232,7 @@ const gap = (ms: number): string =>
 function PrelimScreen({ view }: { view: PrelimView }) {
   const status = useCareerStore((s) => s.status);
   const stepPrelimWatch = useCareerStore((s) => s.stepPrelimWatch);
+  const planRun = useCareerStore((s) => s.planRun);
   const [playFrom, setPlayFrom] = useState<number | null>(null);
   const [speed, setSpeed] = useState<1 | 2 | 4>(1);
   const busy = status === 'busy';
@@ -242,6 +298,7 @@ function PrelimScreen({ view }: { view: PrelimView }) {
           {t('race.next.prelimsEnd')}
         </button>
       </div>
+      <MyRuns runs={view.mine} onPlan={(id, plan) => void planRun(id, plan)} disabled={busy} />
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="space-y-1">
           <h3 className="lc-display text-sm text-lc-dim">{t('race.todaysRuns')}</h3>

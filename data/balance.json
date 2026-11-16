@@ -165,7 +165,12 @@
     "prelims": {
       "days": 7,
       "entriesPerSlotMinutes": 3,
-      "maxExtraDays": 14
+      "maxExtraDays": 14,
+      "plans": {
+        "attack": { "pace": -0.004, "incident": 1.5 },
+        "steady": { "pace": 0, "incident": 1 },
+        "conserve": { "pace": 0.006, "incident": 0.6 }
+      }
     },
     "pole": {
       "bonus": 10000

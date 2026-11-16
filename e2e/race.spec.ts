@@ -35,6 +35,11 @@ test('watches a final from the race screen: the tower, the steps and the flag', 
   await page.getByRole('button', { name: messages['race.watchPrelims'] }).click();
   await expect(page.getByText(/^Round 1: prelim day 1 of 7, /)).toBeVisible();
   await expect(page.getByText(/^0 of \d+ runs today$/)).toBeVisible();
+  // The player's own runs can be planned before they are run.
+  await expect(page.getByRole('heading', { name: messages['race.yourRuns'] })).toBeVisible();
+  const attack = page.getByRole('button', { name: messages['race.plan.attack'] }).first();
+  await attack.click();
+  await expect(attack).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: messages['race.next.runs'] }).click();
   await expect(page.getByText(/^10 of \d+ runs today$/)).toBeVisible();
   await expect(
