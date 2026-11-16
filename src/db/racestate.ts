@@ -24,14 +24,44 @@ export function saveRace(
   input: unknown,
   state: unknown,
   progress: number,
+  plan: unknown = null,
 ): void {
   db.run(
-    `INSERT INTO race_state (round_id, kind, input, state, progress, started_on, saved_on)
-     VALUES (?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO race_state (round_id, kind, input, state, progress, started_on, saved_on, plan)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT (round_id, kind) DO UPDATE SET state = excluded.state,
        progress = excluded.progress, saved_on = excluded.saved_on`,
-    [roundId, kind, JSON.stringify(input), JSON.stringify(state), progress, today(db), today(db)],
+    [
+      roundId,
+      kind,
+      JSON.stringify(input),
+      JSON.stringify(state),
+      progress,
+      today(db),
+      today(db),
+      plan === null ? null : JSON.stringify(plan),
+    ],
   );
+}
+
+/** What the calendar keeps of a race under way: the dates of the prelim days, and how many are played. */
+export interface PrelimPlan {
+  roundNumber: number;
+  daysPlayed: number;
+  days: { day: number; date: string }[];
+}
+
+/** The prelim days of every round whose prelims are under way, for the calendar (small: no saved state is read). */
+export function prelimPlans(db: Database): PrelimPlan[] {
+  return all(
+    db,
+    `SELECT ro.number, rs.progress, rs.plan FROM race_state rs JOIN round ro ON ro.id = rs.round_id
+      WHERE rs.kind = 'prelims' AND rs.plan IS NOT NULL ORDER BY ro.number`,
+  ).map((r) => ({
+    roundNumber: Number(r.number),
+    daysPlayed: Number(r.progress),
+    days: JSON.parse(String(r.plan)) as { day: number; date: string }[],
+  }));
 }
 
 /** The saved state of a race, or null if it has not been started or is finished. */

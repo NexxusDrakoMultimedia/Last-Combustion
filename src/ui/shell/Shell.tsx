@@ -132,6 +132,7 @@ export function Shell() {
   const due = s.calendar?.due ?? null;
   const dueLabel: Record<string, MessageKey> = {
     prelims: 'hub.runPrelims',
+    prelim_day: 'hub.runPrelimDay',
     final: 'hub.runFinal',
     end_season: 'hub.endSeason',
     new_season: 'hub.nextSeason',

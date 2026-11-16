@@ -81,6 +81,29 @@ describe('career store', () => {
     expect(cal().due).toMatchObject({ kind: 'final', round: 1 });
   });
 
+  it('stops after every prelim day when asked, then plays on to the final', async () => {
+    await useCareerStore.getState().createTestCareer();
+    useCareerStore.setState({ prelims: undefined, stopEveryDay: true });
+    const cal = () => useCareerStore.getState().calendar!;
+    // To the day the prelims open, then play the first day only.
+    await useCareerStore.getState().continueTime();
+    await useCareerStore.getState().continueTime();
+    expect(cal().due).toMatchObject({ kind: 'prelims', round: 1 });
+    await useCareerStore.getState().continueTime();
+    expect(useCareerStore.getState().prelims).toBeUndefined();
+    const days = cal().events.filter((e) => e.kind === 'prelim_day');
+    expect(days.map((e) => e.done)).toEqual([true, false, false, false, false, false, false]);
+    expect(cal().events.some((e) => e.kind === 'prelims' && e.round === 1 && !e.done)).toBe(false);
+    // Each Continue after that moves to the next day or plays it, until the seventh is played.
+    let guard = 0;
+    while (!useCareerStore.getState().prelims && guard++ < 30)
+      await useCareerStore.getState().continueTime();
+    expect(useCareerStore.getState().prelims?.roundNumber).toBe(1);
+    expect(guard).toBeGreaterThanOrEqual(6);
+    expect(cal().due === null || cal().due!.kind === 'final').toBe(true);
+    expect(cal().next ?? cal().due).toMatchObject({ kind: 'final', round: 1 });
+  }, 120_000);
+
   it('exports a .lcsave file through the platform', async () => {
     await useCareerStore.getState().createTestCareer();
     await useCareerStore.getState().exportFile();

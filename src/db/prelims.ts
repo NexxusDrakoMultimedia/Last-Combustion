@@ -13,7 +13,7 @@ import type { OutageCategory } from '../sim/outages';
 import { chassisWear } from '../sim/wear';
 import { courses } from '../sim/worldgen/data';
 import { readCareer } from './career';
-import { all, loadEntries, type LoadedEntry, type Row } from './entries';
+import { all, currentCarFigures, loadEntries, type LoadedEntry, type Row } from './entries';
 import { garageFacilityBonuses } from './facilities';
 import { settleGhosts } from './ghost';
 import { garageOutages, practiceHandicaps, recordOutages } from './outages';
@@ -184,6 +184,11 @@ function buildContext(db: Database, roundNumber: number): PrelimContext {
   };
 }
 
+/** Whether the prelims of a round have been started and are not yet finished. */
+export function prelimsStarted(db: Database, roundNumber: number): boolean {
+  return loadRace(db, roundIdOf(db, roundNumber), 'prelims') !== null;
+}
+
 /**
  * Starts the prelims of a round: the practice week, the weather and the running order are settled, and
  * the state is saved so the seven prelim days can be played one at a time (see `playPrelimDay`). Nothing
@@ -194,7 +199,13 @@ export function startPrelims(db: Database, roundNumber: number): PrelimProgress 
   if (loadRace(db, ctx.roundId, 'prelims'))
     throw new Error(`The prelims of round ${roundNumber} are already under way.`);
   const run = new PrelimRoundRun(roundInput(ctx));
-  saveRace(db, ctx.roundId, 'prelims', ctx, run.snapshot(), run.daysPlayed);
+  // The weather has settled the dates: the calendar stops on each prelim day in turn, and the final
+  // is on the day after the last of them.
+  const plan = run.schedule.days
+    .filter((d) => d.prelimDay)
+    .map((d) => ({ day: d.prelimDay as number, date: d.date }));
+  db.run('UPDATE round SET final_date = ? WHERE id = ?', [run.schedule.finalDate, ctx.roundId]);
+  saveRace(db, ctx.roundId, 'prelims', ctx, run.snapshot(), run.daysPlayed, plan);
   return { roundNumber, daysPlayed: run.daysPlayed, summary: null };
 }
 
@@ -279,10 +290,13 @@ function finishPrelims(db: Database, ctx: PrelimContext, run: PrelimRoundRun): P
     insertEvent.free();
     for (const entry of ctx.loaded) {
       const added = outcome.raceKm.get(entry.carId) ?? 0;
-      const raceKm = Math.round(entry.raceKm + added);
+      // The wear is worked out from the car as it stands now: the days between prelim days add road
+      // kilometres and a restoration may have happened, none of which the frozen start knows about.
+      const now = currentCarFigures(db, entry.carId);
+      const raceKm = Math.round(now.raceKm + added);
       db.run('UPDATE car SET race_km = ?, wear = ? WHERE id = ?', [
         raceKm,
-        chassisWear(entry.roadKm, raceKm, entry.tier, entry.wearOffset, entry.restorations),
+        chassisWear(now.roadKm, raceKm, entry.tier, now.wearOffset, now.restorations),
         entry.carId,
       ]);
       wearParts(db, entry.carId, added, 'race', entry.tier, roundId);

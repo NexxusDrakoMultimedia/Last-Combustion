@@ -34,7 +34,8 @@ import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
 import { settleRound, type RoundSettlement } from '../db/finance';
 import { nextFinalRound, playFinal, type FinalSummary } from '../db/final';
-import { nextRoundNumber, playPrelims, type PrelimSummary } from '../db/prelims';
+import { nextRoundNumber, type PrelimSummary } from '../db/prelims';
+import { playNextPrelimDay, playPrelimsOnTheDays } from '../db/raceday';
 import { hubView, type HubView } from '../db/hub';
 import { foundPlayerGarage, type OwnerSetup } from '../db/player';
 import { endSeason, type SeasonEnd } from '../db/season';
@@ -461,6 +462,11 @@ interface CareerState {
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
   runNextPrelims(): Promise<void>;
+  /** Plays one prelim day of the next round (starting its prelims if need be), then stops. */
+  playPrelimDay(): Promise<void>;
+  /** Whether Continue stops after every prelim day instead of playing the prelims through. */
+  stopEveryDay: boolean;
+  setStopEveryDay(value: boolean): void;
   runNextFinal(): Promise<void>;
   saveSlot1(): Promise<void>;
   loadSlot1(): Promise<void>;
@@ -1209,7 +1215,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       if (!view) return;
       const due = view.due;
       if (!due) return get().skipTime('due');
-      if (due.kind === 'prelims') return get().runNextPrelims();
+      if (due.kind === 'prelims' || due.kind === 'prelim_day')
+        return get().stopEveryDay ? get().playPrelimDay() : get().runNextPrelims();
       if (due.kind === 'final') return get().runNextFinal();
       if (due.kind === 'end_season') return get().finishSeason();
       if (due.kind === 'new_season') return get().newSeason();
@@ -1424,8 +1431,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (!openDb) return undefined;
         const round = nextRoundNumber(openDb);
         if (round === null) return undefined;
-        bringForwardTo(openDb, 'prelims', round);
-        const summary = playPrelims(openDb, round);
+        const summary = playPrelimsOnTheDays(openDb, round);
         refresh(openDb);
         track({
           kind: 'progression',
@@ -1435,6 +1441,27 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         set({ prelims: summary, ghost: ghostView(openDb) });
         return undefined;
       }, 'RunPrelims'),
+
+    playPrelimDay: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextRoundNumber(openDb);
+        if (round === null) return undefined;
+        const progress = playNextPrelimDay(openDb, round);
+        refresh(openDb);
+        if (progress.summary) {
+          track({
+            kind: 'progression',
+            status: 'Start',
+            path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+          });
+          set({ prelims: progress.summary, ghost: ghostView(openDb) });
+        }
+        return undefined;
+      }, 'PlayPrelimDay'),
+
+    stopEveryDay: false,
+    setStopEveryDay: (value) => set({ stopEveryDay: value }),
 
     runNextFinal: () =>
       run(async () => {

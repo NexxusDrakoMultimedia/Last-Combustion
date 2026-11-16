@@ -17,7 +17,7 @@ import { chassisWear } from '../sim/wear';
 import { courses, finalBalance, pointsTables, prizeTables } from '../sim/worldgen/data';
 import type { Sector } from '../sim/courses/sectors';
 import { readCareer } from './career';
-import { all, loadEntries, type LoadedEntry } from './entries';
+import { all, currentCarFigures, loadEntries, type LoadedEntry } from './entries';
 import { awardRoundFans } from './fans';
 import { refreshPlayerPrestige } from './prestige';
 import { splitPrize } from './prizes';
@@ -412,10 +412,12 @@ function finishFinal(db: Database, ctx: FinalContext, race: FinalRace): FinalSum
 
     for (const c of classification) {
       const entry = loaded.get(c.entryId)!;
-      const raceKmTotal = Math.round(entry.raceKm + c.km);
+      // Worked out from the car as it stands now, not as it stood when the final started.
+      const now = currentCarFigures(db, entry.carId);
+      const raceKmTotal = Math.round(now.raceKm + c.km);
       db.run('UPDATE car SET race_km = ?, wear = ? WHERE id = ?', [
         raceKmTotal,
-        chassisWear(entry.roadKm, raceKmTotal, entry.tier, entry.wearOffset, entry.restorations),
+        chassisWear(now.roadKm, raceKmTotal, entry.tier, now.wearOffset, now.restorations),
         entry.carId,
       ]);
       wearParts(db, entry.carId, c.km, 'race', entry.tier, roundId);
