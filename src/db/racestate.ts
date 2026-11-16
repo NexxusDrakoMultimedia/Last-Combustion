@@ -48,7 +48,8 @@ export function saveRace(
 export interface PrelimPlan {
   roundNumber: number;
   daysPlayed: number;
-  days: { day: number; date: string }[];
+  /** `runs` is how many entries run on the day. */
+  days: { day: number; date: string; runs?: number }[];
 }
 
 /** The prelim days of every round whose prelims are under way, for the calendar (small: no saved state is read). */
@@ -60,7 +61,7 @@ export function prelimPlans(db: Database): PrelimPlan[] {
   ).map((r) => ({
     roundNumber: Number(r.number),
     daysPlayed: Number(r.progress),
-    days: JSON.parse(String(r.plan)) as { day: number; date: string }[],
+    days: JSON.parse(String(r.plan)) as { day: number; date: string; runs?: number }[],
   }));
 }
 

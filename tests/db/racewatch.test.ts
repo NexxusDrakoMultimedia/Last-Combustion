@@ -3,8 +3,10 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
 import { playFinal, startFinal, stepFinal } from '../../src/db/final';
-import { playPrelims } from '../../src/db/prelims';
-import { finalView } from '../../src/db/racewatch';
+import { playPrelims, startPrelims } from '../../src/db/prelims';
+import { stepPrelims } from '../../src/db/raceday';
+import { finalView, prelimView } from '../../src/db/racewatch';
+import { readCareer } from '../../src/db/career';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
@@ -14,6 +16,18 @@ let SQL: SqlJsStatic;
 beforeAll(async () => {
   SQL = await loadSql();
 });
+
+function fresh(seed: string): Database {
+  const db = createNewDatabase(SQL);
+  createCareer(db, {
+    mode: 'garage_owner',
+    masterSeed: seed,
+    startYear: 2031,
+    difficulty: 'standard',
+  });
+  persistWorld(db, generateWorld(seed));
+  return db;
+}
 
 function withPrelims(seed: string): Database {
   const db = createNewDatabase(SQL);
@@ -134,4 +148,81 @@ describe('stepping a final to the next incident', () => {
     expect(progress.summary).not.toBeNull();
     expect(progress.paused).toBeUndefined();
   }, 60_000);
+});
+
+describe('the timing screen of the prelims', () => {
+  it('is nothing before the prelims are started and once they are over', () => {
+    const db = fresh('prelim-watch-a');
+    expect(prelimView(db, 1)).toBeNull();
+    expect(prelimView(db, 99)).toBeNull();
+    startPrelims(db, 1);
+    const v = prelimView(db, 1)!;
+    expect(v.day).toBe(1);
+    expect(v.daysPlayed).toBe(0);
+    expect(v.totalDays).toBe(7);
+    expect(v.runsPlayedToday).toBe(0);
+    expect(v.runsToday).toBeGreaterThan(30);
+    expect(v.runs).toBe(313);
+    expect(v.standings).toEqual([]);
+    expect(v.latest).toEqual([]);
+    stepPrelims(db, 1, 'end');
+    expect(prelimView(db, 1)).toBeNull();
+  }, 60_000);
+
+  it('fills in a run at a time: the day\u2019s runs, the classification and the incidents', () => {
+    const db = fresh('prelim-watch-b');
+    stepPrelims(db, 1, 'run');
+    let v = prelimView(db, 1)!;
+    expect(v.runsPlayedToday).toBe(1);
+    expect(v.runsPlayed).toBe(1);
+    expect(v.latest).toHaveLength(1);
+    stepPrelims(db, 1, 'runs');
+    v = prelimView(db, 1)!;
+    expect(v.runsPlayedToday).toBe(11);
+    expect(v.latest).toHaveLength(10);
+    const timed = v.standings;
+    for (let i = 1; i < timed.length; i++) {
+      expect(timed[i]!.timeMs!).toBeGreaterThanOrEqual(timed[i - 1]!.timeMs!);
+      expect(timed[i]!.position).toBe(i + 1);
+    }
+    expect(timed[0]!.gapMs).toBe(0);
+    expect(timed.every((r) => r.qualifying === r.position <= v.finalSize)).toBe(true);
+    expect(v.feed.length).toBeLessThanOrEqual(14);
+    expect(v.feed.every((l) => l.driver.length > 0 && l.raceNumber > 0)).toBe(true);
+  }, 60_000);
+
+  it('finishes a day without going past it, on that day\u2019s date, then the next one on its own', () => {
+    const db = fresh('prelim-watch-c');
+    stepPrelims(db, 1, 'run');
+    const first = prelimView(db, 1)!;
+    stepPrelims(db, 1, 'day');
+    const after = prelimView(db, 1)!;
+    expect(after.daysPlayed).toBe(1);
+    expect(after.day).toBe(2);
+    expect(after.runsPlayedToday).toBe(0);
+    expect(after.runsPlayed).toBe(first.runsToday);
+    expect(readCareer(db)!.gameDate >= first.date).toBe(true);
+    stepPrelims(db, 1, 'run');
+    const next = prelimView(db, 1)!;
+    expect(next.runsPlayedToday).toBe(1);
+    expect(readCareer(db)!.gameDate >= next.date).toBe(true);
+  }, 60_000);
+
+  it('writes exactly what playing the prelims in one go writes, whatever the steps and the saves', async () => {
+    const whole = fresh('prelim-watch-d');
+    playPrelims(whole, 1);
+    let db = fresh('prelim-watch-d');
+    const rows = (d: Database) =>
+      d.exec(
+        'SELECT entry_id, run_day, run_slot, prelim_time_ms, prelim_pos, points, pole, dnf_reason FROM result ORDER BY entry_id',
+      );
+    stepPrelims(db, 1, 'run');
+    stepPrelims(db, 1, 'runs');
+    db = new SQL.Database(new Uint8Array(db.export()));
+    stepPrelims(db, 1, 'day');
+    stepPrelims(db, 1, 'runs');
+    const done = stepPrelims(db, 1, 'end');
+    expect(done.summary).not.toBeNull();
+    expect(rows(db)).toEqual(rows(whole));
+  }, 120_000);
 });

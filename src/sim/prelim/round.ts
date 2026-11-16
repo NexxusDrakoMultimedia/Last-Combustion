@@ -121,66 +121,102 @@ export class PrelimRoundRun {
     return this.played >= simBalance.prelims.days;
   }
 
-  /** Runs the next prelim day for every entry that runs on it. Returns the events the day produced. */
-  playDay(): SimEvent[] {
-    if (this.finished) return [];
-    const dayNumber = this.played + 1;
-    const day = this.dayOf.get(dayNumber) as RoundSchedule['days'][number];
-    const made: SimEvent[] = [];
+  /** How many runs a prelim day holds, and how many of them have been run. */
+  runsOnDay(day: number): { total: number; played: number } {
+    let total = 0;
+    let played = 0;
     this.order.forEach((run, position) => {
-      if (run.day !== dayNumber) return;
-      const entry = this.byEntry.get(run.entryId) as PrelimEntry;
-      const lap = simulateLap(
-        entry.driver,
-        entry.car,
-        this.input.sectors,
-        this.input.course.altitudeM,
-        this.input.course.night,
-        { dayTemperatureBias: day.temperatureBias },
-        this.stream(`run:${entry.entryId}`),
-      );
-      const bonus = this.practice.setupBonus.get(entry.entryId) ?? 0;
-      const timeMs = lap.timeMs === null ? null : Math.round(lap.timeMs * (1 - bonus));
-      const predicted = predictedSectorMs(
-        entry.car,
-        this.input.sectors,
-        this.input.course.altitudeM,
-        day.temperatureBias,
-      );
-      this.attentionRuns.push({
-        entryId: entry.entryId,
-        predictedMs: Math.round(predicted.reduce((a, b) => a + b, 0) * (1 - bonus)),
-        actualMs: timeMs,
-        sectorGainMs: predicted.map((p, i) => p - (lap.sectorMs[i] ?? p)),
-      });
-      const ranKm =
-        lap.dnfReason === 'crash'
-          ? (lap.incidents.find((i) => i.kind === 'crash')?.km ?? this.input.course.lapKm)
-          : this.input.course.lapKm;
-      this.raceKm.set(entry.carId, (this.raceKm.get(entry.carId) ?? 0) + ranKm);
-      for (const incident of lap.incidents) {
-        made.push({
-          scope: 'prelim',
-          date: day.date,
-          km: Math.round(incident.km * 100) / 100,
-          type: incident.kind,
-          entryId: entry.entryId,
-          payload: {
-            secondsLost: Math.round(incident.secondsLost * 10) / 10,
-            sector: incident.sector,
-          },
-        });
-      }
-      this.outcomes[position] = {
-        entryId: entry.entryId,
-        day: run.day,
-        slot: run.slot,
-        timeMs,
-        dnfReason: lap.dnfReason,
-      };
+      if (run.day !== day) return;
+      total += 1;
+      if (this.outcomes[position] !== null) played += 1;
     });
+    return { total, played };
+  }
+
+  private nextPosition(day: number): number {
+    return this.order.findIndex(
+      (run, position) => run.day === day && this.outcomes[position] === null,
+    );
+  }
+
+  /**
+   * Plays the next run of the prelim day under way (the next entry in the running order that has not yet set
+   * its lap) and returns the events it produced. When it was the last run of the day, the day is done.
+   */
+  playRun(): SimEvent[] {
+    if (this.finished) return [];
+    const days = simBalance.prelims.days;
+    // A day with nothing left to run is passed over.
+    let dayNumber = this.played + 1;
+    let position = this.nextPosition(dayNumber);
+    while (position === -1) {
+      this.played = dayNumber;
+      if (dayNumber >= days) return [];
+      dayNumber += 1;
+      position = this.nextPosition(dayNumber);
+    }
+    const day = this.dayOf.get(dayNumber) as RoundSchedule['days'][number];
+    const run = this.order[position]!;
+    const made: SimEvent[] = [];
+    const entry = this.byEntry.get(run.entryId) as PrelimEntry;
+    const lap = simulateLap(
+      entry.driver,
+      entry.car,
+      this.input.sectors,
+      this.input.course.altitudeM,
+      this.input.course.night,
+      { dayTemperatureBias: day.temperatureBias },
+      this.stream(`run:${entry.entryId}`),
+    );
+    const bonus = this.practice.setupBonus.get(entry.entryId) ?? 0;
+    const timeMs = lap.timeMs === null ? null : Math.round(lap.timeMs * (1 - bonus));
+    const predicted = predictedSectorMs(
+      entry.car,
+      this.input.sectors,
+      this.input.course.altitudeM,
+      day.temperatureBias,
+    );
+    this.attentionRuns.push({
+      entryId: entry.entryId,
+      predictedMs: Math.round(predicted.reduce((a, b) => a + b, 0) * (1 - bonus)),
+      actualMs: timeMs,
+      sectorGainMs: predicted.map((p, i) => p - (lap.sectorMs[i] ?? p)),
+    });
+    const ranKm =
+      lap.dnfReason === 'crash'
+        ? (lap.incidents.find((i) => i.kind === 'crash')?.km ?? this.input.course.lapKm)
+        : this.input.course.lapKm;
+    this.raceKm.set(entry.carId, (this.raceKm.get(entry.carId) ?? 0) + ranKm);
+    for (const incident of lap.incidents) {
+      made.push({
+        scope: 'prelim',
+        date: day.date,
+        km: Math.round(incident.km * 100) / 100,
+        type: incident.kind,
+        entryId: entry.entryId,
+        payload: {
+          secondsLost: Math.round(incident.secondsLost * 10) / 10,
+          sector: incident.sector,
+        },
+      });
+    }
+    this.outcomes[position] = {
+      entryId: entry.entryId,
+      day: run.day,
+      slot: run.slot,
+      timeMs,
+      dnfReason: lap.dnfReason,
+    };
     this.events.push(...made);
-    this.played = dayNumber;
+    if (this.nextPosition(dayNumber) === -1) this.played = dayNumber;
+    return made;
+  }
+
+  /** Runs the rest of the prelim day under way, every entry that runs on it. Returns the events the day produced. */
+  playDay(): SimEvent[] {
+    const made: SimEvent[] = [];
+    const day = this.played;
+    while (!this.finished && this.played === day) made.push(...this.playRun());
     return made;
   }
 

@@ -124,3 +124,49 @@ describe('prelims played a day at a time', () => {
     expect(run.daysPlayed).toBe(DAYS);
   });
 });
+
+describe('prelims played a run at a time', () => {
+  it('give exactly what the single run gives, even when saved and picked up again every few runs', () => {
+    for (const seed of SEEDS) {
+      const input = inputs.get(seed)!;
+      let run = new PrelimRoundRun(input);
+      let n = 0;
+      while (!run.finished) {
+        run.playRun();
+        n += 1;
+        if (n % 37 === 0)
+          run = PrelimRoundRun.restore(input, JSON.parse(JSON.stringify(run.snapshot())));
+      }
+      expect(n).toBe(input.entries.length);
+      expect(outcome(run.result())).toEqual(outcome(simulateRoundPrelims(input)));
+    }
+  });
+
+  it('count the runs of each day, and finish a day only with its last run', () => {
+    const input = inputs.get(SEEDS[0]!)!;
+    const run = new PrelimRoundRun(input);
+    const sizes = Array.from({ length: DAYS }, (_, i) => run.runsOnDay(i + 1).total);
+    expect(sizes.reduce((a, b) => a + b, 0)).toBe(input.entries.length);
+    for (let day = 1; day <= DAYS; day++) {
+      for (let i = 0; i < sizes[day - 1]!; i++) {
+        expect(run.daysPlayed).toBe(day - 1);
+        expect(run.runsOnDay(day).played).toBe(i);
+        run.playRun();
+      }
+      expect(run.daysPlayed).toBe(day);
+    }
+    expect(run.finished).toBe(true);
+    expect(run.playRun()).toEqual([]);
+  });
+
+  it('let a day be finished from part-way through it', () => {
+    const input = inputs.get(SEEDS[1]!)!;
+    const a = new PrelimRoundRun(input);
+    for (let i = 0; i < 5; i++) a.playRun();
+    a.playDay();
+    expect(a.daysPlayed).toBe(1);
+    const b = new PrelimRoundRun(input);
+    b.playDay();
+    expect(JSON.stringify(a.snapshot())).toBe(JSON.stringify(b.snapshot()));
+  });
+});

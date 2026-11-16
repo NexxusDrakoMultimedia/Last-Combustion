@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useEffect, useState } from 'react';
-import { t } from '../../i18n';
-import type { FeedLine, TowerRow } from '../../db/racewatch';
+import { formatDate, formatLapTime, t } from '../../i18n';
+import type { PrelimStep } from '../../db/raceday';
+import type { FeedLine, PrelimView, TowerRow } from '../../db/racewatch';
 import { useCareerStore, type WatchStep } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
 
@@ -108,9 +109,167 @@ function Tower({ rows }: { rows: TowerRow[] }) {
   );
 }
 
-/** The race screen: a final being watched, with its timing tower, what is happening and the controls. */
+/** Milliseconds between runs while the prelims play themselves, at each speed. */
+const RUN_EVERY: Record<1 | 2 | 4, number> = { 1: 600, 2: 300, 4: 100 };
+
+const lap = (ms: number | null): string => (ms === null ? '' : formatLapTime(ms));
+const gap = (ms: number): string =>
+  ms === 0 ? '' : t('race.gap', { value: (ms / 1000).toFixed(3) });
+
+/** The prelims being watched: the day's runs as they come in, the classification so far and the incidents. */
+function PrelimScreen({ view }: { view: PrelimView }) {
+  const status = useCareerStore((s) => s.status);
+  const stepPrelimWatch = useCareerStore((s) => s.stepPrelimWatch);
+  const [playFrom, setPlayFrom] = useState<number | null>(null);
+  const [speed, setSpeed] = useState<1 | 2 | 4>(1);
+  const busy = status === 'busy';
+  const playing = playFrom !== null;
+  useEffect(() => {
+    if (!playing || busy) return;
+    const timer = setTimeout(() => void stepPrelimWatch('run'), RUN_EVERY[speed]);
+    return () => clearTimeout(timer);
+  }, [playing, speed, view.runsPlayed, busy, stepPrelimWatch]);
+  const step = (mode: PrelimStep) => () => {
+    setPlayFrom(null);
+    void stepPrelimWatch(mode);
+  };
+  return (
+    <div className="space-y-4 text-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="lc-num">
+          {t('race.prelimDay', {
+            round: view.roundNumber,
+            day: view.day,
+            days: view.totalDays,
+            date: formatDate(view.date),
+          })}
+        </p>
+        <p className="lc-num text-lc-dim">
+          {t('race.runsToday', { played: view.runsPlayedToday, total: view.runsToday })}
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className={button}
+          disabled={busy}
+          aria-pressed={playing}
+          onClick={() => setPlayFrom(playing ? null : view.runsPlayed)}
+        >
+          {playing ? t('race.pause') : t('race.play')}
+        </button>
+        <label className="flex items-center gap-1 text-lc-dim">
+          {t('race.speed')}
+          <select
+            className="border border-lc-line bg-lc-raised p-1 text-lc-text"
+            value={speed}
+            onChange={(e) => setSpeed(Number(e.target.value) as 1 | 2 | 4)}
+          >
+            {SPEEDS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {t('race.speedValue', { n: s.id })}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" className={quiet} disabled={busy} onClick={step('run')}>
+          {t('race.next.run')}
+        </button>
+        <button type="button" className={quiet} disabled={busy} onClick={step('runs')}>
+          {t('race.next.runs')}
+        </button>
+        <button type="button" className={quiet} disabled={busy} onClick={step('day')}>
+          {t('race.next.day')}
+        </button>
+        <button type="button" className={quiet} disabled={busy} onClick={step('end')}>
+          {t('race.next.prelimsEnd')}
+        </button>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="space-y-1">
+          <h3 className="lc-display text-sm text-lc-dim">{t('race.todaysRuns')}</h3>
+          {view.latest.length === 0 ? (
+            <p className="text-lc-dim">{t('race.noRunsYet')}</p>
+          ) : (
+            <table className={`${dataTable} text-sm`}>
+              <caption className="sr-only">{t('race.todaysRuns')}</caption>
+              <tbody>
+                {view.latest.map((r) => (
+                  <tr
+                    key={r.entryId}
+                    className={`border-t border-lc-line ${r.mine ? 'bg-lc-raised font-semibold' : ''}`}
+                  >
+                    <td className="lc-num">{r.raceNumber}</td>
+                    <td>{r.driver}</td>
+                    <td className="lc-num text-right">
+                      {r.crashed ? t('race.crashed') : lap(r.timeMs)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+        <section className="space-y-1">
+          <h3 className="lc-display text-sm text-lc-dim">
+            {t('race.classification', { size: view.finalSize })}
+          </h3>
+          {view.standings.length === 0 ? (
+            <p className="text-lc-dim">{t('race.noRunsYet')}</p>
+          ) : (
+            <table className={`${dataTable} text-sm`}>
+              <caption className="sr-only">{t('race.classificationCaption')}</caption>
+              <tbody>
+                {view.standings.map((r) => (
+                  <tr
+                    key={r.entryId}
+                    className={`border-t ${r.position === view.finalSize + 1 ? 'border-lc-accent' : 'border-lc-line'} ${
+                      r.mine ? 'bg-lc-raised font-semibold' : ''
+                    } ${r.qualifying ? '' : 'text-lc-dim'}`}
+                  >
+                    <td className="lc-num">{r.position}</td>
+                    <td className="lc-num">{r.raceNumber}</td>
+                    <td>{r.driver}</td>
+                    <td className="lc-num text-right">{lap(r.timeMs)}</td>
+                    <td className="lc-num text-right">{gap(r.gapMs)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      </div>
+      <section className="space-y-1">
+        <h3 className="lc-display text-sm text-lc-dim">{t('race.feed')}</h3>
+        {view.feed.length === 0 ? (
+          <p className="text-lc-dim">{t('race.feedEmpty')}</p>
+        ) : (
+          <ul className="space-y-1">
+            {view.feed.map((line, i) => (
+              <li
+                key={`${line.date}-${line.raceNumber}-${i}`}
+                className={line.mine ? 'font-semibold' : ''}
+              >
+                <span className="lc-num text-lc-dim">{formatDate(line.date)}</span>{' '}
+                {t(`race.prelimFeed.${line.type}` as never, {
+                  driver: line.driver,
+                  number: line.raceNumber,
+                  seconds: String(line.secondsLost),
+                })}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}
+
+/** The race screen: the prelims or a final being watched, with the timing, what is happening and the controls. */
 export function RaceScreen() {
   const finalWatch = useCareerStore((s) => s.finalWatch);
+  const prelimWatch = useCareerStore((s) => s.prelimWatch);
+  const watchPrelims = useCareerStore((s) => s.watchPrelims);
   const calendar = useCareerStore((s) => s.calendar);
   const final = useCareerStore((s) => s.final);
   const status = useCareerStore((s) => s.status);
@@ -141,7 +300,23 @@ export function RaceScreen() {
     return () => clearTimeout(timer);
   }, [playing, speed, progress, busy, stepFinalWatch]);
 
+  if (prelimWatch) return <PrelimScreen view={prelimWatch} />;
   if (!finalWatch) {
+    const prelimsDue = calendar?.due?.kind === 'prelims' || calendar?.due?.kind === 'prelim_day';
+    if (prelimsDue)
+      return (
+        <div className="space-y-3 text-sm">
+          <p className="text-lc-dim">{t('race.prelimsWaiting')}</p>
+          <button
+            type="button"
+            className={button}
+            disabled={busy}
+            onClick={() => void watchPrelims()}
+          >
+            {t('race.watchPrelims')}
+          </button>
+        </div>
+      );
     const due = calendar?.due?.kind === 'final';
     if (final && !due)
       return (

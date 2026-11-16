@@ -34,9 +34,14 @@ import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
 import { settleRound, type RoundSettlement } from '../db/finance';
 import { nextFinalRound, playFinal, startFinal, stepFinal, type FinalSummary } from '../db/final';
-import { finalView, type FinalView } from '../db/racewatch';
-import { nextRoundNumber, type PrelimSummary } from '../db/prelims';
-import { playNextPrelimDay, playPrelimsOnTheDays } from '../db/raceday';
+import { finalView, prelimView, type FinalView, type PrelimView } from '../db/racewatch';
+import { nextRoundNumber, startPrelims, type PrelimSummary } from '../db/prelims';
+import {
+  playNextPrelimDay,
+  playPrelimsOnTheDays,
+  stepPrelims,
+  type PrelimStep,
+} from '../db/raceday';
 import { hubView, type HubView } from '../db/hub';
 import { foundPlayerGarage, type OwnerSetup } from '../db/player';
 import { endSeason, type SeasonEnd } from '../db/season';
@@ -296,6 +301,8 @@ interface CareerState {
   nextFinal: number | null;
   /** The timing screen of the final under way, if one has been started and not finished. */
   finalWatch: FinalView | null;
+  /** The timing screen of the prelims under way, if they have been started and not finished. */
+  prelimWatch: PrelimView | null;
   prelims: PrelimSummary | undefined;
   final: FinalSummary | undefined;
   settlement: RoundSettlement | undefined;
@@ -474,6 +481,10 @@ interface CareerState {
   stopEveryDay: boolean;
   setStopEveryDay(value: boolean): void;
   runNextFinal(): Promise<void>;
+  /** Starts the prelims of the next round (or picks them up under way) so they can be watched and stepped. */
+  watchPrelims(): Promise<void>;
+  /** Plays on in prelims being watched: a run, ten runs, the rest of the day, or the rest of the prelims. */
+  stepPrelimWatch(mode: PrelimStep): Promise<void>;
   /** Starts the next final (or picks up one under way) so it can be watched and stepped. */
   watchFinal(): Promise<void>;
   /** Plays on in a final being watched: a sector, a lap, to the next incident, or to the flag. */
@@ -492,6 +503,12 @@ function investmentNow(db: Database, garageId: number | undefined): InvestmentVi
   } catch {
     return undefined;
   }
+}
+
+/** The timing screen of the prelims of the next round, if they are under way. */
+function prelimWatchOf(db: Database): PrelimView | null {
+  const round = nextRoundNumber(db);
+  return round === null ? null : prelimView(db, round);
 }
 
 /** The timing screen of the next final, if it is under way. */
@@ -520,6 +537,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       calendar: calendarView(db),
       nextFinal: nextFinalRound(db),
       finalWatch: finalWatchOf(db),
+      prelimWatch: prelimWatchOf(db),
       hub: hubView(db),
       dragonDrivers: dragonDriverIds(db),
       greylinked: greylinkedKeys(db),
@@ -645,6 +663,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     nextRound: null,
     nextFinal: null,
     finalWatch: null,
+    prelimWatch: null,
     prelims: undefined,
     final: undefined,
     settlement: undefined,
@@ -1512,6 +1531,47 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         afterFinal(openDb, round, playFinal(openDb, round));
         return undefined;
       }, 'RunFinal'),
+
+    watchPrelims: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextRoundNumber(openDb);
+        if (round === null) return undefined;
+        // The first run starts the prelims on the day they open; the screen then shows them at the start.
+        if (prelimView(openDb, round) === null) {
+          bringForwardTo(openDb, 'prelims', round);
+          startPrelims(openDb, round);
+        }
+        refresh(openDb);
+        return undefined;
+      }, 'WatchPrelims'),
+
+    stepPrelimWatch: (mode) =>
+      run(
+        async () => {
+          if (!openDb) return undefined;
+          const round = nextRoundNumber(openDb);
+          if (round === null) return undefined;
+          const progress = stepPrelims(openDb, round, mode);
+          refresh(openDb);
+          if (progress.summary) {
+            track({
+              kind: 'progression',
+              status: 'Start',
+              path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+            });
+            set({ prelims: progress.summary, ghost: ghostView(openDb) });
+          }
+          return undefined;
+        },
+        mode === 'run'
+          ? 'WatchRun'
+          : mode === 'runs'
+            ? 'WatchRuns'
+            : mode === 'day'
+              ? 'WatchDay'
+              : 'WatchPrelimsEnd',
+      ),
 
     watchFinal: () =>
       run(async () => {
