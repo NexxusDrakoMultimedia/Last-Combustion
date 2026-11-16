@@ -226,3 +226,45 @@ describe('the timing screen of the prelims', () => {
     expect(rows(db)).toEqual(rows(whole));
   }, 120_000);
 });
+
+describe('the live map of a final', () => {
+  it('puts every running car on the lap, the leader first at the end of the last sector', () => {
+    const db = withPrelims('race-watch-map-a');
+    startFinal(db, 1);
+    const start = finalView(db, 1)!.map!;
+    expect(start.cars).toHaveLength(15);
+    // On the grid every car is at the line.
+    for (const car of start.cars) expect(car.km).toBe(0);
+    stepFinal(db, 1, 4);
+    const view = finalView(db, 1)!;
+    const map = view.map!;
+    expect(map.cars).toHaveLength(view.rows.filter((r) => r.position !== null).length);
+    for (const car of map.cars) {
+      expect(car.km).toBeGreaterThanOrEqual(0);
+      expect(car.km).toBeLessThan(map.lapKm);
+    }
+    // The further back a car is in the tower, the further back along the lap it is from the leader.
+    const kmOf = (id: number) => map.cars.find((c) => c.entryId === id)!.km;
+    const leader = view.rows.find((r) => r.position === 1)!;
+    const back = view.rows
+      .filter((r) => r.position !== null)
+      .map((r) => (kmOf(leader.entryId) - kmOf(r.entryId) + map.lapKm) % map.lapKm);
+    for (let i = 1; i < back.length; i++)
+      expect(back[i]!).toBeGreaterThanOrEqual(back[i - 1]! - 1e-9);
+  }, 60_000);
+
+  it('marks only what happened on the lap under way, and is the same wherever the race was saved', () => {
+    const db = withPrelims('race-watch-map-b');
+    startFinal(db, 1);
+    for (let i = 0; i < 60; i++) {
+      const progress = stepFinal(db, 1, 1);
+      if (progress.summary) break;
+      const view = finalView(db, 1)!;
+      for (const mark of view.map!.marks) {
+        expect(mark.km).toBeGreaterThanOrEqual(0);
+        expect(mark.km).toBeLessThanOrEqual(view.map!.lapKm);
+      }
+      expect(JSON.stringify(finalView(db, 1)!.map)).toBe(JSON.stringify(view.map));
+    }
+  }, 120_000);
+});

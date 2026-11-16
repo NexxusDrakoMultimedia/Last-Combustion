@@ -7,6 +7,7 @@ import type { FeedLine, PrelimView, TowerRow } from '../../db/racewatch';
 import type { Call } from '../../sim/final/engine';
 import { useCareerStore, type WatchStep } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
+import { LiveMap } from './LiveMap';
 
 /** Milliseconds between sectors while a race plays itself, at each speed. */
 const SPEEDS: { id: 1 | 2 | 4; every: number }[] = [
@@ -467,6 +468,7 @@ export function RaceScreen() {
           {t('race.next.end')}
         </button>
       </div>
+      {finalWatch.map && <LiveMap map={finalWatch.map} />}
       <p className="text-sm text-lc-dim">{t('race.callsHint')}</p>
       <Tower
         rows={finalWatch.rows}
