@@ -11,7 +11,7 @@ import {
   type AttentionRun,
 } from './attention';
 import { classifyPrelims, POLE_BONUS, type Classified, type RunOutcome } from './classify';
-import { simulateLap } from './lap';
+import { simulateLap, type RunPlan } from './lap';
 import { buildRunningOrder } from './order';
 import { simulatePractice, type PracticeEffect, type SimEvent } from './practice';
 import type { CarSpec } from './ratings';
@@ -66,6 +66,8 @@ export interface PrelimSnapshot {
   attentionRuns: AttentionRun[];
   events: SimEvent[];
   raceKm: [carId: number, km: number][];
+  /** The plans the garage has given for runs still to come (steady when none). */
+  plans?: [entryId: number, plan: RunPlan][];
 }
 
 /**
@@ -86,6 +88,7 @@ export class PrelimRoundRun {
   private events: SimEvent[];
   private raceKm: Map<number, number>;
   private played = 0;
+  private plans = new Map<number, RunPlan>();
 
   constructor(private readonly input: RoundInput) {
     this.rng = createRng(input.seed);
@@ -133,6 +136,28 @@ export class PrelimRoundRun {
     return { total, played };
   }
 
+  /** Where an entry runs: its day and slot, and whether the run has been run. Null for an entry not in the round. */
+  runOf(entryId: number): { day: number; slot: number; played: boolean } | null {
+    const position = this.order.findIndex((run) => run.entryId === entryId);
+    if (position === -1) return null;
+    const run = this.order[position]!;
+    return { day: run.day, slot: run.slot, played: this.outcomes[position] !== null };
+  }
+
+  /** The plan given for an entry's run (steady when none was given). */
+  planOf(entryId: number): RunPlan {
+    return this.plans.get(entryId) ?? 'steady';
+  }
+
+  /** Gives an entry's run a plan (null goes back to steady). Refuses an entry not in the round and a run already run. */
+  setPlan(entryId: number, plan: RunPlan | null): void {
+    const at = this.runOf(entryId);
+    if (!at) throw new Error(`No such entry in the round: ${entryId}`);
+    if (at.played) throw new Error('That run has already been run.');
+    if (plan === null || plan === 'steady') this.plans.delete(entryId);
+    else this.plans.set(entryId, plan);
+  }
+
   private nextPosition(day: number): number {
     return this.order.findIndex(
       (run, position) => run.day === day && this.outcomes[position] === null,
@@ -165,7 +190,7 @@ export class PrelimRoundRun {
       this.input.sectors,
       this.input.course.altitudeM,
       this.input.course.night,
-      { dayTemperatureBias: day.temperatureBias },
+      { dayTemperatureBias: day.temperatureBias, plan: this.plans.get(entry.entryId) },
       this.stream(`run:${entry.entryId}`),
     );
     const bonus = this.practice.setupBonus.get(entry.entryId) ?? 0;
@@ -233,6 +258,7 @@ export class PrelimRoundRun {
       attentionRuns: structuredClone(this.attentionRuns),
       events: structuredClone(this.events),
       raceKm: [...this.raceKm],
+      plans: [...this.plans],
     };
   }
 
@@ -246,6 +272,7 @@ export class PrelimRoundRun {
     run.attentionRuns = structuredClone(snapshot.attentionRuns);
     run.events = structuredClone(snapshot.events);
     run.raceKm = new Map(snapshot.raceKm);
+    run.plans = new Map(snapshot.plans ?? []);
     return run;
   }
 

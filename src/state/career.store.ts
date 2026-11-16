@@ -42,7 +42,7 @@ import {
   type FinalSummary,
 } from '../db/final';
 import { finalView, prelimView, type FinalView, type PrelimView } from '../db/racewatch';
-import { nextRoundNumber, startPrelims, type PrelimSummary } from '../db/prelims';
+import { nextRoundNumber, setPrelimPlan, startPrelims, type PrelimSummary } from '../db/prelims';
 import {
   playNextPrelimDay,
   playPrelimsOnTheDays,
@@ -211,6 +211,7 @@ import {
 } from '../db/scouts';
 import type { ScoutFocus, ScoutOffer, Subject } from '../sim/scouting';
 import type { Call } from '../sim/final/engine';
+import type { RunPlan } from '../sim/prelim/lap';
 import type { MechanicOffer } from '../sim/staff';
 import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
 import { getServices } from './services';
@@ -493,6 +494,8 @@ interface CareerState {
   watchPrelims(): Promise<void>;
   /** Plays on in prelims being watched: a run, ten runs, the rest of the day, or the rest of the prelims. */
   stepPrelimWatch(mode: PrelimStep): Promise<void>;
+  /** Gives one of the player's runs in the prelims being watched a plan (null goes back to steady). */
+  planRun(entryId: number, plan: RunPlan | null): Promise<void>;
   /** Starts the next final (or picks up one under way) so it can be watched and stepped. */
   watchFinal(): Promise<void>;
   /** Plays on in a final being watched: a sector, a lap, to the next incident, or to the flag. */
@@ -1555,6 +1558,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'WatchPrelims'),
+
+    planRun: (entryId, plan) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextRoundNumber(openDb);
+        if (round === null || prelimView(openDb, round) === null) return undefined;
+        setPrelimPlan(openDb, round, entryId, plan);
+        refresh(openDb);
+        return undefined;
+      }, 'PlanRun'),
 
     stepPrelimWatch: (mode) =>
       run(

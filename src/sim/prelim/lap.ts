@@ -27,9 +27,14 @@ export interface LapResult {
   dnfReason: 'crash' | null;
 }
 
+/** How a garage tells a driver to run a prelim lap: flat out, as the car allows, or holding something back. */
+export type RunPlan = 'attack' | 'steady' | 'conserve';
+
 export interface LapConditions {
   /** Shared by the whole day, as a fraction of sector time (positive is slower). */
   dayTemperatureBias: number;
+  /** The plan for this run (steady when not given). It changes the pace and the chance of an incident, and draws nothing from the stream. */
+  plan?: RunPlan;
 }
 
 /** The driver's rating on a sector, 0-1: pace, affinity with the road, and composure. */
@@ -57,6 +62,7 @@ export function simulateLap(
   const sigma = (cfg.noisePct / 100) * 100 * (1 - driver.consistency / 150);
   const sectorMs: number[] = [];
   const incidents: LapIncident[] = [];
+  const plan = cfg.prelims.plans[conditions.plan ?? 'steady'];
   const wildlifeSector = rng.chance(cfg.incident.wildlifeChancePerRun)
     ? rng.int(0, sectors.length - 1)
     : -1;
@@ -70,13 +76,15 @@ export function simulateLap(
       (1 - cfg.kc * (fit - 0.5)) *
       (1 - cfg.kd * (rating - 0.5)) *
       (1 + runTemperature + conditions.dayTemperatureBias) *
+      (1 + plan.pace) *
       (1 + rng.normal(0, sigma / 100));
 
     const pIncident =
       cfg.incident.pBase *
       (1 + cfg.prelimAggression) *
       (1 + car.wear / 100) *
-      (1 - driver.composure / 200);
+      (1 - driver.composure / 200) *
+      plan.incident;
     if (rng.chance(pIncident)) {
       const roll = rng.next();
       let kind: IncidentKind;

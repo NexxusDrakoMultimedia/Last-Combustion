@@ -11,9 +11,10 @@ import {
 import { outlineOf } from '../sim/courses/map';
 import { all } from './entries';
 import { finalInput, type FinalContext } from './final';
-import type { PrelimContext } from './prelims';
+import { roundInput, type PrelimContext } from './prelims';
 import { loadRace, prelimPlans } from './racestate';
-import type { PrelimSnapshot } from '../sim/prelim/round';
+import { PrelimRoundRun, type PrelimSnapshot } from '../sim/prelim/round';
+import type { RunPlan } from '../sim/prelim/lap';
 
 /** One car in the timing tower of a final. */
 export interface TowerRow {
@@ -313,6 +314,21 @@ export interface PrelimFeedLine {
   secondsLost: number;
 }
 
+/** One of the player's runs in the prelims: when it is, the plan given for it and, once run, the result. */
+export interface PrelimMine {
+  entryId: number;
+  raceNumber: number;
+  driver: string;
+  plan: RunPlan;
+  /** The prelim day and the place in that day's running order. */
+  day: number;
+  slot: number;
+  /** The run has been run (so its plan can no longer change). */
+  played: boolean;
+  timeMs: number | null;
+  crashed: boolean;
+}
+
 /** The prelims of a round under way, as a timing screen shows them. */
 export interface PrelimView {
   roundNumber: number;
@@ -334,6 +350,8 @@ export interface PrelimView {
   standings: PrelimStandingRow[];
   /** The latest incidents first. */
   feed: PrelimFeedLine[];
+  /** The player's own runs, in the order they run, with their plans. */
+  mine: PrelimMine[];
 }
 
 const STANDINGS_LENGTH = 20;
@@ -393,6 +411,26 @@ export function prelimView(db: Database, roundNumber: number): PrelimView | null
         secondsLost: Number(e.payload.secondsLost ?? 0),
       };
     });
+  const engine = PrelimRoundRun.restore(roundInput(saved.input), saved.state);
+  const result = new Map(done.map((o) => [o.entryId, o]));
+  const myRuns = saved.input.entries
+    .filter((e) => mine(e.entryId))
+    .map((e): PrelimMine => {
+      const at = engine.runOf(e.entryId)!;
+      const outcome = result.get(e.entryId);
+      return {
+        entryId: e.entryId,
+        raceNumber: e.raceNumber,
+        driver: e.driver.name,
+        plan: engine.planOf(e.entryId),
+        day: at.day,
+        slot: at.slot,
+        played: at.played,
+        timeMs: outcome?.timeMs ?? null,
+        crashed: outcome !== undefined && outcome.timeMs === null,
+      };
+    })
+    .sort((a, b) => a.day - b.day || a.slot - b.slot);
   return {
     roundNumber,
     day,
@@ -415,5 +453,6 @@ export function prelimView(db: Database, roundNumber: number): PrelimView | null
       qualifying: i + 1 <= saved.input.finalSize,
     })),
     feed,
+    mine: myRuns,
   };
 }
