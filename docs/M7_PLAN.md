@@ -2,6 +2,8 @@
 
 M7 is built on `feature/0.3.x`, made from `main` once 0.2.0 is out. It follows the same rules as [M6](M6_PLAN.md): one slice at a time, each its own pull request into the milestone branch with its tests, the Game Design Document updated in the same pull request and a line under `[Unreleased]` in the changelog, and one beta (`0.3.0-betaN`) for each slice.
 
+Every design question that is still open, and every default taken without the owner's say, is kept in [M7 open questions](M7_OPEN_QUESTIONS.md), to be gone through before the release.
+
 ## Rules for every slice
 
 - A save from an earlier version must still load: schema changes are new numbered migrations, and a released migration is never edited.

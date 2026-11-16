@@ -163,9 +163,12 @@ describe('career store', () => {
       expect(useCareerStore.getState().finalWatch!.progress).toBe(first.sectorCount);
       await useCareerStore.getState().stepFinalWatch('incident');
       const stopped = useCareerStore.getState().finalWatch;
-      if (stopped) expect(stopped.progress).toBeGreaterThan(first.sectorCount);
-      // Nothing is settled until the flag falls.
-      expect(useCareerStore.getState().settlement).toBeUndefined();
+      // A final with no incident runs on to the flag, so only a stop means the round is still open.
+      if (stopped) {
+        expect(stopped.progress).toBeGreaterThan(first.sectorCount);
+        // Nothing is settled until the flag falls.
+        expect(useCareerStore.getState().settlement).toBeUndefined();
+      }
       await useCareerStore.getState().stepFinalWatch('end');
       const watched = useCareerStore.getState();
       expect(watched.finalWatch).toBeNull();
