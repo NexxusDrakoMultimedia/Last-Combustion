@@ -30,6 +30,7 @@ You can already:
 - buy cars from dealers, the used market and the auction house, fit upgrade parts, and restore a worn chassis;
 - sign drivers, train them, hire mechanics and executives, build the garage's facilities, and negotiate with sponsors and with the suppliers of electricity, water and fuel, in five tiers from local to global, with outages and a spot market;
 - earn delivery money and train your drivers on the roads between rounds, and watch the other garages run as businesses of their own;
+- watch the prelims and the final as they happen, with a live map, a timing tower, plans for your prelim runs and calls for your cars in the final;
 - read the ledger by year and category, and follow each garage's cap table, valuation, dividends, board and takeovers in Ownership;
 - keep your people happy, make contacts, go to the season's social occasions and read what the press says about you;
 - scout drivers, cars and garages you do not own, so that what you know about them sharpens from a word to a range to the exact number, and negotiate against a range rather than a known price;
