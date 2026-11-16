@@ -33,7 +33,8 @@ import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
 import { settleRound, type RoundSettlement } from '../db/finance';
-import { nextFinalRound, playFinal, type FinalSummary } from '../db/final';
+import { nextFinalRound, playFinal, startFinal, stepFinal, type FinalSummary } from '../db/final';
+import { finalView, type FinalView } from '../db/racewatch';
 import { nextRoundNumber, type PrelimSummary } from '../db/prelims';
 import { playNextPrelimDay, playPrelimsOnTheDays } from '../db/raceday';
 import { hubView, type HubView } from '../db/hub';
@@ -230,6 +231,9 @@ function playerGarageId(db: Database): number | null {
   return typeof v === 'number' ? v : null;
 }
 
+/** How far a step in a final being watched goes. */
+export type WatchStep = 'sector' | 'lap' | 'incident' | 'end';
+
 export interface ActiveNegotiation {
   id: number;
   driverId: number;
@@ -290,6 +294,8 @@ interface CareerState {
   world: WorldSummary | undefined;
   nextRound: number | null;
   nextFinal: number | null;
+  /** The timing screen of the final under way, if one has been started and not finished. */
+  finalWatch: FinalView | null;
   prelims: PrelimSummary | undefined;
   final: FinalSummary | undefined;
   settlement: RoundSettlement | undefined;
@@ -468,6 +474,10 @@ interface CareerState {
   stopEveryDay: boolean;
   setStopEveryDay(value: boolean): void;
   runNextFinal(): Promise<void>;
+  /** Starts the next final (or picks up one under way) so it can be watched and stepped. */
+  watchFinal(): Promise<void>;
+  /** Plays on in a final being watched: a sector, a lap, to the next incident, or to the flag. */
+  stepFinalWatch(mode: WatchStep): Promise<void>;
   saveSlot1(): Promise<void>;
   loadSlot1(): Promise<void>;
   exportFile(): Promise<void>;
@@ -482,6 +492,12 @@ function investmentNow(db: Database, garageId: number | undefined): InvestmentVi
   } catch {
     return undefined;
   }
+}
+
+/** The timing screen of the next final, if it is under way. */
+function finalWatchOf(db: Database): FinalView | null {
+  const round = nextFinalRound(db);
+  return round === null ? null : finalView(db, round);
 }
 
 function describeError(error: unknown): Notice {
@@ -503,6 +519,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       nextRound: nextRoundNumber(db),
       calendar: calendarView(db),
       nextFinal: nextFinalRound(db),
+      finalWatch: finalWatchOf(db),
       hub: hubView(db),
       dragonDrivers: dragonDriverIds(db),
       greylinked: greylinkedKeys(db),
@@ -580,6 +597,28 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     });
   };
 
+  /** Everything that follows the flag: the round's books, the auction, the press and the counts reported. */
+  const afterFinal = (db: Database, round: number, summary: FinalSummary) => {
+    const settlement = settleRound(db, round);
+    // The auction house closes its auction between rounds and opens the next one.
+    const closing = playerGarageId(db) === null ? undefined : auctionCycle(db, playerGarageId(db));
+    refresh(db);
+    set({ auctionClosing: closing });
+    track({
+      kind: 'progression',
+      status: 'Complete',
+      path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+    });
+    // How many rivalries the world holds after the race (a count, no names).
+    track({ kind: 'design', id: 'Rivalry:Live', value: liveRivalryCount(db) });
+    // How many storylines are running (a count, no names), and the cards they hold for the player.
+    track({ kind: 'design', id: 'Story:Live', value: liveStoryCount(db) });
+    // How many crashes have made the highlight reel so far (a count, no names).
+    track({ kind: 'design', id: 'Crash:Highlights', value: highlightTotal(db) });
+    set({ story: storyBoard(db) });
+    set({ final: summary, settlement });
+  };
+
   const run = async (action: () => Promise<Notice | undefined>, name?: string) => {
     const before = get().status;
     set({ status: 'busy' });
@@ -605,6 +644,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     world: undefined,
     nextRound: null,
     nextFinal: null,
+    finalWatch: null,
     prelims: undefined,
     final: undefined,
     settlement: undefined,
@@ -1469,30 +1509,48 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const round = nextFinalRound(openDb);
         if (round === null) return undefined;
         bringForwardTo(openDb, 'final', round);
-        const summary = playFinal(openDb, round);
-        const settlement = settleRound(openDb, round);
-        // The auction house closes its auction between rounds and opens the next one.
-        const closing =
-          playerGarageId(openDb) === null
-            ? undefined
-            : auctionCycle(openDb, playerGarageId(openDb));
-        refresh(openDb);
-        set({ auctionClosing: closing });
-        track({
-          kind: 'progression',
-          status: 'Complete',
-          path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
-        });
-        // How many rivalries the world holds after the race (a count, no names).
-        track({ kind: 'design', id: 'Rivalry:Live', value: liveRivalryCount(openDb) });
-        // How many storylines are running (a count, no names), and the cards they hold for the player.
-        track({ kind: 'design', id: 'Story:Live', value: liveStoryCount(openDb) });
-        // How many crashes have made the highlight reel so far (a count, no names).
-        track({ kind: 'design', id: 'Crash:Highlights', value: highlightTotal(openDb) });
-        set({ story: storyBoard(openDb) });
-        set({ final: summary, settlement });
+        afterFinal(openDb, round, playFinal(openDb, round));
         return undefined;
       }, 'RunFinal'),
+
+    watchFinal: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextFinalRound(openDb);
+        if (round === null) return undefined;
+        bringForwardTo(openDb, 'final', round);
+        if (finalView(openDb, round) === null) startFinal(openDb, round);
+        refresh(openDb);
+        return undefined;
+      }, 'WatchFinal'),
+
+    stepFinalWatch: (mode) =>
+      run(
+        async () => {
+          if (!openDb) return undefined;
+          const round = nextFinalRound(openDb);
+          const view = round === null ? null : finalView(openDb, round);
+          if (round === null || !view) return undefined;
+          const progress =
+            mode === 'sector'
+              ? stepFinal(openDb, round, 1)
+              : mode === 'lap'
+                ? stepFinal(openDb, round, view.sectorCount - (view.progress % view.sectorCount))
+                : mode === 'incident'
+                  ? stepFinal(openDb, round, view.totalSectors, { untilPause: true })
+                  : stepFinal(openDb, round, view.totalSectors);
+          if (progress.summary) afterFinal(openDb, round, progress.summary);
+          else refresh(openDb);
+          return undefined;
+        },
+        mode === 'sector'
+          ? 'WatchSector'
+          : mode === 'lap'
+            ? 'WatchLap'
+            : mode === 'incident'
+              ? 'WatchIncident'
+              : 'WatchToFlag',
+      ),
 
     saveSlot1: () =>
       run(async () => {

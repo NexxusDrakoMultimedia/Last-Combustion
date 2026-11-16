@@ -104,6 +104,65 @@ describe('career store', () => {
     expect(cal().next ?? cal().due).toMatchObject({ kind: 'final', round: 1 });
   }, 120_000);
 
+  describe('watching a final', () => {
+    // Each test plays the final one way, loads the save made just before it, and plays it the other way.
+    // (A test career has a seed of its own, so two careers are never the same world.)
+    // (Both are played on the loaded save: a career that has just been made has not yet given the computer
+    // garages their businesses, which a load does, so the settled money would differ for reasons that have
+    // nothing to do with how the final is played.)
+    const beforeTheFinal = async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().runNextPrelims();
+      await useCareerStore.getState().saveSlot1();
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ final: undefined, settlement: undefined });
+    };
+    const again = async () => {
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ final: undefined, settlement: undefined });
+    };
+
+    it('starts the final, steps it by sector, lap, incident and to the flag, and settles the round at the end', async () => {
+      await beforeTheFinal();
+      expect(useCareerStore.getState().finalWatch).toBeNull();
+      await useCareerStore.getState().watchFinal();
+      const first = useCareerStore.getState().finalWatch!;
+      expect(first.progress).toBe(0);
+      expect(first.rows).toHaveLength(15);
+      await useCareerStore.getState().stepFinalWatch('sector');
+      expect(useCareerStore.getState().finalWatch!.progress).toBe(1);
+      await useCareerStore.getState().stepFinalWatch('lap');
+      expect(useCareerStore.getState().finalWatch!.progress).toBe(first.sectorCount);
+      await useCareerStore.getState().stepFinalWatch('incident');
+      const stopped = useCareerStore.getState().finalWatch;
+      if (stopped) expect(stopped.progress).toBeGreaterThan(first.sectorCount);
+      // Nothing is settled until the flag falls.
+      expect(useCareerStore.getState().settlement).toBeUndefined();
+      await useCareerStore.getState().stepFinalWatch('end');
+      const watched = useCareerStore.getState();
+      expect(watched.finalWatch).toBeNull();
+      expect(watched.settlement).toBeDefined();
+      // The same final played in one go gives the same result.
+      await again();
+      await useCareerStore.getState().runNextFinal();
+      expect(useCareerStore.getState().final).toEqual(watched.final);
+      expect(useCareerStore.getState().settlement).toEqual(watched.settlement);
+    }, 180_000);
+
+    it('lets Continue finish a final that is being watched, with the same result', async () => {
+      await beforeTheFinal();
+      await useCareerStore.getState().runNextFinal();
+      const expected = useCareerStore.getState().final;
+      await again();
+      await useCareerStore.getState().watchFinal();
+      await useCareerStore.getState().stepFinalWatch('sector');
+      expect(useCareerStore.getState().finalWatch).not.toBeNull();
+      await useCareerStore.getState().continueTime();
+      expect(useCareerStore.getState().finalWatch).toBeNull();
+      expect(useCareerStore.getState().final).toEqual(expected);
+    }, 180_000);
+  });
+
   it('exports a .lcsave file through the platform', async () => {
     await useCareerStore.getState().createTestCareer();
     await useCareerStore.getState().exportFile();

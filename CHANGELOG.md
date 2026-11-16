@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - **Fog on deals.** What a sponsor, an executive or a supplier is worth in a negotiation is now a range rather than a single figure. It narrows as you build a relationship with them, hire scouts and make deals with them again.
 - **Fog on the Game panel.** The Game panel no longer shows another garage's cash, and shows the most prestigious garage's prestige as a word or a range. Your own garage is exact.
 - **Prelims a day at a time.** The Calendar panel has a switch, **Stop after every prelim day**. With it on, Continue plays one prelim day and stops, and the calendar lists each of the seven days with its date (wet days push them back). With it off, which is how it starts, Continue plays the prelims through as before. Each day is played on its own date, so the days in between happen on the days they belong to.
+- **Watch the final.** The new **Race** panel starts the next final and shows it as it happens: a timing tower with each car's position, gap, last sector time, tyres and call, the weather, and a feed of crashes, contacts, spins, passes and failures. Play it a sector at a time at three speeds (it pauses itself at a crash, a contact or rain), or step a sector, a lap, to the next incident or to the flag. The result is the same as letting Continue run it.
 
 ## [0.2.0] - 2026-11-10
 
