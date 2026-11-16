@@ -31,6 +31,8 @@ export interface TowerRow {
   /** Tyre life left, 0 to 100. */
   tyrePct: number;
   call: Call;
+  /** The player has set this call (false when the computer is driving the car's calls). */
+  controlled: boolean;
   retired: RetireReason | null;
 }
 
@@ -126,6 +128,7 @@ export function finalView(db: Database, roundNumber: number): FinalView | null {
         : null,
       tyrePct: Math.round(car.tyre * 10) / 10,
       call: car.call,
+      controlled: car.controlled,
       retired: car.retired,
     };
   };

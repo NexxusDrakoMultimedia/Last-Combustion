@@ -33,7 +33,14 @@ import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
 import { settleRound, type RoundSettlement } from '../db/finance';
-import { nextFinalRound, playFinal, startFinal, stepFinal, type FinalSummary } from '../db/final';
+import {
+  nextFinalRound,
+  playFinal,
+  setFinalCall,
+  startFinal,
+  stepFinal,
+  type FinalSummary,
+} from '../db/final';
 import { finalView, prelimView, type FinalView, type PrelimView } from '../db/racewatch';
 import { nextRoundNumber, startPrelims, type PrelimSummary } from '../db/prelims';
 import {
@@ -203,6 +210,7 @@ import {
   type HiredScout,
 } from '../db/scouts';
 import type { ScoutFocus, ScoutOffer, Subject } from '../sim/scouting';
+import type { Call } from '../sim/final/engine';
 import type { MechanicOffer } from '../sim/staff';
 import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
 import { getServices } from './services';
@@ -489,6 +497,8 @@ interface CareerState {
   watchFinal(): Promise<void>;
   /** Plays on in a final being watched: a sector, a lap, to the next incident, or to the flag. */
   stepFinalWatch(mode: WatchStep): Promise<void>;
+  /** Sets the call of one of the player's cars in the final being watched (null leaves it to the computer). */
+  callFinal(entryId: number, call: Call | null): Promise<void>;
   saveSlot1(): Promise<void>;
   loadSlot1(): Promise<void>;
   exportFile(): Promise<void>;
@@ -1583,6 +1593,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'WatchFinal'),
+
+    callFinal: (entryId, call) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextFinalRound(openDb);
+        if (round === null || finalView(openDb, round) === null) return undefined;
+        setFinalCall(openDb, round, entryId, call);
+        refresh(openDb);
+        return undefined;
+      }, 'CallFinal'),
 
     stepFinalWatch: (mode) =>
       run(

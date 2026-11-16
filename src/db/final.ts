@@ -211,6 +211,29 @@ export function startFinal(
 }
 
 /**
+ * Sets the call of one of the player's entries in a final under way (null hands the driver back to the
+ * computer) and saves the race. Refuses a final that has not been started, an entry that is not in it and
+ * an entry that is not the player's.
+ */
+export function setFinalCall(
+  db: Database,
+  roundNumber: number,
+  entryId: number,
+  call: Call | null,
+): void {
+  const roundId = roundIdOf(db, roundNumber);
+  const saved = loadRace<FinalContext, FinalSnapshot>(db, roundId, 'final');
+  if (!saved) throw new Error(`The final of round ${roundNumber} has not been started.`);
+  const entry = saved.input.entries.find((e) => e.entryId === entryId);
+  if (!entry) throw new Error(`Entry ${entryId} is not in the final of round ${roundNumber}.`);
+  const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0]?.id;
+  if (entry.garageId !== player) throw new Error('Only the player can call their own entries.');
+  const race = FinalRace.restore(finalInput(saved.input), saved.state);
+  race.setCall(entryId, call);
+  saveRace(db, roundId, 'final', saved.input, race.snapshot(), race.progress);
+}
+
+/**
  * Plays up to `sectors` more sectors of a final that has been started (stopping at the flag), and saves
  * where it got to. When the flag falls the results, points, prize money, timing, events and car wear are
  * written, as `playFinal` always did, and the saved state is deleted.

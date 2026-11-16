@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { formatDate, formatLapTime, t } from '../../i18n';
 import type { PrelimStep } from '../../db/raceday';
 import type { FeedLine, PrelimView, TowerRow } from '../../db/racewatch';
+import type { Call } from '../../sim/final/engine';
 import { useCareerStore, type WatchStep } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
 
@@ -50,7 +51,58 @@ function TyreBar({ pct }: { pct: number }) {
   );
 }
 
-function Tower({ rows }: { rows: TowerRow[] }) {
+const CALLS: Call[] = ['push', 'balanced', 'conserve'];
+
+/** The call buttons of one of the player's cars: a call held until it is changed, or Auto to leave it to the computer. */
+function CallPicker({
+  row,
+  onCall,
+  disabled,
+}: {
+  row: TowerRow;
+  onCall: (entryId: number, call: Call | null) => void;
+  disabled: boolean;
+}) {
+  return (
+    <span
+      role="group"
+      aria-label={t('race.callFor', { number: row.raceNumber })}
+      className="flex gap-1"
+    >
+      {CALLS.map((call) => (
+        <button
+          key={call}
+          type="button"
+          disabled={disabled}
+          aria-pressed={row.controlled && row.call === call}
+          onClick={() => onCall(row.entryId, call)}
+          className={`${row.controlled && row.call === call ? button : quiet} px-2! py-0.5! text-xs!`}
+        >
+          {t(`race.callShort.${call}` as never)}
+        </button>
+      ))}
+      <button
+        type="button"
+        disabled={disabled}
+        aria-pressed={!row.controlled}
+        onClick={() => onCall(row.entryId, null)}
+        className={`${!row.controlled ? button : quiet} px-2! py-0.5! text-xs!`}
+      >
+        {t('race.callAuto')}
+      </button>
+    </span>
+  );
+}
+
+function Tower({
+  rows,
+  onCall,
+  disabled = false,
+}: {
+  rows: TowerRow[];
+  onCall?: (entryId: number, call: Call | null) => void;
+  disabled?: boolean;
+}) {
   return (
     <table className={`${dataTable} text-sm`}>
       <caption className="sr-only">{t('race.tower')}</caption>
@@ -98,9 +150,13 @@ function Tower({ rows }: { rows: TowerRow[] }) {
             <td className="lc-num text-right">{r.retired ? '' : seconds(r.lastSectorSeconds)}</td>
             <td>{r.retired ? '' : <TyreBar pct={r.tyrePct} />}</td>
             <td>
-              {r.retired
-                ? t(`race.retired.${r.retired}` as never)
-                : t(`race.call.${r.call}` as never)}
+              {r.retired ? (
+                t(`race.retired.${r.retired}` as never)
+              ) : r.mine && onCall ? (
+                <CallPicker row={r} onCall={onCall} disabled={disabled} />
+              ) : (
+                t(`race.call.${r.call}` as never)
+              )}
             </td>
           </tr>
         ))}
@@ -275,6 +331,7 @@ export function RaceScreen() {
   const status = useCareerStore((s) => s.status);
   const watchFinal = useCareerStore((s) => s.watchFinal);
   const stepFinalWatch = useCareerStore((s) => s.stepFinalWatch);
+  const callFinal = useCareerStore((s) => s.callFinal);
   // `playFrom` is the sector the player pressed Play at (null when paused).
   const [playFrom, setPlayFrom] = useState<number | null>(null);
   const [speed, setSpeed] = useState<1 | 2 | 4>(1);
@@ -410,7 +467,12 @@ export function RaceScreen() {
           {t('race.next.end')}
         </button>
       </div>
-      <Tower rows={finalWatch.rows} />
+      <p className="text-sm text-lc-dim">{t('race.callsHint')}</p>
+      <Tower
+        rows={finalWatch.rows}
+        onCall={(id, call) => void callFinal(id, call)}
+        disabled={busy}
+      />
       <section className="space-y-1">
         <h3 className="lc-display text-sm text-lc-dim">{t('race.feed')}</h3>
         {finalWatch.feed.length === 0 ? (
