@@ -33,6 +33,7 @@ import { PressSection } from './PressSection';
 import { SocialSection } from './SocialSection';
 import { ExecutivesSection } from './ExecutivesSection';
 import { ScoutsSection } from './ScoutsSection';
+import { RaceScreen } from './RaceScreen';
 import { StaffPanel } from './StaffPanel';
 import { UpgradesPanel } from './UpgradesPanel';
 import { FacilitiesSection } from './FacilitiesSection';
@@ -52,6 +53,7 @@ type PanelId =
   | 'money'
   | 'ownership'
   | 'calendar'
+  | 'race'
   | 'game'
   | 'menu';
 
@@ -69,6 +71,7 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'money', label: 'rail.money' },
   { id: 'ownership', label: 'rail.ownership' },
   { id: 'calendar', label: 'rail.calendar' },
+  { id: 'race', label: 'rail.race' },
   { id: 'game', label: 'rail.game' },
 ];
 
@@ -465,6 +468,11 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <CalendarPanel />
+        </Panel>
+      )}
+      {!locked && open === 'race' && (
+        <Panel title={t('rail.race')} subtitle={t('race.intro')} onClose={() => setOpen(null)}>
+          <RaceScreen />
         </Panel>
       )}
       {!locked && open === 'game' && (

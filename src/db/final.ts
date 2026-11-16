@@ -62,7 +62,7 @@ export function nextFinalRound(db: Database): number | null {
  * What a final was started with, frozen as plain data so the race can be played a few sectors at a
  * time, across saves, whatever the player does in between.
  */
-interface FinalContext {
+export interface FinalContext {
   roundId: number;
   roundNumber: number;
   seasonId: number;
@@ -89,9 +89,11 @@ export interface FinalProgress {
   totalSectors: number;
   /** Set when the flag falls: the results are written. */
   summary: FinalSummary | null;
+  /** A step that asked to stop at an incident did (the race is not over). */
+  paused?: boolean;
 }
 
-const finalInput = (ctx: FinalContext): FinalInput => {
+export const finalInput = (ctx: FinalContext): FinalInput => {
   const course = courses.find((c) => c.id === ctx.courseId);
   if (!course) throw new Error(`Unknown course "${ctx.courseId}"`);
   return {
@@ -213,14 +215,27 @@ export function startFinal(
  * where it got to. When the flag falls the results, points, prize money, timing, events and car wear are
  * written, as `playFinal` always did, and the saved state is deleted.
  */
-export function stepFinal(db: Database, roundNumber: number, sectors = 1): FinalProgress {
+export function stepFinal(
+  db: Database,
+  roundNumber: number,
+  sectors = 1,
+  options: { untilPause?: boolean } = {},
+): FinalProgress {
   if (!Number.isInteger(sectors) || sectors < 1)
     throw new Error('A final is played one sector or more at a time.');
   const roundId = roundIdOf(db, roundNumber);
   const saved = loadRace<FinalContext, FinalSnapshot>(db, roundId, 'final');
   if (!saved) throw new Error(`The final of round ${roundNumber} has not been started.`);
   const race = FinalRace.restore(finalInput(saved.input), saved.state);
-  for (let i = 0; i < sectors && !race.finished; i++) race.step();
+  let paused = false;
+  for (let i = 0; i < sectors && !race.finished; i++) {
+    // An incident the player would want to see (a crash, a contact, rain) ends a step that asked to
+    // stop at one. The sector it happened in is always played to the end.
+    if (race.step().some((e) => e.pause) && options.untilPause) {
+      paused = true;
+      break;
+    }
+  }
   if (!race.finished) {
     saveRace(db, roundId, 'final', saved.input, race.snapshot(), race.progress);
     return {
@@ -228,6 +243,7 @@ export function stepFinal(db: Database, roundNumber: number, sectors = 1): Final
       sectorsRun: race.progress,
       totalSectors: race.totalSectors,
       summary: null,
+      paused,
     };
   }
   const summary = finishFinal(db, saved.input, race);
