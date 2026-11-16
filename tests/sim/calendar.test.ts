@@ -111,3 +111,49 @@ describe('skipping time', () => {
     );
   });
 });
+
+describe('a round whose prelims are under way', () => {
+  const days = (played: number) =>
+    [1, 2, 3, 4, 5, 6, 7].map((day) => ({
+      day,
+      date: `2031-04-${String(6 + day).padStart(2, '0')}`,
+      played: day <= played,
+    }));
+  const underWay = (played: number): RoundDates[] =>
+    rounds(0).map((r) => (r.number === 1 ? { ...r, prelimDays: days(played) } : r));
+
+  it('has a prelim day for each of the seven in place of the one prelims event', () => {
+    const events = buildEvents(2031, underWay(0), false, '2031-04-07');
+    const round1 = events.filter((e) => e.round === 1);
+    expect(round1.filter((e) => e.kind === 'prelims')).toHaveLength(0);
+    const prelimDays = round1.filter((e) => e.kind === 'prelim_day');
+    expect(prelimDays.map((e) => e.day)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(prelimDays.every((e) => e.blocking && !e.done)).toBe(true);
+    expect(events).toHaveLength(6 * 3 + 5 + 2 + 6);
+    expect(events.map((e) => e.date)).toEqual([...events.map((e) => e.date)].sort());
+  });
+
+  it('is due on the first prelim day not yet played, and only once its date has come', () => {
+    const events = (played: number, today: string) =>
+      buildEvents(2031, underWay(played), false, today);
+    expect(dueEvent(events(0, '2031-04-07'), '2031-04-07')).toMatchObject({
+      kind: 'prelim_day',
+      day: 1,
+    });
+    expect(dueEvent(events(1, '2031-04-07'), '2031-04-07')).toBeUndefined();
+    expect(dueEvent(events(1, '2031-04-08'), '2031-04-08')).toMatchObject({ day: 2 });
+    // Continue goes on to the next prelim day, and Next event does too.
+    expect(skipTarget(events(1, '2031-04-07'), '2031-04-07', 'due')).toBe('2031-04-08');
+    expect(skipTarget(events(1, '2031-04-07'), '2031-04-07', 'event')).toBe('2031-04-08');
+    expect(skipTarget(events(1, '2031-04-07'), '2031-04-07', 'day')).toBe('2031-04-08');
+  });
+
+  it('goes back to the one prelims event once the prelims are done, and never mixes the two', () => {
+    const finished = rounds(0, true).map((r) =>
+      r.number === 1 ? { ...r, prelimDays: days(7) } : r,
+    );
+    const events = buildEvents(2031, finished, false, '2031-04-14');
+    expect(events.filter((e) => e.kind === 'prelim_day')).toHaveLength(0);
+    expect(events.find((e) => e.kind === 'prelims' && e.round === 1)).toMatchObject({ done: true });
+  });
+});

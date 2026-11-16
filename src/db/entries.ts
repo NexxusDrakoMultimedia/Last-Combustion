@@ -37,6 +37,23 @@ export interface LoadedEntry {
   restorations: number;
 }
 
+/** What a car's wear is worked out from now (road and race kilometres, restorations), as the database holds it. */
+export function currentCarFigures(
+  db: Database,
+  carId: number,
+): { roadKm: number; raceKm: number; wearOffset: number; restorations: number } {
+  const row = all(db, 'SELECT road_km, race_km, wear_offset, restorations FROM car WHERE id = ?', [
+    carId,
+  ])[0];
+  if (!row) throw new Error(`There is no car ${carId}.`);
+  return {
+    roadKm: row.road_km as number,
+    raceKm: row.race_km as number,
+    wearOffset: row.wear_offset as number,
+    restorations: row.restorations as number,
+  };
+}
+
 /** Loads every main-series entry of a season with its driver (gear applied) and car. */
 export function loadEntries(db: Database, seasonId: number): LoadedEntry[] {
   const affinities = new Map<number, Record<RoadType, number>>();

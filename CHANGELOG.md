@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - **Fog on garages.** A garage that is not yours shows its prestige and following as a word or a range in the Registry until you know it well, who its sponsor and supplier are stay hidden until then, and the skill of the executives and mechanics who work for it reads the same way. Your own garage and the people who work for you are exact.
 - **Fog on deals.** What a sponsor, an executive or a supplier is worth in a negotiation is now a range rather than a single figure. It narrows as you build a relationship with them, hire scouts and make deals with them again.
 - **Fog on the Game panel.** The Game panel no longer shows another garage's cash, and shows the most prestigious garage's prestige as a word or a range. Your own garage is exact.
+- **Prelims a day at a time.** The Calendar panel has a switch, **Stop after every prelim day**. With it on, Continue plays one prelim day and stops, and the calendar lists each of the seven days with its date (wet days push them back). With it off, which is how it starts, Continue plays the prelims through as before. Each day is played on its own date, so the days in between happen on the days they belong to.
 
 ## [0.2.0] - 2026-11-10
 
