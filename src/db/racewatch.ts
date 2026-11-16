@@ -10,7 +10,9 @@ import {
 } from '../sim/final/engine';
 import { all } from './entries';
 import { finalInput, type FinalContext } from './final';
-import { loadRace } from './racestate';
+import type { PrelimContext } from './prelims';
+import { loadRace, prelimPlans } from './racestate';
+import type { PrelimSnapshot } from '../sim/prelim/round';
 
 /** One car in the timing tower of a final. */
 export interface TowerRow {
@@ -180,6 +182,141 @@ export function finalView(db: Database, roundNumber: number): FinalView | null {
       race.weather !== null && lapIndex >= race.weather.startLap && lapIndex <= race.weather.endLap,
     weather: race.weather,
     rows,
+    feed,
+  };
+}
+
+/** One entry's lap in a prelim day. */
+export interface PrelimRunRow {
+  entryId: number;
+  raceNumber: number;
+  driver: string;
+  mine: boolean;
+  /** The lap time in milliseconds, or null for a run that ended in a crash. */
+  timeMs: number | null;
+  crashed: boolean;
+}
+
+/** One place in the running classification of the prelims. */
+export interface PrelimStandingRow extends PrelimRunRow {
+  position: number;
+  /** Milliseconds behind the fastest so far. */
+  gapMs: number;
+  /** The entry is inside the places that reach the final, as things stand. */
+  qualifying: boolean;
+}
+
+/** One incident on a prelim run. */
+export interface PrelimFeedLine {
+  type: string;
+  date: string;
+  raceNumber: number;
+  driver: string;
+  mine: boolean;
+  secondsLost: number;
+}
+
+/** The prelims of a round under way, as a timing screen shows them. */
+export interface PrelimView {
+  roundNumber: number;
+  /** The prelim day under way (1 to 7), its date, and how many days are done. */
+  day: number;
+  date: string;
+  daysPlayed: number;
+  totalDays: number;
+  /** Runs on the day under way, and how many are run. */
+  runsToday: number;
+  runsPlayedToday: number;
+  /** Runs run in all, and in all. */
+  runsPlayed: number;
+  runs: number;
+  finalSize: number;
+  /** The day's latest runs first. */
+  latest: PrelimRunRow[];
+  /** The fastest so far, best first. */
+  standings: PrelimStandingRow[];
+  /** The latest incidents first. */
+  feed: PrelimFeedLine[];
+}
+
+const STANDINGS_LENGTH = 20;
+const LATEST_LENGTH = 10;
+
+/**
+ * The prelims of a round that have been started and are not over: the day under way, the runs of the day as
+ * they come in, the classification as it stands and the incidents. Built from the saved round, so it is the
+ * same wherever the player left it. Null when no prelims are under way for this round.
+ */
+export function prelimView(db: Database, roundNumber: number): PrelimView | null {
+  const round = all(
+    db,
+    'SELECT ro.id FROM round ro WHERE ro.number = ? AND ro.season_id = (SELECT id FROM season ORDER BY year DESC LIMIT 1)',
+    [roundNumber],
+  )[0];
+  if (!round) return null;
+  const saved = loadRace<PrelimContext, PrelimSnapshot>(db, round.id as number, 'prelims');
+  const plan = prelimPlans(db).find((p) => p.roundNumber === roundNumber);
+  if (!saved || !plan) return null;
+  const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0]?.id as number | undefined;
+  const garageOf = new Map(saved.input.loaded.map((e) => [e.entryId, e.garageId]));
+  const entries = new Map(saved.input.entries.map((e) => [e.entryId, e]));
+  const mine = (entryId: number) => player !== undefined && garageOf.get(entryId) === player;
+  const row = (entryId: number, timeMs: number | null): PrelimRunRow => {
+    const e = entries.get(entryId)!;
+    return {
+      entryId,
+      raceNumber: e.raceNumber,
+      driver: e.driver.name,
+      mine: mine(entryId),
+      timeMs,
+      crashed: timeMs === null,
+    };
+  };
+
+  const done = saved.state.outcomes.filter((o): o is NonNullable<typeof o> => o !== null);
+  const day = Math.min(plan.days.length, saved.state.daysPlayed + 1);
+  const today = plan.days.find((d) => d.day === day);
+  const todays = done.filter((o) => o.day === day);
+  const timed = done
+    .filter((o) => o.timeMs !== null)
+    .sort((a, b) => (a.timeMs as number) - (b.timeMs as number) || a.entryId - b.entryId);
+  const best = timed[0]?.timeMs ?? 0;
+  const feed = saved.state.events
+    .filter((e) => e.scope === 'prelim' && e.entryId !== null && entries.has(e.entryId))
+    .slice(-FEED_LENGTH)
+    .reverse()
+    .map((e): PrelimFeedLine => {
+      const entry = entries.get(e.entryId as number)!;
+      return {
+        type: e.type,
+        date: e.date,
+        raceNumber: entry.raceNumber,
+        driver: entry.driver.name,
+        mine: mine(e.entryId as number),
+        secondsLost: Number(e.payload.secondsLost ?? 0),
+      };
+    });
+  return {
+    roundNumber,
+    day,
+    date: today?.date ?? '',
+    daysPlayed: saved.state.daysPlayed,
+    totalDays: plan.days.length,
+    runsToday: today?.runs ?? 0,
+    runsPlayedToday: todays.length,
+    runsPlayed: done.length,
+    runs: saved.input.entries.length,
+    finalSize: saved.input.finalSize,
+    latest: [...todays]
+      .sort((a, b) => b.slot - a.slot)
+      .slice(0, LATEST_LENGTH)
+      .map((o) => row(o.entryId, o.timeMs)),
+    standings: timed.slice(0, STANDINGS_LENGTH).map((o, i) => ({
+      ...row(o.entryId, o.timeMs),
+      position: i + 1,
+      gapMs: (o.timeMs as number) - best,
+      qualifying: i + 1 <= saved.input.finalSize,
+    })),
     feed,
   };
 }

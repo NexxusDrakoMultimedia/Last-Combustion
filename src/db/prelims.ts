@@ -48,7 +48,7 @@ export interface PrelimSummary {
  * time, across saves, whatever the player does in between (buying a part or moving a driver changes the
  * garage, not the round already under way).
  */
-interface PrelimContext {
+export interface PrelimContext {
   roundId: number;
   roundNumber: number;
   year: number;
@@ -203,7 +203,11 @@ export function startPrelims(db: Database, roundNumber: number): PrelimProgress 
   // is on the day after the last of them.
   const plan = run.schedule.days
     .filter((d) => d.prelimDay)
-    .map((d) => ({ day: d.prelimDay as number, date: d.date }));
+    .map((d) => ({
+      day: d.prelimDay as number,
+      date: d.date,
+      runs: run.runsOnDay(d.prelimDay as number).total,
+    }));
   db.run('UPDATE round SET final_date = ? WHERE id = ?', [run.schedule.finalDate, ctx.roundId]);
   saveRace(db, ctx.roundId, 'prelims', ctx, run.snapshot(), run.daysPlayed, plan);
   return { roundNumber, daysPlayed: run.daysPlayed, summary: null };
@@ -230,6 +234,28 @@ export function playPrelimDay(db: Database, roundNumber: number): PrelimProgress
   if (!saved) throw new Error(`The prelims of round ${roundNumber} have not been started.`);
   const run = PrelimRoundRun.restore(roundInput(saved.input), saved.state);
   run.playDay();
+  if (!run.finished) {
+    saveRace(db, roundId, 'prelims', saved.input, run.snapshot(), run.daysPlayed);
+    return { roundNumber, daysPlayed: run.daysPlayed, summary: null };
+  }
+  const summary = finishPrelims(db, saved.input, run);
+  return { roundNumber, daysPlayed: run.daysPlayed, summary };
+}
+
+/**
+ * Plays up to `runs` more runs of the prelim day under way (stopping when the day is done, so the game
+ * date can be brought to the next day before its first run), and saves where it got to. After the last
+ * run of the seventh day the results are written and the saved state is deleted.
+ */
+export function playPrelimRuns(db: Database, roundNumber: number, runs: number): PrelimProgress {
+  if (!Number.isInteger(runs) || runs < 1)
+    throw new Error('The prelims are played one run or more at a time.');
+  const roundId = roundIdOf(db, roundNumber);
+  const saved = loadRace<PrelimContext, PrelimSnapshot>(db, roundId, 'prelims');
+  if (!saved) throw new Error(`The prelims of round ${roundNumber} have not been started.`);
+  const run = PrelimRoundRun.restore(roundInput(saved.input), saved.state);
+  const day = run.daysPlayed;
+  for (let i = 0; i < runs && !run.finished && run.daysPlayed === day; i++) run.playRun();
   if (!run.finished) {
     saveRace(db, roundId, 'prelims', saved.input, run.snapshot(), run.daysPlayed);
     return { roundNumber, daysPlayed: run.daysPlayed, summary: null };

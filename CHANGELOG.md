@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - **Fog on the Game panel.** The Game panel no longer shows another garage's cash, and shows the most prestigious garage's prestige as a word or a range. Your own garage is exact.
 - **Prelims a day at a time.** The Calendar panel has a switch, **Stop after every prelim day**. With it on, Continue plays one prelim day and stops, and the calendar lists each of the seven days with its date (wet days push them back). With it off, which is how it starts, Continue plays the prelims through as before. Each day is played on its own date, so the days in between happen on the days they belong to.
 - **Watch the final.** The new **Race** panel starts the next final and shows it as it happens: a timing tower with each car's position, gap, last sector time, tyres and call, the weather, and a feed of crashes, contacts, spins, passes and failures. Play it a sector at a time at three speeds (it pauses itself at a crash, a contact or rain), or step a sector, a lap, to the next incident or to the flag. The result is the same as letting Continue run it.
+- **Watch the prelims.** The **Race** panel now watches the prelims too: each day's runs as they come in, the classification so far with the line under the 15th place, and the crashes and mistakes. Play them a lap at a time at three speeds, or step a run, ten runs, a day or to the end. The results are the same as letting Continue run them.
 
 ## [0.2.0] - 2026-11-10
 

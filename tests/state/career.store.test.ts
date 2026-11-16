@@ -104,6 +104,34 @@ describe('career store', () => {
     expect(cal().next ?? cal().due).toMatchObject({ kind: 'final', round: 1 });
   }, 120_000);
 
+  describe('watching the prelims', () => {
+    it('starts them, steps by run, ten runs, the day and to the end, with the same result as running them', async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().saveSlot1();
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ prelims: undefined });
+      await useCareerStore.getState().runNextPrelims();
+      const expected = useCareerStore.getState().prelims;
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ prelims: undefined });
+      expect(useCareerStore.getState().prelimWatch).toBeNull();
+      await useCareerStore.getState().watchPrelims();
+      const first = useCareerStore.getState().prelimWatch!;
+      expect(first).toMatchObject({ day: 1, daysPlayed: 0, runsPlayedToday: 0, runs: 313 });
+      await useCareerStore.getState().stepPrelimWatch('run');
+      expect(useCareerStore.getState().prelimWatch!.runsPlayedToday).toBe(1);
+      await useCareerStore.getState().stepPrelimWatch('runs');
+      expect(useCareerStore.getState().prelimWatch!.runsPlayedToday).toBe(11);
+      await useCareerStore.getState().stepPrelimWatch('day');
+      expect(useCareerStore.getState().prelimWatch).toMatchObject({ day: 2, daysPlayed: 1 });
+      // Nothing is written to the results until the last run.
+      expect(useCareerStore.getState().prelims).toBeUndefined();
+      await useCareerStore.getState().stepPrelimWatch('end');
+      expect(useCareerStore.getState().prelimWatch).toBeNull();
+      expect(useCareerStore.getState().prelims).toEqual(expected);
+    }, 180_000);
+  });
+
   describe('watching a final', () => {
     // Each test plays the final one way, loads the save made just before it, and plays it the other way.
     // (A test career has a seed of its own, so two careers are never the same world.)
@@ -135,9 +163,12 @@ describe('career store', () => {
       expect(useCareerStore.getState().finalWatch!.progress).toBe(first.sectorCount);
       await useCareerStore.getState().stepFinalWatch('incident');
       const stopped = useCareerStore.getState().finalWatch;
-      if (stopped) expect(stopped.progress).toBeGreaterThan(first.sectorCount);
-      // Nothing is settled until the flag falls.
-      expect(useCareerStore.getState().settlement).toBeUndefined();
+      // A final with no incident runs on to the flag, so only a stop means the round is still open.
+      if (stopped) {
+        expect(stopped.progress).toBeGreaterThan(first.sectorCount);
+        // Nothing is settled until the flag falls.
+        expect(useCareerStore.getState().settlement).toBeUndefined();
+      }
       await useCareerStore.getState().stepFinalWatch('end');
       const watched = useCareerStore.getState();
       expect(watched.finalWatch).toBeNull();

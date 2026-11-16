@@ -29,8 +29,21 @@ test('watches a final from the race screen: the tower, the steps and the flag', 
   await page.getByRole('button', { name: messages['starter.confirm'] }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 
+  // The prelims first, from the race screen: a few runs, then the rest of the day, then to the end.
   await continueTo(page, messages['hub.runPrelims']);
-  await page.getByRole('button', { name: messages['hub.runPrelims'] }).click();
+  await page.getByRole('button', { name: messages['rail.race'], exact: true }).click();
+  await page.getByRole('button', { name: messages['race.watchPrelims'] }).click();
+  await expect(page.getByText(/^Round 1: prelim day 1 of 7, /)).toBeVisible();
+  await expect(page.getByText(/^0 of \d+ runs today$/)).toBeVisible();
+  await page.getByRole('button', { name: messages['race.next.runs'] }).click();
+  await expect(page.getByText(/^10 of \d+ runs today$/)).toBeVisible();
+  await expect(
+    page.getByRole('table', { name: messages['race.classificationCaption'] }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: messages['race.next.day'] }).click();
+  await expect(page.getByText(/^Round 1: prelim day 2 of 7, /)).toBeVisible();
+  await page.getByRole('button', { name: messages['race.next.prelimsEnd'] }).click();
+  await page.keyboard.press('Escape');
   await expect(page.getByText(/Round 1 prelims: \d+ set a time/)).toBeVisible({ timeout: 60_000 });
   await continueTo(page, messages['hub.runFinal']);
 
