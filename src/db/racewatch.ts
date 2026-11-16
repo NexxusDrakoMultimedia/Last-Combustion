@@ -8,6 +8,7 @@ import {
   type RaceEvent,
   type RetireReason,
 } from '../sim/final/engine';
+import { outlineOf } from '../sim/courses/map';
 import { all } from './entries';
 import { finalInput, type FinalContext } from './final';
 import type { PrelimContext } from './prelims';
@@ -31,6 +32,8 @@ export interface TowerRow {
   /** Tyre life left, 0 to 100. */
   tyrePct: number;
   call: Call;
+  /** The player has set this call (false when the computer is driving the car's calls). */
+  controlled: boolean;
   retired: RetireReason | null;
 }
 
@@ -50,6 +53,31 @@ export interface FeedLine {
   payload: Record<string, number | string>;
 }
 
+/** One car on the live map: how far round the lap it is. */
+export interface MapCar {
+  entryId: number;
+  raceNumber: number;
+  mine: boolean;
+  /** Kilometres from the start line of the lap, 0 up to the lap's length. */
+  km: number;
+}
+
+/** Something that happened on the lap under way, at the point of the course where it happened. */
+export interface MapMark {
+  type: 'crash' | 'spin' | 'mistake' | 'contact' | 'mechanical_failure' | 'drone_stop';
+  km: number;
+  raceNumber: number;
+}
+
+/** Where the cars are on the course, worked out from the gaps in the tower (see `liveMap`). */
+export interface LiveMap {
+  courseNumber: number;
+  lapKm: number;
+  cars: MapCar[];
+  /** The incidents of the lap under way, and the drone stops they caused. */
+  marks: MapMark[];
+}
+
 /** A final under way, as a timing screen shows it. */
 export interface FinalView {
   roundNumber: number;
@@ -67,9 +95,65 @@ export interface FinalView {
   rows: TowerRow[];
   /** The latest events first. */
   feed: FeedLine[];
+  /** The cars on the course; null when the course has no outline. */
+  map: LiveMap | null;
 }
 
 const FEED_LENGTH = 14;
+
+const MAP_MARKS: readonly MapMark['type'][] = [
+  'crash',
+  'spin',
+  'mistake',
+  'contact',
+  'mechanical_failure',
+  'drone_stop',
+];
+
+/**
+ * Puts the running cars on the lap. Every car has run the same number of sectors, so the field is
+ * lined up from the leader, who has just crossed the end of the last sector: a car that is some seconds
+ * behind is that many seconds of the leader's speed back along the road (a lap is a loop, so a car behind
+ * the start line is at the end of the lap). At the start the cars are on the grid at the line.
+ * It is a picture of the gaps in the tower, not a second simulation.
+ */
+export function liveMap(
+  courseNumber: number,
+  lapKm: number,
+  sectors: readonly { startKm: number; lengthM: number }[],
+  progress: number,
+  rows: readonly TowerRow[],
+  events: readonly RaceEvent[],
+  entries: ReadonlyMap<number, { raceNumber: number }>,
+): LiveMap {
+  const done = progress % sectors.length;
+  const boundaryKm = done === 0 ? 0 : sectors[done]!.startKm;
+  const lastSector = sectors[(done + sectors.length - 1) % sectors.length]!;
+  const leader = rows.find((r) => r.position === 1);
+  const secs = leader?.lastSectorSeconds ?? 0;
+  const speed = progress > 0 && secs > 0 ? lastSector.lengthM / 1000 / secs : 0;
+  const cars = rows
+    .filter((r) => r.position !== null)
+    .map((r) => {
+      const back = progress > 0 ? (r.gapSeconds ?? 0) * speed : 0;
+      const km = (((boundaryKm - back) % lapKm) + lapKm) % lapKm;
+      return {
+        entryId: r.entryId,
+        raceNumber: r.raceNumber,
+        mine: r.mine,
+        km: Math.round(km * 1000) / 1000,
+      };
+    });
+  const lap = Math.floor(Math.max(progress - 1, 0) / sectors.length);
+  const marks = events
+    .filter((e) => e.lap === lap && (MAP_MARKS as readonly string[]).includes(e.type))
+    .map((e) => ({
+      type: e.type as MapMark['type'],
+      km: Math.min(Math.max(e.km, 0), lapKm),
+      raceNumber: entries.get(e.entryId)?.raceNumber ?? 0,
+    }));
+  return { courseNumber, lapKm, cars, marks };
+}
 
 /**
  * The timing screen of a final that has been started and is not over: the running order with gaps, the last
@@ -79,7 +163,7 @@ const FEED_LENGTH = 14;
 export function finalView(db: Database, roundNumber: number): FinalView | null {
   const round = all(
     db,
-    'SELECT ro.id FROM round ro WHERE ro.number = ? AND ro.season_id = (SELECT id FROM season ORDER BY year DESC LIMIT 1)',
+    'SELECT ro.id, c.number AS course_number FROM round ro JOIN course c ON c.id = ro.course_id WHERE ro.number = ? AND ro.season_id = (SELECT id FROM season ORDER BY year DESC LIMIT 1)',
     [roundNumber],
   )[0];
   if (!round) return null;
@@ -126,6 +210,7 @@ export function finalView(db: Database, roundNumber: number): FinalView | null {
         : null,
       tyrePct: Math.round(car.tyre * 10) / 10,
       call: car.call,
+      controlled: car.controlled,
       retired: car.retired,
     };
   };
@@ -169,6 +254,17 @@ export function finalView(db: Database, roundNumber: number): FinalView | null {
     });
 
   const progress = race.progress;
+  const map = outlineOf(round.course_number as number)
+    ? liveMap(
+        round.course_number as number,
+        finalInput(saved.input).course.lapKm,
+        saved.input.sectors,
+        progress,
+        rows,
+        race.events,
+        entries,
+      )
+    : null;
   const lapIndex = Math.min(race.laps - 1, Math.floor(progress / race.sectorCount));
   return {
     roundNumber,
@@ -183,6 +279,7 @@ export function finalView(db: Database, roundNumber: number): FinalView | null {
     weather: race.weather,
     rows,
     feed,
+    map,
   };
 }
 

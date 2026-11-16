@@ -5,13 +5,14 @@ import { t } from '../../i18n';
 import { outlineOf, pointAtKm } from '../../sim/courses/map';
 
 /** What an incident looks like on the map, by kind (the name is in the mark's title too). */
-const KIND_CLASS: Record<string, string> = {
+export const KIND_CLASS: Record<string, string> = {
   crash: 'fill-red-500',
   spin: 'fill-amber-400',
   mistake: 'fill-yellow-300',
   wildlife: 'fill-emerald-400',
   mechanical_failure: 'fill-sky-400',
   contact: 'fill-fuchsia-400',
+  drone_stop: 'fill-orange-400',
 };
 
 /** The same colours for the key's swatches (written out in full so the stylesheet generates them). */
@@ -22,10 +23,11 @@ const KIND_SWATCH: Record<string, string> = {
   wildlife: 'bg-emerald-400',
   mechanical_failure: 'bg-sky-400',
   contact: 'bg-fuchsia-400',
+  drone_stop: 'bg-orange-400',
 };
 
 /** The line of text for a kind of incident; the key is built from data, so the compiler cannot see it. */
-const kindName = (kind: string): string => t(`map.kind.${kind}` as never);
+export const kindName = (kind: string): string => t(`map.kind.${kind}` as never);
 
 /** A course drawn from its saved outline, with its overtaking spots and where things went wrong. */
 export function CourseMap({ map }: { map: CourseMapData }) {

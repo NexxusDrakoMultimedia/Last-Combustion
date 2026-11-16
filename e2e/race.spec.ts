@@ -55,6 +55,10 @@ test('watches a final from the race screen: the tower, the steps and the flag', 
   // A header row and the fifteen finalists, all with full tyres at the start.
   await expect(tower.getByRole('row')).toHaveCount(16);
   await expect(page.getByText(/^Lap 1 of \d+, sector 1 of \d+$/)).toBeVisible();
+  // The live map shows the cars on the course.
+  const liveMap = page.getByRole('img', { name: messages['race.map.aria'] });
+  await expect(liveMap).toBeVisible();
+  await expect(liveMap.locator('[data-car]')).toHaveCount(15);
 
   await page.getByRole('button', { name: messages['race.next.sector'] }).click();
   await expect(page.getByText(/^Lap 1 of \d+, sector 2 of \d+$/)).toBeVisible();
