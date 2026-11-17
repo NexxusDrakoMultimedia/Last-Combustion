@@ -8,7 +8,7 @@ import type { Call } from '../../sim/final/engine';
 import type { RunPlan } from '../../sim/prelim/lap';
 import { useCareerStore, type WatchStep } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
-import { penaltyName } from '../penalty';
+import { penaltyName, penaltyNews } from '../penalty';
 import { LiveMap } from './LiveMap';
 
 /** Milliseconds between sectors while a race plays itself, at each speed. */
@@ -241,7 +241,13 @@ function PrelimScreen({ view }: { view: PrelimView }) {
   const [playFrom, setPlayFrom] = useState<number | null>(null);
   const [speed, setSpeed] = useState<1 | 2 | 4>(1);
   const busy = status === 'busy';
-  const playing = playFrom !== null;
+  // Play stops after one of the player's runs ends in a crash, as a final stops at an incident.
+  const newest = view.latest[0];
+  const ownCrash =
+    playFrom !== null && view.runsPlayed > playFrom && !!newest && newest.mine && newest.crashed
+      ? newest
+      : null;
+  const playing = playFrom !== null && !ownCrash;
   useEffect(() => {
     if (!playing || busy) return;
     const timer = setTimeout(() => void stepPrelimWatch('run'), RUN_EVERY[speed]);
@@ -304,6 +310,11 @@ function PrelimScreen({ view }: { view: PrelimView }) {
         </button>
       </div>
       <MyRuns runs={view.mine} onPlan={(id, plan) => void planRun(id, plan)} disabled={busy} />
+      {ownCrash && (
+        <p role="status" className="border border-lc-warn p-3 font-semibold">
+          {t('race.ownCrash', { number: ownCrash.raceNumber, driver: ownCrash.driver })}
+        </p>
+      )}
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="space-y-1">
           <h3 className="lc-display text-sm text-lc-dim">{t('race.todaysRuns')}</h3>
@@ -391,6 +402,7 @@ export function RaceScreen() {
   const watchPrelims = useCareerStore((s) => s.watchPrelims);
   const calendar = useCareerStore((s) => s.calendar);
   const final = useCareerStore((s) => s.final);
+  const prelims = useCareerStore((s) => s.prelims);
   const status = useCareerStore((s) => s.status);
   const watchFinal = useCareerStore((s) => s.watchFinal);
   const stepFinalWatch = useCareerStore((s) => s.stepFinalWatch);
@@ -465,6 +477,16 @@ export function RaceScreen() {
       );
     return (
       <div className="space-y-3 text-sm">
+        {prelims && prelims.penalties.length > 0 && (
+          <section className="space-y-1">
+            <h3 className="lc-display text-sm text-lc-dim">{t('race.prelimPenalties')}</h3>
+            <ul className="space-y-1">
+              {prelims.penalties.map((p) => (
+                <li key={`${p.type}-${p.raceNumber}`}>{penaltyNews(p)}</li>
+              ))}
+            </ul>
+          </section>
+        )}
         <p className="text-lc-dim">{due ? t('race.waiting') : t('race.nothing')}</p>
         {due && (
           <button

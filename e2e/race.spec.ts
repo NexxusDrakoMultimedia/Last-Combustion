@@ -76,3 +76,33 @@ test('watches a final from the race screen: the tower, the steps and the flag', 
   await page.keyboard.press('Escape');
   await expect(page.getByText(/Round 1 final: \d+ finished/)).toBeVisible();
 });
+
+test('with Watch races by default on, Continue opens the race to watch, and the choice is kept', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto('/');
+  await page.getByLabel(messages['newCareer.ownerName']).fill('Watch Owner');
+  await page.getByLabel(messages['newCareer.garageName']).fill('Watch Default');
+  await page.getByRole('button', { name: messages['newCareer.start'] }).click();
+  await page.locator('input[name="starter-car"]').nth(1).check();
+  await page.locator('input[name="starter-driver"]').nth(2).check();
+  await page.getByRole('button', { name: messages['starter.confirm'] }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+
+  await page.getByRole('button', { name: messages['rail.calendar'], exact: true }).click();
+  const watch = page.getByLabel(messages['calendar.watchRaces']);
+  await expect(watch).not.toBeChecked();
+  await watch.check();
+  // The choice is kept for next time.
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('lc.settings')))
+    .toContain('"watchRaces":true');
+  // Continue skips to the prelims, then offers to watch them instead of running them.
+  await continueTo(page, messages['race.watchPrelims']);
+  await page
+    .getByRole('button', { name: messages['race.watchPrelims'], exact: true })
+    .first()
+    .click();
+  await expect(page.getByText(/^Round 1: prelim day 1 of 7, /)).toBeVisible();
+});

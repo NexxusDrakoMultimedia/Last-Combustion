@@ -215,6 +215,7 @@ import type { Call } from '../sim/final/engine';
 import type { RunPlan } from '../sim/prelim/lap';
 import type { MechanicOffer } from '../sim/staff';
 import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
+import { loadSettings, saveSetting } from '../platform/settings';
 import { getServices } from './services';
 
 /**
@@ -489,6 +490,9 @@ interface CareerState {
   playPrelimDay(): Promise<void>;
   /** Whether Continue stops after every prelim day instead of playing the prelims through. */
   stopEveryDay: boolean;
+  /** Continue opens the Race screen when a race is due (kept with the saved settings). */
+  watchRaces: boolean;
+  setWatchRaces(value: boolean): void;
   setStopEveryDay(value: boolean): void;
   runNextFinal(): Promise<void>;
   /** Starts the prelims of the next round (or picks them up under way) so they can be watched and stepped. */
@@ -1536,8 +1540,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         return undefined;
       }, 'PlayPrelimDay'),
 
-    stopEveryDay: false,
-    setStopEveryDay: (value) => set({ stopEveryDay: value }),
+    stopEveryDay: loadSettings().stopEveryDay,
+    setStopEveryDay: (value) => {
+      saveSetting('stopEveryDay', value);
+      set({ stopEveryDay: value });
+    },
+    watchRaces: loadSettings().watchRaces,
+    setWatchRaces: (value) => {
+      saveSetting('watchRaces', value);
+      set({ watchRaces: value });
+    },
 
     runNextFinal: () =>
       run(async () => {
