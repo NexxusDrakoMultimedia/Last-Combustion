@@ -22,8 +22,8 @@ Every design question raised while building M7 (story and fog of war, 0.3.0) has
 
 Each is built as its own small pull request into `feature/0.3.x`.
 
-1. **A banned driver's garage can field a replacement** from its roster, with no fine.
-2. **Measure the size of a saved race** in the browser, and trim what is stored if it is too large.
+1. **Not built, needs a decision: a banned driver's garage can field a replacement** from its roster, with no fine. `setEntryDriver` refuses a change once the season has started because every result screen reads the driver from the entry, so a mid-season swap would rewrite who drove the earlier rounds. A replacement needs the driver kept on each result (a migration, and every query that joins an entry to its driver). Either build that in M8, or leave a banned driver's entry empty for the rounds of the ban, as it is now.
+2. **Measure the size of a saved race** (done for the size, not the time). A round's prelims under way add about 0.47 MB to a save (313 entries with their cars and drivers, frozen when they start), and a final under way about 0.09 MB. A test keeps them under 0.8 MB and 0.4 MB. The time to save in a real browser has not been measured: open a save made mid-prelims on a slow device during the playtest and say if it lags.
 
 ## Release steps (owner only)
 
