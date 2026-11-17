@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { GhostView } from '../../src/db/ghost';
-import { hasText, t } from '../../src/i18n';
+import { formatLapTime, hasText, t } from '../../src/i18n';
 import { useCareerStore } from '../../src/state/career.store';
 import { GhostSection } from '../../src/ui/shell/GhostSection';
 
@@ -18,7 +18,7 @@ const view = (over: Partial<GhostView> = {}): GhostView => ({
     { driverId: 7, name: 'Ayla Ward', points: 80, timeMs: 600_000 },
     { driverId: 9, name: 'Tom Reid', points: 60, timeMs: 603_500 },
   ],
-  entries: [{ entryId: 11, raceNumber: 42, driver: 'Sam Hale', pick: null }],
+  entries: [{ entryId: 11, raceNumber: 42, driver: 'Sam Hale', pick: null, easyTargetMs: 598_000 }],
   results: [],
   ...over,
 });
@@ -65,6 +65,7 @@ describe('the ghost section', () => {
             raceNumber: 42,
             driver: 'Sam Hale',
             pick: { mode: 'hard', driverId: 9, ghostName: 'Tom Reid' },
+            easyTargetMs: 598_000,
           },
         ],
       }),
@@ -179,5 +180,17 @@ describe('the text of the ghost record', () => {
       'ghost.result.tied',
     ])
       expect(hasText(key), key).toBe(true);
+  });
+
+  it('shows the lap to aim for beside an Easy pick, and nothing beside the others', () => {
+    const entry = { entryId: 11, raceNumber: 42, driver: 'Sam Hale', easyTargetMs: 598_000 };
+    useCareerStore.setState({
+      ghost: view({
+        entries: [{ ...entry, pick: { mode: 'easy', driverId: null, ghostName: null } }],
+      }),
+    });
+    expect(html()).toContain(t('ghost.target', { time: formatLapTime(598_000) }));
+    useCareerStore.setState({ ghost: view({ entries: [{ ...entry, pick: null }] }) });
+    expect(html()).not.toContain(t('ghost.target', { time: formatLapTime(598_000) }));
   });
 });

@@ -44,6 +44,9 @@ export function settleGhost(
   return { beaten: ownMs < ghostMs, deltaMs: ghostMs - ownMs };
 }
 
+/** How far ahead of the run the Easy ghost is, in milliseconds. */
+export const easyGhostLeadMs = (): number => ghostBalance.easyLeadMs;
+
 /** The Easy ghost's time: two seconds ahead of the run (nothing if the run has no time). */
 export const easyGhostMs = (ownMs: number | null): number | null =>
   ownMs === null ? null : ownMs - ghostBalance.easyLeadMs;

@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildSectors } from '../../src/sim/courses/sectors';
 import { classifyPrelims } from '../../src/sim/prelim/classify';
-import { simulateLap } from '../../src/sim/prelim/lap';
+import { expectedLapMs, simulateLap } from '../../src/sim/prelim/lap';
 import { buildRunningOrder } from '../../src/sim/prelim/order';
 import { carRatings, sectorFit, sectorWeights } from '../../src/sim/prelim/ratings';
 import { simulateRoundPrelims, type PrelimEntry } from '../../src/sim/prelim/round';
@@ -400,5 +400,51 @@ describe('balance: driver over horsepower', () => {
     // About half the field are supercars or hypercars; they should hold roughly 8 to 13 of the top 15.
     expect(superInTop / 4).toBeGreaterThan(7);
     expect(superInTop / 4).toBeLessThan(14);
+  });
+});
+
+describe('the lap a driver should aim for', () => {
+  it('is quicker for a better driver in the same car, and close to what the same pair runs on average', () => {
+    const w = generateWorld('expected-lap');
+    const course = courses[0]!;
+    const sectors = buildSectors(course);
+    const e = w.entries[0]!;
+    const car = w.cars[e.carId - 1]!;
+    const m = carModels.find((x) => x.id === car.modelId)!;
+    const spec = {
+      ps: m.ps,
+      kerbKg: car.kerbKg,
+      tyreWidthMm: car.tyreWidthMm,
+      layout: m.layout,
+      wear: car.wear,
+    };
+    const driver = w.drivers[e.driverId - 1]!;
+    const better = {
+      ...driver,
+      pace: Math.min(100, driver.pace + 20),
+      composure: Math.min(100, driver.composure + 20),
+    };
+    const base = expectedLapMs(driver, spec, sectors, course.altitudeM, course.night);
+    expect(base).toBeGreaterThan(0);
+    expect(expectedLapMs(better, spec, sectors, course.altitudeM, course.night)).toBeLessThan(base);
+    // It is close to the average of many real laps of the same pair (noise and rare incidents average out).
+    const rng = createRng('expected-lap-runs');
+    const runs: number[] = [];
+    for (let i = 0; i < 60; i++) {
+      const lap = simulateLap(
+        driver,
+        spec,
+        sectors,
+        course.altitudeM,
+        course.night,
+        { dayTemperatureBias: 0 },
+        rng.stream(`run:${i}`),
+      );
+      if (lap.timeMs !== null) runs.push(lap.timeMs);
+    }
+    const mean = runs.reduce((a, b) => a + b, 0) / runs.length;
+    expect(Math.abs(mean - base) / base).toBeLessThan(0.05);
+    // The same inputs always give the same answer.
+    expect(expectedLapMs(driver, spec, sectors, course.altitudeM, course.night)).toBe(base);
   });
 });

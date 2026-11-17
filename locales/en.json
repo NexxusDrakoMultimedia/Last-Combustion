@@ -1161,6 +1161,7 @@
   "ghost.pick.none": "No ghost",
   "ghost.pick.easy": "Easy: two seconds ahead of me",
   "ghost.pick.hard": "Hard: {name}, {time}",
+  "ghost.target": "Aim for about {time}",
   "ghost.result.beat": "#{number} {driver} beat the ghost of {ghost} by {seconds} seconds.",
   "ghost.result.lost": "#{number} {driver} lost to the ghost of {ghost} by {seconds} seconds.",
   "ghost.result.tied": "#{number} {driver} matched the ghost of {ghost} exactly.",

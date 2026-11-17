@@ -2,13 +2,17 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import {
+  easyGhostLeadMs,
   easyGhostMs,
   ghostCandidates,
   settleGhost,
   type GhostMode,
   type LastYearRun,
 } from '../sim/ghost';
-import { all } from './entries';
+import { buildSectors } from '../sim/courses/sectors';
+import { expectedLapMs } from '../sim/prelim/lap';
+import { courses } from '../sim/worldgen/data';
+import { all, loadEntries } from './entries';
 
 /** A ghost on offer for a round: one of last year's top drivers and the time they set on the course. */
 export interface GhostOption {
@@ -27,6 +31,11 @@ export interface GhostEntry {
   driver: string;
   /** The pick for the next round, if any. */
   pick: { mode: GhostMode; driverId: number | null; ghostName: string | null } | null;
+  /**
+   * The lap time to aim for with the Easy ghost: what this driver and car should manage on the next course, less the
+   * two seconds the ghost runs ahead. A guide only (the ghost is always two seconds ahead of the actual run).
+   */
+  easyTargetMs: number | null;
 }
 
 /** How a settled ghost went for one of the player's entries. */
@@ -184,6 +193,31 @@ export function settleGhosts(db: Database, roundId: number): void {
   }
 }
 
+/** The Easy ghost's target for each of the player's entries on a round's course (see `GhostEntry.easyTargetMs`). */
+function easyTargets(db: Database, seasonId: number, roundNumber: number): Map<number, number> {
+  const out = new Map<number, number>();
+  const round = all(
+    db,
+    `SELECT c.stable_id FROM round ro JOIN course c ON c.id = ro.course_id WHERE ro.season_id = ? AND ro.number = ?`,
+    [seasonId, roundNumber],
+  )[0];
+  const course = round ? courses.find((c) => c.id === round.stable_id) : undefined;
+  if (!course) return out;
+  const sectors = buildSectors(course);
+  for (const e of loadEntries(db, seasonId)) {
+    const mine = all(db, 'SELECT 1 FROM garage WHERE id = ? AND is_player = 1', [e.garageId]);
+    if (mine.length === 0) continue;
+    out.set(
+      e.entryId,
+      Math.max(
+        0,
+        expectedLapMs(e.driver, e.car, sectors, course.altitudeM, course.night) - easyGhostLeadMs(),
+      ),
+    );
+  }
+  return out;
+}
+
 /** The ghost screen: what is on offer for the next round, the picks, and how the last picks went. */
 export function ghostView(db: Database): GhostView {
   const season = latestSeason(db);
@@ -202,6 +236,8 @@ export function ghostView(db: Database): GhostView {
     ).map((p) => [p.entry_id as number, p]),
   );
   const names = new Map(options.map((o) => [o.driverId, o.name]));
+  const targets =
+    round === null ? new Map<number, number>() : easyTargets(db, season.id as number, round);
   const entries = all(
     db,
     `SELECT e.id, e.race_number, d.name FROM entry e JOIN garage g ON g.id = e.garage_id
@@ -211,6 +247,7 @@ export function ghostView(db: Database): GhostView {
   ).map((e): GhostEntry => {
     const p = picks.get(e.id as number);
     return {
+      easyTargetMs: targets.get(e.id as number) ?? null,
       entryId: e.id as number,
       raceNumber: e.race_number as number,
       driver: e.name as string,
