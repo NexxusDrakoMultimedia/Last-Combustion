@@ -42,5 +42,8 @@
     "legalityShort": [5, 15, 30, 50],
     "obviousTyreOverMm": 40,
     "obviousLegalityShort": 80
+  },
+  "sportsmanship": {
+    "contactWeights": [70, 22, 6, 2, 0]
   }
 }

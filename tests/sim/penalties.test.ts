@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PALPABLY_UNFAIR,
   drawBanRaces,
+  drawContactLevel,
   drawDroneLevel,
   ignoresDrone,
   isPalpablyUnfair,
@@ -123,5 +124,17 @@ describe('ignoring a drone’s signal', () => {
     expect(Math.min(...draws)).toBe(0);
     expect(Math.max(...draws)).toBe(12);
     expect(draws.filter((d) => d <= 3).length).toBeGreaterThan(draws.filter((d) => d >= 9).length);
+  });
+
+  it('draws a contact penalty mostly Minor and never a Palpably Unfair Act', () => {
+    const rng = createRng('contact-levels').stream('draw');
+    const counts = new Map<string, number>();
+    for (let i = 0; i < 10_000; i++) {
+      const level = drawContactLevel(rng);
+      counts.set(level, (counts.get(level) ?? 0) + 1);
+    }
+    expect(counts.get('minor')!).toBeGreaterThan(counts.get('major')!);
+    expect(counts.get('major')!).toBeGreaterThan(counts.get('severe')!);
+    expect(counts.has(PALPABLY_UNFAIR)).toBe(false);
   });
 });

@@ -71,6 +71,11 @@ export function GhostSection() {
                     </option>
                   ))}
                 </select>
+                {e.pick?.mode === 'easy' && e.easyTargetMs !== null && (
+                  <span className="lc-num text-lc-dim">
+                    {t('ghost.target', { time: formatLapTime(e.easyTargetMs) })}
+                  </span>
+                )}
               </li>
             ))}
           </ul>

@@ -171,6 +171,15 @@ describe('the second season', () => {
     expect(JSON.stringify(rows(db, 'SELECT * FROM ghost_choice ORDER BY entry_id'))).toBe(before);
   });
 
+  it('gives the Easy ghost a lap to aim for for each of the player’s entries, two seconds under what they should manage', () => {
+    const view = ghostView(db);
+    expect(view.entries.length).toBeGreaterThan(0);
+    for (const e of view.entries) {
+      expect(e.easyTargetMs).not.toBeNull();
+      expect(e.easyTargetMs as number).toBeGreaterThan(0);
+    }
+  });
+
   it('refuses a choice for a round whose prelims have been run', () => {
     expect(() => setGhost(db, mine[0]!, { mode: 'easy' })).not.toThrow();
     // Round 1 is done, so the choice is for round 2; run it and the next choice is for round 3.

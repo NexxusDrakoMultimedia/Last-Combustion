@@ -136,3 +136,27 @@ export function simulateLap(
   }
   return { timeMs: total, sectorMs, incidents, dnfReason: null };
 }
+
+/**
+ * The lap time a driver and car should manage on a course in still, mistake-free conditions, in milliseconds: the
+ * same formula as `simulateLap` with no noise, no incident and an average run temperature. It is what a driver
+ * should aim for, not what they will run.
+ */
+export function expectedLapMs(
+  driver: Driver,
+  car: CarSpec,
+  sectors: readonly Sector[],
+  altitudeM: number,
+  night: boolean,
+): number {
+  const ratings = carRatings(car, altitudeM);
+  let total = 0;
+  for (const sector of sectors) {
+    const fit = sectorFit(ratings, sector);
+    const rating = driverSectorRating(driver, sector.roadType, night);
+    total += Math.round(
+      sector.refSeconds * (1 - cfg.kc * (fit - 0.5)) * (1 - cfg.kd * (rating - 0.5)) * 1000,
+    );
+  }
+  return total;
+}

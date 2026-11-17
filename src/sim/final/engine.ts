@@ -7,6 +7,7 @@ import { carRatings, sectorFit, type CarRatings, type CarSpec } from '../prelim/
 import {
   droneFinalChance,
   drawBanRaces,
+  drawContactLevel,
   drawDroneLevel,
   ignoresDrone,
   isPalpablyUnfair,
@@ -582,7 +583,10 @@ export class FinalRace {
                 score > threshold - cfg.overtake.contactMargin &&
                 p.rng.chance(cfg.overtake.contactChance * (1 - car.entry.driver.composure / 150))
               ) {
-                car.penalty += cfg.overtake.penaltySeconds;
+                // Causing contact is a Sportsmanship penalty on the penalty scale, taken as places at the flag.
+                // The level comes from a stream of its own, so no other draw in the race moves.
+                const level = drawContactLevel(this.stream(`sport:e${car.entry.entryId}:g${g}`));
+                car.placesPenalty = Math.min(5, car.placesPenalty + penaltyPlaces(level));
                 car.slowdown += cfg.overtake.damagePace;
                 const loss = p.rng.float(
                   cfg.overtake.defenderLossSeconds[0] as number,
@@ -592,9 +596,7 @@ export class FinalRace {
                   lastCar.entry.entryId,
                   (exit.get(lastCar.entry.entryId) ?? lastExit) + loss,
                 );
-                emit('contact', car, lastCar, out, true, {
-                  penaltySeconds: cfg.overtake.penaltySeconds,
-                });
+                emit('contact', car, lastCar, out, true, { level, places: penaltyPlaces(level) });
               }
             }
           } else {
