@@ -14,6 +14,7 @@ import type {
   ScoringSpan,
 } from '../../db/registry';
 import { flagNames } from '../../sim/worldgen/data';
+import { ScoutAssign } from './ScoutAssign';
 import { useCareerStore } from '../../state/career.store';
 import { AttentionList } from '../AttnFlag';
 import { DecalRow, DecalStrip, StarRow } from '../Decals';
@@ -78,6 +79,7 @@ function DriverPage({ p }: { p: DriverProfile }) {
         )}
         <DecalStrip decals={p.decals} />
       </div>
+      <ScoutAssign subject={{ kind: 'drivers', id: p.id }} owned={p.skills.owned} />
       <Facts
         items={[
           [t('registry.age'), p.age],
@@ -241,6 +243,7 @@ function CarPage({ p }: { p: CarProfile }) {
         </h2>
         <DecalStrip decals={p.decals} />
       </div>
+      <ScoutAssign subject={{ kind: 'cars', id: p.id }} owned={p.reading.owned} />
       <Facts
         items={[
           [t('registry.chassis'), p.chassisNo],
@@ -411,6 +414,7 @@ function GaragePage({ p }: { p: GarageProfile }) {
         </h2>
         <DecalStrip decals={p.decals} />
       </div>
+      <ScoutAssign subject={{ kind: 'garages', id: p.id }} owned={p.isPlayer} />
       <Facts
         items={[
           [t('registry.nation'), flagName(p.flag)],

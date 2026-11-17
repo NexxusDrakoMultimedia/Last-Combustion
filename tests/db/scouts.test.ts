@@ -13,12 +13,13 @@ import {
   fireScout,
   garageScouts,
   hireScout,
+  risingDrivers,
   roundScoutWages,
   scoutCandidates,
   scoutsForEngine,
 } from '../../src/db/scouts';
 import { persistWorld } from '../../src/db/world';
-import { scoutWageFor } from '../../src/sim/scouting';
+import { readingMidpoint, scoutWageFor } from '../../src/sim/scouting';
 import { scoutingBalance } from '../../src/sim/worldgen/data';
 import { generateWorld } from '../../src/sim/worldgen';
 
@@ -138,4 +139,49 @@ describe('wages', () => {
     expect(wages).toBe(s.wagePerRound);
     expect(Number(scalar(db, `SELECT cash FROM garage WHERE id = ${garage}`))).toBeLessThan(cash);
   });
+});
+
+describe('the Head of Scouting’s tips', () => {
+  const withHead = (seed: string): { db: Database; garage: number } => {
+    const c = newCareer(seed);
+    c.db.run(
+      `INSERT INTO executive (garage_id, role, name, birth_year, skill, status, salary, start_year, end_year, hired_on)
+       VALUES (?, 'head_of_scouting', 'Test Head', 1990, 80, 'employed', 0, 2031, 2034, '2031-02-01')`,
+      [c.garage],
+    );
+    return c;
+  };
+
+  it('are empty without a Head of Scouting', () => {
+    const { db, garage } = newCareer('tips-none');
+    expect(risingDrivers(db, garage)).toEqual([]);
+  });
+
+  it('name young drivers who are not the garage’s own, by what their potential reads, never more than the cap', () => {
+    let seen = 0;
+    for (const seed of ['tips-a', 'tips-b', 'tips-c']) {
+      const { db, garage } = withHead(seed);
+      const tips = risingDrivers(db, garage);
+      expect(tips.length).toBeLessThanOrEqual(scoutingBalance.tips.max);
+      const owned = new Set(
+        db
+          .exec(`SELECT driver_id FROM entry WHERE garage_id = ${garage}`)[0]
+          ?.values.map((r) => r[0]) ?? [],
+      );
+      for (const tip of tips) {
+        seen += 1;
+        expect(tip.age).toBeLessThanOrEqual(scoutingBalance.tips.maxAge);
+        expect(owned.has(tip.driverId)).toBe(false);
+        expect(readingMidpoint(tip.potential)).toBeGreaterThanOrEqual(
+          scoutingBalance.tips.minPotential,
+        );
+      }
+      // Best reading first.
+      for (let i = 1; i < tips.length; i++)
+        expect(readingMidpoint(tips[i - 1]!.potential)).toBeGreaterThanOrEqual(
+          readingMidpoint(tips[i]!.potential),
+        );
+    }
+    expect(seen).toBeGreaterThan(0);
+  }, 60_000);
 });
