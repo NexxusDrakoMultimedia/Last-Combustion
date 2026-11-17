@@ -135,9 +135,6 @@ describe('career store', () => {
   describe('watching a final', () => {
     // Each test plays the final one way, loads the save made just before it, and plays it the other way.
     // (A test career has a seed of its own, so two careers are never the same world.)
-    // (Both are played on the loaded save: a career that has just been made has not yet given the computer
-    // garages their businesses, which a load does, so the settled money would differ for reasons that have
-    // nothing to do with how the final is played.)
     const beforeTheFinal = async () => {
       await useCareerStore.getState().createTestCareer();
       await useCareerStore.getState().runNextPrelims();
@@ -149,6 +146,20 @@ describe('career store', () => {
       await useCareerStore.getState().loadSlot1();
       useCareerStore.setState({ final: undefined, settlement: undefined });
     };
+
+    it('settles a career just made exactly as the same career reloaded: computer garages are businesses from the first day', async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().runNextPrelims();
+      await useCareerStore.getState().saveSlot1();
+      useCareerStore.setState({ final: undefined, settlement: undefined });
+      await useCareerStore.getState().runNextFinal();
+      const fresh = useCareerStore.getState();
+      expect(fresh.settlement).toBeDefined();
+      await again();
+      await useCareerStore.getState().runNextFinal();
+      expect(useCareerStore.getState().final).toEqual(fresh.final);
+      expect(useCareerStore.getState().settlement).toEqual(fresh.settlement);
+    }, 180_000);
 
     it('starts the final, steps it by sector, lap, incident and to the flag, and settles the round at the end', async () => {
       await beforeTheFinal();

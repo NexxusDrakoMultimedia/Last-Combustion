@@ -107,7 +107,7 @@ The same drones that film the series also act as its marshals, warning drivers a
 - **Course blocked.** If an accident obstructs the course, a drone stops and shows a stop signal to the following car.
 - **Rescue.** The drone sends an image of the crashed driver to the operations centre, which dispatches a rescue team.
 - **Capability.** The drones are high-performance and fully autonomous, with a top speed of 180 km/h (about 112 mph).
-- **Penalties.** Disobeying a drone's signal is penalised.
+- **Penalties.** Disobeying a drone's signal is penalised, and the penalty is measured in minutes, not seconds (a contact penalty stays at seconds). The number of minutes, and what counts as disobeying, are not decided yet, so nothing is built.
 
 ## Season calendar & Timeline
 
