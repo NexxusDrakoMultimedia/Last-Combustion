@@ -378,6 +378,8 @@ function finishFinal(db: Database, ctx: FinalContext, race: FinalRace): FinalSum
       );
     else penalty(e.entryId, 'technical', e.technical, penaltyPlaces(e.technical), null);
   }
+  for (const e of race.events.filter((x) => x.type === 'contact'))
+    penalty(e.entryId, 'sportsmanship', String(e.payload.level), Number(e.payload.places), null);
   for (const e of race.events.filter((x) => x.type === 'drone_penalty'))
     penalty(
       e.entryId,

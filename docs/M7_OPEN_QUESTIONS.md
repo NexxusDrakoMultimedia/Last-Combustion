@@ -23,8 +23,7 @@ Every design question raised while building M7 (story and fog of war, 0.3.0) has
 Each is built as its own small pull request into `feature/0.3.x`.
 
 1. **A banned driver's garage can field a replacement** from its roster, with no fine.
-2. **Contact is a Sportsmanship penalty.** Causing contact earns a Sportsmanship penalty on the penalty scale in place of the fixed 5 seconds.
-3. **Measure the size of a saved race** in the browser, and trim what is stored if it is too large.
+2. **Measure the size of a saved race** in the browser, and trim what is stored if it is too large.
 
 ## Release steps (owner only)
 

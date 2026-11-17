@@ -252,4 +252,26 @@ describe('penalties in a final', () => {
         expect(retired.position).toBeGreaterThan(row.position);
     }
   }, 120_000);
+
+  it('for causing contact are Sportsmanship penalties on the scale, taken as places and no longer as seconds', () => {
+    let seen = 0;
+    for (let n = 0; n < 10; n++) {
+      const s = setup(`final-contact-${n}`, n % 6);
+      const race = new FinalRace(input(s));
+      race.runToEnd();
+      const classification = race.classification();
+      for (const e of race.events.filter((x) => x.type === 'contact')) {
+        seen += 1;
+        expect(['minor', 'major', 'severe', 'flagrant', 'egregious']).toContain(e.payload.level);
+        expect(Number(e.payload.places)).toBeGreaterThanOrEqual(1);
+        expect(Number(e.payload.places)).toBeLessThanOrEqual(5);
+        expect(e.payload.penaltySeconds).toBeUndefined();
+        const row = classification.find((c) => c.entryId === e.entryId)!;
+        expect(row.placesLost).toBeGreaterThanOrEqual(Number(e.payload.places));
+      }
+      // No car carries a time penalty any more.
+      for (const c of classification) expect(c.penaltySeconds).toBe(0);
+    }
+    expect(seen).toBeGreaterThan(0);
+  }, 120_000);
 });

@@ -32,7 +32,9 @@ function feedText(line: FeedLine): string {
     toLap: Number(p.toLap ?? 0) + 1,
     tyre: String(p.tyrePct ?? ''),
     places: String(p.places ?? ''),
-    penalty: p.level ? penaltyName(String(p.level), 'drone') : '',
+    penalty: p.level
+      ? penaltyName(String(p.level), line.type === 'contact' ? 'sportsmanship' : 'drone')
+      : '',
   };
   const key =
     line.type === 'drone_penalty' && p.banRaces !== undefined ? 'drone_penalty_unfair' : line.type;

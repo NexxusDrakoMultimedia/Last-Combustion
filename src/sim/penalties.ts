@@ -116,3 +116,18 @@ export function technicalPenalty(
   );
   return penaltyScale[step]!.id;
 }
+
+/**
+ * How bad a contact was, drawn mostly Minor (`sportsmanship.contactWeights`). Causing contact is a Sportsmanship
+ * penalty, which replaces the fixed time penalty it used to carry.
+ */
+export function drawContactLevel(rng: RandomStream): PenaltyLevel {
+  const weights = penaltyData.sportsmanship.contactWeights;
+  const total = weights.reduce((a, b) => a + b, 0);
+  let roll = rng.next() * total;
+  for (let i = 0; i < weights.length; i++) {
+    roll -= weights[i]!;
+    if (roll < 0) return penaltyScale[i]!.id;
+  }
+  return penaltyScale[0]!.id;
+}
