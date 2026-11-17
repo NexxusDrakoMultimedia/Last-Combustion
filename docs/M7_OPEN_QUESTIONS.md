@@ -22,17 +22,14 @@ Every design question raised while building M7 (story and fog of war, 0.3.0) has
 
 Each is built as its own small pull request into `feature/0.3.x`.
 
-1. **Race settings.** A **Watch races by default** switch (off by default) next to **Stop after every prelim day**, and both kept with the saved settings instead of lasting for the session. With it on, Continue opens the Race screen when a race is due instead of running it.
-2. **Prelims pause at your crash.** Watching the prelims, play stops after one of the player's runs ends in a crash, as a final stops at an incident. Speeds stay as they are.
-3. **The prelim drone penalty is told in the Race panel** when the prelims end, as well as in the news.
-4. **Easy ghost target time.** The Easy ghost shows a target time. The live ghost stays a picture, and neither changes a lap. In season 1 there is no ghost and a line says why.
-5. **One hint rule for deals and drivers.** Both use the widest range when little is known, never a blank "unknown".
-6. **The Game panel's totals** (the series' total cash and average prestige) become readings, like the richest garage's cash.
-7. **Head of Scouting hears first.** A news line when a young driver's potential crosses a threshold.
-8. **Assign scouts from the Registry.** The car and garage pages can assign a scout, not only the Scouts tab.
-9. **A banned driver's garage can field a replacement** from its roster, with no fine.
-10. **Contact is a Sportsmanship penalty.** Causing contact earns a Sportsmanship penalty on the penalty scale in place of the fixed 5 seconds.
-11. **Measure the size of a saved race** in the browser, and trim what is stored if it is too large.
+1. **Easy ghost target time.** The Easy ghost shows a target time. The live ghost stays a picture, and neither changes a lap. In season 1 there is no ghost and a line says why.
+2. **One hint rule for deals and drivers.** Both use the widest range when little is known, never a blank "unknown".
+3. **The Game panel's totals** (the series' total cash and average prestige) become readings, like the richest garage's cash.
+4. **Head of Scouting hears first.** A news line when a young driver's potential crosses a threshold.
+5. **Assign scouts from the Registry.** The car and garage pages can assign a scout, not only the Scouts tab.
+6. **A banned driver's garage can field a replacement** from its roster, with no fine.
+7. **Contact is a Sportsmanship penalty.** Causing contact earns a Sportsmanship penalty on the penalty scale in place of the fixed 5 seconds.
+8. **Measure the size of a saved race** in the browser, and trim what is stored if it is too large.
 
 ## Release steps (owner only)
 

@@ -76,6 +76,10 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'game', label: 'rail.game' },
 ];
 
+/** Whether a calendar event is a race that can be watched. */
+const watchable = (kind: string): boolean =>
+  kind === 'prelims' || kind === 'prelim_day' || kind === 'final';
+
 /** The game shell: a top bar, a rail of panels, the garage floor and the news strip. */
 export function Shell() {
   const s = useCareerStore();
@@ -145,8 +149,23 @@ export function Shell() {
     starter !== undefined || !s.calendar
       ? null
       : {
-          label: due ? (dueLabel[due.kind] ?? 'calendar.continue') : 'calendar.continue',
-          run: () => void s.continueTime(),
+          label:
+            due && s.watchRaces && watchable(due.kind)
+              ? due.kind === 'final'
+                ? 'race.watch'
+                : 'race.watchPrelims'
+              : due
+                ? (dueLabel[due.kind] ?? 'calendar.continue')
+                : 'calendar.continue',
+          run: () => {
+            // A race due, and the player would rather watch: open it on the Race screen.
+            if (due && s.watchRaces && watchable(due.kind)) {
+              setOpen('race');
+              void (due.kind === 'final' ? s.watchFinal() : s.watchPrelims());
+              return;
+            }
+            void s.continueTime();
+          },
         };
 
   const player = hub.player;
