@@ -3,7 +3,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer } from '../../src/db/career';
 import { freeAgents, salaryHint } from '../../src/db/freeagents';
-import { DRIVER_STATS, readDriverById } from '../../src/db/knowledge';
+import { DRIVER_STATS, readDriverById, readSeriesGarages } from '../../src/db/knowledge';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
 import { driverProfile } from '../../src/db/registry';
 import { assignScout, hireScout } from '../../src/db/scouts';
@@ -140,12 +140,37 @@ describe('what the player reads of a driver', () => {
 });
 
 describe('the salary hint', () => {
-  it('follows the rating reading: none for a word, a range, or one amount when exact', () => {
-    expect(salaryHint({ kind: 'word', band: 'solid' }, false)).toBeNull();
-    const exact = salaryHint({ kind: 'exact', value: 60 }, false)!;
+  it('follows the rating reading: the band’s range for a word, a range, or one amount when exact', () => {
+    const word = salaryHint({ kind: 'word', band: 'solid' }, false);
+    expect(word.low).toBeLessThan(word.high);
+    // The wider the word, the wider the hint: a deal and a driver both open with at least a range.
+    const bands = ['weak', 'modest', 'solid', 'strong', 'elite'].map((band) =>
+      salaryHint({ kind: 'word', band }, false),
+    );
+    for (let i = 1; i < bands.length; i++)
+      expect(bands[i]!.low).toBeGreaterThanOrEqual(bands[i - 1]!.low);
+    const exact = salaryHint({ kind: 'exact', value: 60 }, false);
     expect(exact.low).toBe(exact.high);
-    const range = salaryHint({ kind: 'range', low: 50, high: 70, band: 'solid' }, false)!;
+    const range = salaryHint({ kind: 'range', low: 50, high: 70, band: 'solid' }, false);
     expect(range.low).toBeLessThan(range.high);
     expect(range.high).toBeGreaterThan(exact.low);
+  });
+});
+
+describe('the series totals', () => {
+  it('read the average prestige and total cash through the fog, and hold the truth', () => {
+    const { db } = fresh('fog-series');
+    const series = readSeriesGarages(db);
+    const rows = db.exec("SELECT prestige, cash FROM garage WHERE kind = 'racing'")[0]!.values;
+    const cash = rows.reduce((a, r) => a + Number(r[1]), 0);
+    const average = rows.reduce((a, r) => a + Number(r[0]), 0) / rows.length;
+    expect(series.totalCash.low).toBeLessThanOrEqual(cash);
+    expect(series.totalCash.high).toBeGreaterThanOrEqual(cash);
+    expect(series.totalCash.low).toBeLessThan(series.totalCash.high);
+    const reading = series.averagePrestige;
+    if (reading.kind === 'range') {
+      expect(reading.low).toBeLessThanOrEqual(Math.round(average));
+      expect(reading.high).toBeGreaterThanOrEqual(Math.round(average));
+    }
   });
 });

@@ -623,3 +623,66 @@ export function negotiationHint(db: Database, negotiationId: number, step = 1): 
   );
   return readAmount(n.fair_value as number, knowledge, place, step);
 }
+
+/** What the player reads of the racing garages as a whole: the average prestige and the total cash (see `readSeriesGarages`). */
+export interface SeriesGarages {
+  /** How well the player knows the other garages on average, 0 to 100. */
+  knowledge: number;
+  averagePrestige: Reading;
+  /** The total cash of every racing garage: the player's own exactly, the others' as a range that narrows with knowledge. */
+  totalCash: AmountRange;
+}
+
+/**
+ * The series' average prestige and total cash as the player reads them. The player's own garage counts exactly and the
+ * others through the fog, at the average of what the player knows of them (a range at least, as a deal's value is), so
+ * the totals never give another garage's figure away. With no player garage yet nothing is hidden.
+ */
+export function readSeriesGarages(db: Database): SeriesGarages {
+  const rows = all(
+    db,
+    "SELECT id, prestige, fans, cash, is_player FROM garage WHERE kind = 'racing' ORDER BY id",
+  );
+  const sum = (key: string, filter: (r: (typeof rows)[number]) => boolean) =>
+    rows.filter(filter).reduce((a, r) => a + Number(r[key]), 0);
+  const average = rows.length ? sum('prestige', () => true) / rows.length : 0;
+  const player = rows.find((r) => r.is_player === 1);
+  const career = readCareer(db);
+  if (!player || !career)
+    return {
+      knowledge: 100,
+      averagePrestige: exact(Math.round(average)),
+      totalCash: { low: sum('cash', () => true), high: sum('cash', () => true) },
+    };
+  const ctx = knowledgeContext(db, Number(player.id));
+  const others = rows.filter((r) => r.is_player !== 1);
+  const knowledge = others.length
+    ? Math.round(
+        others.reduce(
+          (a, r) =>
+            a +
+            garageKnowledge(ctx, {
+              id: Number(r.id),
+              prestige: Number(r.prestige),
+              fans: Number(r.fans),
+            }),
+          0,
+        ) / others.length,
+      )
+    : 100;
+  const subject: Subject = { kind: 'garages', id: 0 };
+  const place = (stat: string): number => placement(ctx.seed, subject, ctx.year, stat);
+  const othersCash = sum('cash', (r) => r.is_player !== 1);
+  const own = Number(player.cash);
+  const range = readAmount(
+    othersCash,
+    Math.max(scoutingBalance.rangeFrom, knowledge),
+    place('state:cash'),
+    1000,
+  )!;
+  return {
+    knowledge,
+    averagePrestige: readValue(Math.round(average), knowledge, place('state:prestige')),
+    totalCash: { low: range.low + own, high: range.high + own },
+  };
+}
