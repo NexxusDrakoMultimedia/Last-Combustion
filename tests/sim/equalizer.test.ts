@@ -42,7 +42,7 @@ describe('the Equalizer handicap', () => {
 
   it('fails scrutineering for a handicapped car on the base width, and caps fitted tyres', () => {
     expect(scrutineer(1200, 280, [], 'FR').legal).toBe(true);
-    expect(scrutineer(1200, 280, [], 'AWD')).toEqual({ legal: false, failures: ['tyres'] });
+    expect(scrutineer(1200, 280, [], 'AWD')).toMatchObject({ legal: false, failures: ['tyres'] });
     expect(scrutineer(1200, 270, [], 'AWD').legal).toBe(true);
     const lighter = fitParts({ ps: 400, kerbKg: 1200, tyreMm: 270, layout: 'AWD' }, [
       part('weight-reduction-race'),

@@ -8,6 +8,7 @@ import type { Call } from '../../sim/final/engine';
 import type { RunPlan } from '../../sim/prelim/lap';
 import { useCareerStore, type WatchStep } from '../../state/career.store';
 import { button, dataTable, quiet } from '../styles';
+import { penaltyName } from '../penalty';
 import { LiveMap } from './LiveMap';
 
 /** Milliseconds between sectors while a race plays itself, at each speed. */
@@ -30,8 +31,12 @@ function feedText(line: FeedLine): string {
     fromLap: Number(p.fromLap ?? 0) + 1,
     toLap: Number(p.toLap ?? 0) + 1,
     tyre: String(p.tyrePct ?? ''),
+    places: String(p.places ?? ''),
+    penalty: p.level ? penaltyName(String(p.level), 'drone') : '',
   };
-  return t(`race.feed.${line.type}` as never, base);
+  const key =
+    line.type === 'drone_penalty' && p.banRaces !== undefined ? 'drone_penalty_unfair' : line.type;
+  return t(`race.feed.${key}` as never, base);
 }
 
 function TyreBar({ pct }: { pct: number }) {

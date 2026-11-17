@@ -16,6 +16,17 @@ import { buildRunningOrder } from './order';
 import { simulatePractice, type PracticeEffect, type SimEvent } from './practice';
 import type { CarSpec } from './ratings';
 import { planRoundDays, type RoundSchedule } from './weather';
+import {
+  type PalpablyUnfair,
+  type PenaltyLevel,
+  dronePrelimChance,
+  drawBanRaces,
+  drawDroneLevel,
+  ignoresDrone,
+  isPalpablyUnfair,
+  penaltyStep,
+  prelimPenaltyMs,
+} from '../penalties';
 
 export interface PrelimEntry {
   entryId: number;
@@ -36,6 +47,11 @@ export interface RoundInput {
   practiceStart: string;
   finalSize: number;
   entries: readonly PrelimEntry[];
+  /**
+   * What scrutineering found wrong with each car: a Technical penalty at a step of the scale, or a Palpably Unfair
+   * Act for a car that is obviously illegal. A legal car is not listed.
+   */
+  technical?: ReadonlyMap<number, PenaltyLevel | PalpablyUnfair>;
   /** Entries held back in practice by a supply outage. */
   practiceHandicaps?: ReadonlyMap<number, PracticeEffect>;
 }
@@ -299,6 +315,79 @@ export class PrelimRoundRun {
       }
     });
 
+    // A runner held behind a crash by the drone's stop signal may run it. The penalty is a share of the lap
+    // time of the fastest run of the round (the leader's), added to the offender's time; each runner draws
+    // from a stream of their own, so no other draw in the round moves.
+    const rawTimes = outcomes.map((o) => o.timeMs).filter((t): t is number => t !== null);
+    const leaderMs = rawTimes.length > 0 ? Math.min(...rawTimes) : 0;
+    const penalised = outcomes.map((o) => ({ ...o }));
+    for (const held of events.filter((e) => e.type === 'blocked_course')) {
+      const entry = this.byEntry.get(held.entryId as number);
+      const outcome = penalised.find((o) => o.entryId === held.entryId);
+      if (!entry || !outcome || outcome.timeMs === null) continue;
+      const rng = this.stream(`drone:${entry.entryId}`);
+      const plan = this.plans.get(entry.entryId) ?? 'steady';
+      const aggression =
+        plan === 'attack' ? 1 : plan === 'conserve' ? 0 : simBalance.prelimAggression;
+      if (!ignoresDrone(rng, dronePrelimChance(), aggression, entry.driver.composure)) continue;
+      const level = drawDroneLevel(rng);
+      if (isPalpablyUnfair(level)) {
+        // Disqualified from the round, and perhaps from the next few.
+        outcome.timeMs = null;
+        outcome.dnfReason = 'disqualified';
+        events.push({
+          scope: 'prelim',
+          date: held.date,
+          km: null,
+          type: 'drone_penalty',
+          entryId: entry.entryId,
+          payload: { level, banRaces: drawBanRaces(rng) },
+        });
+        continue;
+      }
+      const ms = prelimPenaltyMs(level, leaderMs);
+      outcome.timeMs += ms;
+      events.push({
+        scope: 'prelim',
+        date: held.date,
+        km: null,
+        type: 'drone_penalty',
+        entryId: entry.entryId,
+        payload: { level, percent: penaltyStep(level).prelimPercent, ms },
+      });
+    }
+
+    // Scrutineering: a car that is over the limit takes a Technical penalty, or a disqualification if it is obviously
+    // illegal. The ban a disqualification can bring is drawn from a stream of its own.
+    for (const [entryId, level] of input.technical ?? []) {
+      const outcome = penalised.find((o) => o.entryId === entryId);
+      if (!outcome) continue;
+      const date = (dayOf.get(outcome.day) as RoundSchedule['days'][number]).date;
+      if (isPalpablyUnfair(level)) {
+        outcome.timeMs = null;
+        outcome.dnfReason = 'disqualified';
+        events.push({
+          scope: 'prelim',
+          date,
+          km: null,
+          type: 'technical_penalty',
+          entryId,
+          payload: { level, banRaces: drawBanRaces(this.stream(`technical:${entryId}`)) },
+        });
+        continue;
+      }
+      const ms = prelimPenaltyMs(level, leaderMs);
+      if (outcome.timeMs !== null) outcome.timeMs += ms;
+      events.push({
+        scope: 'prelim',
+        date,
+        km: null,
+        type: 'technical_penalty',
+        entryId,
+        payload: { level, percent: penaltyStep(level).prelimPercent, ms },
+      });
+    }
+
     const flags = attentionFlags(this.attentionRuns);
     for (const flag of flags) {
       const run = outcomes.find((o) => o.entryId === flag.entryId) as RunOutcome;
@@ -313,7 +402,7 @@ export class PrelimRoundRun {
       });
     }
 
-    const results = classifyPrelims(outcomes, input.finalSize);
+    const results = classifyPrelims(penalised, input.finalSize);
     const pole = results.find((r) => r.pole) ?? null;
     if (pole) {
       events.push({

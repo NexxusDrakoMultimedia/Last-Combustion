@@ -223,3 +223,82 @@ describe('plans for a prelim run', () => {
     expect(outcome(restored.result())).toEqual(outcome(run.result()));
   });
 });
+
+describe('penalties in the prelims', () => {
+  it('add the share of the fastest lap a Technical penalty is worth, and nothing else changes', () => {
+    for (const seed of SEEDS) {
+      const input = inputs.get(seed)!;
+      const target = input.entries[10]!.entryId;
+      const plain = simulateRoundPrelims(input);
+      const penalised = simulateRoundPrelims({
+        ...input,
+        technical: new Map([[target, 'major' as const]]),
+      });
+      const before = plain.results.find((r) => r.entryId === target)!;
+      const after = penalised.results.find((r) => r.entryId === target)!;
+      if (before.timeMs === null) {
+        expect(after.timeMs).toBeNull();
+        continue;
+      }
+      const fastest = Math.min(
+        ...plain.results.map((r) => r.timeMs).filter((t): t is number => t !== null),
+      );
+      expect(after.timeMs).toBe(before.timeMs + Math.round(fastest * 0.1));
+      expect(penalised.events.filter((e) => e.type === 'technical_penalty')).toHaveLength(1);
+    }
+  });
+
+  it('disqualify an obviously illegal car with a Palpably Unfair Act: no time, no place', () => {
+    const input = inputs.get(SEEDS[0]!)!;
+    const target = input.entries[3]!.entryId;
+    const round = simulateRoundPrelims({
+      ...input,
+      technical: new Map([[target, 'palpably_unfair' as const]]),
+    });
+    const row = round.results.find((r) => r.entryId === target)!;
+    expect(row.timeMs).toBeNull();
+    expect(row.position).toBeNull();
+    expect(row.dnfReason).toBe('disqualified');
+    const event = round.events.find((e) => e.type === 'technical_penalty')!;
+    expect(event.payload.level).toBe('palpably_unfair');
+    expect(Number(event.payload.banRaces)).toBeGreaterThanOrEqual(0);
+    expect(Number(event.payload.banRaces)).toBeLessThanOrEqual(12);
+  });
+
+  it('for ignoring a drone are on the scale, 5% to 25% of the fastest lap, or a disqualification', () => {
+    let seen = 0;
+    for (let n = 0; n < 12; n++) {
+      const round = simulateRoundPrelims(roundInput(`drone-prelim-${n}`, n % 6));
+      for (const e of round.events.filter((x) => x.type === 'drone_penalty')) {
+        seen += 1;
+        if (e.payload.level === 'palpably_unfair') continue;
+        expect([5, 10, 15, 20, 25]).toContain(e.payload.percent);
+      }
+    }
+    // Crashes block the road in a round, so ignoring the signal is rare but does happen.
+    expect(seen).toBeGreaterThan(0);
+  }, 120_000);
+});
+
+describe('a penalty never drops a runner below one who did not finish', () => {
+  it('keeps a penalised runner among those who set a time, above every crash and disqualification', () => {
+    for (const seed of SEEDS) {
+      const input = inputs.get(seed)!;
+      const plain = simulateRoundPrelims(input);
+      const slowest = plain.results
+        .filter((r) => r.timeMs !== null)
+        .sort((a, b) => (b.timeMs as number) - (a.timeMs as number))[0]!;
+      const round = simulateRoundPrelims({
+        ...input,
+        technical: new Map([[slowest.entryId, 'egregious' as const]]),
+      });
+      const timed = round.results.filter((r) => r.timeMs !== null);
+      const row = round.results.find((r) => r.entryId === slowest.entryId)!;
+      expect(row.position).not.toBeNull();
+      expect(row.position as number).toBeLessThanOrEqual(timed.length);
+      for (const dnf of round.results.filter((r) => r.timeMs === null)) {
+        expect(dnf.position).toBeNull();
+      }
+    }
+  });
+});

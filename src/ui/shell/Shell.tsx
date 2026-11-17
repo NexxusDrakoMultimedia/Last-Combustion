@@ -35,6 +35,7 @@ import { ExecutivesSection } from './ExecutivesSection';
 import { ScoutsSection } from './ScoutsSection';
 import { RaceScreen } from './RaceScreen';
 import { StaffPanel } from './StaffPanel';
+import { penaltyNews } from '../penalty';
 import { UpgradesPanel } from './UpgradesPanel';
 import { FacilitiesSection } from './FacilitiesSection';
 import { ConditionBar, MenuActions, OwnedCars, SeasonCalendar, UsedMarket } from './panels';
@@ -166,6 +167,8 @@ export function Shell() {
           : '',
       }),
     );
+  if (prelims) for (const p of prelims.penalties) news.push(penaltyNews(p));
+  if (final) for (const p of final.penalties) news.push(penaltyNews(p));
   if (final)
     news.push(
       t('hub.final', {

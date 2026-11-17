@@ -21,12 +21,32 @@ import { garageOutages, practiceHandicaps, recordOutages } from './outages';
 import { wearGear, wearParts } from './repairs';
 import { clearRace, loadRace, saveRace } from './racestate';
 import { scrutineerCar } from './upgrades';
+import { bannedDrivers, banDriver, serveBan } from './bans';
+import {
+  PALPABLY_UNFAIR,
+  technicalPenalty,
+  type PalpablyUnfair,
+  type PenaltyLevel,
+  type PenaltyType,
+} from '../sim/penalties';
 
 /** The next round that has not been run yet, or null when the season is done. */
 export function nextRoundNumber(db: Database): number | null {
   const rows = db.exec("SELECT MIN(number) FROM round WHERE status = 'scheduled'");
   const value = rows[0]?.values[0]?.[0];
   return typeof value === 'number' ? value : null;
+}
+
+/** A penalty given in a round's prelims. */
+export interface PrelimPenalty {
+  raceNumber: number;
+  driver: string;
+  type: PenaltyType;
+  level: string;
+  /** The share of the fastest lap added to the time, or null for a Palpably Unfair Act. */
+  percent: number | null;
+  /** The races a Palpably Unfair Act keeps the driver out of after this one, or null for any other penalty. */
+  banRaces: number | null;
 }
 
 export interface PrelimSummary {
@@ -42,6 +62,8 @@ export interface PrelimSummary {
   disqualified: number;
   qualifiers: number;
   top: { position: number; raceNumber: number; driver: string; timeMs: number }[];
+  /** Penalties given in the round: a drone's signal ignored or a car over the limit, by level (a Palpably Unfair Act has no percent but may have a ban). */
+  penalties: PrelimPenalty[];
 }
 
 /**
@@ -58,13 +80,17 @@ export interface PrelimContext {
   practiceStart: string;
   finalSize: number;
   sectors: Sector[];
-  /** The entries that run (those that passed scrutineering). */
+  /** The entries that run (every entry except those whose driver is banned). */
   entries: PrelimEntry[];
+  /** What scrutineering found wrong with a car, by entry: a Technical penalty or a Palpably Unfair Act. */
+  technical: [entryId: number, level: PenaltyLevel | PalpablyUnfair][];
   handicaps: [entryId: number, effect: PracticeEffect][];
   /** The same entries as the database loaded them, for the wear written when the prelims end. */
   loaded: LoadedEntry[];
-  /** Entries that failed scrutineering and did not run. */
+  /** Entries that did not run because their driver is banned (after a Palpably Unfair Act). */
   disqualified: number[];
+  /** The drivers of those entries, whose bans tick down when the round ends. */
+  bannedDrivers: number[];
   playerGarage: number | null;
   outages: OutageCategory[];
 }
@@ -91,6 +117,7 @@ export const roundInput = (ctx: PrelimContext): RoundInput => {
     finalSize: ctx.finalSize,
     entries: ctx.entries,
     practiceHandicaps: new Map(ctx.handicaps),
+    technical: new Map(ctx.technical),
   };
 };
 
@@ -141,9 +168,17 @@ function buildContext(db: Database, roundNumber: number): PrelimContext {
     points.set(p.entry_id as number, p.total as number);
 
   const allLoaded = loadEntries(db, season.id as number);
-  // Scrutineering: a car over the Equalizer or not road legal does not get to run.
-  const disqualified = allLoaded.filter((e) => !scrutineerCar(db, e.carId).legal);
+  // A driver banned after a Palpably Unfair Act sits the round out.
+  const bans = bannedDrivers(db);
+  const disqualified = allLoaded.filter((e) => bans.has(e.driver.id));
   const loaded = allLoaded.filter((e) => !disqualified.includes(e));
+  // Scrutineering: a car over the Equalizer or not road legal takes a Technical penalty at the step its overage
+  // falls in, or a Palpably Unfair Act if it is obviously illegal.
+  const technical = loaded.flatMap((e): [number, PenaltyLevel | PalpablyUnfair][] => {
+    const found = scrutineerCar(db, e.carId);
+    const level = technicalPenalty(found.tyreOverMm, found.legalityShort);
+    return level === null ? [] : [[e.entryId, level]];
+  });
   const entries: PrelimEntry[] = loaded.map((e) => ({
     entryId: e.entryId,
     carId: e.carId,
@@ -171,6 +206,7 @@ function buildContext(db: Database, roundNumber: number): PrelimContext {
     finalSize: season.final_size as number,
     sectors,
     entries,
+    technical,
     handicaps: [
       ...practiceHandicaps(
         outages,
@@ -180,6 +216,7 @@ function buildContext(db: Database, roundNumber: number): PrelimContext {
     ],
     loaded,
     disqualified: disqualified.map((e) => e.entryId),
+    bannedDrivers: disqualified.map((e) => e.driver.id),
     playerGarage: playerGarage ?? null,
     outages,
   };
@@ -322,6 +359,21 @@ function finishPrelims(db: Database, ctx: PrelimContext, run: PrelimRoundRun): P
     for (const entryId of ctx.disqualified) {
       insertResult.run([roundId, entryId, null, null, null, null, 0, 0, 'disqualified']);
     }
+    // A ban is served by sitting a round out, and a Palpably Unfair Act starts one for the rounds to come.
+    const driverOf = new Map(ctx.loaded.map((e) => [e.entryId, e.driver.id]));
+    for (const driverId of ctx.bannedDrivers) serveBan(db, driverId);
+    for (const e of outcome.events) {
+      if (e.type !== 'drone_penalty' && e.type !== 'technical_penalty') continue;
+      if (e.payload.level !== PALPABLY_UNFAIR) continue;
+      banDriver(
+        db,
+        driverOf.get(e.entryId as number) as number,
+        Number(e.payload.banRaces),
+        e.date,
+        roundId,
+        e.type,
+      );
+    }
     insertResult.free();
     const insertEvent = db.prepare(
       'INSERT INTO event_log (round_id, scope, occurred_on, km, type, entry_id, payload) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -378,6 +430,16 @@ function finishPrelims(db: Database, ctx: PrelimContext, run: PrelimRoundRun): P
       driver: names.get(r.entryId) as string,
       timeMs: r.timeMs as number,
     })),
+    penalties: outcome.events
+      .filter((e) => e.type === 'drone_penalty' || e.type === 'technical_penalty')
+      .map((e) => ({
+        raceNumber: rankings.get(e.entryId as number) as number,
+        driver: names.get(e.entryId as number) as string,
+        type: (e.type === 'drone_penalty' ? 'drone' : 'technical') as PenaltyType,
+        level: String(e.payload.level),
+        percent: e.payload.percent === undefined ? null : Number(e.payload.percent),
+        banRaces: e.payload.banRaces === undefined ? null : Number(e.payload.banRaces),
+      })),
   };
 }
 

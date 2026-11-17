@@ -139,6 +139,10 @@ export interface ScrutineeringResult {
   legal: boolean;
   /** The reasons a car fails, empty when it passes. */
   failures: ('tyres' | 'legality')[];
+  /** How far the tyres are over the Equalizer's limit, in millimetres (0 when they are not). */
+  tyreOverMm: number;
+  /** How far the road-legality score is below zero (0 when it is not). */
+  legalityShort: number;
 }
 
 /** The checks after a run: tyre width against the Equalizer, and road legality at zero or more. */
@@ -149,7 +153,9 @@ export function scrutineer(
   layout?: Layout,
 ): ScrutineeringResult {
   const failures: ScrutineeringResult['failures'] = [];
-  if (tyreWidthMm > maxTyreWidthMm(kerbKg, layout)) failures.push('tyres');
-  if (legalityScore(fitted) < 0) failures.push('legality');
-  return { legal: failures.length === 0, failures };
+  const tyreOverMm = Math.max(0, tyreWidthMm - maxTyreWidthMm(kerbKg, layout));
+  const legalityShort = Math.max(0, -legalityScore(fitted));
+  if (tyreOverMm > 0) failures.push('tyres');
+  if (legalityShort > 0) failures.push('legality');
+  return { legal: failures.length === 0, failures, tyreOverMm, legalityShort };
 }
