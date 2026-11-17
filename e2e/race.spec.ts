@@ -98,6 +98,7 @@ test('with Watch races by default on, Continue opens the race to watch, and the 
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('lc.settings')))
     .toContain('"watchRaces":true');
+  await page.keyboard.press('Escape');
   // Continue skips to the prelims, then offers to watch them instead of running them.
   await continueTo(page, messages['race.watchPrelims']);
   await page
