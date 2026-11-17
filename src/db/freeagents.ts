@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
-import { readingMidpoint, type Reading } from '../sim/scouting';
+import { bandRange, readingMidpoint, type Reading } from '../sim/scouting';
 import { fairSalary, overallRating } from '../sim/worldgen/rating';
 import { ROAD_TYPES, type RoadType } from '../sim/worldgen/types';
 import { readCareer } from './career';
@@ -17,9 +17,9 @@ export interface FreeAgent {
   reading: DriverReading;
   /**
    * A hint at a fair yearly salary, not the driver's lowest price: a range that follows the rating's
-   * range, exact for a driver the player owns, and none while only a word is known.
+   * range (a wide one while only a word is known), exact for a driver the player owns.
    */
-  fairSalary: SalaryHint | null;
+  fairSalary: SalaryHint;
   /** Whether this garage already has the driver under contract. */
   signed: boolean;
 }
@@ -31,10 +31,14 @@ export interface SalaryHint {
 }
 
 /** The salary hint that goes with a reading of the overall rating. */
-export function salaryHint(rating: Reading, gold: boolean): SalaryHint | null {
-  if (rating.kind === 'word') return null;
+export function salaryHint(rating: Reading, gold: boolean): SalaryHint {
+  // A word covers a band of ratings, so even then the hint is a range (never a blank "unknown"), as a deal's is.
   const [lo, hi] =
-    rating.kind === 'exact' ? [rating.value, rating.value] : [rating.low, rating.high];
+    rating.kind === 'word'
+      ? [bandRange(rating.band).low, bandRange(rating.band).high]
+      : rating.kind === 'exact'
+        ? [rating.value, rating.value]
+        : [rating.low, rating.high];
   return {
     low: Math.round(fairSalary(lo, gold)),
     high: Math.round(fairSalary(hi, gold)),

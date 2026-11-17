@@ -23,13 +23,11 @@ Every design question raised while building M7 (story and fog of war, 0.3.0) has
 Each is built as its own small pull request into `feature/0.3.x`.
 
 1. **Easy ghost target time.** The Easy ghost shows a target time. The live ghost stays a picture, and neither changes a lap. In season 1 there is no ghost and a line says why.
-2. **One hint rule for deals and drivers.** Both use the widest range when little is known, never a blank "unknown".
-3. **The Game panel's totals** (the series' total cash and average prestige) become readings, like the richest garage's cash.
-4. **Head of Scouting hears first.** A news line when a young driver's potential crosses a threshold.
-5. **Assign scouts from the Registry.** The car and garage pages can assign a scout, not only the Scouts tab.
-6. **A banned driver's garage can field a replacement** from its roster, with no fine.
-7. **Contact is a Sportsmanship penalty.** Causing contact earns a Sportsmanship penalty on the penalty scale in place of the fixed 5 seconds.
-8. **Measure the size of a saved race** in the browser, and trim what is stored if it is too large.
+2. **Head of Scouting hears first.** A news line when a young driver's potential crosses a threshold.
+3. **Assign scouts from the Registry.** The car and garage pages can assign a scout, not only the Scouts tab.
+4. **A banned driver's garage can field a replacement** from its roster, with no fine.
+5. **Contact is a Sportsmanship penalty.** Causing contact earns a Sportsmanship penalty on the penalty scale in place of the fixed 5 seconds.
+6. **Measure the size of a saved race** in the browser, and trim what is stored if it is too large.
 
 ## Release steps (owner only)
 

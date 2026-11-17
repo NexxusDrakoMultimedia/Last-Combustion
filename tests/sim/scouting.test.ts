@@ -4,6 +4,7 @@ import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 import {
   bandFor,
+  bandRange,
   coverOf,
   halfWidth,
   knowledgeOf,
@@ -284,5 +285,21 @@ describe('readAmount', () => {
     expect(r.high).toBeGreaterThanOrEqual(0.0734);
     expect(readAmount(1000, 10, 0.5)).toBeNull();
     expect(readAmount(1000, 95, 0.5)).toEqual({ low: 1000, high: 1000 });
+  });
+});
+
+describe('the range a word covers', () => {
+  it('runs from the top of the band below up to its own top, and cover every value exactly once', () => {
+    const ranges = ['weak', 'modest', 'solid', 'strong', 'elite'].map((b) => bandRange(b));
+    expect(ranges[0]!.low).toBe(0);
+    expect(ranges.at(-1)!.high).toBe(100);
+    for (let i = 1; i < ranges.length; i++) expect(ranges[i]!.low).toBe(ranges[i - 1]!.high + 1);
+    for (let v = 0; v <= 100; v++) {
+      const band = bandFor(v);
+      const r = bandRange(band);
+      expect(v).toBeGreaterThanOrEqual(r.low);
+      expect(v).toBeLessThanOrEqual(r.high);
+    }
+    expect(() => bandRange('nonsense')).toThrow(/Unknown band/);
   });
 });

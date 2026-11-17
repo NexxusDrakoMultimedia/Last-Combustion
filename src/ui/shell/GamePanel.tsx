@@ -5,6 +5,7 @@ import { formatDate, formatLapTime, formatMoney, t } from '../../i18n';
 import type { ChronicleLine } from '../../db/gameinfo';
 import { useCareerStore } from '../../state/career.store';
 import { FogValue } from '../FogValue';
+import { amountText } from './DriverStats';
 import { dataTable } from '../styles';
 
 type Row = [label: string, value: ReactNode];
@@ -119,8 +120,14 @@ export function GamePanel({ tab }: { tab: string }) {
         <Facts
           title={t('game.section.state')}
           rows={[
-            [t('game.state.garageCash'), formatMoney(state.garageCash)],
-            [t('game.state.averagePrestige'), String(state.averagePrestige)],
+            [t('game.state.garageCash'), amountText(state.garageCash)],
+            [
+              t('game.state.averagePrestige'),
+              <FogValue
+                reading={state.averagePrestige.reading}
+                knowledge={state.averagePrestige.knowledge}
+              />,
+            ],
             [t('game.state.averageDriverAge'), String(state.averageDriverAge)],
             [
               t('game.state.richestGarage'),

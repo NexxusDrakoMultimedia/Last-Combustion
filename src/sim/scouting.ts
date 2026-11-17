@@ -139,6 +139,14 @@ export function placement(
     .next();
 }
 
+/** The values a word covers, from the top of the band below it (or 0) up to its own top. Refuses a word that is not a band. */
+export function bandRange(band: string): { low: number; high: number } {
+  const bands = scoutingBalance.bands;
+  const i = bands.findIndex((b) => b.name === band);
+  if (i === -1) throw new Error(`Unknown band "${band}"`);
+  return { low: i === 0 ? 0 : bands[i - 1]!.max + 1, high: bands[i]!.max };
+}
+
 export type Reading =
   | { kind: 'word'; band: string }
   | { kind: 'range'; low: number; high: number; band: string }

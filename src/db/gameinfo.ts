@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { readGarageById, type GarageReading } from './knowledge';
+import { readGarageById, readSeriesGarages, type GarageReading } from './knowledge';
+import type { AmountRange, Reading } from '../sim/scouting';
 import type { Database } from 'sql.js';
 import { all } from './entries';
 import { readCareer, type CareerMode, type Difficulty } from './career';
@@ -62,9 +63,10 @@ export interface SeriesCounts {
 
 /** Figures that describe the state of the world at the game date. */
 export interface StateOfPlay {
-  /** The total cash held by every racing garage. */
-  garageCash: number;
-  averagePrestige: number;
+  /** The total cash held by every racing garage, as the player reads it (their own exact, the others through the fog). */
+  garageCash: AmountRange;
+  /** The average prestige of the racing garages, as the player reads it, with the knowledge behind it. */
+  averagePrestige: { reading: Reading; knowledge: number };
   averageDriverAge: number;
   /** The richest garage: its cash is shown only when it is the player's own (see "Scouting and fog of war"). */
   richestGarage: { name: string; cash: number | null } | null;
@@ -198,13 +200,10 @@ export function gameView(db: Database): GameView {
   const ages = all(db, 'SELECT birth_date FROM driver WHERE retired_year IS NULL').map(
     (r) => (dayNumber(career.gameDate) - dayNumber(String(r.birth_date))) / 365.25,
   );
+  const garages = readSeriesGarages(db);
   const state: StateOfPlay = {
-    garageCash: count(db, "SELECT COALESCE(SUM(cash), 0) AS n FROM garage WHERE kind = 'racing'"),
-    averagePrestige:
-      Math.round(
-        Number(all(db, "SELECT AVG(prestige) AS n FROM garage WHERE kind = 'racing'")[0]?.n ?? 0) *
-          10,
-      ) / 10,
+    garageCash: garages.totalCash,
+    averagePrestige: { reading: garages.averagePrestige, knowledge: garages.knowledge },
     averageDriverAge: ages.length
       ? Math.round((ages.reduce((a, b) => a + b, 0) / ages.length) * 10) / 10
       : 0,
