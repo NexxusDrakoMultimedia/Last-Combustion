@@ -107,7 +107,24 @@ The same drones that film the series also act as its marshals, warning drivers a
 - **Course blocked.** If an accident obstructs the course, a drone stops and shows a stop signal to the following car.
 - **Rescue.** The drone sends an image of the crashed driver to the operations centre, which dispatches a rescue team.
 - **Capability.** The drones are high-performance and fully autonomous, with a top speed of 180 km/h (about 112 mph).
-- **Penalties.** Disobeying a drone's signal is penalised, and the penalty is measured in minutes, not seconds (a contact penalty stays at seconds). The number of minutes, and what counts as disobeying, are not decided yet, so nothing is built.
+- **Penalties.** Disobeying a drone's signal is penalised on the penalty scale (see "Penalties and the darker side"): a share of the leader's lap time in the prelims, which is minutes, not seconds, and places in a final.
+
+## Penalties and the darker side
+
+**The penalty scale (built).** Every sporting penalty is on one scale of five levels, in order: **Minor, Major, Severe, Flagrant, Egregious**. Each step is worth 5% of the leader's lap time in the prelims (so 5%, 10%, 15%, 20% and 25%, added to the offender's time; the leader's lap is the fastest run of the round) and one place in a final (1 to 5 places lost at the flag, counted from where the car finished on the road). A penalty never drops a car below the last place of the field (15th, or 20th once the final is bigger) or below a car that retired, and in the prelims a time penalty never drops a runner below one who did not finish (a crash has no time, so it always ranks below every runner who set one). Only a disqualification takes a car out of the order altogether. A penalty is named by its level and its type: **Drone** (ignoring a drone's signal), **Technical** (a car over a limit at scrutineering) and **Sportsmanship** (not built yet), as in Major Drone, Severe Technical or Egregious Sportsmanship. New types are added in `data/penalties.json` as more rules need them (`src/sim/penalties.ts`).
+
+**The Palpably Unfair Act (built).** A sixth penalty, above Egregious and very rare, and not a step on the scale. It disqualifies the offender from the race (no time, no place, no points, no prize) and may keep the driver out of the next races: 0 to 12 of them, mostly few. The ban is on the driver (`driver_ban`, `src/db/bans.ts`): their entry sits each banned round out, with no time and a `disqualified` result, and the ban ticks down by one for every round sat out and ends when it reaches nothing.
+
+**Drone (built).** When a crash blocks the road, a runner or car held behind it by the drone's stop signal may run it. The chance is a base chance (8% for a prelim runner, 5% for a car in a final), raised by how hard the driver is pushing (Attack or Push) and lowered by their composure, so a calm driver saving the car almost never does. How bad it was is drawn mostly Minor (weights 50, 28, 14, 6 and 2 for Minor to Egregious) and, in about one case in 330, a Palpably Unfair Act. In the prelims the penalty is added to the run's time; in a final the car skips the hold (so it gains the time) and drops the places at the flag. Each driver draws from a stream of their own, so no other draw in the race moves.
+
+**Technical (built).** Scrutineering no longer simply refuses a car. How far a car is over its tyre limit, in millimetres, and how far its road-legality score is below zero decide the step: tyres up to 3, 8, 15 and 25 mm over, and a legality shortfall of up to 5, 15, 30 and 50, are Minor, Major, Severe and Flagrant, anything over that is Egregious, and a car 40 mm or more over on tyres, or 80 or more short on legality, is obviously illegal and takes a Palpably Unfair Act (the worse of the two measures counts). The Technical penalty is applied in the prelims (a share of the fastest lap) and again in the final if the car is still over the limit at its start (places lost). The numbers are in `data/penalties.json`.
+
+**The darker side (design direction, not built).** The series has a darker side: cheating, gamesmanship and sabotage. They are the other things that earn penalties, and they all feed the same scale and its Sportsmanship type. The direction, for the owner to confirm before it is built:
+
+- **Cheating** is breaking the rules on purpose: parts that hide an illegal gain, falsified wear or weight, and tuning past the limits, with a chance of being caught at scrutineering that rises with how far over the car is and with how hard the technical team (Declan Marsh) is looking. Being caught earns a Technical penalty, or a Palpably Unfair Act when it is obvious.
+- **Gamesmanship** is bending the spirit of the rules without breaking them: leaning on a rival at the start, slow-rolling the course to block a following runner, feeding the press, and playing with the drones' signals. It costs reputation and relationships before it costs time, and a flagrant case earns a Sportsmanship penalty.
+- **Sabotage** is harming a rival: tampering with their car or data, poaching or bribing their people, or leaking their plans. It is rare, risky and expensive if proven, and a proven case is a Palpably Unfair Act with a ban for the people involved and a heavy fine and reputation hit for the garage.
+- Computer garages and drivers take part by their profile (a ruthless garage cheats and sabotages more), so the world has a dark side the player can meet, be tempted by and be hurt by. What the player can do, how they are caught, and what it costs are the open questions in `docs/M7_OPEN_QUESTIONS.md`.
 
 ## Season calendar & Timeline
 
@@ -381,7 +398,7 @@ The Vyktory rename itself is in the game: `planWorldChanges` rolls it once per c
 - **The trade-off.** Light cars get more tyre width per kilo, so they corner better; heavy, powerful cars keep their straight-line advantage.
 - **A maximum, not a fixed size.** Teams may run narrower tyres than their limit.
 - **Road legal; everything else is free.** Any registered, road-legal car powered by an internal combustion engine, with any engine, power level, aero or parts, as long as it stays road legal. Electric cars are not allowed. Hybrids may enter only with their kinetic energy-recovery system removed.
-- **Scrutineering.** Kerb weight, tyre width and road legality are checked after each run and race by the series' technical team under Declan Marsh. Tyres over the limit mean disqualification.
+- **Scrutineering.** Kerb weight, tyre width and road legality are checked after each run and race by the series' technical team under Declan Marsh. A car over a limit takes a penalty on the penalty scale (see "Penalties and the darker side"), and a car that is obviously illegal is disqualified.
 - **Tyres.** One very resilient all-weather compound for everyone, supplied by Ironbark Tyre Co. and made to the Last Combustion spec. Each set lasts almost exactly one final race distance before it needs replacing. Allocation: unlimited sets in practice, one racing set for the prelim run, and one fresh set for the final race. Non-racing tyres are allowed on wet gap days during the prelims. There are no pit stops or tyre changes, so the race set runs the full final. Hard driving, wheelspin and sliding use up tyre life faster: a driver who overdrives can lose grip in the final kilometres, while a smooth driver keeps it to the flag.
 - **Sporting penalties.** Time penalties for causing contact or cutting the course.
 
@@ -505,7 +522,7 @@ Incidents are rolled per sector from the incident formula (see "Formulas"), then
 | Final | Weather change | Rain, or a damp patch, arrives part-way | Wet skill and tyre calls matter |
 | Final | Lost grip | An over-driven tyre set loses grip in the last kilometres | Conserve earlier |
 | Final | Drone stop | A crash ahead blocks the road; the following cars are held | Hold position, attack or defend on the restart |
-| Event | Scrutineering finding | A car found over the Equalizer limit or not road legal loses its result | Appeal; Declan Marsh's team rules on it |
+| Event | Scrutineering finding | A car found over the Equalizer limit or not road legal takes a Technical penalty, or a Palpably Unfair Act if it is obviously illegal | Appeal; Declan Marsh's team rules on it |
 
 - **Pauses.** The simulation pauses for the player on contact, a mechanical warning, a drone stop, a weather change and an attention flag.
 - **Consequences.** Every incident writes an event-log row with its scope, the entries involved and the point on the lap (distance along the outline). Damage and retirement follow the existing rules.
@@ -1715,7 +1732,7 @@ t_s = t_{ref,s} \times \bigl(1 - k_c\,(Fit_s - 0.5)\bigr) \times \bigl(1 - k_d\,
 
 **AI prelim times.** For the ~300 AI entries the same sector formula is evaluated once per sector with no per-entry sim state, then summed. This keeps a prelim day cheap while staying consistent with the final.
 
-**Scrutineering.** After every run: kerb weight and tyre width checked against the Equalizer; road-legality score must be ≥ 0. Failure = disqualification from that run's result; the entry keeps its previous prelim time only if it has one.
+**Scrutineering.** After every run: kerb weight and tyre width checked against the Equalizer; road-legality score must be ≥ 0. A car over a limit takes a Technical penalty at the step its overage falls in, and an obviously illegal car takes a Palpably Unfair Act (see "Penalties and the darker side").
 
 **Weather.** Each day for a round is rolled from a course climate profile: `dry_clear`, `overcast`, `wet`. Only `dry_clear` allows prelim runs. Rounds are guaranteed to finish: the weather settles if the prelims are held up. After 14 blocked days it can be no worse than overcast (the rain stops), and after 28 blocked days it is always dry and clear, so the prelims run.
 

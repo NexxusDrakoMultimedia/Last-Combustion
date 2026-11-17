@@ -111,20 +111,51 @@ describe('scrutineering', () => {
     expect(scrutineerCar(db, carId).legal).toBe(true);
     for (const p of parts.filter((x) => x.grade === 'race')) fitPart(db, garageId, carId, p.id);
     expect(legalityOf(db, carId)).toBeLessThan(0);
-    expect(scrutineerCar(db, carId)).toEqual({ legal: false, failures: ['legality'] });
+    const found = scrutineerCar(db, carId);
+    expect(found).toMatchObject({ legal: false, failures: ['legality'], tyreOverMm: 0 });
+    expect(found.legalityShort).toBeGreaterThan(0);
   });
 
-  it('disqualifies an illegal car from the prelims, without a time', () => {
+  it('disqualifies an obviously illegal car from the prelims with a Palpably Unfair Act, without a time', () => {
     const db = newCareer();
     const [carId, garageId] = entryOf(db);
     for (const p of parts.filter((x) => x.grade === 'race')) fitPart(db, garageId, carId, p.id);
     const summary = playPrelims(db, 1);
-    expect(summary.disqualified).toBe(1);
+    expect(summary.penalties.filter((p) => p.type === 'technical')).toMatchObject([
+      { level: 'palpably_unfair', percent: null },
+    ]);
     const row = db.exec(
       `SELECT r.dnf_reason, r.prelim_time_ms, r.prelim_pos FROM result r JOIN entry e ON e.id = r.entry_id WHERE e.car_id = ${carId}`,
     )[0]!.values[0]!;
     expect(row).toEqual(['disqualified', null, null]);
     expect(scalar(db, 'SELECT COUNT(*) FROM result')).toBe(313);
+  });
+
+  it('punishes a car only just over the limit with a Technical penalty: a share of the fastest lap, not a disqualification', () => {
+    const run = (overMm: number) => {
+      const db = newCareer('technical');
+      const [carId, garageId] = entryOf(db);
+      const max = upgradeView(db, garageId, carId).maxTyreMm;
+      db.run('UPDATE car SET tyre_width_mm = ? WHERE id = ?', [max + overMm, carId]);
+      const summary = playPrelims(db, 1);
+      const row = db.exec(
+        `SELECT r.dnf_reason, r.prelim_time_ms FROM result r JOIN entry e ON e.id = r.entry_id WHERE e.car_id = ${carId}`,
+      )[0]!.values[0]!;
+      return { summary, row };
+    };
+    const legal = run(0);
+    expect(legal.summary.penalties.filter((p) => p.type === 'technical')).toEqual([]);
+    const minor = run(2);
+    expect(minor.summary.penalties.filter((p) => p.type === 'technical')).toMatchObject([
+      { level: 'minor', percent: 5 },
+    ]);
+    expect(minor.row[0]).toBeNull();
+    const major = run(6);
+    expect(major.summary.penalties.filter((p) => p.type === 'technical')).toMatchObject([
+      { level: 'major', percent: 10 },
+    ]);
+    // The bigger the overage, the bigger the share of the lap.
+    expect(Number(major.row[1])).toBeGreaterThan(Number(minor.row[1]));
   });
 
   it('makes a tuned legal car faster in the prelims than the same car stock', () => {

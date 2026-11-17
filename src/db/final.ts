@@ -21,15 +21,42 @@ import { all, currentCarFigures, loadEntries, type LoadedEntry } from './entries
 import { awardRoundFans } from './fans';
 import { refreshPlayerPrestige } from './prestige';
 import { splitPrize } from './prizes';
+import { scrutineerCar } from './upgrades';
+import { banDriver } from './bans';
+import {
+  PALPABLY_UNFAIR,
+  drawBanRaces,
+  technicalPenalty,
+  isPalpablyUnfair,
+  penaltyPlaces,
+  type PalpablyUnfair,
+  type PenaltyLevel,
+  type PenaltyType,
+} from '../sim/penalties';
 import { clearRace, loadRace, saveRace } from './racestate';
 import { wearGear, wearParts } from './repairs';
 import { awardTitles } from './titles';
+
+/** A penalty given in a final. */
+export interface FinalPenalty {
+  entryId: number;
+  raceNumber: number;
+  driver: string;
+  type: PenaltyType;
+  level: string;
+  /** The places it costs at the flag, or null for a Palpably Unfair Act. */
+  places: number | null;
+  /** The races a Palpably Unfair Act keeps the driver out of after this one, or null for any other penalty. */
+  banRaces: number | null;
+}
 
 export interface FinalSummary {
   roundNumber: number;
   finishers: number;
   retirements: number;
   overtakes: number;
+  /** Cars that ran a drone's stop signal: the level of the penalty and the places it costs at the flag. */
+  penalties: FinalPenalty[];
   /** Whether rain arrived part-way through the race. */
   weatherChange: boolean;
   /** Drivers who earned their gold border at the flag (their first final). */
@@ -91,6 +118,13 @@ export interface FinalProgress {
   summary: FinalSummary | null;
   /** A step that asked to stop at an incident did (the race is not over). */
   paused?: boolean;
+}
+
+/** What scrutineering finds wrong with a finalist's car as it stands at the start, as a field of the entry (none for a legal car). */
+function technicalOf(db: Database, carId: number): { technical?: PenaltyLevel | PalpablyUnfair } {
+  const found = scrutineerCar(db, carId);
+  const level = technicalPenalty(found.tyreOverMm, found.legalityShort);
+  return level === null ? {} : { technical: level };
 }
 
 export const finalInput = (ctx: FinalContext): FinalInput => {
@@ -185,6 +219,7 @@ export function startFinal(
     grid: index + 1,
     driver: e.driver,
     car: e.car,
+    ...technicalOf(db, e.carId),
   }));
 
   const seed = career.masterSeed;
@@ -310,12 +345,54 @@ function finishFinal(db: Database, ctx: FinalContext, race: FinalRace): FinalSum
   const raceKm = course.finalLaps * course.lapKm;
   const date = ctx.date;
 
+  // The penalties of the race: a drone's signal ignored (from the race's events) and a car over the limit at
+  // scrutineering (from the entry). A Palpably Unfair Act can bring a ban, drawn from a stream of its own.
+  const penalties: FinalPenalty[] = [];
+  const penalty = (
+    entryId: number,
+    type: PenaltyType,
+    level: string,
+    places: number | null,
+    banRaces: number | null,
+  ) =>
+    penalties.push({
+      entryId,
+      raceNumber: ctx.entries.find((x) => x.entryId === entryId)!.raceNumber,
+      driver: loaded.get(entryId)!.driver.name,
+      type,
+      level,
+      places,
+      banRaces,
+    });
+  for (const e of ctx.entries) {
+    if (!e.technical) continue;
+    if (isPalpablyUnfair(e.technical))
+      penalty(
+        e.entryId,
+        'technical',
+        e.technical,
+        null,
+        drawBanRaces(
+          createRng(ctx.seed).stream(`final:${ctx.year}:R${roundNumber}:technical:${e.entryId}`),
+        ),
+      );
+    else penalty(e.entryId, 'technical', e.technical, penaltyPlaces(e.technical), null);
+  }
+  for (const e of race.events.filter((x) => x.type === 'drone_penalty'))
+    penalty(
+      e.entryId,
+      'drone',
+      String(e.payload.level),
+      e.payload.places === undefined ? null : Number(e.payload.places),
+      e.payload.banRaces === undefined ? null : Number(e.payload.banRaces),
+    );
+
   const podium: FinalSummary['podium'] = [];
   let goldBorders = 0;
   db.exec('BEGIN');
   try {
     const classified = (c: (typeof classification)[number]) =>
-      c.finished || c.km >= finalBalance.classifiedShare * raceKm;
+      !c.disqualified && (c.finished || c.km >= finalBalance.classifiedShare * raceKm);
     const winnerTime = classification[0]?.timeSeconds ?? 0;
     const updateResult = db.prepare(
       'UPDATE result SET final_pos = ?, final_time_ms = ?, points = points + ?, prize = ?, dnf_reason = COALESCE(?, dnf_reason), tyre_pct_at_flag = ? WHERE round_id = ? AND entry_id = ?',
@@ -370,7 +447,7 @@ function finishFinal(db: Database, ctx: FinalContext, race: FinalRace): FinalSum
           raceNumber: entry.raceNumber,
           driver: entry.driver.name,
           timeSeconds: c.timeSeconds,
-          gapSeconds: c.timeSeconds - winnerTime,
+          gapSeconds: Math.max(0, c.timeSeconds - winnerTime),
           prize,
         });
       }
@@ -475,6 +552,16 @@ function finishFinal(db: Database, ctx: FinalContext, race: FinalRace): FinalSum
     // Reaching a final earns gold borders, which lift the player's garage.
     refreshPlayerPrestige(db);
     clearRace(db, roundId, 'final');
+    for (const p of penalties)
+      if (p.level === PALPABLY_UNFAIR)
+        banDriver(
+          db,
+          loaded.get(p.entryId)!.driver.id,
+          p.banRaces ?? 0,
+          date,
+          roundId,
+          `${p.type}_penalty`,
+        );
     db.exec('COMMIT');
   } catch (error) {
     db.exec('ROLLBACK');
@@ -493,6 +580,7 @@ function finishFinal(db: Database, ctx: FinalContext, race: FinalRace): FinalSum
     finishers: finishers.length,
     retirements: classification.length - finishers.length,
     overtakes: classification.reduce((s, c) => s + c.overtakes, 0),
+    penalties,
     weatherChange: race.events.some((e) => e.type === 'weather_change'),
     goldBorders,
     titlesAwarded,

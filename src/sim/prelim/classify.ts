@@ -7,7 +7,8 @@ export interface RunOutcome {
   day: number;
   slot: number;
   timeMs: number | null;
-  dnfReason: 'crash' | null;
+  /** A crash, or a Palpably Unfair Act that disqualified the runner. */
+  dnfReason: 'crash' | 'disqualified' | null;
 }
 
 export interface Classified extends RunOutcome {

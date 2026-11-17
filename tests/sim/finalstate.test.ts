@@ -153,3 +153,103 @@ describe('a final saved part-way', () => {
     );
   });
 });
+
+describe('penalties in a final', () => {
+  const classified = (
+    s: ReturnType<typeof setup>,
+    technical?: {
+      index: number;
+      level: 'minor' | 'major' | 'severe' | 'egregious' | 'palpably_unfair';
+    },
+  ) => {
+    const entries = s.finalists.map((e, i) =>
+      technical && i === technical.index ? { ...e, technical: technical.level } : e,
+    );
+    const race = new FinalRace(input(s, entries));
+    race.runToEnd();
+    return race.classification();
+  };
+
+  it('drop a car the places its Technical penalty is worth, from where it finished on the road', () => {
+    const s = setup('final-penalty-a');
+    const plain = classified(s);
+    const target = s.finalists[0]!.entryId;
+    const before = plain.find((c) => c.entryId === target)!;
+    expect(before.finished).toBe(true);
+    const after = classified(s, { index: 0, level: 'severe' }).find((c) => c.entryId === target)!;
+    expect(after.placesLost).toBe(3);
+    const finishers = plain.filter((c) => c.finished).length;
+    expect(after.position).toBe(Math.min(before.position + 3, finishers));
+    expect(after.disqualified).toBe(false);
+  });
+
+  it('disqualify a car with a Palpably Unfair Act: last, no time, flagged', () => {
+    const s = setup('final-penalty-b');
+    const target = s.finalists[0]!.entryId;
+    const result = classified(s, { index: 0, level: 'palpably_unfair' });
+    const row = result.find((c) => c.entryId === target)!;
+    expect(row.disqualified).toBe(true);
+    expect(row.finished).toBe(false);
+    expect(row.dnfReason).toBe('disqualified');
+    expect(row.position).toBe(result.length);
+    expect(result.filter((c) => c.disqualified)).toHaveLength(1);
+  });
+
+  it('are kept when the race is saved and picked up again', () => {
+    const s = setup('final-penalty-c');
+    const entries = s.finalists.map((e, i) =>
+      i === 2 ? { ...e, technical: 'major' as const } : e,
+    );
+    const whole = new FinalRace(input(s, entries));
+    whole.runToEnd();
+    const part = new FinalRace(input(s, entries));
+    for (let i = 0; i < 10 && !part.finished; i++) part.step();
+    const restored = FinalRace.restore(
+      input(s, entries),
+      JSON.parse(JSON.stringify(part.snapshot())),
+    );
+    restored.runToEnd();
+    expect(restored.classification()).toEqual(whole.classification());
+  });
+
+  it('for ignoring a drone’s stop signal are on the scale (1 to 5 places) or a disqualification, and are rare', () => {
+    let seen = 0;
+    for (let n = 0; n < 10; n++) {
+      const s = setup(`final-drone-${n}`, n % 6);
+      const race = new FinalRace(input(s));
+      race.runToEnd();
+      const classification = race.classification();
+      for (const e of race.events.filter((x) => x.type === 'drone_penalty')) {
+        seen += 1;
+        const row = classification.find((c) => c.entryId === e.entryId)!;
+        if (e.payload.level === 'palpably_unfair') {
+          expect(row.disqualified).toBe(true);
+          expect(Number(e.payload.banRaces)).toBeLessThanOrEqual(12);
+        } else {
+          expect(Number(e.payload.places)).toBeGreaterThanOrEqual(1);
+          expect(Number(e.payload.places)).toBeLessThanOrEqual(5);
+          expect(row.placesLost).toBeGreaterThanOrEqual(Number(e.payload.places));
+        }
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+  }, 120_000);
+
+  it('never drop a car below a car that retired, or below the last place of the field', () => {
+    for (const seed of ['final-cap-a', 'final-cap-b', 'final-cap-c', 'final-cap-d']) {
+      const s = setup(seed);
+      const plain = classified(s);
+      const target = s.finalists.find((e) => plain.find((c) => c.entryId === e.entryId)!.finished);
+      if (!target) continue;
+      const index = s.finalists.indexOf(target);
+      const result = classified(s, { index, level: 'egregious' });
+      const row = result.find((c) => c.entryId === target.entryId)!;
+      const finishers = result.filter((c) => c.finished);
+      expect(row.finished).toBe(true);
+      expect(row.position).toBeLessThanOrEqual(finishers.length);
+      expect(row.position).toBeLessThanOrEqual(s.finalists.length);
+      for (const retired of result.filter((c) => !c.finished && !c.disqualified))
+        expect(retired.position).toBeGreaterThan(row.position);
+    }
+  }, 120_000);
+});
