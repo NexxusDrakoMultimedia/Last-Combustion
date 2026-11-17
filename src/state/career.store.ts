@@ -41,6 +41,7 @@ import {
   stepFinal,
   type FinalSummary,
 } from '../db/final';
+import { ensureCurrentBusinesses } from '../db/business';
 import { finalView, prelimView, type FinalView, type PrelimView } from '../db/racewatch';
 import { nextRoundNumber, setPrelimPlan, startPrelims, type PrelimSummary } from '../db/prelims';
 import {
@@ -762,6 +763,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         createStarterOffers(db);
         refreshUsedMarket(db);
         ensureAuction(db);
+        // The computer garages are businesses from the first day, as they are when a save is opened.
+        ensureCurrentBusinesses(db);
         openDb?.close();
         openDb = db;
         set({
@@ -1494,6 +1497,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           difficulty: 'standard',
         });
         persistWorld(openDb, generateWorld(masterSeed));
+        ensureCurrentBusinesses(openDb);
         refresh(openDb);
         return undefined;
       }),

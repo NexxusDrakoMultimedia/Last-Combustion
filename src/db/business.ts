@@ -29,6 +29,15 @@ const COMPUTER_GARAGES = `SELECT id, prestige, home_state, cash FROM garage
   WHERE kind = 'racing' AND is_player = 0 AND closed_year IS NULL AND acquired_by IS NULL ORDER BY id`;
 
 /**
+ * `ensureBusinesses` for the year the career's calendar is in. Called when a career is created and whenever
+ * a save is opened, so a new career and the same career reloaded have exactly the same world.
+ */
+export function ensureCurrentBusinesses(db: Database): void {
+  const career = readCareer(db);
+  if (career) ensureBusinesses(db, Number(career.gameDate.slice(0, 4)));
+}
+
+/**
  * Gives every open computer garage the people and places a business has: executives for as many
  * roles as its prestige allows, facilities for as many levels, a sponsor and an electricity supplier.
  * A garage that already has some keeps them; it only fills the roles that have fallen vacant and
