@@ -3,15 +3,18 @@
 import type { Database } from 'sql.js';
 import { createRng } from '../sim/rng';
 import {
+  readingMidpoint,
   scoutOffers,
   scoutWagePerRound,
   type Scout,
   type ScoutFocus,
+  type Reading,
   type ScoutOffer,
   type Subject,
 } from '../sim/scouting';
 import { scoutingBalance } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
+import { knowledgeContext, readDriver } from './knowledge';
 import { readCareer } from './career';
 import { all } from './entries';
 
@@ -189,4 +192,70 @@ export function clearAssignment(db: Database, garageId: number, scoutId: number)
   if (!garageScouts(db, garageId).some((s) => s.id === scoutId))
     throw new Error('The garage does not employ this scout.');
   db.run('DELETE FROM scout_assignment WHERE scout_id = ?', [scoutId]);
+}
+
+/** A young driver the Head of Scouting has heard of. */
+export interface RisingDriver {
+  driverId: number;
+  name: string;
+  age: number;
+  /** What the player reads of the driver's potential, with the knowledge behind it. */
+  potential: Reading;
+  knowledge: number;
+}
+
+/**
+ * The young drivers a Head of Scouting hears of first: up to `tips.max` drivers aged `tips.maxAge` or younger, not
+ * the garage's own, whose potential reads `tips.minPotential` or more, best reading first. Chosen by the midpoint of
+ * the reading the player has (never the true potential), so the tip never gives the truth away. Empty when the garage
+ * has no Head of Scouting.
+ */
+export function risingDrivers(db: Database, garageId: number): RisingDriver[] {
+  if (garageScoutLift(db, garageId) <= 0) return [];
+  const career = readCareer(db);
+  if (!career) return [];
+  const year = Number(career.gameDate.slice(0, 4));
+  const tips = scoutingBalance.tips;
+  const ctx = knowledgeContext(db, garageId);
+  return all(
+    db,
+    'SELECT * FROM driver WHERE retired_year IS NULL AND birth_date >= ? ORDER BY id',
+    [`${year - tips.maxAge}-01-01`],
+  )
+    .map((d) => {
+      // Only the potential and the knowledge are used, so the rating read here is a placeholder.
+      const reading = readDriver(ctx, {
+        id: d.id as number,
+        fame: d.fame as number,
+        rating: d.pace as number,
+        pace: d.pace as number,
+        consistency: d.consistency as number,
+        racecraft: d.racecraft as number,
+        tyreManagement: d.tyre_management as number,
+        composure: d.composure as number,
+        wetSkill: d.wet_skill as number,
+        potential: d.potential as number,
+      });
+      return {
+        driverId: d.id as number,
+        name: d.name as string,
+        age: year - Number(String(d.birth_date).slice(0, 4)),
+        potential: reading.potential,
+        knowledge: reading.knowledge,
+        owned: reading.owned,
+      };
+    })
+    .filter((d) => !d.owned && readingMidpoint(d.potential) >= tips.minPotential)
+    .sort(
+      (a, b) =>
+        readingMidpoint(b.potential) - readingMidpoint(a.potential) || a.driverId - b.driverId,
+    )
+    .slice(0, tips.max)
+    .map((d) => ({
+      driverId: d.driverId,
+      name: d.name,
+      age: d.age,
+      potential: d.potential,
+      knowledge: d.knowledge,
+    }));
 }

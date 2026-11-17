@@ -5,6 +5,8 @@ import { formatMoney, t } from '../../i18n';
 import { scoutWagePerRound, type ScoutFocus } from '../../sim/scouting';
 import { scoutingBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
+import { FogValue } from '../FogValue';
+import { RegistryLink } from '../RegistryLink';
 import { button, quiet } from '../styles';
 
 const FOCI: ScoutFocus[] = ['drivers', 'cars', 'garages'];
@@ -13,6 +15,7 @@ const FOCI: ScoutFocus[] = ['drivers', 'cars', 'garages'];
 export function ScoutsSection() {
   const { scouts, scoutOffers, agents, hub, status, hireScout, fireScout, assignScout } =
     useCareerStore();
+  const rising = useCareerStore((s) => s.risingDrivers);
   const [focus, setFocus] = useState<ScoutFocus>('drivers');
   const busy = status === 'busy';
   const cash = hub?.player?.cash ?? 0;
@@ -25,6 +28,20 @@ export function ScoutsSection() {
         <dd className="lc-num">{t('scouts.perRound', { amount: formatMoney(perRound) })}</dd>
       </dl>
       <p className="text-lc-dim">{t('scouts.explain')}</p>
+      {rising.length > 0 && (
+        <section className="space-y-1 border border-lc-line bg-lc-raised p-3">
+          <h3 className="lc-display text-sm text-lc-dim">{t('scouts.rising')}</h3>
+          <ul className="space-y-1">
+            {rising.map((r) => (
+              <li key={r.driverId} className="flex flex-wrap items-center gap-2">
+                <RegistryLink to={{ kind: 'driver', id: r.driverId }}>{r.name}</RegistryLink>
+                <span className="text-lc-dim">{t('scouts.risingAge', { age: r.age })}</span>
+                <FogValue reading={r.potential} knowledge={r.knowledge} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section className="space-y-2">
         <h3 className="lc-display text-sm text-lc-dim">{t('scouts.employed')}</h3>
         {scouts.length === 0 && <p className="text-lc-dim">{t('scouts.none')}</p>}
