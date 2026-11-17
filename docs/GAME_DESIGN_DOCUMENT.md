@@ -25,7 +25,7 @@ The player runs a garage: buying and tuning cars, signing drivers, chasing spons
 
 - **Core Technologies:** Coded in TypeScript, Tailwind CSS, React, and Zustand.
 - **Database Storage:** Web application using SQLite (via WASM/SQL.js in-browser with persistent local database save states).
-- **Desktop Deployment:** Designed for web execution first, with Electron desktop builds for Windows, macOS and Linux. A Steam release is optional and undecided, because of the game's GPL licence (see "Licensing and distribution").
+- **Desktop Deployment:** Designed for web execution first, with Electron desktop builds for Windows, macOS and Linux. There is no Steam release (see "Licensing and distribution").
 - **Licence:** GNU GPL v3 or later.
 - **Development Model:** Fully single-player management game.
 
@@ -119,7 +119,7 @@ The same drones that film the series also act as its marshals, warning drivers a
 
 **Technical (built).** Scrutineering no longer simply refuses a car. How far a car is over its tyre limit, in millimetres, and how far its road-legality score is below zero decide the step: tyres up to 3, 8, 15 and 25 mm over, and a legality shortfall of up to 5, 15, 30 and 50, are Minor, Major, Severe and Flagrant, anything over that is Egregious, and a car 40 mm or more over on tyres, or 80 or more short on legality, is obviously illegal and takes a Palpably Unfair Act (the worse of the two measures counts). The Technical penalty is applied in the prelims (a share of the fastest lap) and again in the final if the car is still over the limit at its start (places lost). The numbers are in `data/penalties.json`.
 
-**The darker side (design direction, not built).** The series has a darker side: cheating, gamesmanship and sabotage. They are the other things that earn penalties, and they all feed the same scale and its Sportsmanship type. The direction, for the owner to confirm before it is built:
+**The darker side (design direction, not built).** The series has a darker side: cheating, gamesmanship and sabotage. They are the other things that earn penalties, and they all feed the same scale and its Sportsmanship type. The direction, which the owner has settled: cheating is built first (M8 slice 5), then gamesmanship and sabotage after it.
 
 - **Cheating** is breaking the rules on purpose: parts that hide an illegal gain, falsified wear or weight, and tuning past the limits, with a chance of being caught at scrutineering that rises with how far over the car is and with how hard the technical team (Declan Marsh) is looking. Being caught earns a Technical penalty, or a Palpably Unfair Act when it is obvious.
 - **Gamesmanship** is bending the spirit of the rules without breaking them: leaning on a rival at the start, slow-rolling the course to block a following runner, feeding the press, and playing with the drones' signals. It costs reputation and relationships before it costs time, and a flagrant case earns a Sportsmanship penalty.
@@ -1365,7 +1365,7 @@ The game is licensed under the **GNU General Public License, version 3 or (at th
 - **Mods must be GPL-compatible.** Mods are data files read at runtime, and their authors keep their copyright, but every mod must carry a GPL-compatible licence to be loaded or listed. See "Modding".
 - **Easter egg.** The Founder's career check stores a hash of the normalised details, not the plain text, so browsing the source does not spoil it. This document is the only plain-text record.
 
-**Steam.** The Steamworks SDK is proprietary, and its terms do not mix cleanly with GPL distribution of a combined work, so a Steam release may not be possible. It is treated as optional and undecided.
+**Steam.** The Steamworks SDK is proprietary, and its terms do not mix cleanly with GPL distribution of a combined work, so a Steam release is not planned. The owner has decided against it.
 
 - The GPL builds never include Steamworks. Steam-specific code lives in a separate optional module behind the platform interface below.
 - If a Steam release is pursued, it needs legal advice, and probably an additional permission under GPLv3 section 7 granted by every copyright holder. To keep that option open, contributors sign off their commits under the Developer Certificate of Origin and the project decides on a contributor agreement before accepting large outside contributions.
@@ -2026,13 +2026,13 @@ Branding and social media are planned work for after the first playable season (
 4. **Content hooks:** the commentary team, the almanac and records, headlines and rivalries make shareable moments; a weekly challenge and a "this day in the almanac" post are candidates.
 5. **Community and legal:** a code of conduct for community spaces, a clear policy for fan art and streaming, and the trademark policy kept in step with `TRADEMARKS.md`.
 
-**Open questions**
+**Decided for the branding work**
 
-- Which platforms and handles to use, and who runs them.
-- Whether to run a public beta or a demo, and when.
-- The Steam decision and the store page timing.
-- Whether to commission key art and a trailer, or make them in-house.
-- Press and creator outreach, and how to handle the cookie prompt on marketing pages.
+- **Platforms and handles.** Start with the channels NDM already uses.
+- **Beta and demo.** There is no public demo or separate beta: the web build is the final build.
+- **Steam.** There is no Steam release.
+- **Key art and trailer.** Made in-house.
+- **Press and creator outreach.** After 1.0, and the cookie prompt on marketing pages matches the game's opt-out.
 
 ## Glossary
 
@@ -2093,7 +2093,7 @@ Branding and social media are planned work for after the first playable season (
 - **Balance mods and achievements.** Careers using balance-changing mods have achievements disabled.
 - **Mod hosting policy.** Standard DMCA takedown. No responsibility is claimed for modifications by private players.
 - **Platform features.** Achievements and cloud saves are enabled through a platform interface that works without Steam.
-- **Licence.** GNU GPL v3 or later. A Steam release is optional and undecided.
+- **Licence.** GNU GPL v3 or later. There is no Steam release.
 - **IP.** The name, logo, Pyra Drake, the two series administrators, the four commentators and the dragon-blooded driver characters belong to Nexxus Drako Multimedia and are reserved; no other character is claimed (see `TRADEMARKS.md`).
 - **Calendar.** Six closed loops, run clockwise around the country from South Australia (Round 1) to Western Australia (2), Queensland (3), New South Wales (4) and Victoria (5–6), ending at Healesville, the series' home. No out-and-back courses. Tasmania, the Northern Territory and the ACT are not in the base calendar and are open to mods.
 - **Lap length and surface.** Maximum 80 km (minimum 10 km), sealed roads only, no dirt. All six lap lengths are measured.
