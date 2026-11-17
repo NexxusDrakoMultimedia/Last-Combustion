@@ -6,9 +6,9 @@ Last Combustion is made by Nexxus Drako Multimedia and the people who contribute
 
 Maintainers review and merge pull requests, cut releases and enforce the [code of conduct](CODE_OF_CONDUCT.md).
 
-| Who                                                        | Role                                                    |
-| ---------------------------------------------------------- | ------------------------------------------------------- |
-| [Nexxus Drako Multimedia](https://github.com/Nexxus-Drako) | Project owner and maintainer (see `.github/CODEOWNERS`) |
+| Who                                                                        | Role                                                    |
+| -------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Nexxus Drako Multimedia ([@Nexxus-Drako](https://github.com/Nexxus-Drako)) | Project owner and maintainer (see `.github/CODEOWNERS`) |
 
 ## Contributors
 
