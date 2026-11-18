@@ -70,7 +70,7 @@ export function freeAgents(db: Database, garageId: number, limit = 25): FreeAgen
     [garageId, year],
   );
   const ctx = knowledgeContext(db, garageId);
-  return rows
+  const ranked = rows
     .map((d) => {
       const a = affinities.get(d.id as number) ?? ({} as Record<RoadType, number>);
       for (const type of ROAD_TYPES) a[type] ??= 0;
@@ -109,6 +109,8 @@ export function freeAgents(db: Database, garageId: number, limit = 25): FreeAgen
       (x, y) =>
         readingMidpoint(y.reading.rating) - readingMidpoint(x.reading.rating) ||
         x.driverId - y.driverId,
-    )
-    .slice(0, limit);
+    );
+  // The drivers already signed always show, first, however low the player reads them: they are the ones to seat in
+  // an entry, and one pushed off a list of the best 25 would be signed but impossible to find.
+  return [...ranked.filter((a) => a.signed), ...ranked.filter((a) => !a.signed).slice(0, limit)];
 }

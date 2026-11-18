@@ -174,3 +174,30 @@ describe('the series totals', () => {
     }
   });
 });
+
+describe('the signed drivers on the Drivers panel', () => {
+  it('always show, first, however low the player reads them, so none can be signed and then lost', () => {
+    const { db, garageId } = fresh('signed-visible');
+    // A year or two on there are many drivers without a seat: free sixty of them here.
+    db.run(
+      'DELETE FROM entry WHERE id IN (SELECT id FROM entry WHERE garage_id <> ? ORDER BY id LIMIT 60)',
+      [garageId],
+    );
+    const everyone = freeAgents(db, garageId, 10_000);
+    expect(everyone.length).toBeGreaterThan(30);
+    // Four of the worst-reading drivers, far outside the best 25.
+    const worst = everyone.slice(-4);
+    for (const d of worst) {
+      db.run(
+        `INSERT INTO contract (driver_id, garage_id, start_year, end_year, salary, role, release_fee, garage_prize_share)
+         VALUES (?, ?, 2031, 2032, 30000, 'development', 0, 0.8)`,
+        [d.driverId, garageId],
+      );
+    }
+    const shown = freeAgents(db, garageId);
+    for (const d of worst) expect(shown.find((a) => a.driverId === d.driverId)?.signed).toBe(true);
+    // They come first, then the best of the rest.
+    expect(shown.slice(0, 4).every((a) => a.signed)).toBe(true);
+    expect(shown.filter((a) => !a.signed)).toHaveLength(25);
+  });
+});
