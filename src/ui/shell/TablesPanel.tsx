@@ -152,7 +152,13 @@ export function StandingsPanel() {
 }
 
 const timeCell = (r: ResultRow): string =>
-  r.timeMs === null ? (r.dnf ? t('tables.dnf', { reason: r.dnf }) : '') : formatLapTime(r.timeMs);
+  r.timeMs === null
+    ? r.dnf === 'dns'
+      ? t('tables.dns')
+      : r.dnf
+        ? t('tables.dnf', { reason: r.dnf })
+        : ''
+    : formatLapTime(r.timeMs);
 
 /** The full classification of a round: every car's prelim and the whole final. */
 export function ResultsPanel() {

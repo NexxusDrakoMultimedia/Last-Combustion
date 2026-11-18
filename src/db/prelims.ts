@@ -59,7 +59,8 @@ export interface PrelimSummary {
   finishers: number;
   dnfs: number;
   /** Entries that failed scrutineering and did not run. */
-  disqualified: number;
+  /** Entries that did not start because their driver is banned (written as DNS). */
+  didNotStart: number;
   qualifiers: number;
   top: { position: number; raceNumber: number; driver: string; timeMs: number }[];
   /** Penalties given in the round: a drone's signal ignored or a car over the limit, by level (a Palpably Unfair Act has no percent but may have a ban). */
@@ -88,7 +89,7 @@ export interface PrelimContext {
   /** The same entries as the database loaded them, for the wear written when the prelims end. */
   loaded: LoadedEntry[];
   /** Entries that did not run because their driver is banned (after a Palpably Unfair Act). */
-  disqualified: number[];
+  didNotStart: number[];
   /** The drivers of those entries, whose bans tick down when the round ends. */
   bannedDrivers: number[];
   playerGarage: number | null;
@@ -170,8 +171,8 @@ function buildContext(db: Database, roundNumber: number): PrelimContext {
   const allLoaded = loadEntries(db, season.id as number);
   // A driver banned after a Palpably Unfair Act sits the round out.
   const bans = bannedDrivers(db);
-  const disqualified = allLoaded.filter((e) => bans.has(e.driver.id));
-  const loaded = allLoaded.filter((e) => !disqualified.includes(e));
+  const sitOut = allLoaded.filter((e) => bans.has(e.driver.id));
+  const loaded = allLoaded.filter((e) => !sitOut.includes(e));
   // Scrutineering: a car over the Equalizer or not road legal takes a Technical penalty at the step its overage
   // falls in, or a Palpably Unfair Act if it is obviously illegal.
   const technical = loaded.flatMap((e): [number, PenaltyLevel | PalpablyUnfair][] => {
@@ -215,8 +216,8 @@ function buildContext(db: Database, roundNumber: number): PrelimContext {
       ),
     ],
     loaded,
-    disqualified: disqualified.map((e) => e.entryId),
-    bannedDrivers: disqualified.map((e) => e.driver.id),
+    didNotStart: sitOut.map((e) => e.entryId),
+    bannedDrivers: sitOut.map((e) => e.driver.id),
     playerGarage: playerGarage ?? null,
     outages,
   };
@@ -356,8 +357,9 @@ function finishPrelims(db: Database, ctx: PrelimContext, run: PrelimRoundRun): P
         r.dnfReason,
       ]);
     }
-    for (const entryId of ctx.disqualified) {
-      insertResult.run([roundId, entryId, null, null, null, null, 0, 0, 'disqualified']);
+    // A banned driver's entry, car included, does not start: it is written as DNS.
+    for (const entryId of ctx.didNotStart) {
+      insertResult.run([roundId, entryId, null, null, null, null, 0, 0, 'dns']);
     }
     // A ban is served by sitting a round out, and a Palpably Unfair Act starts one for the rounds to come.
     const driverOf = new Map(ctx.loaded.map((e) => [e.entryId, e.driver.id]));
@@ -422,7 +424,7 @@ function finishPrelims(db: Database, ctx: PrelimContext, run: PrelimRoundRun): P
     gapDays: outcome.schedule.days.filter((d) => d.kind === 'gap').length,
     finishers: finishers.length,
     dnfs: outcome.results.length - finishers.length,
-    disqualified: ctx.disqualified.length,
+    didNotStart: ctx.didNotStart.length,
     qualifiers: outcome.results.filter((r) => r.qualifies).length,
     top: finishers.slice(0, 5).map((r) => ({
       position: r.position as number,
