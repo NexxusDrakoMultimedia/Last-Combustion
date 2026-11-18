@@ -408,6 +408,7 @@
   "tables.prize": "Prize",
   "tables.none": "-",
   "tables.dnf": "DNF ({reason})",
+  "tables.dns": "DNS",
   "hub.awards": "{count, plural, one {# award} other {# awards}} given out. See the Almanac.",
   "almanac.intro": "Champions, awards and records",
   "almanac.tab.seasons": "Seasons",

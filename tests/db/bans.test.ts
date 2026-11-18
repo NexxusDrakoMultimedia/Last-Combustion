@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { banDriver, bannedDrivers, serveBan } from '../../src/db/bans';
 import { createCareer } from '../../src/db/career';
 import { playPrelims } from '../../src/db/prelims';
+import { roundClassification } from '../../src/db/tables';
 import { createNewDatabase } from '../../src/db/session';
 import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
@@ -25,6 +26,9 @@ function career(seed: string): Database {
   persistWorld(db, generateWorld(seed));
   return db;
 }
+
+const raceNumberOf = (db: Database, entry: number) =>
+  db.exec(`SELECT race_number FROM entry WHERE id = ${entry}`)[0]!.values[0]![0];
 
 const first = (db: Database) =>
   db.exec('SELECT e.id, e.driver_id FROM entry e ORDER BY e.id LIMIT 1')[0]!.values[0]! as [
@@ -54,11 +58,16 @@ describe('driver bans', () => {
     const [entry, driver] = first(db);
     banDriver(db, driver, 2, '2031-03-31', 1, 'drone_penalty');
     const summary = playPrelims(db, 1);
-    expect(summary.disqualified).toBe(1);
+    expect(summary.didNotStart).toBe(1);
     const row = db.exec(
       `SELECT dnf_reason, prelim_time_ms, prelim_pos FROM result WHERE entry_id = ${entry}`,
     )[0]!.values[0]!;
-    expect(row).toEqual(['disqualified', null, null]);
+    expect(row).toEqual(['dns', null, null]);
     expect(bannedDrivers(db).get(driver)).toBe(1);
+    // The results show the whole entry as DNS, with no time.
+    const table = roundClassification(db, 2031, 1);
+    const shown = table.prelims.find((r) => r.raceNumber === Number(raceNumberOf(db, entry)))!;
+    expect(shown.dnf).toBe('dns');
+    expect(shown.timeMs).toBeNull();
   }, 60_000);
 });
