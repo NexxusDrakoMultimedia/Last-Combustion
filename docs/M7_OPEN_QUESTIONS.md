@@ -30,7 +30,7 @@ Each is built as its own small pull request into `feature/0.3.x`.
 The steps are in [Releasing](RELEASING.md). For M7, remember:
 
 1. A beta after each slice (`0.3.0-beta1`, `0.3.0-beta2` and `0.3.0-beta3`), each a version bump, a tag and a pre-release, with no changelog section of its own.
-2. Before 0.3.0, the full documentation pass: every claim checked against the code, the "built so far" notes merged into the sections they belong to, the new files included (`CONTRIBUTING.md`, `CONTRIBUTORS.md`, `CODE_OF_CONDUCT.md`, `AGENTS.md`), and screenshots taken from the release.
+2. Before 0.3.0, the full documentation pass: every claim checked against the code, the "built so far" notes merged into the sections they belong to, the new files included (`CONTRIBUTING.md`, `CONTRIBUTORS.md`, `AGENTS.md`), and screenshots taken from the release.
 3. Check that a save from 0.2.x loads and plays a whole season (migrations 54 to 64 add the rivalry, story, news, ghost, scout, head of scouting, car inspection, race state, race plan and driver ban tables).
 4. Turn `[Unreleased]` in `CHANGELOG.md` into the dated 0.3.0 entry, as one list of everything new since 0.2.0.
 5. Read through every fog screen as a new player: the hover text, the "not known" cases, and whether a clear fog is worth the scouts' wages.

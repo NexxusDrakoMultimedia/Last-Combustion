@@ -26,13 +26,6 @@ precedence = "aggregate"
 SPDX-FileCopyrightText = "Nexxus Drako Multimedia"
 SPDX-License-Identifier = "GPL-3.0-or-later"
 
-# The code of conduct is the Contributor Covenant 2.1, licensed CC BY 4.0 (see CREDITS.md).
-[[annotations]]
-path = "CODE_OF_CONDUCT.md"
-precedence = "override"
-SPDX-FileCopyrightText = "Contributor Covenant contributors"
-SPDX-License-Identifier = "CC-BY-4.0"
-
 # Route outlines derived from OpenStreetMap data.
 [[annotations]]
 path = "data/courses/outlines.json"

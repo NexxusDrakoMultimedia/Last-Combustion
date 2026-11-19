@@ -100,4 +100,3 @@ If you are stuck, open an issue or a draft pull request and ask. Say what you tr
 
 - A bug or an idea: open an issue with the template (or press Feedback in the game, which opens the same form). For a bug, say what you expected and what happened, and include the game version (Menu, then About) and the career seed if you have it.
 - A security problem: do not open a public issue. Follow [SECURITY.md](SECURITY.md).
-- Behaviour that is not welcome: see the [code of conduct](CODE_OF_CONDUCT.md). It covers every space where the project is discussed, and says how to report a problem in private.

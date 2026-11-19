@@ -91,7 +91,6 @@ The game is TypeScript, React, Tailwind CSS and Zustand, with SQLite (SQL.js) ru
 | [Releasing](docs/RELEASING.md)                       | Versions, milestone branches and the release steps              |
 | [Contributing](CONTRIBUTING.md)                      | How to help, from set-up to pull request                        |
 | [Contributors](CONTRIBUTORS.md)                      | Who makes the game, and how to be listed                        |
-| [Code of conduct](CODE_OF_CONDUCT.md)                | The Contributor Covenant, and how to report a problem           |
 | [Agent guide](AGENTS.md)                             | Rules and commands for AI coding agents (and a quick reference) |
 | [Credits](CREDITS.md)                                | Third-party assets and their licences                           |
 | [Trademarks](TRADEMARKS.md)                          | What is reserved and what you may do                            |

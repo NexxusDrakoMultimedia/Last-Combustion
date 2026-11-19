@@ -1428,7 +1428,7 @@ Dependabot (or Renovate) keeps npm packages and GitHub Actions up to date, with 
 
 **Documentation**
 
-- `README.md` (what it is, how to build and run, licence), `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant), `SECURITY.md`, issue and pull request templates.
+- `README.md` (what it is, how to build and run, licence), `CONTRIBUTING.md`, `SECURITY.md`, issue and pull request templates.
 - `docs/GAME_DESIGN_DOCUMENT.md` (this document), `docs/HOW_TO_PLAY.md`, `docs/ARCHITECTURE.md`, `docs/DATA_FILES.md`, `docs/RELEASING.md`, architecture decision records in `docs/adr/` (MADR format), all built. A modding guide in `docs/modding/` and published JSON Schemas for all mod files in `schemas/` are planned. `pnpm docs:check` keeps the documents honest against the code and data.
 - TypeDoc API documentation for the simulation layer is planned. User-facing text lives in `/locales`.
 

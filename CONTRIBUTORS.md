@@ -4,7 +4,7 @@ Last Combustion is made by Nexxus Drako Multimedia and the people who contribute
 
 ## Maintainers
 
-Maintainers review and merge pull requests, cut releases and enforce the [code of conduct](CODE_OF_CONDUCT.md).
+Maintainers review and merge pull requests, cut releases and keep the project running.
 
 | Who                                                                        | Role                                                    |
 | -------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -18,7 +18,7 @@ People whose pull requests have been merged, listed by GitHub handle, newest fir
 
 ## AI coding assistants
 
-Parts of the code, tests and documents were written with AI coding assistants, mainly Claude by Anthropic, working from the instructions in [AGENTS.md](AGENTS.md) and reviewed by the maintainers. A commit made this way says so in a `Co-Authored-By` line. An assistant is a tool the maintainers use, not a person with rights over the project: the licence and the code of conduct apply to the work in the same way.
+Parts of the code, tests and documents were written with AI coding assistants, mainly Claude by Anthropic, working from the instructions in [AGENTS.md](AGENTS.md) and reviewed by the maintainers. A commit made this way says so in a `Co-Authored-By` line. An assistant is a tool the maintainers use, not a person with rights over the project: the licence applies to the work in the same way.
 
 ## How to be listed
 
