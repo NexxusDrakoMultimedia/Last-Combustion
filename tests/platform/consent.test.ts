@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { afterEach, describe, expect, it } from 'vitest';
-import { createGoogleTagSink, type ScriptHost, type TagWindow } from '../../src/platform/analytics';
+import {
+  ACCEPT_ALL,
+  createGoogleTagSink,
+  REJECT_OPTIONAL,
+  type ScriptHost,
+  type TagWindow,
+} from '../../src/platform/analytics';
 import {
   applyTelemetryConsent,
-  effectiveConsent,
+  effectiveChoice,
   telemetryConfigured,
 } from '../../src/platform/consent';
 import { resetGameAnalytics, type GameAnalyticsSdk } from '../../src/platform/gameanalytics';
@@ -47,37 +53,49 @@ afterEach(() => {
   resetGameAnalytics();
 });
 
-describe('opting out', () => {
-  it('is the default: a visitor who has not chosen is counted until they opt out', () => {
-    expect(effectiveConsent(undefined)).toBe('granted');
-    expect(effectiveConsent('granted')).toBe('granted');
-    expect(effectiveConsent('denied')).toBe('denied');
+describe('opting in', () => {
+  it('is the default: a visitor who has not chosen has every optional tool off', () => {
+    expect(effectiveChoice(undefined)).toEqual(REJECT_OPTIONAL);
+    expect(effectiveChoice(ACCEPT_ALL)).toEqual(ACCEPT_ALL);
   });
 
-  it('starts the tools on a first visit, and an opt-out is kept for the next visit', async () => {
+  it('starts nothing on a first visit, and starts the tools once they are accepted', async () => {
     const sdk = fakeSdk();
     const first = fakePage();
     applyTelemetryConsent(
-      effectiveConsent(undefined),
+      effectiveChoice(undefined),
       { build: 'web', load: async () => sdk, ...first },
       { google: 'G-TEST1234', gameAnalytics: KEYS },
     );
     await new Promise((r) => setTimeout(r, 0));
-    expect(first.scripts).toHaveLength(1);
-    expect(sdk.calls).toContain('initialize');
-    // They opt out; the saved choice is what the next visit applies, so nothing starts.
+    expect(first.scripts).toHaveLength(0);
+    expect(sdk.calls).not.toContain('initialize');
     clearSinks();
     resetGameAnalytics();
     const later = fakePage();
     const sdk2 = fakeSdk();
     applyTelemetryConsent(
-      effectiveConsent('denied'),
+      ACCEPT_ALL,
       { build: 'web', load: async () => sdk2, ...later },
       { google: 'G-TEST1234', gameAnalytics: KEYS },
     );
     await new Promise((r) => setTimeout(r, 0));
-    expect(later.scripts).toHaveLength(0);
-    expect(sdk2.calls).not.toContain('initialize');
+    expect(later.scripts).toHaveLength(1);
+    expect(sdk2.calls).toContain('initialize');
+  });
+
+  it('applies each tool on its own', async () => {
+    const sdk = fakeSdk();
+    const page = fakePage();
+    applyTelemetryConsent(
+      { google: false, gameAnalytics: true, monitoring: false },
+      { build: 'web', load: async () => sdk, ...page },
+      { google: 'G-TEST1234', gameAnalytics: KEYS },
+    );
+    await new Promise((r) => setTimeout(r, 0));
+    expect(sdk.calls).toContain('initialize');
+    expect(page.scripts).toHaveLength(0);
+    expect(page.win['ga-disable-G-TEST1234']).toBe(true);
   });
 });
 

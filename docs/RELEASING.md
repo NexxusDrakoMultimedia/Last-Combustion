@@ -15,7 +15,7 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each
 | M9 Modes and release                       | 0.5.0     | All career modes, family and dynasty, listing on the exchange, the tutorial, audio and desktop builds                                                                               |
 | Feature complete                           | **1.0.0** | Not a milestone: the project owner declares 1.0.0 when the game is feature complete, whenever that is                                                                               |
 
-M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load: schema changes are new numbered migrations and a released migration is never edited.
+M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load (0.3.0 is the one deliberate exception, because its calendar changed; see the changelog): schema changes are new numbered migrations and a released migration is never edited.
 
 ## Patch releases
 

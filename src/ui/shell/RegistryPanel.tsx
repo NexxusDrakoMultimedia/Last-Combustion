@@ -14,6 +14,7 @@ import type {
   ScoringSpan,
 } from '../../db/registry';
 import { flagNames } from '../../sim/worldgen/data';
+import { placeLabel } from '../../sim/worldgen/placeLabel';
 import { ScoutAssign } from './ScoutAssign';
 import { useCareerStore } from '../../state/career.store';
 import { AttentionList } from '../AttnFlag';
@@ -26,6 +27,12 @@ import { RaceNumber } from '../RaceNumber';
 import { dataTable, field, quiet } from '../styles';
 
 const flagName = (code: string): string => flagNames[code]?.short ?? code;
+
+/** A place for the player: Australian places with their state and country, a city state with its country. */
+const placeText = (l: PlaceLine): string =>
+  l.country !== 'AU' && l.region === l.name
+    ? `${l.name}, ${flagName(l.country)}`
+    : placeLabel(l.name, l.region, l.country);
 const place = (rank: number | null): string => (rank === null ? t('registry.none') : String(rank));
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -835,8 +842,7 @@ function HoldingsSection({ holdings }: { holdings: HoldingLine[] }) {
 /** The facts of where a person is from and lives: their flag, hometown and residence. */
 function originFacts(origin: Origin | null): [string, ReactNode][] {
   if (!origin) return [];
-  const place = (l: PlaceLine | null): ReactNode =>
-    l ? `${l.name}, ${l.region === l.name ? flagName(l.country) : l.region}` : t('registry.none');
+  const place = (l: PlaceLine | null): ReactNode => (l ? placeText(l) : t('registry.none'));
   return [
     [
       t('person.flag'),
@@ -947,12 +953,7 @@ function PersonPage({ p }: { p: PersonProfile }) {
                 ] as [string, ReactNode][])
               : []),
             ...(p.headquarters
-              ? ([
-                  [
-                    t('person.headquarters'),
-                    `${p.headquarters.name}, ${p.headquarters.region === p.headquarters.name ? flagName(p.headquarters.country) : p.headquarters.region}`,
-                  ],
-                ] as [string, ReactNode][])
+              ? ([[t('person.headquarters'), placeText(p.headquarters)]] as [string, ReactNode][])
               : []),
             ...(p.tier
               ? ([[t('person.tier'), t(`sponsors.tier.${p.tier}` as never)]] as [

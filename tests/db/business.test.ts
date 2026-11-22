@@ -255,6 +255,27 @@ describe('closing the year’s books', () => {
     ).toBe('dividend');
   });
 
+  it('pays the player nothing from a garage they hold no shares in', () => {
+    const { db } = world('biz-dividend-not-mine');
+    ensureBusinesses(db, 2031);
+    const t = Number(scalar(db, `SELECT id FROM garage WHERE ${COMPUTER} ORDER BY id LIMIT 1`));
+    db.run('UPDATE garage SET cash = 5000000 WHERE id = ?', [t]);
+    db.run(
+      "INSERT INTO ledger (garage_id, round_id, date, category, amount, note) VALUES (?, NULL, '2031-06-01', 'prize', 1000000, 'test')",
+      [t],
+    );
+    db.run(
+      "INSERT INTO ledger_year (garage_id, year, category, income, spending) VALUES (?, 2031, 'prize', 0, 0)",
+      [t],
+    );
+    const cashBefore = Number(scalar(db, 'SELECT personal_cash FROM owner'));
+    const paid = settleBusinesses(db, 2032);
+    // The garage did pay its own holders a dividend, and none of it reached the player.
+    expect(Number(scalar(db, `SELECT COUNT(*) FROM share_event WHERE garage_id = ${t}`))).toBe(1);
+    expect(paid).toBe(0);
+    expect(Number(scalar(db, 'SELECT personal_cash FROM owner'))).toBe(cashBefore);
+  });
+
   it('pays nothing from a garage that is short of cash', () => {
     const { db } = world('biz-nodividend');
     ensureBusinesses(db, 2031);

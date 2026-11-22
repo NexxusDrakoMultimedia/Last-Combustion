@@ -183,17 +183,20 @@ export function settleBusinesses(db: Database, year: number): number {
     if (amount <= 0) continue;
     const holdings = all(
       db,
-      'SELECT id, holder_type, shares, class FROM shareholding WHERE garage_id = ?',
+      'SELECT id, holder_type, holder_id, shares, class FROM shareholding WHERE garage_id = ?',
       [id],
     ).map((r) => ({
       id: r.id as number,
       type: r.holder_type as string,
+      holderId: r.holder_id as number | null,
       shares: r.shares as number,
       class: r.class as ShareClass,
     }));
     const parts = splitDividend(holdings, amount);
+    // Only the player's own stake (owner 1) is theirs: each computer garage has an owner of its own,
+    // and their dividends stay with them.
     const mine = holdings
-      .filter((h) => h.type === 'owner')
+      .filter((h) => h.type === 'owner' && h.holderId === 1)
       .reduce((sum, h) => sum + (parts.get(h.id) ?? 0), 0);
     const paid = [...parts.values()].reduce((s, x) => s + x, 0);
     if (paid <= 0) continue;

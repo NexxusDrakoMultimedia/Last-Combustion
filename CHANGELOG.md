@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ## [Unreleased]
 
+### Changed
+
+- **Old saves no longer load.** The season calendar changed, so a career from before 0.3.0 cannot carry on. The start screen says "Due to breaking changes, your previous saves are incompatible." and offers a download of the old saves as a backup. Start a new career to play 0.3.0.
+- **A new calendar, and every course a real circuit.** The season now starts in Tasmania (the Huon and Channel Loop), then South Australia, Western Australia (at night), tropical Far North Queensland (the Tablelands Crater Lakes Loop, at night), New South Wales and Victoria, ending at Healesville. Mount Nebo and the Black Spur are gone. Four courses used to run out and back along a side road to reach a waypoint, or drive the start and finish lane twice; each is now a closed circuit with under 1% of its length driven twice.
+- **Cookie settings are opt-in.** The web build now asks on your first visit, with a Cookie settings popup that lists what is required and what is optional (Google Analytics, GameAnalytics and Better Stack), ticks only the required item, and offers Accept All or Reject Non-Essential. Nothing optional runs until you accept it. The Cookie settings button reopens it with a tick box for each tool and Accept or Cancel. Before, everything ran until you opted out.
+- **Places.** Hometowns and headquarters now come from over 5,500 places: every Australian town or locality of 100 people or more outside the capital cities' suburbs, and many more cities abroad (GeoNames, CC BY 4.0). Australian places are written with their state in capitals, such as "Hobart, TAS".
+
+### Fixed
+
+- **Personal cash from nowhere.** At the end of the first season your personal cash jumped by millions, because every computer garage's owner dividend was also paid to you. You are now paid only from a garage you hold shares in.
+
 ### Added
 
 - **Rivalries.** Drivers who finish a final within three seconds of each other, or who lead the title fight together, build up heat that cools every round. A pair that reaches Spark, Rivalry or Feud is shown on a Rivalries list at the bottom of the Drivers panel with the meetings that built it, and a driver wins up to 50% more fans in a final the rival also races. A driver has at most three live rivalries, and one ends when it cools or a driver retires. Saves from 0.2.x still load and start with none.
@@ -16,7 +27,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 - **Ghost record.** From the second season you can pick a ghost for each entry before a round's prelims: an easy ghost two seconds ahead of the run, or a hard one, a top driver's run on the same course last season. The prelims settle it, and the Entries panel says whether the run beat it.
 - **Scouting engine (no screens yet).** The rules for how much you know about a driver, car or garage you do not own are built and tested: a knowledge score from scouts, what you have watched, fame, your own standing and past dealings, and how it turns into a word, a range or an exact value. Nothing is hidden on screen yet.
 - **Scouts.** A Scouts tab in the Staff panel lets you hire up to four scouts, each with a skill, a focus (drivers, cars or garages) and a yearly wage paid by the round. A scout can be assigned to a driver. What a scout learns is not shown on screen yet.
-- **Head of Scouting.** A ninth executive role: their skill makes every scout you employ up to 25% better. Saves from 0.2.x still load.
+- **Head of Scouting.** A ninth executive role: their skill makes every scout you employ up to 25% better. Saves from 0.2.x do not load (see the first line under Changed).
 - **Fog on drivers.** Drivers you do not own are now an estimate: a word (weak, modest, solid, strong or elite) when you know little, then a range that tightens, then the exact number. Scouts (a scout assigned to a driver counts the most), a bigger name, success and watching drivers race all clear the fog, and your own drivers are always exact. The free-agent list and the fair-salary hint follow what you can read, and the Registry driver page shows the same.
 - **Fog on cars.** Cars for sale, at the used market, the auction and in the Registry, now show their condition as a word or a range until you know them: scouts, a name and past dealings clear it. An inspection ($1,500) takes one car to exact while its seller still owns it, and a car you own is always exact.
 - **Fog on garages.** A garage that is not yours shows its prestige and following as a word or a range in the Registry until you know it well, who its sponsor and supplier are stay hidden until then, and the skill of the executives and mechanics who work for it reads the same way. Your own garage and the people who work for you are exact.

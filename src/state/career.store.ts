@@ -31,6 +31,7 @@ import type { Manner } from '../sim/social';
 import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
+import { IncompatibleSaveError, isCompatibleSave } from '../db/save-file';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
 import { settleRound, type RoundSettlement } from '../db/finance';
 import {
@@ -414,6 +415,8 @@ interface CareerState {
   seasonEnd: SeasonEnd | undefined;
   rollover: Rollover | undefined;
   slotsInUse: number;
+  /** Slots holding a save from an earlier, incompatible version (see `isCompatibleSave`). */
+  incompatibleSlots: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
   startCareer(setup: OwnerSetup): Promise<void>;
@@ -515,6 +518,8 @@ interface CareerState {
   loadSlot1(): Promise<void>;
   exportFile(): Promise<void>;
   refreshSlots(): Promise<void>;
+  /** Downloads each incompatible save as it is, so the player can keep a copy. */
+  backupOldSaves(): Promise<void>;
 }
 
 /** The view of a garage the owner is looking at, or undefined if there is none or it has closed since. */
@@ -540,6 +545,7 @@ function finalWatchOf(db: Database): FinalView | null {
 }
 
 function describeError(error: unknown): Notice {
+  if (error instanceof IncompatibleSaveError) return { key: 'save.incompatible' };
   return {
     key: 'debug.error',
     values: { message: error instanceof Error ? error.message : String(error) },
@@ -755,6 +761,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     seasonEnd: undefined,
     rollover: undefined,
     slotsInUse: 0,
+    incompatibleSlots: 0,
     notice: undefined,
 
     startCareer: (setup) =>
@@ -1695,8 +1702,25 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       }, 'Export'),
 
     refreshSlots: async () => {
-      const used = await getServices().platform.saves.occupied();
-      set({ slotsInUse: used.length });
+      const { saves } = getServices().platform;
+      let compatible = 0;
+      let incompatible = 0;
+      for (const slot of await saves.occupied()) {
+        const bytes = await saves.read(slot);
+        if (!bytes) continue;
+        if (isCompatibleSave(bytes)) compatible += 1;
+        else incompatible += 1;
+      }
+      set({ slotsInUse: compatible, incompatibleSlots: incompatible });
+    },
+
+    backupOldSaves: async () => {
+      const { saves, files } = getServices().platform;
+      for (const slot of await saves.occupied()) {
+        const bytes = await saves.read(slot);
+        if (bytes && !isCompatibleSave(bytes))
+          await files.exportFile(`backup-${slot}.lcsave`, bytes);
+      }
     },
   };
 });

@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { latestSchemaVersion } from '../../src/db/migrate';
+import { encodeSave } from '../../src/db/save-file';
 import { loadSql } from '../../src/db/sql';
 import { createMemoryPlatform } from '../../src/platform/memory';
 import { addSink, clearSinks, type TelemetryEvent } from '../../src/platform/telemetry';
@@ -18,6 +19,7 @@ describe('career store', () => {
       schemaVersion: undefined,
       career: undefined,
       slotsInUse: 0,
+      incompatibleSlots: 0,
       notice: undefined,
     });
   });
@@ -37,6 +39,31 @@ describe('career store', () => {
     await useCareerStore.getState().loadSlot1();
     expect(useCareerStore.getState().career?.masterSeed).toBe(seed);
     expect(useCareerStore.getState().notice?.key).toBe('debug.loaded');
+  });
+
+  it('counts an old save apart, refuses to load it, and backs it up unchanged', async () => {
+    const old = await encodeSave(
+      {
+        schemaVersion: 1,
+        appVersion: '0.2.0',
+        createdAt: '2031-02-01T00:00:00.000Z',
+        label: 'old',
+        mods: [],
+        preview: { mode: 'garage_owner', gameDate: '2031-02-01', founderCareer: false },
+      },
+      new Uint8Array([9]),
+    );
+    old[4] = 1;
+    await platform.saves.write('slot1', old);
+    await useCareerStore.getState().refreshSlots();
+    expect(useCareerStore.getState().slotsInUse).toBe(0);
+    expect(useCareerStore.getState().incompatibleSlots).toBe(1);
+
+    await useCareerStore.getState().loadSlot1();
+    expect(useCareerStore.getState().notice?.key).toBe('save.incompatible');
+
+    await useCareerStore.getState().backupOldSaves();
+    expect([...(platform.exported.get('backup-slot1.lcsave') ?? [])]).toEqual([...old]);
   });
 
   it('runs the prelims of each round in order and then stops', async () => {

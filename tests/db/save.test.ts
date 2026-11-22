@@ -3,7 +3,13 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createCareer, readCareer } from '../../src/db/career';
 import { getSchemaVersion } from '../../src/db/migrate';
-import { decodeSave, encodeSave, SaveFileError } from '../../src/db/save-file';
+import {
+  decodeSave,
+  encodeSave,
+  IncompatibleSaveError,
+  isCompatibleSave,
+  SaveFileError,
+} from '../../src/db/save-file';
 import {
   createNewDatabase,
   loadFromSlot,
@@ -58,6 +64,38 @@ describe('.lcsave container', () => {
     const bytes = await encodeSave(header, new Uint8Array(4));
     bytes[4] = 99;
     await expect(decodeSave(bytes)).rejects.toThrow(/newer/);
+  });
+});
+
+describe('saves from before 0.3.0', () => {
+  /** A save as the container wrote it before the calendar changed: format version 1. */
+  async function oldSave() {
+    const bytes = await encodeSave(header, new Uint8Array([1, 2, 3]));
+    bytes[4] = 1;
+    return bytes;
+  }
+
+  it('are refused with a message that says why', async () => {
+    const error = await decodeSave(await oldSave()).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(IncompatibleSaveError);
+    expect(error).toBeInstanceOf(SaveFileError);
+    expect((error as Error).message).toBe(
+      'Due to breaking changes, your previous saves are incompatible.',
+    );
+  });
+
+  it('are told apart from current saves, and from files that are not saves, by the container alone', async () => {
+    expect(isCompatibleSave(await encodeSave(header, new Uint8Array([1])))).toBe(true);
+    expect(isCompatibleSave(await oldSave())).toBe(false);
+    expect(isCompatibleSave(new Uint8Array([1, 2, 3]))).toBe(false);
+  });
+
+  it('cannot be loaded from a slot, and the slot is left as it was', async () => {
+    const storage = new MemorySaveStorage();
+    const bytes = await oldSave();
+    await storage.write('slot1', bytes);
+    await expect(loadFromSlot(SQL, storage, 'slot1')).rejects.toBeInstanceOf(IncompatibleSaveError);
+    expect([...(await storage.read('slot1'))!]).toEqual([...bytes]);
   });
 });
 

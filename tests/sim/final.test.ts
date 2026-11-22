@@ -102,7 +102,8 @@ describe('a full final', () => {
   it('has finishers who completed every sector and ordered by time', () => {
     const finishers = result.filter((r) => r.finished);
     for (const f of finishers) expect(f.sectors).toBe(race.totalSectors);
-    const times = finishers.map((f) => f.timeSeconds!);
+    // A car that lost places to a penalty is moved down on purpose, so only the others are in time order.
+    const times = finishers.filter((f) => f.placesLost === 0).map((f) => f.timeSeconds!);
     expect([...times].sort((a, b) => a - b)).toEqual(times);
   });
 

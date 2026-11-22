@@ -12,7 +12,16 @@ const IDENTITIES = ['masculine', 'feminine', 'non_binary'] as const;
 
 /** The first screen: create the owner and the garage (Garage owner mode). */
 export function NewCareer() {
-  const { status, slotsInUse, notice, startCareer, loadSlot1, refreshSlots } = useCareerStore();
+  const {
+    status,
+    slotsInUse,
+    incompatibleSlots,
+    notice,
+    startCareer,
+    loadSlot1,
+    refreshSlots,
+    backupOldSaves,
+  } = useCareerStore();
   const [setup, setSetup] = useState<OwnerSetup>({
     ownerName: '',
     identity: 'masculine',
@@ -160,6 +169,15 @@ export function NewCareer() {
           </button>
         </div>
       </form>
+      {incompatibleSlots > 0 && (
+        <div role="status" className="space-y-2 border border-lc-line p-3 text-sm">
+          <p className="text-lc-warn">{t('save.incompatible')}</p>
+          <p className="text-lc-dim">{t('save.incompatibleHelp')}</p>
+          <button type="button" className={quiet} onClick={() => void backupOldSaves()}>
+            {t('save.backup')}
+          </button>
+        </div>
+      )}
       {notice && (
         <p role="alert" className="text-sm text-lc-warn">
           {t(notice.key, notice.values)}

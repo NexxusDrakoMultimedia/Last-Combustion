@@ -5,7 +5,11 @@ import {
   analyticsId,
   applyConsent,
   loadGoogleTag,
+  ACCEPT_ALL,
+  readChoice,
   readConsent,
+  REJECT_OPTIONAL,
+  saveChoice,
   saveConsent,
   stopGoogleTag,
   type KeyValueStore,
@@ -40,6 +44,39 @@ describe('the analytics ID', () => {
     expect(analyticsId('')).toBeUndefined();
     expect(analyticsId('G-1')).toBeUndefined();
     expect(analyticsId('"><script>alert(1)</script>')).toBeUndefined();
+  });
+});
+
+describe('the saved per-tool choice', () => {
+  it('is read back tool by tool, and a damaged value counts as not chosen', () => {
+    const store = memoryStore();
+    expect(readChoice(store)).toBeUndefined();
+    const some = { google: false, gameAnalytics: true, monitoring: false };
+    saveChoice(some, store);
+    expect(readChoice(store)).toEqual(some);
+    store.data.set('lc.cookie-choice', '{not json');
+    expect(readChoice(store)).toBeUndefined();
+  });
+
+  it('carries an older yes or no over to every tool', () => {
+    const store = memoryStore();
+    saveConsent('granted', store);
+    expect(readChoice(store)).toEqual(ACCEPT_ALL);
+    saveConsent('denied', store);
+    expect(readChoice(store)).toEqual(REJECT_OPTIONAL);
+  });
+
+  it('survives a blocked store', () => {
+    const broken: KeyValueStore = {
+      getItem: () => {
+        throw new Error('blocked');
+      },
+      setItem: () => {
+        throw new Error('blocked');
+      },
+    };
+    expect(readChoice(broken)).toBeUndefined();
+    expect(() => saveChoice(ACCEPT_ALL, broken)).not.toThrow();
   });
 });
 

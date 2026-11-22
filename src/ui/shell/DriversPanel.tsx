@@ -10,6 +10,7 @@ import { places, seasonBalance } from '../../sim/worldgen/data';
 import { button, field, quiet } from '../styles';
 import { RivalriesSection } from './RivalriesSection';
 import { StorylinesSection } from './StorylinesSection';
+import { placeLabel } from '../../sim/worldgen/placeLabel';
 
 /** Every place a driver could move to: Australia first, then the rest by country and name. */
 const PLACE_OPTIONS = [...places]
@@ -21,7 +22,10 @@ const PLACE_OPTIONS = [...places]
   )
   .map((p) => ({
     id: p.id,
-    label: `${p.name}, ${p.region}${p.country === 'AU' ? '' : ` (${p.country})`}`,
+    label:
+      p.country === 'AU'
+        ? placeLabel(p.name, p.region, p.country)
+        : `${p.name}, ${p.region} (${p.country})`,
   }));
 
 /** Free agents to negotiate with, and the drivers already signed, who can be seated in an entry. */

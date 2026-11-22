@@ -6,14 +6,18 @@
  *
  * Layout (all numbers big-endian):
  *   4 bytes   magic "LCSV"
- *   1 byte    container format version (1)
+ *   1 byte    container format version (2)
  *   4 bytes   header length in bytes
  *   n bytes   header, UTF-8 JSON (see SaveHeader)
  *   rest      the SQLite database
  */
 
 export const SAVE_MAGIC = 'LCSV';
-export const SAVE_FORMAT_VERSION = 1;
+/**
+ * 2 starts with 0.3.0: the season calendar changed (new courses and a new order), so a save made
+ * by an earlier version cannot carry on and is refused rather than migrated.
+ */
+export const SAVE_FORMAT_VERSION = 2;
 
 export interface SavePreview {
   mode: string;
@@ -67,6 +71,26 @@ export async function encodeSave(input: SaveHeaderInput, payload: Uint8Array): P
 
 export class SaveFileError extends Error {}
 
+/** A save made by an earlier, incompatible version of the game. */
+export class IncompatibleSaveError extends SaveFileError {
+  constructor() {
+    super('Due to breaking changes, your previous saves are incompatible.');
+  }
+}
+
+/**
+ * Whether these bytes are a save this version can open. Looks only at the container, so it is cheap
+ * to ask of every slot; a damaged file is reported as not compatible by `decodeSave`, not here.
+ */
+export function isCompatibleSave(bytes: Uint8Array): boolean {
+  return (
+    bytes.byteLength >= 9 &&
+    decoder.decode(bytes.subarray(0, 4)) === SAVE_MAGIC &&
+    new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint8(4) >=
+      SAVE_FORMAT_VERSION
+  );
+}
+
 export async function decodeSave(
   bytes: Uint8Array,
 ): Promise<{ header: SaveHeader; payload: Uint8Array }> {
@@ -75,6 +99,7 @@ export async function decodeSave(
   }
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const formatVersion = view.getUint8(4);
+  if (formatVersion < SAVE_FORMAT_VERSION) throw new IncompatibleSaveError();
   if (formatVersion > SAVE_FORMAT_VERSION) {
     throw new SaveFileError('This save file was written by a newer version of the game.');
   }

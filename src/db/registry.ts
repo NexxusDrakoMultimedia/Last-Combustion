@@ -26,6 +26,7 @@ import {
 import { businessView, ensureBusinesses, type BusinessView } from './business';
 import { computeStandings } from './season';
 import { titlesOf } from './titles';
+import { placeLabel } from '../sim/worldgen/placeLabel';
 
 const gameYear = (db: Database): number => {
   const career = readCareer(db);
@@ -214,7 +215,7 @@ export interface DriverProfile {
 export function driverProfile(db: Database, driverId: number): DriverProfile {
   const d = all(
     db,
-    `SELECT d.*, h.name AS hometown, h.region AS hometown_region, res.name AS residence, res.region AS residence_region
+    `SELECT d.*, h.name AS hometown, h.region AS hometown_region, h.country AS hometown_country, res.name AS residence, res.region AS residence_region, res.country AS residence_country
        FROM driver d JOIN place h ON h.id = d.hometown_place_id JOIN place res ON res.id = d.residence_place_id
       WHERE d.id = ?`,
     [driverId],
@@ -274,8 +275,16 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
     identity: d.identity as string,
     age,
     flag: d.flag as string,
-    hometown: `${d.hometown as string}, ${d.hometown_region as string}`,
-    residence: `${d.residence as string}, ${d.residence_region as string}`,
+    hometown: placeLabel(
+      d.hometown as string,
+      d.hometown_region as string,
+      d.hometown_country as string,
+    ),
+    residence: placeLabel(
+      d.residence as string,
+      d.residence_region as string,
+      d.residence_country as string,
+    ),
     retiredYear: (d.retired_year as number | null) ?? null,
     number: last?.number ?? null,
     preferredNumber: (d.preferred_number as number | null) ?? null,
@@ -494,7 +503,7 @@ function fogBusiness(business: BusinessView | null, known: boolean): BusinessVie
 export function garageProfile(db: Database, garageId: number): GarageProfile {
   const g = all(
     db,
-    `SELECT g.*, p.name AS base, p.region, h.name AS hq_name, h.region AS hq_region
+    `SELECT g.*, p.name AS base, p.region, p.country, h.name AS hq_name, h.region AS hq_region, h.country AS hq_country
        FROM garage g JOIN place p ON p.id = g.base_place_id
        LEFT JOIN place h ON h.id = g.hq_place_id
       WHERE g.id = ? AND g.kind = 'racing'`,
@@ -528,10 +537,10 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     id: garageId,
     name: g.name as string,
     flag: g.flag as string,
-    base: `${g.base as string}, ${g.region as string}`,
+    base: placeLabel(g.base as string, g.region as string, g.country as string),
     headquarters: g.hq_name
-      ? `${g.hq_name as string}, ${g.hq_region as string}`
-      : `${g.base as string}, ${g.region as string}`,
+      ? placeLabel(g.hq_name as string, g.hq_region as string, g.hq_country as string)
+      : placeLabel(g.base as string, g.region as string, g.country as string),
     homeState: g.home_state as string,
     colours: [g.primary_colour as string, g.secondary_colour as string],
     reading,

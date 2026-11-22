@@ -42,11 +42,11 @@ const resultOf = (db: Database, entry: number) =>
 
 describe('penalties in a final, written to the results', () => {
   it('drop a car just over the road-legality limit the places its Technical penalty is worth, and no more', () => {
-    const plain = atTheFinal('final-db-penalty');
+    const plain = atTheFinal('final-db-penalty-c');
     playFinal(plain.db, 1);
     const before = resultOf(plain.db, plain.entry);
 
-    const wide = atTheFinal('final-db-penalty');
+    const wide = atTheFinal('final-db-penalty-c');
     // Fit race parts until the car is just over the road-legality limit.
     let short = 0;
     for (const p of parts.filter((x) => x.grade === 'race')) {

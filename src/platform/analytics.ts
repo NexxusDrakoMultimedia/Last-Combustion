@@ -68,6 +68,66 @@ export function saveConsent(
   }
 }
 
+/** Which optional tools the visitor has allowed. Saving the game's own data is not on the list: it is necessary. */
+export interface ConsentChoice {
+  /** The Google tag (sets the `_ga` cookies). */
+  google: boolean;
+  /** GameAnalytics (no cookies; a small queue in local storage). */
+  gameAnalytics: boolean;
+  /** Better Stack's browser script and error reports. */
+  monitoring: boolean;
+}
+
+export const ACCEPT_ALL: ConsentChoice = { google: true, gameAnalytics: true, monitoring: true };
+export const REJECT_OPTIONAL: ConsentChoice = {
+  google: false,
+  gameAnalytics: false,
+  monitoring: false,
+};
+
+const CHOICE_KEY = 'lc.cookie-choice';
+
+/** The choice a single old yes or no stands for. */
+export function choiceFromConsent(value: Consent): ConsentChoice {
+  return value === 'granted' ? ACCEPT_ALL : REJECT_OPTIONAL;
+}
+
+/**
+ * The visitor's saved per-tool choice, or undefined if they have not chosen (or storage is blocked).
+ * A visitor who answered the older single yes or no keeps that answer for every tool.
+ */
+export function readChoice(
+  store: KeyValueStore | undefined = defaultStore(),
+): ConsentChoice | undefined {
+  try {
+    const raw = store?.getItem(CHOICE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<ConsentChoice>;
+      return {
+        google: parsed.google === true,
+        gameAnalytics: parsed.gameAnalytics === true,
+        monitoring: parsed.monitoring === true,
+      };
+    }
+  } catch {
+    // A damaged value counts as no choice.
+  }
+  const old = readConsent(store);
+  return old ? choiceFromConsent(old) : undefined;
+}
+
+/** Saves the per-tool choice. A blocked store just means they are asked again next time. */
+export function saveChoice(
+  choice: ConsentChoice,
+  store: KeyValueStore | undefined = defaultStore(),
+): void {
+  try {
+    store?.setItem(CHOICE_KEY, JSON.stringify(choice));
+  } catch {
+    // Storage is blocked: the choice lasts only for this visit.
+  }
+}
+
 /** Loads the Google tag. Safe to call more than once. */
 export function loadGoogleTag(
   id: string,
