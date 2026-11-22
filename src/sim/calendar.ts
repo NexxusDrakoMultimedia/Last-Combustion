@@ -3,14 +3,20 @@
 import { occasionEnd, occasionSchedule } from './social';
 import { addDays } from './worldgen/calendar';
 
-/** What a calendar event is. Prelims, finals and the two ends of the season need the player; practice just marks a date. */
-export type EventKind = 'practice' | 'prelims' | 'final' | 'occasion' | 'end_season' | 'new_season';
+/**
+ * What a calendar event is. Prelims (or, once a round's prelims are under way, each prelim day), finals and
+ * the two ends of the season need the player; practice just marks a date.
+ */
+export type EventKind =
+  'practice' | 'prelims' | 'prelim_day' | 'final' | 'occasion' | 'end_season' | 'new_season';
 
 export interface CalendarEvent {
   kind: EventKind;
   date: string;
-  /** The round it belongs to, for practice, prelims and finals. */
+  /** The round it belongs to, for practice, prelims, prelim days and finals. */
   round?: number;
+  /** For a prelim day, which of the seven (1 to 7). */
+  day?: number;
   /** Whether it has happened. */
   done: boolean;
   /** Whether time stops until the player has dealt with it. */
@@ -29,12 +35,40 @@ export interface RoundDates {
   prelimStart: string;
   finalDate: string;
   status: string;
+  /**
+   * The prelim days of a round whose prelims are under way, with the dates the weather settled and
+   * whether each has been played. While there are some, they stand in the calendar for the single
+   * prelims event.
+   */
+  prelimDays?: { day: number; date: string; played: boolean }[];
 }
 
 /** The date the financial year, and so the season's books, close. */
 export const SEASON_END_MONTH_DAY = '11-11';
 /** The date the next season begins. */
 export const NEW_SEASON_MONTH_DAY = '02-01';
+
+/** One prelims event for a round, or a prelim day for each of the seven once the prelims are under way. */
+function prelimEvents(r: RoundDates): CalendarEvent[] {
+  if (r.status === 'scheduled' && r.prelimDays && r.prelimDays.length > 0)
+    return r.prelimDays.map((d) => ({
+      kind: 'prelim_day' as const,
+      date: d.date,
+      round: r.number,
+      day: d.day,
+      done: d.played,
+      blocking: true,
+    }));
+  return [
+    {
+      kind: 'prelims' as const,
+      date: r.prelimStart,
+      round: r.number,
+      done: r.status !== 'scheduled',
+      blocking: true,
+    },
+  ];
+}
 
 /** The events of a season in date order: practice, prelims and final of each round, the end of the season and the start of the next. */
 export function buildEvents(
@@ -53,13 +87,7 @@ export function buildEvents(
         done: today >= r.practiceStart,
         blocking: false,
       },
-      {
-        kind: 'prelims',
-        date: r.prelimStart,
-        round: r.number,
-        done: r.status !== 'scheduled',
-        blocking: true,
-      },
+      ...prelimEvents(r),
       {
         kind: 'final',
         date: r.finalDate,

@@ -72,6 +72,13 @@
         "training": 0.25,
         "gearCost": 0.2
       }
+    },
+    "head_of_scouting": {
+      "name": "Head of Scouting",
+      "built": true,
+      "max": {
+        "scouts": 0.25
+      }
     }
   },
   "poach": {

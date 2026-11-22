@@ -1,0 +1,25 @@
+{
+  "source": "Driver rivalries (see the GDD, 'Incidents, rivalries and storylines'). Each pair of drivers has a heat score. It rises with shared moments ('gains': finishing within 'closeFinishMs' of each other, and a head-to-head in the title fight), loses 'decay' of itself each round and never goes over 'ceiling'. 'levels' are the heat at which a pair becomes a Spark, a Rivalry and a Feud, and a Feud with 'legendarySeasons' seasons of history is Legendary. A rivalry ends when heat falls below 'endBelow', and a driver may have 'cap' live rivalries. 'fanMultipliers' scale the fans a driver wins in a final that a rival also races.",
+  "gains": {
+    "closeFinishMs": 3000,
+    "closeFinish": 8,
+    "titleFight": 10
+  },
+  "decay": 0.1,
+  "ceiling": 100,
+  "levels": {
+    "spark": 30,
+    "rivalry": 60,
+    "feud": 90
+  },
+  "endBelow": 10,
+  "legendarySeasons": 5,
+  "cap": 3,
+  "fanMultipliers": {
+    "none": 1,
+    "spark": 1.1,
+    "rivalry": 1.25,
+    "feud": 1.5,
+    "legendary": 1.5
+  }
+}

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
+import type { AmountRange, Reading } from '../sim/scouting';
 import {
   BUILT_ROLES,
   executiveOffers,
@@ -27,6 +28,7 @@ import { executiveData } from '../sim/worldgen/data';
 import { garageBonuses } from './bonuses';
 import { readCareer } from './career';
 import { all } from './entries';
+import { askFromSkill, knowledgeContext, readCandidateSkill } from './knowledge';
 import { adjustRelationship, relationshipScore, type Negotiation } from './negotiation';
 
 export interface Executive {
@@ -138,6 +140,38 @@ export function executiveCandidates(
   );
   const rng = createRng(career.masterSeed).stream(`exec:${garageId}:${role}:${hired}`);
   return executiveOffers(rng, role);
+}
+
+/** An executive on offer as the player sees them: the skill and the asking salary are readings, never the truth. */
+export interface ExecutiveOfferView {
+  role: ExecutiveRole;
+  name: string;
+  age: number;
+  skill: Reading;
+  /** 0 to 100: how well the player knows them. */
+  knowledge: number;
+  /** The asking salary a year, worked from the skill reading (one amount once the skill is exact). */
+  salary: AmountRange;
+}
+
+/** The executives on offer for a role, as the player reads them (same order as `executiveCandidates`). */
+export function executiveCandidateViews(
+  db: Database,
+  garageId: number,
+  role: ExecutiveRole,
+): ExecutiveOfferView[] {
+  const ctx = knowledgeContext(db, garageId);
+  return executiveCandidates(db, garageId, role).map((o) => {
+    const read = readCandidateSkill(ctx, `executive:${role}:${o.name}`, o.skill);
+    return {
+      role: o.role,
+      name: o.name,
+      age: o.age,
+      skill: read.reading,
+      knowledge: read.knowledge,
+      salary: askFromSkill(read.reading, o.salary, fairSalaryFor),
+    };
+  });
 }
 
 /**

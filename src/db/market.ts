@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { carTruthOf, exactCar, knowledgeContext, readCar, type CarReading } from './knowledge';
 import { equalizerMm } from '../sim/equalizer';
 import type { Layout } from '../sim/worldgen/types';
 import type { Database } from 'sql.js';
@@ -224,15 +225,17 @@ export interface Listing {
   tier: string;
   modelYear: number;
   roadKm: number;
-  wear: number;
+  /** What the player reads of the chassis: its condition (100 is new) as a word, a range or exact. */
+  reading: CarReading;
   price: number;
 }
 
-/** The cars for sale, cheapest first. */
-export function openListings(db: Database): Listing[] {
+/** The cars for sale, cheapest first, as a garage reads them (every number exact with no garage). */
+export function openListings(db: Database, garageId?: number): Listing[] {
+  const ctx = garageId === undefined ? undefined : knowledgeContext(db, garageId);
   return all(
     db,
-    `SELECT l.id, l.car_id, l.price, c.plate, c.plate_state, c.model_year, c.road_km, c.wear, m.name, m.tier
+    `SELECT l.id, l.car_id, l.price, c.plate, c.plate_state, c.model_year, c.road_km, m.name, m.tier
        FROM market_listing l
        JOIN car c ON c.id = l.car_id
        JOIN car_model m ON m.id = c.car_model_id
@@ -246,7 +249,9 @@ export function openListings(db: Database): Listing[] {
     tier: r.tier as string,
     modelYear: r.model_year as number,
     roadKm: r.road_km as number,
-    wear: r.wear as number,
+    reading: ctx
+      ? readCar(ctx, carTruthOf(db, r.car_id as number))
+      : exactCar(carTruthOf(db, r.car_id as number), false, false),
     price: r.price as number,
   }));
 }

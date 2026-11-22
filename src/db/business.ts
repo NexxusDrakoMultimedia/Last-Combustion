@@ -16,6 +16,7 @@ import { splitDividend, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
 import type { FacilityKind } from '../sim/facilities';
 import { createRng } from '../sim/rng';
+import { computerScoutSlots, drawScout } from '../sim/scouting';
 import { supplierById } from '../sim/supply';
 import { readCareer } from './career';
 import { all } from './entries';
@@ -27,6 +28,15 @@ import { closedYearProfits } from './ledger';
 /** The computer garages that are still open and have not been taken over. */
 const COMPUTER_GARAGES = `SELECT id, prestige, home_state, cash FROM garage
   WHERE kind = 'racing' AND is_player = 0 AND closed_year IS NULL AND acquired_by IS NULL ORDER BY id`;
+
+/**
+ * `ensureBusinesses` for the year the career's calendar is in. Called when a career is created and whenever
+ * a save is opened, so a new career and the same career reloaded have exactly the same world.
+ */
+export function ensureCurrentBusinesses(db: Database): void {
+  const career = readCareer(db);
+  if (career) ensureBusinesses(db, Number(career.gameDate.slice(0, 4)));
+}
 
 /**
  * Gives every open computer garage the people and places a business has: executives for as many
@@ -115,6 +125,29 @@ export function ensureBusinesses(db: Database, year: number): void {
       all(db, 'SELECT COUNT(*) AS n FROM staff WHERE garage_id = ? AND left_on IS NULL', [id])[0]!
         .n,
     );
+    // Scouts, under the same rules as the player's: as many as its prestige can afford, drawn last of all so
+    // nothing drawn before them moves. They are paid from the garage's books (see `settleBusinesses`).
+    const scouts = Number(
+      all(db, 'SELECT COUNT(*) AS n FROM scout WHERE garage_id = ? AND left_on IS NULL', [id])[0]!
+        .n,
+    );
+    const scoutStream = rng.stream(`scouts:computer:${id}:${year}`);
+    for (let i = scouts; i < computerScoutSlots(prestige); i++) {
+      const s = drawScout(scoutStream);
+      db.run(
+        'INSERT INTO scout (garage_id, name, skill, focus, wage_per_year, hired_on, birth_year, nationality) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          id,
+          s.name,
+          s.skill,
+          scoutStream.pick(['drivers', 'cars', 'garages']),
+          s.wagePerYear,
+          `${year}-02-01`,
+          year - s.age,
+          s.nationality,
+        ],
+      );
+    }
     for (let i = crew; i < crewSize(entries); i++) {
       // Half the time a vacancy goes to someone on the job market, who is the same person again.
       if (mechanicMarket.length > 0 && stream.chance(0.5)) {
@@ -147,9 +180,14 @@ export function settleBusinesses(db: Database, year: number): number {
   for (const g of all(db, COMPUTER_GARAGES)) {
     const id = g.id as number;
     const upkeep = yearlyUpkeep(
-      all(db, "SELECT salary FROM executive WHERE garage_id = ? AND status = 'employed'", [id]).map(
-        (r) => r.salary as number,
-      ),
+      [
+        ...all(db, "SELECT salary FROM executive WHERE garage_id = ? AND status = 'employed'", [
+          id,
+        ]).map((r) => r.salary as number),
+        ...all(db, 'SELECT wage_per_year FROM scout WHERE garage_id = ? AND left_on IS NULL', [
+          id,
+        ]).map((r) => r.wage_per_year as number),
+      ],
       garageFacilities(db, id),
       all(db, 'SELECT wage_per_week FROM staff WHERE garage_id = ? AND left_on IS NULL', [id]).map(
         (r) => r.wage_per_week as number,
@@ -174,17 +212,20 @@ export function settleBusinesses(db: Database, year: number): number {
     if (amount <= 0) continue;
     const holdings = all(
       db,
-      'SELECT id, holder_type, shares, class FROM shareholding WHERE garage_id = ?',
+      'SELECT id, holder_type, holder_id, shares, class FROM shareholding WHERE garage_id = ?',
       [id],
     ).map((r) => ({
       id: r.id as number,
       type: r.holder_type as string,
+      holderId: r.holder_id as number | null,
       shares: r.shares as number,
       class: r.class as ShareClass,
     }));
     const parts = splitDividend(holdings, amount);
+    // Only the player's own stake (owner 1) is theirs: each computer garage has an owner of its own,
+    // and their dividends stay with them.
     const mine = holdings
-      .filter((h) => h.type === 'owner')
+      .filter((h) => h.type === 'owner' && h.holderId === 1)
       .reduce((sum, h) => sum + (parts.get(h.id) ?? 0), 0);
     const paid = [...parts.values()].reduce((s, x) => s + x, 0);
     if (paid <= 0) continue;

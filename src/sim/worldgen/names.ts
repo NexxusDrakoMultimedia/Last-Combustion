@@ -84,8 +84,8 @@ export function garageName(
   /** The town or city the garage is from: a name that carries a place carries this one. */
   home?: string,
 ): string {
-  const regional = places.filter((p) => p.country === nationality);
-  const pool = regional.length > 0 ? regional : places;
+  const regional = PLACES_BY_COUNTRY.get(nationality);
+  const pool = regional ?? places;
   return generateName(
     rng,
     garageThemes,
@@ -145,18 +145,38 @@ export function ownerSurname(
 
 const PLACES_LONGEST_FIRST = [...places].sort((a, b) => b.name.length - a.name.length);
 
+/** The listed places of each country, in list order (a country with none is not in the map). */
+const PLACES_BY_COUNTRY = new Map<string, (typeof places)[number][]>();
+for (const place of places) {
+  const list = PLACES_BY_COUNTRY.get(place.country) ?? [];
+  list.push(place);
+  PLACES_BY_COUNTRY.set(place.country, list);
+}
+
+/** Each place name, mapped to the place that comes first when the longest names are tried first. */
+const PLACE_BY_NAME = new Map<string, (typeof places)[number]>();
+for (const place of PLACES_LONGEST_FIRST)
+  if (!PLACE_BY_NAME.has(place.name)) PLACE_BY_NAME.set(place.name, place);
+
+const isLetter = (ch: string | undefined): boolean => ch !== undefined && /\p{L}/u.test(ch);
+
 /**
  * The place a garage name carries, if it has one in it ("Mount Barker Coast Tuning" carries Mount
  * Barker): the longest place name that stands as whole words in the name. A garage named for a place
- * is from that place, so its flag and headquarters follow it.
+ * is from that place, so its flag and headquarters follow it. It tries each stretch of the name that
+ * starts and ends at a word edge against a table of the place names, so the list can be long.
  */
 export function placeInName(name: string): (typeof places)[number] | undefined {
-  return PLACES_LONGEST_FIRST.find((p) =>
-    new RegExp(
-      `(^|[^\\p{L}])${p.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^\\p{L}])`,
-      'u',
-    ).test(name),
-  );
+  let best: (typeof places)[number] | undefined;
+  for (let i = 0; i < name.length; i++) {
+    if (i > 0 && isLetter(name[i - 1])) continue;
+    for (let j = name.length; j > i; j--) {
+      if (isLetter(name[j])) continue;
+      const found = PLACE_BY_NAME.get(name.slice(i, j));
+      if (found && (!best || found.name.length > best.name.length)) best = found;
+    }
+  }
+  return best;
 }
 
 /** A model name for a car of a category (hypercar, supercar, jdm, sports, domestic or other). */

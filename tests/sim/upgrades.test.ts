@@ -127,8 +127,8 @@ describe('road legality', () => {
   });
 
   it('fails too wide a tyre, and passes a stock car', () => {
-    expect(scrutineer(1200, 290, [])).toEqual({ legal: false, failures: ['tyres'] });
-    expect(scrutineer(1200, 280, [])).toEqual({ legal: true, failures: [] });
+    expect(scrutineer(1200, 290, [])).toMatchObject({ legal: false, failures: ['tyres'] });
+    expect(scrutineer(1200, 280, [])).toMatchObject({ legal: true, failures: [] });
   });
 });
 

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { readGarageById, readSeriesGarages, type GarageReading } from './knowledge';
+import type { AmountRange, Reading } from '../sim/scouting';
 import type { Database } from 'sql.js';
 import { all } from './entries';
 import { readCareer, type CareerMode, type Difficulty } from './career';
@@ -52,6 +54,8 @@ export interface SeriesCounts {
   deaths: number;
   /** The series' own fans in the latest season, and the fans of everyone in it, added up. */
   seriesFans: number;
+  /** The extra audience growth, in percent, that the last finished season's buzz gave the series. */
+  seriesBuzz: number;
   driverFans: number;
   garageFans: number;
   carFans: number;
@@ -59,12 +63,15 @@ export interface SeriesCounts {
 
 /** Figures that describe the state of the world at the game date. */
 export interface StateOfPlay {
-  /** The total cash held by every racing garage. */
-  garageCash: number;
-  averagePrestige: number;
+  /** The total cash held by every racing garage, as the player reads it (their own exact, the others through the fog). */
+  garageCash: AmountRange;
+  /** The average prestige of the racing garages, as the player reads it, with the knowledge behind it. */
+  averagePrestige: { reading: Reading; knowledge: number };
   averageDriverAge: number;
-  richestGarage: { name: string; cash: number } | null;
-  mostPrestigiousGarage: { name: string; prestige: number } | null;
+  /** The richest garage: its cash is shown only when it is the player's own (see "Scouting and fog of war"). */
+  richestGarage: { name: string; cash: number | null } | null;
+  /** The most prestigious garage, with what the player reads of its prestige. */
+  mostPrestigiousGarage: { name: string; reading: GarageReading } | null;
   mostFamousDriver: { name: string; fans: number } | null;
 }
 
@@ -169,6 +176,13 @@ export function gameView(db: Database): GameView {
       : null,
     deaths: count(db, 'SELECT COUNT(*) AS n FROM death'),
     seriesFans: count(db, 'SELECT series_fans AS n FROM season ORDER BY year DESC LIMIT 1'),
+    seriesBuzz:
+      Math.round(
+        count(
+          db,
+          "SELECT buzz AS n FROM season WHERE status = 'complete' ORDER BY year DESC LIMIT 1",
+        ) * 1000,
+      ) / 10,
     driverFans: count(db, 'SELECT COALESCE(SUM(fans), 0) AS n FROM driver'),
     garageFans: count(db, "SELECT COALESCE(SUM(fans), 0) AS n FROM garage WHERE kind = 'racing'"),
     carFans: count(db, 'SELECT COALESCE(SUM(fans), 0) AS n FROM car'),
@@ -176,29 +190,35 @@ export function gameView(db: Database): GameView {
 
   const richest = all(
     db,
-    "SELECT name, cash FROM garage WHERE kind = 'racing' ORDER BY cash DESC, id LIMIT 1",
+    "SELECT name, cash, is_player FROM garage WHERE kind = 'racing' ORDER BY cash DESC, id LIMIT 1",
   )[0];
   const prestigious = all(
     db,
-    "SELECT name, prestige FROM garage WHERE kind = 'racing' ORDER BY prestige DESC, id LIMIT 1",
+    "SELECT id, name FROM garage WHERE kind = 'racing' ORDER BY prestige DESC, id LIMIT 1",
   )[0];
   const famous = all(db, 'SELECT name, fans FROM driver ORDER BY fans DESC, id LIMIT 1')[0];
   const ages = all(db, 'SELECT birth_date FROM driver WHERE retired_year IS NULL').map(
     (r) => (dayNumber(career.gameDate) - dayNumber(String(r.birth_date))) / 365.25,
   );
+  const garages = readSeriesGarages(db);
   const state: StateOfPlay = {
-    garageCash: count(db, "SELECT COALESCE(SUM(cash), 0) AS n FROM garage WHERE kind = 'racing'"),
-    averagePrestige:
-      Math.round(
-        Number(all(db, "SELECT AVG(prestige) AS n FROM garage WHERE kind = 'racing'")[0]?.n ?? 0) *
-          10,
-      ) / 10,
+    garageCash: garages.totalCash,
+    averagePrestige: { reading: garages.averagePrestige, knowledge: garages.knowledge },
     averageDriverAge: ages.length
       ? Math.round((ages.reduce((a, b) => a + b, 0) / ages.length) * 10) / 10
       : 0,
-    richestGarage: richest ? { name: String(richest.name), cash: Number(richest.cash) } : null,
+    richestGarage: richest
+      ? {
+          name: String(richest.name),
+          // Another garage's cash is hidden behind the fog, so only the name is known.
+          cash: richest.is_player === 1 ? Number(richest.cash) : null,
+        }
+      : null,
     mostPrestigiousGarage: prestigious
-      ? { name: String(prestigious.name), prestige: Number(prestigious.prestige) }
+      ? {
+          name: String(prestigious.name),
+          reading: readGarageById(db, Number(prestigious.id)),
+        }
       : null,
     mostFamousDriver: famous ? { name: String(famous.name), fans: Number(famous.fans) } : null,
   };

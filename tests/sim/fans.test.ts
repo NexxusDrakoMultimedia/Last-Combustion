@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { capFans, driverFanGain, seriesGrowth } from '../../src/sim/fans';
+import { capFans, driverFanGain, seasonBuzz, seriesGrowth } from '../../src/sim/fans';
 
 const quiet = { finalPos: null, points: 0, pole: false, overtakes: 0, home: false };
 
@@ -68,5 +68,62 @@ describe('series growth', () => {
   it('adds half a percent for each attention flag raised the season before', () => {
     expect(seriesGrowth(2032, 4)).toBeCloseTo(0.28, 5);
     expect(seriesGrowth(2037, 2)).toBeCloseTo(0.1, 5);
+  });
+});
+
+describe('season buzz', () => {
+  const dull = { titleGapShare: 0.5, rounds: 6, winners: 0, rivalryPoints: 0 };
+
+  it('is nothing for a dull season', () => {
+    expect(seasonBuzz(dull)).toBe(0);
+    expect(seasonBuzz({ ...dull, titleGapShare: null })).toBe(0);
+  });
+
+  it('rewards a title race that went to the wire, fading out at a 10% gap', () => {
+    expect(seasonBuzz({ ...dull, titleGapShare: 0 })).toBeCloseTo(0.03, 5);
+    expect(seasonBuzz({ ...dull, titleGapShare: 0.05 })).toBeCloseTo(0.015, 5);
+    expect(seasonBuzz({ ...dull, titleGapShare: 0.1 })).toBe(0);
+  });
+
+  it('rewards different winners, up to one for every round', () => {
+    expect(seasonBuzz({ ...dull, winners: 6 })).toBeCloseTo(0.02, 5);
+    expect(seasonBuzz({ ...dull, winners: 3 })).toBeCloseTo(0.01, 5);
+    expect(seasonBuzz({ ...dull, winners: 9 })).toBeCloseTo(0.02, 5);
+  });
+
+  it('rewards live rivalries, with a cap', () => {
+    expect(seasonBuzz({ ...dull, rivalryPoints: 5 })).toBeCloseTo(0.02, 5);
+    expect(seasonBuzz({ ...dull, rivalryPoints: 100 })).toBeCloseTo(0.03, 5);
+  });
+
+  it('carries half of the last buzz into the next one, as word of mouth', () => {
+    expect(seasonBuzz(dull, 0.1)).toBeCloseTo(0.05, 5);
+  });
+
+  it('is bounded and never goes down as the season gets more exciting', () => {
+    fc.assert(
+      fc.property(
+        fc.record({
+          titleGapShare: fc.option(fc.double({ min: 0, max: 1, noNaN: true }), { nil: null }),
+          rounds: fc.integer({ min: 0, max: 12 }),
+          winners: fc.integer({ min: 0, max: 20 }),
+          rivalryPoints: fc.integer({ min: 0, max: 60 }),
+        }),
+        fc.double({ min: 0, max: 0.15, noNaN: true }),
+        (story, previous) => {
+          const buzz = seasonBuzz(story, previous);
+          expect(buzz).toBeGreaterThanOrEqual(0);
+          expect(buzz).toBeLessThanOrEqual(0.15);
+          expect(
+            seasonBuzz({ ...story, rivalryPoints: story.rivalryPoints + 1 }, previous),
+          ).toBeGreaterThanOrEqual(buzz);
+        },
+      ),
+    );
+  });
+
+  it('adds to the series growth', () => {
+    expect(seriesGrowth(2032, 0, 0.05)).toBeCloseTo(0.31, 5);
+    expect(seriesGrowth(2032)).toBeCloseTo(0.26, 5);
   });
 });

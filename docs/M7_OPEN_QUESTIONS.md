@@ -1,0 +1,35 @@
+# M7 open questions for the final polish
+
+Every design question raised while building M7 (story and fog of war, 0.3.0) has now been answered by the project owner. This page keeps the answers and the work they add, so the polish can be checked off before the release. A row is deleted when its work is done.
+
+## What the owner decided
+
+| Area                 | Decision                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Darker side          | Start with cheating only, caught at scrutineering. Gamesmanship and sabotage come after it (M8 slice 5, in that order).                                                                                                                                                                                                                                               |
+| The 20-car final     | It comes with the 2036 expansion, and the penalty cap follows the season's field size (15 now, 20 then).                                                                                                                                                                                                                                                              |
+| Conduct reports      | The private GitHub report only. No published email address.                                                                                                                                                                                                                                                                                                           |
+| `CONTRIBUTORS.md`    | The organisation name, with the owner's handle beside it.                                                                                                                                                                                                                                                                                                             |
+| Telemetry            | The list of events is right.                                                                                                                                                                                                                                                                                                                                          |
+| M8                   | Only what heirs need of the family tree in M8, the rest in M9. An owner can retire from 60. The calendar pauses when an owner dies, so the player can name a successor. Garage rivalries, the Rookie on the rise and Underdog garage storylines, and the transfer, title and retirement press stories are built in M8.                                                |
+| Branding and release | Start with the channels NDM already uses. There is no public demo or separate beta: the web build is the final build. No Steam. Key art and trailer are made in-house. Press and creator outreach come after 1.0, with a cookie prompt that matches the game's opt-out.                                                                                               |
+| Unlock sequence      | Leave the open question in the Game Design Document as it is.                                                                                                                                                                                                                                                                                                         |
+| Banned driver        | The whole entry, car included, sits the banned rounds out and is written as DNS. No replacement driver is fielded and there is no fine.                                                                                                                                                                                                                               |
+| Next beta            | Go ahead after the owner's playtest. Version bump, tag and pre-release are the owner's release steps in [Releasing](RELEASING.md).                                                                                                                                                                                                                                    |
+| Kept as built        | Starter screen exact, the standing fog note for old saves, scout wages, whole-field timing while watching, calls moving a car a few places, the drone chances (8% prelims, 5% finals, about 1 in 330 a Palpably Unfair Act), the prelim plans, the Technical thresholds, and the calls C2 to C5, C7, C8, C11, C13 to C18, C20 and C21 (a small rivalry effect later). |
+
+## Work these decisions add to M7
+
+Each is built as its own small pull request into `feature/0.3.x`.
+
+1. **Measure the size of a saved race** (done for the size, not the time). A round's prelims under way add about 0.47 MB to a save (313 entries with their cars and drivers, frozen when they start), and a final under way about 0.09 MB. A test keeps them under 0.8 MB and 0.4 MB. The time to save in a real browser has not been measured: open a save made mid-prelims on a slow device during the playtest and say if it lags.
+
+## Release steps (owner only)
+
+The steps are in [Releasing](RELEASING.md). For M7, remember:
+
+1. A beta after each slice (`0.3.0-beta1`, `0.3.0-beta2` and `0.3.0-beta3`), each a version bump, a tag and a pre-release, with no changelog section of its own.
+2. Before 0.3.0, the full documentation pass: every claim checked against the code, the "built so far" notes merged into the sections they belong to, the new files included (`CONTRIBUTING.md`, `CONTRIBUTORS.md`, `AGENTS.md`), and screenshots taken from the release.
+3. Check that a save from 0.2.x is refused with the message and the backup button on the start screen, and that a new career plays a whole season. (0.3.0 breaks old saves on purpose: the calendar changed.)
+4. Turn `[Unreleased]` in `CHANGELOG.md` into the dated 0.3.0 entry, as one list of everything new since 0.2.0.
+5. Read through every fog screen as a new player: the hover text, the "not known" cases, and whether a clear fog is worth the scouts' wages.

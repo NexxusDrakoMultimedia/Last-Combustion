@@ -2,6 +2,25 @@
   {
     "id": "round-1",
     "number": 1,
+    "name": "Huon and Channel Loop",
+    "state": "Tas",
+    "shape": "loop",
+    "lapKm": 76.65,
+    "finalLaps": 4,
+    "roadType": "coast",
+    "altitudeM": 120,
+    "night": false,
+    "climate": {
+      "dry_clear": 0.45,
+      "overcast": 0.3,
+      "wet": 0.25
+    },
+    "baseTempC": 12,
+    "elevationAmplitudeM": 180
+  },
+  {
+    "id": "round-2",
+    "number": 2,
     "name": "Adelaide Hills Gorge Loop",
     "state": "SA",
     "shape": "loop",
@@ -19,13 +38,13 @@
     "elevationAmplitudeM": 260
   },
   {
-    "id": "round-2",
-    "number": 2,
+    "id": "round-3",
+    "number": 3,
     "name": "Yallingup and Metricup Loop",
     "state": "WA",
     "shape": "loop",
-    "lapKm": 62.28,
-    "finalLaps": 5,
+    "lapKm": 44.88,
+    "finalLaps": 7,
     "roadType": "coast",
     "altitudeM": 50,
     "night": true,
@@ -38,32 +57,32 @@
     "elevationAmplitudeM": 60
   },
   {
-    "id": "round-3",
-    "number": 3,
-    "name": "Mount Nebo-Mount Glorious Loop",
-    "state": "Qld",
-    "shape": "loop",
-    "lapKm": 57.4,
-    "finalLaps": 6,
-    "roadType": "mountain",
-    "altitudeM": 650,
-    "night": false,
-    "climate": {
-      "dry_clear": 0.5,
-      "overcast": 0.3,
-      "wet": 0.2
-    },
-    "baseTempC": 21,
-    "elevationAmplitudeM": 320
-  },
-  {
     "id": "round-4",
     "number": 4,
+    "name": "Tablelands Crater Lakes Loop",
+    "state": "Qld",
+    "shape": "loop",
+    "lapKm": 51.17,
+    "finalLaps": 6,
+    "roadType": "forest",
+    "altitudeM": 750,
+    "night": true,
+    "climate": {
+      "dry_clear": 0.35,
+      "overcast": 0.25,
+      "wet": 0.4
+    },
+    "baseTempC": 23,
+    "elevationAmplitudeM": 200
+  },
+  {
+    "id": "round-5",
+    "number": 5,
     "name": "Jamberoo Mountain Loop",
     "state": "NSW",
     "shape": "loop",
-    "lapKm": 63.85,
-    "finalLaps": 5,
+    "lapKm": 54.01,
+    "finalLaps": 6,
     "roadType": "mountain",
     "altitudeM": 500,
     "night": false,
@@ -76,32 +95,13 @@
     "elevationAmplitudeM": 300
   },
   {
-    "id": "round-5",
-    "number": 5,
-    "name": "Marysville and Buxton Loop",
-    "state": "Vic",
-    "shape": "loop",
-    "lapKm": 42.11,
-    "finalLaps": 8,
-    "roadType": "forest",
-    "altitudeM": 500,
-    "night": false,
-    "climate": {
-      "dry_clear": 0.4,
-      "overcast": 0.3,
-      "wet": 0.3
-    },
-    "baseTempC": 13,
-    "elevationAmplitudeM": 200
-  },
-  {
     "id": "round-6",
     "number": 6,
     "name": "Healesville Hills Loop",
     "state": "Vic",
     "shape": "loop",
-    "lapKm": 52.63,
-    "finalLaps": 6,
+    "lapKm": 46.31,
+    "finalLaps": 7,
     "roadType": "forest",
     "altitudeM": 350,
     "night": false,

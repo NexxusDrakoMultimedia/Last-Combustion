@@ -54,6 +54,19 @@ import { migration0050 } from './0050_deaths';
 import { migration0051 } from './0051_origins';
 import { migration0052 } from './0052_job_market';
 import { migration0053 } from './0053_company_breaks';
+import { migration0054 } from './0054_rivalries';
+import { migration0055 } from './0055_season_buzz';
+import { migration0056 } from './0056_storylines';
+import { migration0057 } from './0057_news';
+import { migration0058 } from './0058_ghost';
+import { migration0059 } from './0059_scouts';
+import { migration0060 } from './0060_head_of_scouting';
+import { migration0061 } from './0061_car_inspection';
+import { migration0062 } from './0062_race_state';
+import { migration0063 } from './0063_race_plan';
+import { migration0064 } from './0064_driver_ban';
+import { migration0065 } from './0065_scout_age';
+import { migration0066 } from './0066_scout_origin';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -110,4 +123,17 @@ export const migrations: readonly Migration[] = [
   migration0051,
   migration0052,
   migration0053,
+  migration0054,
+  migration0055,
+  migration0056,
+  migration0057,
+  migration0058,
+  migration0059,
+  migration0060,
+  migration0061,
+  migration0062,
+  migration0063,
+  migration0064,
+  migration0065,
+  migration0066,
 ];

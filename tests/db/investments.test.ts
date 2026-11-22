@@ -5,14 +5,14 @@ import { createCareer } from '../../src/db/career';
 import { ensureCapTables, ownershipView } from '../../src/db/equity';
 import {
   buyStake,
-  investmentTargets,
-  investmentView,
+  investmentTargetsTruth as investmentTargets,
+  investmentTruth as investmentView,
   launchTakeover,
-  quoteTakeover,
+  trueTakeoverQuote as quoteTakeover,
   reserveOf,
   sellStake,
   takeoverOpen,
-  wealthOf,
+  wealthTruth as wealthOf,
 } from '../../src/db/investments';
 import { personProfile } from '../../src/db/people';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';

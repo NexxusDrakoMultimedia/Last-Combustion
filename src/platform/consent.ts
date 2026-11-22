@@ -3,8 +3,11 @@
 import {
   analyticsId,
   applyConsent,
+  choiceFromConsent,
   createGoogleTagSink,
+  REJECT_OPTIONAL,
   type Consent,
+  type ConsentChoice,
   type ScriptHost,
   type TagWindow,
 } from './analytics';
@@ -34,12 +37,12 @@ export function telemetryConfigured(): boolean {
 }
 
 /**
- * The choice that applies: the visitor's own, or, when they have not made one, **granted**. Telemetry is
- * opt-out: it runs from the first visit, with a notice and a button to opt out at once, and an opt-out
- * is kept and respected from then on.
+ * The choice that applies: the visitor's own, or, when they have not made one, **nothing optional**.
+ * Telemetry is opt-in: no tool loads until the visitor accepts it in the cookie settings, and the
+ * choice, once made, is kept and respected from then on.
  */
-export function effectiveConsent(saved: Consent | undefined): Consent {
-  return saved ?? 'granted';
+export function effectiveChoice(saved: ConsentChoice | undefined): ConsentChoice {
+  return saved ?? REJECT_OPTIONAL;
 }
 
 export interface TelemetryOptions {
@@ -54,13 +57,13 @@ export interface TelemetryOptions {
 }
 
 /**
- * Applies the visitor's choice to every telemetry tool. On `granted`, GameAnalytics (primary) and
- * the Google tag (secondary) start and receive the game's events; on `denied` both stop and the
- * game stops sending events. This function does what it is told; the choice a visitor who has not
- * chosen is given is `effectiveConsent`.
+ * Applies the visitor's choice to every telemetry tool, each on its own. A tool that is allowed
+ * starts (GameAnalytics and the Google tag also receive the game's events); one that is not allowed
+ * stops. A plain `granted` or `denied` means every tool. With no choice at all nothing is changed:
+ * what a visitor who has not chosen is given is `effectiveChoice`.
  */
 export function applyTelemetryConsent(
-  value: Consent | undefined,
+  value: Consent | ConsentChoice | undefined,
   options: TelemetryOptions,
   ids: {
     google?: string | undefined;
@@ -74,23 +77,27 @@ export function applyTelemetryConsent(
     errorTracking: errorTrackingDsn(),
   },
 ): void {
-  applyConsent(value, ids.google, options.doc, options.win);
-  if (value === 'granted' && ids.errorTracking)
-    void startErrorTracking(ids.errorTracking, options.build, options.loadErrorTracking);
-  if (value === 'denied') stopErrorTracking();
-  if (value === 'granted' && ids.betterStack)
-    loadBetterStack(
-      ids.betterStack,
-      options.doc as unknown as BetterStackHost | undefined,
-      options.win,
-    );
-  if (value === 'granted') {
-    clearSinks();
+  if (value === undefined) return;
+  const choice = typeof value === 'string' ? choiceFromConsent(value) : value;
+  applyConsent(choice.google ? 'granted' : 'denied', ids.google, options.doc, options.win);
+  if (choice.monitoring) {
+    if (ids.errorTracking)
+      void startErrorTracking(ids.errorTracking, options.build, options.loadErrorTracking);
+    if (ids.betterStack)
+      loadBetterStack(
+        ids.betterStack,
+        options.doc as unknown as BetterStackHost | undefined,
+        options.win,
+      );
+  } else {
+    stopErrorTracking();
+  }
+  clearSinks();
+  if (choice.gameAnalytics) {
     if (ids.gameAnalytics)
       addSink(startGameAnalytics(ids.gameAnalytics, options.build, options.load));
-    if (ids.google) addSink(createGoogleTagSink(options.win));
   } else {
-    clearSinks();
-    if (value === 'denied') stopGameAnalytics();
+    stopGameAnalytics();
   }
+  if (choice.google && ids.google) addSink(createGoogleTagSink(options.win));
 }

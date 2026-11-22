@@ -21,7 +21,7 @@ It is a management game first: as much a garage simulation as a racing one. The 
 
 ## Where it is
 
-The game is being built in milestones (M0 to M9, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is released as **0.1.0**. Milestone M6, depth, is built on its own branch and comes out as **0.2.0**, with betas along the way. It is an early version with one career mode, so expect rough edges (see [what the game does not have yet](docs/HOW_TO_PLAY.md#what-the-game-does-not-have-yet)). Bugs and ideas are welcome through the Feedback button in the game or the [issue form](https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose).
+The game is being built in milestones (M0 to M9, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is released as **0.1.0**. Milestone M6, depth, is released as **0.2.0**. Milestone M7, story and fog of war, is released as **0.3.0**: it starts a new six-round calendar from Tasmania to Healesville, so saves from earlier versions do not load. The next milestones come out as 0.4.0 and later, with betas along the way. It is an early version with one career mode, so expect rough edges (see [what the game does not have yet](docs/HOW_TO_PLAY.md#what-the-game-does-not-have-yet)). Bugs and ideas are welcome through the Feedback button in the game or the [issue form](https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose).
 
 You can already:
 
@@ -30,12 +30,14 @@ You can already:
 - buy cars from dealers, the used market and the auction house, fit upgrade parts, and restore a worn chassis;
 - sign drivers, train them, hire mechanics and executives, build the garage's facilities, and negotiate with sponsors and with the suppliers of electricity, water and fuel, in five tiers from local to global, with outages and a spot market;
 - earn delivery money and train your drivers on the roads between rounds, and watch the other garages run as businesses of their own;
+- watch the prelims and the final as they happen, with a live map, a timing tower, plans for your prelim runs and calls for your cars in the final;
 - read the ledger by year and category, and follow each garage's cap table, valuation, dividends, board and takeovers in Ownership;
 - keep your people happy, make contacts, go to the season's social occasions and read what the press says about you;
+- scout drivers, cars and garages you do not own, so that what you know about them sharpens from a word to a range to the exact number, and negotiate against a range rather than a known price;
 - follow the standings, full race results, season awards and records, and look up any driver, car, garage, company or race in the Registry;
 - save, load and export your career.
 
-Still to come are the story and feedback layer, scouting and racing by the day (0.3.0), a living world of changing manufacturers, mortality and heirs, and the 2036 expansion with the Junior Series (0.4.0), and the other career modes (0.5.0). The Game Design Document lists what is built and what is planned, section by section.
+Still to come are a living world of changing manufacturers, mortality and heirs, and the 2036 expansion with the Junior Series (0.4.0), and the other career modes (0.5.0). The Game Design Document lists what is built and what is planned, section by section.
 
 ## Screenshots
 
@@ -79,22 +81,24 @@ The game is TypeScript, React, Tailwind CSS and Zustand, with SQLite (SQL.js) ru
 
 ## Documents
 
-| Read                                                 | For                                                          |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| [How to play](docs/HOW_TO_PLAY.md)                   | A first season, the screens, a glossary and known limits     |
-| [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) | The rules and numbers, the source of truth for what to build |
-| [Architecture](docs/ARCHITECTURE.md)                 | How the code is organised                                    |
-| [Data files](docs/DATA_FILES.md)                     | What each file in `data/` holds, and how mods use them       |
-| [Press kit](docs/PRESS.md)                           | The description, facts, logo files and screenshots           |
-| [Releasing](docs/RELEASING.md)                       | Versions, milestone branches and the release steps           |
-| [Contributing](CONTRIBUTING.md)                      | How to help, from set-up to pull request                     |
-| [Credits](CREDITS.md)                                | Third-party assets and their licences                        |
-| [Trademarks](TRADEMARKS.md)                          | What is reserved and what you may do                         |
-| [Security](SECURITY.md)                              | How to report a vulnerability                                |
+| Read                                                 | For                                                             |
+| ---------------------------------------------------- | --------------------------------------------------------------- |
+| [How to play](docs/HOW_TO_PLAY.md)                   | A first season, the screens, a glossary and known limits        |
+| [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md) | The rules and numbers, the source of truth for what to build    |
+| [Architecture](docs/ARCHITECTURE.md)                 | How the code is organised                                       |
+| [Data files](docs/DATA_FILES.md)                     | What each file in `data/` holds, and how mods use them          |
+| [Press kit](docs/PRESS.md)                           | The description, facts, logo files and screenshots              |
+| [Releasing](docs/RELEASING.md)                       | Versions, milestone branches and the release steps              |
+| [Contributing](CONTRIBUTING.md)                      | How to help, from set-up to pull request                        |
+| [Contributors](CONTRIBUTORS.md)                      | Who makes the game, and how to be listed                        |
+| [Agent guide](AGENTS.md)                             | Rules and commands for AI coding agents (and a quick reference) |
+| [Credits](CREDITS.md)                                | Third-party assets and their licences                           |
+| [Trademarks](TRADEMARKS.md)                          | What is reserved and what you may do                            |
+| [Security](SECURITY.md)                              | How to report a vulnerability                                   |
 
 ## Privacy
 
-The game has no accounts and no server of its own. The web build collects anonymous usage data and error reports (which buttons are used, counts and money moved, and the error and where it happened, never names or save contents) unless you opt out. A notice on your first visit says so, with a button to opt out, and the Privacy settings button changes your mind at any time. Opt out and nothing more is sent. Local and test builds send nothing.
+The game has no accounts and no server of its own. The web build collects anonymous usage data and error reports (which buttons are used, counts and money moved, and the error and where it happened, never names or save contents) only if you accept it. A Cookie settings popup on your first visit lists what is required and what is optional, and nothing optional runs until you accept it. The Cookie settings button changes your mind at any time, tool by tool. Local and test builds send nothing.
 
 ## Disclaimer
 

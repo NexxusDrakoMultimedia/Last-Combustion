@@ -11,6 +11,7 @@ import { Panel } from './Panel';
 import { AuctionSection } from './AuctionSection';
 import { DealerSection } from './DealerSection';
 import { EntriesSection } from './EntriesSection';
+import { GhostSection } from './GhostSection';
 import { LedgerPanel } from './LedgerPanel';
 import { InvestmentsSection } from './InvestmentsSection';
 import { OwnershipPanel } from './OwnershipPanel';
@@ -31,7 +32,10 @@ import { ContactsSection } from './ContactsSection';
 import { PressSection } from './PressSection';
 import { SocialSection } from './SocialSection';
 import { ExecutivesSection } from './ExecutivesSection';
+import { ScoutsSection } from './ScoutsSection';
+import { RaceScreen } from './RaceScreen';
 import { StaffPanel } from './StaffPanel';
+import { penaltyNews } from '../penalty';
 import { UpgradesPanel } from './UpgradesPanel';
 import { FacilitiesSection } from './FacilitiesSection';
 import { ConditionBar, MenuActions, OwnedCars, SeasonCalendar, UsedMarket } from './panels';
@@ -50,6 +54,7 @@ type PanelId =
   | 'money'
   | 'ownership'
   | 'calendar'
+  | 'race'
   | 'game'
   | 'menu';
 
@@ -67,8 +72,13 @@ const RAIL: { id: PanelId | null; label: MessageKey }[] = [
   { id: 'money', label: 'rail.money' },
   { id: 'ownership', label: 'rail.ownership' },
   { id: 'calendar', label: 'rail.calendar' },
+  { id: 'race', label: 'rail.race' },
   { id: 'game', label: 'rail.game' },
 ];
+
+/** Whether a calendar event is a race that can be watched. */
+const watchable = (kind: string): boolean =>
+  kind === 'prelims' || kind === 'prelim_day' || kind === 'final';
 
 /** The game shell: a top bar, a rail of panels, the garage floor and the news strip. */
 export function Shell() {
@@ -130,6 +140,7 @@ export function Shell() {
   const due = s.calendar?.due ?? null;
   const dueLabel: Record<string, MessageKey> = {
     prelims: 'hub.runPrelims',
+    prelim_day: 'hub.runPrelimDay',
     final: 'hub.runFinal',
     end_season: 'hub.endSeason',
     new_season: 'hub.nextSeason',
@@ -138,8 +149,23 @@ export function Shell() {
     starter !== undefined || !s.calendar
       ? null
       : {
-          label: due ? (dueLabel[due.kind] ?? 'calendar.continue') : 'calendar.continue',
-          run: () => void s.continueTime(),
+          label:
+            due && s.watchRaces && watchable(due.kind)
+              ? due.kind === 'final'
+                ? 'race.watch'
+                : 'race.watchPrelims'
+              : due
+                ? (dueLabel[due.kind] ?? 'calendar.continue')
+                : 'calendar.continue',
+          run: () => {
+            // A race due, and the player would rather watch: open it on the Race screen.
+            if (due && s.watchRaces && watchable(due.kind)) {
+              setOpen('race');
+              void (due.kind === 'final' ? s.watchFinal() : s.watchPrelims());
+              return;
+            }
+            void s.continueTime();
+          },
         };
 
   const player = hub.player;
@@ -160,6 +186,8 @@ export function Shell() {
           : '',
       }),
     );
+  if (prelims) for (const p of prelims.penalties) news.push(penaltyNews(p));
+  if (final) for (const p of final.penalties) news.push(penaltyNews(p));
   if (final)
     news.push(
       t('hub.final', {
@@ -390,6 +418,7 @@ export function Shell() {
           <div className="space-y-6">
             <OwnedCars locked={locked} />
             <EntriesSection locked={locked} />
+            <GhostSection />
           </div>
         </Panel>
       )}
@@ -436,6 +465,7 @@ export function Shell() {
           subtitle={t('staff.intro')}
           tabs={[
             { id: 'mechanics', label: t('staff.mechanicsTab') },
+            { id: 'scouts', label: t('scouts.tab') },
             { id: 'executives', label: t('executive.tab') },
             { id: 'contacts', label: t('contacts.tab') },
             { id: 'social', label: t('social.tab') },
@@ -446,6 +476,7 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           {staffTab === 'mechanics' && <StaffPanel />}
+          {staffTab === 'scouts' && <ScoutsSection />}
           {staffTab === 'executives' && <ExecutivesSection />}
           {staffTab === 'contacts' && <ContactsSection />}
           {staffTab === 'social' && <SocialSection />}
@@ -459,6 +490,11 @@ export function Shell() {
           onClose={() => setOpen(null)}
         >
           <CalendarPanel />
+        </Panel>
+      )}
+      {!locked && open === 'race' && (
+        <Panel title={t('rail.race')} subtitle={t('race.intro')} onClose={() => setOpen(null)}>
+          <RaceScreen />
         </Panel>
       )}
       {!locked && open === 'game' && (

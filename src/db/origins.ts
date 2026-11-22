@@ -50,6 +50,7 @@ export function ensureOrigins(db: Database): void {
   const needs =
     all(db, 'SELECT 1 FROM executive WHERE nationality IS NULL LIMIT 1').length +
     all(db, 'SELECT 1 FROM staff WHERE nationality IS NULL OR birth_year IS NULL LIMIT 1').length +
+    all(db, 'SELECT 1 FROM scout WHERE hometown_place_id IS NULL LIMIT 1').length +
     all(
       db,
       `SELECT 1 FROM shareholding WHERE nationality IS NULL
@@ -92,15 +93,19 @@ export function ensureOrigins(db: Database): void {
   const hometownIn = (stream: RandomStream, nationality: string, lives: PlaceRow): PlaceRow =>
     nationality === lives.country && stream.chance(0.6) ? lives : inCountry(stream, nationality);
 
-  // Executives and mechanics work in Australia, in their garage's state.
-  for (const table of ['executive', 'staff'] as const) {
+  // Executives, mechanics and scouts work in Australia, in their garage's state. A scout is hired with a
+  // nationality, so only their hometown and residence are missing.
+  for (const table of ['executive', 'staff', 'scout'] as const) {
+    const missing = table === 'scout' ? 'x.hometown_place_id IS NULL' : 'x.nationality IS NULL';
     for (const r of all(
       db,
-      `SELECT x.id, x.name, g.home_state, g.flag FROM ${table} x JOIN garage g ON g.id = x.garage_id
-        WHERE x.nationality IS NULL ORDER BY x.id`,
+      `SELECT x.id, x.name, x.nationality, g.home_state, g.flag FROM ${table} x JOIN garage g ON g.id = x.garage_id
+        WHERE ${missing} ORDER BY x.id`,
     )) {
       const stream = rng.stream(`origin:${table}:${r.id as number}`);
-      const nationality = nationalityOf(stream, r.name as string, r.flag as string);
+      const nationality =
+        (r.nationality as string | null) ??
+        nationalityOf(stream, r.name as string, r.flag as string);
       const residence = inRegion(stream, r.home_state as string);
       const hometown = hometownIn(stream, nationality, residence);
       db.run(

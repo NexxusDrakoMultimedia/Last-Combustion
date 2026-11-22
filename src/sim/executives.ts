@@ -86,6 +86,8 @@ export interface ExecutiveBonuses {
   outages: number;
   /** Multiplies the prestige the garage has earned above the base: `1 + this`. */
   prestige: number;
+  /** Lifts every scout's skill: `skill × (1 + this)`, never past 100. */
+  scouts: number;
 }
 
 export const NO_BONUSES: ExecutiveBonuses = {
@@ -104,6 +106,7 @@ export const NO_BONUSES: ExecutiveBonuses = {
   utilities: 0,
   outages: 0,
   prestige: 0,
+  scouts: 0,
 };
 
 /**
@@ -152,6 +155,9 @@ export function executiveBonuses(
       case 'sporting_director':
         out.training = get(roles.sporting_director.max.training);
         out.gearCost = get(roles.sporting_director.max.gearCost);
+        break;
+      case 'head_of_scouting':
+        out.scouts = get(roles.head_of_scouting.max.scouts);
         break;
       default:
         break;

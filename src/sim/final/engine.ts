@@ -4,6 +4,17 @@ import { createRng, type RandomStream, type Rng } from '../rng';
 import type { Sector } from '../courses/sectors';
 import { driverSectorRating } from '../prelim/lap';
 import { carRatings, sectorFit, type CarRatings, type CarSpec } from '../prelim/ratings';
+import {
+  droneFinalChance,
+  drawBanRaces,
+  drawContactLevel,
+  drawDroneLevel,
+  ignoresDrone,
+  isPalpablyUnfair,
+  penaltyPlaces,
+  type PalpablyUnfair,
+  type PenaltyLevel,
+} from '../penalties';
 import { finalBalance, simBalance } from '../worldgen/data';
 import type { CourseData, Driver } from '../worldgen/types';
 import {
@@ -30,6 +41,8 @@ export interface FinalEntry {
   /** The driver with gear applied. */
   driver: Driver;
   car: CarSpec;
+  /** What scrutineering found wrong with the car, if anything (a Technical penalty, or a Palpably Unfair Act). */
+  technical?: PenaltyLevel | PalpablyUnfair;
 }
 
 export interface FinalInput {
@@ -51,6 +64,7 @@ export interface RaceEvent {
     | 'spin'
     | 'crash'
     | 'drone_stop'
+    | 'drone_penalty'
     | 'mechanical_warning'
     | 'mechanical_failure'
     | 'weather_change'
@@ -82,12 +96,16 @@ export interface FinalClassification {
   entryId: number;
   position: number;
   finished: boolean;
-  dnfReason: RetireReason | null;
+  dnfReason: RetireReason | 'disqualified' | null;
+  /** Disqualified for a Palpably Unfair Act: no points, no prize. */
+  disqualified: boolean;
   /** Sectors completed. */
   sectors: number;
   /** Finish time in seconds including penalties, or null for a car that retired. */
   timeSeconds: number | null;
   penaltySeconds: number;
+  /** Places dropped for ignoring a drone's signal (the car was this many places higher on the road). */
+  placesLost: number;
   tyrePct: number;
   overtakes: number;
   /** Kilometres driven in the race. */
@@ -108,11 +126,54 @@ interface CarState {
   sectorsDone: number;
   overtakes: number;
   penalty: number;
+  /** Places this car drops at the flag for ignoring a drone's stop signal. */
+  placesPenalty: number;
+  /** The car ran a drone's stop signal so badly that it is disqualified at the flag (a Palpably Unfair Act). */
+  disqualified: boolean;
   /** Extra fraction of sector time from damage or a limping car. */
   slowdown: number;
   warning: boolean;
   lostGripReported: boolean;
   finishedAt: number | null;
+}
+
+/** What a car carries from one sector to the next, as plain data (the entry and ratings come from the input). */
+export interface CarSnapshot {
+  entryId: number;
+  time: number;
+  tyre: number;
+  call: Call;
+  controlled: boolean;
+  stance: Stance;
+  alive: boolean;
+  retired: RetireReason | null;
+  retiredAt: number;
+  sectorsDone: number;
+  overtakes: number;
+  penalty: number;
+  /** Absent in saves made before the penalty (none). */
+  placesPenalty?: number;
+  disqualified?: boolean;
+  slowdown: number;
+  warning: boolean;
+  lostGripReported: boolean;
+  finishedAt: number | null;
+}
+
+/**
+ * The whole state of a final in progress as plain data, so it can be saved between sectors and picked
+ * up again. Randomness needs no state of its own: every sector draws from a stream named for the
+ * race, the car and the sector, so a restored race plays on exactly as one that was never saved.
+ */
+export interface FinalSnapshot {
+  /** The sector the race is about to run. */
+  progress: number;
+  order: number[];
+  weatherReported: boolean;
+  teamOrders: [garageId: number, order: TeamOrder][];
+  cars: CarSnapshot[];
+  events: RaceEvent[];
+  timing: TimingRow[];
 }
 
 /**
@@ -158,6 +219,9 @@ export class FinalRace {
       sectorsDone: 0,
       overtakes: 0,
       penalty: 0,
+      placesPenalty:
+        entry.technical && !isPalpablyUnfair(entry.technical) ? penaltyPlaces(entry.technical) : 0,
+      disqualified: entry.technical !== undefined && isPalpablyUnfair(entry.technical),
       slowdown: 0,
       warning: false,
       lostGripReported: false,
@@ -182,6 +246,80 @@ export class FinalRace {
   private stream(name: string): RandomStream {
     const i = this.input;
     return this.rng.stream(`final:${i.season}:R${i.roundNumber}:${name}`);
+  }
+
+  /** The race as plain data, deep-copied, ready to be written to a save. */
+  snapshot(): FinalSnapshot {
+    return {
+      progress: this.g,
+      order: [...this.order],
+      weatherReported: this.weatherReported,
+      teamOrders: [...this.teamOrders],
+      cars: this.cars.map((c) => ({
+        entryId: c.entry.entryId,
+        time: c.time,
+        tyre: c.tyre,
+        call: c.call,
+        controlled: c.controlled,
+        stance: c.stance,
+        alive: c.alive,
+        retired: c.retired,
+        retiredAt: c.retiredAt,
+        sectorsDone: c.sectorsDone,
+        overtakes: c.overtakes,
+        penalty: c.penalty,
+        placesPenalty: c.placesPenalty,
+        disqualified: c.disqualified,
+        slowdown: c.slowdown,
+        warning: c.warning,
+        lostGripReported: c.lostGripReported,
+        finishedAt: c.finishedAt,
+      })),
+      events: structuredClone(this.events),
+      timing: structuredClone(this.timing),
+    };
+  }
+
+  /**
+   * A race picked up from a snapshot, with the same input it was started with. It then plays on
+   * exactly as the race that was saved would have.
+   */
+  static restore(input: FinalInput, snapshot: FinalSnapshot): FinalRace {
+    const race = new FinalRace(input);
+    if (snapshot.cars.length !== race.cars.length)
+      throw new Error('The saved race has a different field from this one.');
+    for (const saved of snapshot.cars) {
+      const car = race.byId.get(saved.entryId);
+      if (!car)
+        throw new Error(`The saved race has an entry that is not in this one: ${saved.entryId}`);
+      Object.assign(car, {
+        time: saved.time,
+        tyre: saved.tyre,
+        call: saved.call,
+        controlled: saved.controlled,
+        stance: saved.stance,
+        alive: saved.alive,
+        retired: saved.retired,
+        retiredAt: saved.retiredAt,
+        sectorsDone: saved.sectorsDone,
+        overtakes: saved.overtakes,
+        penalty: saved.penalty,
+        placesPenalty: saved.placesPenalty ?? 0,
+        disqualified: saved.disqualified ?? false,
+        slowdown: saved.slowdown,
+        warning: saved.warning,
+        lostGripReported: saved.lostGripReported,
+        finishedAt: saved.finishedAt,
+      });
+    }
+    race.g = snapshot.progress;
+    race.order = [...snapshot.order];
+    race.weatherReported = snapshot.weatherReported;
+    race.teamOrders.clear();
+    for (const [garageId, order] of snapshot.teamOrders) race.teamOrders.set(garageId, order);
+    race.events.push(...structuredClone(snapshot.events));
+    race.timing.push(...structuredClone(snapshot.timing));
+    return race;
   }
 
   /** The sector the race is about to run (0-based over the whole race). */
@@ -382,11 +520,31 @@ export class FinalRace {
 
       // A crash ahead on this sector holds up the cars that arrive before the road is cleared.
       if (blockedUntil !== null && entry < blockedUntil && !p.crashed) {
-        out = Math.max(out, blockedUntil + blockQueue * cfg.droneStop.queueSeconds);
-        blockQueue += 1;
-        emit('drone_stop', car, null, entry, blockQueue === 1, {
-          heldSeconds: Math.round((out - entry - p.seconds) * 10) / 10,
-        });
+        // The driver may run the drone's stop signal: no hold, but a penalty at the flag. The draw comes from
+        // a stream of its own, so no other draw in the race moves.
+        const droneRng = this.stream(`drone:e${car.entry.entryId}:g${g}`);
+        if (
+          ignoresDrone(droneRng, droneFinalChance(), p.call.aggression, car.entry.driver.composure)
+        ) {
+          const level = drawDroneLevel(droneRng);
+          if (isPalpablyUnfair(level)) {
+            // Disqualified from the race at the flag, and perhaps from the next few.
+            car.disqualified = true;
+            emit('drone_penalty', car, null, entry, true, {
+              level,
+              banRaces: drawBanRaces(droneRng),
+            });
+          } else {
+            car.placesPenalty = Math.min(5, car.placesPenalty + penaltyPlaces(level));
+            emit('drone_penalty', car, null, entry, true, { level, places: penaltyPlaces(level) });
+          }
+        } else {
+          out = Math.max(out, blockedUntil + blockQueue * cfg.droneStop.queueSeconds);
+          blockQueue += 1;
+          emit('drone_stop', car, null, entry, blockQueue === 1, {
+            heldSeconds: Math.round((out - entry - p.seconds) * 10) / 10,
+          });
+        }
       }
 
       if (lastCar && lastExit !== null) {
@@ -425,7 +583,10 @@ export class FinalRace {
                 score > threshold - cfg.overtake.contactMargin &&
                 p.rng.chance(cfg.overtake.contactChance * (1 - car.entry.driver.composure / 150))
               ) {
-                car.penalty += cfg.overtake.penaltySeconds;
+                // Causing contact is a Sportsmanship penalty on the penalty scale, taken as places at the flag.
+                // The level comes from a stream of its own, so no other draw in the race moves.
+                const level = drawContactLevel(this.stream(`sport:e${car.entry.entryId}:g${g}`));
+                car.placesPenalty = Math.min(5, car.placesPenalty + penaltyPlaces(level));
                 car.slowdown += cfg.overtake.damagePace;
                 const loss = p.rng.float(
                   cfg.overtake.defenderLossSeconds[0] as number,
@@ -435,9 +596,7 @@ export class FinalRace {
                   lastCar.entry.entryId,
                   (exit.get(lastCar.entry.entryId) ?? lastExit) + loss,
                 );
-                emit('contact', car, lastCar, out, true, {
-                  penaltySeconds: cfg.overtake.penaltySeconds,
-                });
+                emit('contact', car, lastCar, out, true, { level, places: penaltyPlaces(level) });
               }
             }
           } else {
@@ -529,7 +688,7 @@ export class FinalRace {
   classification(): FinalClassification[] {
     const lapKm = this.input.course.lapKm;
     const rows = this.cars.map((car) => {
-      const finished = car.alive && car.finishedAt !== null;
+      const finished = car.alive && car.finishedAt !== null && !car.disqualified;
       return {
         car,
         finished,
@@ -539,17 +698,29 @@ export class FinalRace {
     const finishers = rows
       .filter((r) => r.finished)
       .sort((a, b) => (a.time as number) - (b.time as number));
+    // A car that took a penalty drops back the places it was penalised, in the order they finished on the road.
+    // It never drops below the last finisher, so never below a car that retired and never below the last place
+    // of the field (15th, or 20th once the final is bigger).
+    for (const offender of [...finishers].filter((r) => r.car.placesPenalty > 0)) {
+      const from = finishers.indexOf(offender);
+      finishers.splice(from, 1);
+      finishers.splice(Math.min(from + offender.car.placesPenalty, finishers.length), 0, offender);
+    }
     const retired = rows
-      .filter((r) => !r.finished)
+      .filter((r) => !r.finished && !r.car.disqualified)
       .sort((a, b) => b.car.sectorsDone - a.car.sectorsDone || a.car.retiredAt - b.car.retiredAt);
-    return [...finishers, ...retired].map((r, i) => ({
+    // A disqualified car is last, whatever it did on the road.
+    const disqualified = rows.filter((r) => r.car.disqualified);
+    return [...finishers, ...retired, ...disqualified].map((r, i) => ({
       entryId: r.car.entry.entryId,
       position: i + 1,
       finished: r.finished,
-      dnfReason: r.finished ? null : r.car.retired,
+      dnfReason: r.finished ? null : r.car.disqualified ? 'disqualified' : r.car.retired,
+      disqualified: r.car.disqualified,
       sectors: r.car.sectorsDone,
       timeSeconds: r.time,
       penaltySeconds: r.car.penalty,
+      placesLost: r.finished ? r.car.placesPenalty : 0,
       tyrePct: Math.round(r.car.tyre * 10) / 10,
       overtakes: r.car.overtakes,
       km: Math.round((r.car.sectorsDone / this.sectorCount) * lapKm * 10) / 10,

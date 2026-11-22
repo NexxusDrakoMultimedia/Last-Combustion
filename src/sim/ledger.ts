@@ -33,7 +33,7 @@ export interface YearSummary {
   groups: GroupTotals[];
   /** Racing and commercial income less running costs, premises and people. */
   operatingResult: number;
-  /** What the year's cars, parts, gear and restorations cost, net of sales (negative when money went out). */
+  /** What the year's cars, parts, gear, restorations and inspections cost, net of sales (negative when money went out). */
   assetResult: number;
   /** Everything together: the change in cash over the year. */
   netCashMovement: number;

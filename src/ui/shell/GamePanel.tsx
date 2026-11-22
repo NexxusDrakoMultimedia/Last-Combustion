@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import type { ReactNode } from 'react';
 import { formatDate, formatLapTime, formatMoney, t } from '../../i18n';
 import type { ChronicleLine } from '../../db/gameinfo';
 import { useCareerStore } from '../../state/career.store';
+import { FogValue } from '../FogValue';
+import { amountText } from './DriverStats';
 import { dataTable } from '../styles';
 
-type Row = [label: string, value: string];
+type Row = [label: string, value: ReactNode];
 
 function Facts({ title, rows }: { title: string; rows: Row[] }) {
   return (
@@ -105,6 +108,10 @@ export function GamePanel({ tab }: { tab: string }) {
             ],
             [t('game.series.deaths'), number(series.deaths)],
             [t('game.series.seriesFans'), number(series.seriesFans)],
+            [
+              t('game.series.seriesBuzz'),
+              t('game.series.buzzValue', { percent: series.seriesBuzz }),
+            ],
             [t('game.series.driverFans'), number(series.driverFans)],
             [t('game.series.garageFans'), number(series.garageFans)],
             [t('game.series.carFans'), number(series.carFans)],
@@ -113,26 +120,39 @@ export function GamePanel({ tab }: { tab: string }) {
         <Facts
           title={t('game.section.state')}
           rows={[
-            [t('game.state.garageCash'), formatMoney(state.garageCash)],
-            [t('game.state.averagePrestige'), String(state.averagePrestige)],
+            [t('game.state.garageCash'), amountText(state.garageCash)],
+            [
+              t('game.state.averagePrestige'),
+              <FogValue
+                reading={state.averagePrestige.reading}
+                knowledge={state.averagePrestige.knowledge}
+              />,
+            ],
             [t('game.state.averageDriverAge'), String(state.averageDriverAge)],
             [
               t('game.state.richestGarage'),
               state.richestGarage
-                ? t('game.state.cashValue', {
-                    name: state.richestGarage.name,
-                    amount: formatMoney(state.richestGarage.cash),
-                  })
+                ? state.richestGarage.cash === null
+                  ? state.richestGarage.name
+                  : t('game.state.cashValue', {
+                      name: state.richestGarage.name,
+                      amount: formatMoney(state.richestGarage.cash),
+                    })
                 : t('game.series.none'),
             ],
             [
               t('game.state.mostPrestigiousGarage'),
-              state.mostPrestigiousGarage
-                ? t('game.state.prestigeValue', {
-                    name: state.mostPrestigiousGarage.name,
-                    value: state.mostPrestigiousGarage.prestige,
-                  })
-                : t('game.series.none'),
+              state.mostPrestigiousGarage ? (
+                <span>
+                  {t('game.state.garageNamed', { name: state.mostPrestigiousGarage.name })}
+                  <FogValue
+                    reading={state.mostPrestigiousGarage.reading.prestige}
+                    knowledge={state.mostPrestigiousGarage.reading.knowledge}
+                  />
+                </span>
+              ) : (
+                t('game.series.none')
+              ),
             ],
             [
               t('game.state.mostFamousDriver'),

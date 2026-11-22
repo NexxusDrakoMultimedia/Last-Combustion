@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { readStaffSkill } from './knowledge';
+import type { AmountRange, Reading } from '../sim/scouting';
+import { spanMidpoint, type Span } from '../sim/capfog';
+import { holdingSighter } from './captable';
 import type { Database } from 'sql.js';
 import { shareTotals, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
@@ -14,7 +18,7 @@ import type { RegistryStatus } from './status';
 
 /** The people the Registry keeps a profile of, apart from drivers: executives, staff and shareholders. */
 export type CompanyKind = 'sponsor' | 'manufacturer' | 'supplier' | 'utility';
-export type PersonKind = 'executive' | 'staff' | 'shareholder' | CompanyKind;
+export type PersonKind = 'executive' | 'staff' | 'scout' | 'shareholder' | CompanyKind;
 
 const COMPANY_KINDS: CompanyKind[] = ['sponsor', 'manufacturer', 'supplier', 'utility'];
 
@@ -94,16 +98,38 @@ export function peopleIndex(db: Database): PersonRef[] {
     status: r.left_on === null || looking('staff', r) ? 'active' : 'retired',
     years: activeYears(r.hired_on as string, r.left_on as string | null),
   }));
+  const scouts = all(
+    db,
+    `SELECT s.id, s.name, s.nationality, s.hired_on, s.left_on, g.name AS garage FROM scout s
+       JOIN garage g ON g.id = s.garage_id ORDER BY s.name, s.id`,
+  ).map((r): PersonRef => ({
+    kind: 'scout',
+    id: r.id as number,
+    name: r.name as string,
+    role: 'scout',
+    garage: r.left_on === null ? (r.garage as string) : null,
+    flag: r.nationality as string | null,
+    lookingForWork: false,
+    status: r.left_on === null ? 'active' : 'retired',
+    years: activeYears(r.hired_on as string, r.left_on as string | null),
+  }));
   // The companies: sponsors, manufacturers and suppliers, all of whom can hold shares.
-  const held = new Map<string, string>(
-    all(
-      db,
-      `SELECT holder_type || ':' || holder_id AS k, GROUP_CONCAT(DISTINCT g.name) AS garages
-         FROM shareholding s JOIN garage g ON g.id = s.garage_id
-        WHERE holder_type IN ('sponsor', 'manufacturer') AND holder_id IS NOT NULL
-        GROUP BY holder_type, holder_id`,
-    ).map((r) => [r.k as string, String(r.garages).replaceAll(',', ', ')]),
-  );
+  // Only the holdings the player can see yet (see "Ownership and the cap table") count here.
+  const sight = holdingSighter(db);
+  const heldBy = new Map<string, string[]>();
+  for (const r of all(
+    db,
+    `SELECT s.id, s.garage_id, holder_type || ':' || holder_id AS k, g.name AS garage
+       FROM shareholding s JOIN garage g ON g.id = s.garage_id
+      WHERE holder_type IN ('sponsor', 'manufacturer') AND holder_id IS NOT NULL
+      ORDER BY g.name, s.id`,
+  )) {
+    if (!sight(r.garage_id as number, r.id as number)) continue;
+    const names = heldBy.get(r.k as string) ?? [];
+    if (!names.includes(r.garage as string)) names.push(r.garage as string);
+    heldBy.set(r.k as string, names);
+  }
+  const held = new Map<string, string>([...heldBy].map(([k, names]) => [k, names.join(', ')]));
   const company = (
     kind: CompanyKind,
     id: number,
@@ -170,8 +196,14 @@ export function peopleIndex(db: Database): PersonRef[] {
   for (const h of holdings) {
     const key = `${h.holder_type as string}|${h.holder_name as string}|${(h.holder_id as number | null) ?? -1}`;
     const gid = h.garage_id as number;
-    const stake =
-      ((h.shares as number) / Math.max(1, issued.get(gid) ?? 1)) * (worth.get(gid) ?? 0);
+    const seeing = sight(gid, h.id as number);
+    if (!seeing) continue;
+    // What a position is worth is read from the bands the player has, never from the truth.
+    const stake = seeing.holder
+      ? seeing.holder.stake && seeing.valuation
+        ? spanMidpoint(seeing.holder.stake) * spanMidpoint(seeing.valuation)
+        : 0
+      : ((h.shares as number) / Math.max(1, issued.get(gid) ?? 1)) * (worth.get(gid) ?? 0);
     const seen = people.get(key);
     if (!seen) {
       people.set(key, {
@@ -205,12 +237,19 @@ export function peopleIndex(db: Database): PersonRef[] {
       status: 'active',
       years: activeYears(p.since, null),
     }));
-  return [...executives, ...staff, ...companies, ...shareholders];
+  return [...executives, ...staff, ...scouts, ...companies, ...shareholders];
 }
 
 interface GarageRef {
   id: number;
   name: string;
+}
+
+/** A skill as the player reads it, with the knowledge behind it. */
+export interface SkillReading {
+  reading: Reading;
+  knowledge: number;
+  owned: boolean;
 }
 
 export interface ExecutiveProfile {
@@ -220,7 +259,8 @@ export interface ExecutiveProfile {
   role: ExecutiveRole;
   garage: GarageRef;
   age: number;
-  skill: number;
+  /** What the player reads of their skill: exact at their own garage, otherwise behind the fog. */
+  skill: SkillReading;
   salary: number;
   employed: boolean;
   hiredOn: string | null;
@@ -239,7 +279,7 @@ export interface StaffProfile {
   name: string;
   role: string;
   garage: GarageRef;
-  skill: number;
+  skill: SkillReading;
   wagePerWeek: number;
   hiredOn: string;
   leftOn: string | null;
@@ -249,16 +289,39 @@ export interface StaffProfile {
   origin: Origin | null;
 }
 
+/** A scout: someone a garage pays to learn about drivers, cars or garages. The player's own are exact; another garage's skill is read through the fog. */
+export interface ScoutProfile {
+  kind: 'scout';
+  id: number;
+  name: string;
+  garage: GarageRef;
+  age: number;
+  /** What the player reads of their skill: exact for the player's own scouts. */
+  skill: { reading: Reading; knowledge: number; owned: boolean };
+  focus: string;
+  wagePerYear: number;
+  hiredOn: string;
+  leftOn: string | null;
+  leftReason: string | null;
+  /** Their flag, hometown and residence. */
+  origin: Origin | null;
+}
+
+/**
+ * One holding of a person or company in a garage, as the player reads it (see "Ownership and the cap
+ * table"): a figure is null while the player does not know the garage well enough to see it, and a
+ * share or a worth is a band until they do. Holdings in the player's own garage are exact.
+ */
 export interface HoldingLine {
   garage: GarageRef;
-  class: ShareClass;
-  shares: number;
+  class: ShareClass | null;
+  shares: number | null;
   /** Their share of the issued shares of that garage. */
-  stake: number;
-  paid: number;
-  since: string;
+  stake: Span | null;
+  paid: number | null;
+  since: string | null;
   /** What the holding is worth now: the stake of the garage's valuation. */
-  worth: number;
+  worth: AmountRange | null;
 }
 
 export interface ShareholderProfile {
@@ -273,26 +336,56 @@ export interface ShareholderProfile {
   driver: { id: number; name: string } | null;
 }
 
-/** The holdings a set of shareholding rows make: where, how much, what was paid and what it is worth now. */
+/**
+ * The holdings a set of shareholding rows make: where, how much, what was paid and what it is worth now.
+ * A holding the player cannot see yet is left out, and the others are read through their garage's fog.
+ */
 function holdingLines(db: Database, rows: Record<string, unknown>[]): HoldingLine[] {
-  return rows.map((r): HoldingLine => {
+  const sight = holdingSighter(db);
+  const lines: HoldingLine[] = [];
+  for (const r of rows) {
     const garageId = r.garage_id as number;
-    const all_ = all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [
-      garageId,
-    ]).map((x) => ({ shares: x.shares as number, class: x.class as ShareClass }));
-    const outstanding = shareTotals(all_).outstanding;
-    const stake =
-      r.class === 'option' || outstanding === 0 ? 0 : (r.shares as number) / outstanding;
-    return {
-      garage: { id: garageId, name: r.garage as string },
-      class: r.class as ShareClass,
-      shares: r.shares as number,
-      stake,
-      paid: r.paid as number,
-      since: r.since as string,
-      worth: Math.round(stake * garageValuation(db, garageId).total),
-    };
-  });
+    const seeing = sight(garageId, r.id as number);
+    if (!seeing) continue;
+    const garage = { id: garageId, name: r.garage as string };
+    if (seeing.holder === null) {
+      const all_ = all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [
+        garageId,
+      ]).map((x) => ({ shares: x.shares as number, class: x.class as ShareClass }));
+      const outstanding = shareTotals(all_).outstanding;
+      const stake =
+        r.class === 'option' || outstanding === 0 ? 0 : (r.shares as number) / outstanding;
+      const worth = Math.round(stake * garageValuation(db, garageId).total);
+      lines.push({
+        garage,
+        class: r.class as ShareClass,
+        shares: r.shares as number,
+        stake: { low: stake, high: stake },
+        paid: r.paid as number,
+        since: r.since as string,
+        worth: { low: worth, high: worth },
+      });
+      continue;
+    }
+    const h = seeing.holder;
+    const exact = h.shares !== null;
+    lines.push({
+      garage,
+      class: h.class,
+      shares: h.shares,
+      stake: h.stake,
+      paid: exact ? (r.paid as number) : null,
+      since: h.class === null ? null : (r.since as string),
+      worth:
+        h.stake && seeing.valuation
+          ? {
+              low: Math.floor(h.stake.low * seeing.valuation.low),
+              high: Math.ceil(h.stake.high * seeing.valuation.high),
+            }
+          : null,
+    });
+  }
+  return lines;
 }
 
 /** What a driver holds in garages: the stakes they have bought with their winnings. */
@@ -393,7 +486,8 @@ function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyPro
   };
 }
 
-export type PersonProfile = ExecutiveProfile | StaffProfile | ShareholderProfile | CompanyProfile;
+export type PersonProfile =
+  ExecutiveProfile | StaffProfile | ScoutProfile | ShareholderProfile | CompanyProfile;
 
 /** Whether a death is on record for someone (an executive's row says they retired; the death says why). */
 function diedOn(db: Database, kind: 'executive' | 'mechanic', id: number): boolean {
@@ -420,7 +514,7 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       role: r.role as ExecutiveRole,
       garage: { id: r.garage_id as number, name: r.garage as string },
       age: yearOf(db) - (r.birth_year as number),
-      skill: r.skill as number,
+      skill: readStaffSkill(db, r.garage_id as number, 'executive', id, r.skill as number),
       salary: r.salary as number,
       employed: r.status === 'employed',
       hiredOn: (r.hired_on as string | null) ?? null,
@@ -444,11 +538,35 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       name: r.name as string,
       role: r.role as string,
       garage: { id: r.garage_id as number, name: r.garage as string },
-      skill: r.skill as number,
+      skill: readStaffSkill(db, r.garage_id as number, 'staff', id, r.skill as number),
       wagePerWeek: r.wage_per_week as number,
       hiredOn: r.hired_on as string,
       leftOn: (r.left_on as string | null) ?? null,
       morale: r.left_on === null ? (r.morale as number) : null,
+      origin: originOf(db, r.nationality, r.hometown_place_id, r.residence_place_id),
+    };
+  }
+  if (kind === 'scout') {
+    const r = all(
+      db,
+      `SELECT s.*, g.name AS garage FROM scout s JOIN garage g ON g.id = s.garage_id WHERE s.id = ?`,
+      [id],
+    )[0];
+    if (!r) throw new Error(`There is no scout ${id}.`);
+    const leftOn = (r.left_on as string | null) ?? null;
+    const leftYear = leftOn ? Number(leftOn.slice(0, 4)) : yearOf(db);
+    return {
+      kind,
+      id,
+      name: r.name as string,
+      garage: { id: r.garage_id as number, name: r.garage as string },
+      age: leftYear - (r.birth_year as number),
+      skill: readStaffSkill(db, r.garage_id as number, 'scout', id, r.skill as number),
+      focus: r.focus as string,
+      wagePerYear: r.wage_per_year as number,
+      hiredOn: r.hired_on as string,
+      leftOn,
+      leftReason: (r.left_reason as string | null) ?? null,
       origin: originOf(db, r.nationality, r.hometown_place_id, r.residence_place_id),
     };
   }

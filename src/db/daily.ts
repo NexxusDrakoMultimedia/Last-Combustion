@@ -19,6 +19,7 @@ import type { Tier } from '../sim/worldgen/types';
 import { readCareer } from './career';
 import { all } from './entries';
 import { wearParts } from './repairs';
+import { placeLabel } from '../sim/worldgen/placeLabel';
 
 export interface DailyLifeTotals {
   days: number;
@@ -158,7 +159,8 @@ export interface DailyLifeView {
   nextGap: { round: number; days: number; income: number } | null;
 }
 
-const placeName = (name: unknown, region: unknown): string => `${String(name)}, ${String(region)}`;
+const placeName = (name: unknown, region: unknown, country: unknown): string =>
+  placeLabel(String(name), String(region), String(country));
 
 /** The homes of a garage's entered drivers and what daily life is doing for them. */
 export function dailyLifeView(db: Database, garageId: number): DailyLifeView {
@@ -166,8 +168,8 @@ export function dailyLifeView(db: Database, garageId: number): DailyLifeView {
   if (!season) return { drivers: [], canMove: false, cost: relocationCost(), nextGap: null };
   const drivers = all(
     db,
-    `SELECT d.id, d.name, p.stable_id AS place, p.name AS place_name, p.region,
-            mp.name AS move_name, mp.region AS move_region
+    `SELECT d.id, d.name, p.stable_id AS place, p.name AS place_name, p.region, p.country,
+            mp.name AS move_name, mp.region AS move_region, mp.country AS move_country
        FROM entry e JOIN driver d ON d.id = e.driver_id JOIN place p ON p.id = d.residence_place_id
        LEFT JOIN driver_move dm ON dm.driver_id = d.id LEFT JOIN place mp ON mp.id = dm.place_id
       WHERE e.garage_id = ? AND e.season_id = ? AND e.series = 'main' ORDER BY e.race_number`,
@@ -177,7 +179,7 @@ export function dailyLifeView(db: Database, garageId: number): DailyLifeView {
     return {
       driverId: r.id as number,
       name: r.name as string,
-      residence: placeName(r.place_name, r.region),
+      residence: placeName(r.place_name, r.region, r.country),
       region: r.region as string,
       roadType,
       affinity: Number(
@@ -187,7 +189,7 @@ export function dailyLifeView(db: Database, garageId: number): DailyLifeView {
         ])[0]?.rating ?? 0,
       ),
       areaFactor: areaFactor(r.region as string),
-      movingTo: r.move_name ? placeName(r.move_name, r.move_region) : null,
+      movingTo: r.move_name ? placeName(r.move_name, r.move_region, r.move_country) : null,
     };
   });
   const days = seasonDays(db);

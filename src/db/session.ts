@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database, SqlJsStatic } from 'sql.js';
 import { readCareer } from './career';
-import { ensureBusinesses } from './business';
+import { ensureCurrentBusinesses } from './business';
 import { ensureCapTables } from './equity';
 import { latestSchemaVersion, migrate } from './migrate';
 import { registerAllCars } from './plates';
@@ -10,7 +10,7 @@ import { decodeSave, encodeSave, type SaveHeader } from './save-file';
 import { openDatabase } from './sql';
 import type { SaveSlot, SaveStorage } from './storage';
 
-export const APP_VERSION = '0.2.0';
+export const APP_VERSION = '0.3.0';
 
 /** Creates a new, migrated, empty database. */
 export function createNewDatabase(SQL: SqlJsStatic): Database {
@@ -52,8 +52,7 @@ export async function unpackDatabase(
   // Garages from saves made before ownership existed are given their owners now.
   ensureCapTables(db);
   // ...and their businesses.
-  const career = readCareer(db);
-  if (career) ensureBusinesses(db, Number(career.gameDate.slice(0, 4)));
+  ensureCurrentBusinesses(db);
   return { db, header, migrated: result.applied };
 }
 

@@ -1,6 +1,6 @@
 # How to play
 
-This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for 0.2.0. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
+This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for 0.3.0. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
 
 ## The idea
 
@@ -54,7 +54,7 @@ Before the first prelims, in any order:
 3. **Check your driver and car** in Drivers and Cars. Better free agents may be worth their salary. You can change your entry until the first round starts.
 4. **Look at the Upgrades panel.** Parts add power or grip but each one counts against your road-legality score, and a car that fails scrutineering is disqualified.
 
-Then press **Continue** to skip to the day of the prelims, and again (it now says **Run next prelims**) to run them. The prelims run over seven days: every entry sets one timed lap, and the 15 fastest reach the final. Press **Continue** to skip to the final's day and **Run next final** to race it. The **Calendar** in the rail lists what is coming. The final is simulated sector by sector; there are no race calls in this version.
+Then press **Continue** to skip to the day of the prelims, and again (it now says **Run next prelims**) to run them. The prelims run over seven days: every entry sets one timed lap, and the 15 fastest reach the final. To watch them, open **Race** in the rail and press **Watch the prelims**: you see each day's runs as they come in, the classification so far with the line under the 15th place, and the crashes and mistakes. Under **Your runs** you can tell each of your drivers how to run the lap before it is run: **Attack** is a little quicker and riskier, **Steady** is as the car allows, **Conserve** is a little slower and safer. **Play** runs them a lap at a time at 1x, 2x or 4x, and **Next run**, **Next 10 runs**, **To the end of the day** and **To the end of the prelims** step on by hand. Press **Continue** to skip to the final's day and **Run next final** to race it. The **Calendar** in the rail lists what is coming, and has two switches, kept for next time: **Stop after every prelim day**, which makes Continue play the prelims one day at a time instead of all seven, and **Watch races by default**, which makes Continue open the Race screen when the prelims or a final are due. Watching the prelims, Play stops after one of your runs ends in a crash. The final is simulated sector by sector. To watch it, open **Race** in the rail instead of pressing Run next final: **Watch the final** starts it, and you see the course with every car on it, the timing tower (position, gap, interval, last sector, tyres), the weather and what is happening. **Play** runs it a sector at a time at 1x, 2x or 4x and pauses itself at a crash, a contact or the rain; **Next sector**, **Next lap**, **To next incident** and **To the flag** step on by hand. Your own cars have call buttons in the tower: **Push** for pace at the cost of tyres and risk, **Balance**, **Save** to look after the car, and **Auto** to leave the driver to the computer. A call holds until you change it, and over a whole race it moves a car a few places, not the result. Penalties are named by level and type: Minor, Major, Severe, Flagrant or Egregious, then Drone, Technical or Sportsmanship (a Major Drone, a Severe Technical). Each step costs 5% of the fastest lap in the prelims and one place in a final, and a penalty never drops you below the last finisher. Ignoring a drone's stop signal after a crash earns a Drone penalty, and a car over the tyre or road-legality limit at scrutineering earns a Technical one. Very rarely, a Palpably Unfair Act, or a car that is obviously illegal, disqualifies you from the race and can keep that driver out of up to twelve more. When a car of yours gets a warning light the race stops and asks: save the car and it limps on, or it fails in the next sector.
 
 Points come from the final for the top 15 and from the prelims for 16th to 31st. Prize money goes to the final's finishers. Pole and overtake bonuses add up through the year and are paid when the season ends. Open **Season**, then **Results** or **Standings**, to see every car and every table.
 
@@ -79,6 +79,21 @@ Cars also have a lifespan. A car older than the limit for its class (25 years fo
 - **Training.** Set a level for each driver in Drivers. It is paid at the end of the season and helps them improve and keep their peak longer.
 - **Gear.** Suits, helmets and the like boost a driver's stats and wear out. You can have a maker refurbish an item for half its price in proportion to its wear.
 - **Daily life.** Between rounds each of your drivers drives their car on everyday and delivery roads, which earns money and slowly trains them on the kind of road around their home. In the off-season you can move a driver's home for $5,000, from the next season.
+- **Ghost record.** From your second season, the Entries panel lets you pick a ghost for each entry before a round's prelims: none, an easy ghost that runs two seconds ahead of you, or a hard one, the run a top driver from last season set on the same course. After the prelims the panel says whether you beat it, and by how much.
+- **Course map.** The Calendar panel draws each course from its road, with a ring on every overtaking spot and a coloured mark where crashes, spins, mistakes, wildlife, failures and contact happened in the round you pick. A key under the map names each kind and how many there are.
+- **Around the series.** After every final the press writes about the whole series, not only your garage: the winner, the big crashes, the rivalries that met and the stories that moved on. They are in the Press tab under Around the series. A crash in a final, or a prelim crash that wrecks an expensive car, makes the highlight reel: the driver gains fans (and fame) but loses a little reputation, on top of the repair bill.
+- **Stories.** A rivalry that reaches a Feud becomes a story: the build-up, a showdown the next time both drivers race the same final, and an aftermath. When it involves one of your drivers, the Stories list under Rivalries in Drivers gives you a card to answer at the build-up and at the aftermath. Your choice moves the driver's fans and reputation, and how the two drivers get on. A card you leave passes after the next round, and nothing stops the calendar while it waits.
+- **Rivalries.** Drivers who finish within three seconds of each other, or who lead the title fight together, build up heat. A pair that reaches Spark, Rivalry or Feud shows on the Rivalries list at the bottom of Drivers, with the meetings that built it, and a driver wins extra fans in a final the rival also races. Heat cools every round, and a rivalry ends when it cools or a driver retires.
+
+## What you know about others
+
+Only your own drivers, cars and garage are open to you. For everyone else, the game shows what you could know, not the truth.
+
+- **Words, ranges and exact numbers.** A hidden number (a driver's pace, a car's condition, a garage's prestige) shows first as a word (weak, modest, solid, strong or elite), then as a range such as 48 to 62 with a small bar, then as the exact number with a tick. The true value is always inside a range. Hover over a number to see how well you know the subject and what would help.
+- **What clears the fog.** Scouts (hired in Staff, under Scouts), a bigger name for your garage, more success, watching a driver, car or garage race season after season, an attention flag a driver earned this season, and having worked with them before. A scout counts for the most on the one subject you assign them to (the Scouts tab can assign one to a free-agent driver), and a Head of Scouting, one of the executives, makes every scout up to a quarter better.
+- **Inspections.** At the used market and the auction, an inspection ($1,500) takes one car for sale to exact for as long as its seller owns it. A car you buy is yours, so it is exact.
+- **Deals.** In a negotiation with a sponsor, an executive or a supplier you see a range for what a fair deal is worth. It narrows as your relationship with them grows, with your scouts, and when you have dealt with them before. Their walk-away price is never shown.
+- **What stays open.** Results, points, race numbers, plates, titles, records, the people themselves and anything public are always exact.
 
 ## Saving
 
@@ -89,7 +104,7 @@ Open **Menu** and press **Save to slot 1**. The save is kept in your browser. **
 - **My save has gone.** Browser saves live in the browser's own storage, so clearing site data deletes them. Export a file now and then.
 - **The game is slow to run a round.** Each prelim simulates 313 cars, so give it a moment.
 - **A button is greyed out.** Entries and some deals are locked once a season has started, and money-spending buttons are off when you cannot afford them. The tooltip or the panel text says why.
-- **A privacy prompt appeared.** The web build counts how the game is used and tells you so on your first visit (see the README). Press Opt out and nothing more is sent; Privacy settings, at the bottom left, changes it later.
+- **A cookie popup appeared.** The web build can count how the game is used, and asks on your first visit (see the README). Nothing optional runs until you press Accept All; Reject Non-Essential keeps everything off. Cookie settings, at the bottom left, changes it later.
 
 ## Where to play
 
@@ -97,7 +112,7 @@ Last Combustion is built for a computer: a desktop or laptop with a mouse and a 
 
 ## What the game does not have yet
 
-Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no story or interviews, no scouting or fog of war (every profile is open), and companies do not yet start up or wind down. The Game Design Document lists all of it, built and planned.
+Only the Garage owner mode, with one save slot and no race calls. There is no Junior Series yet, no interviews, and companies do not yet start up or wind down. The Game Design Document lists all of it, built and planned.
 
 ## Words you will see
 
@@ -114,6 +129,7 @@ Only the Garage owner mode, with one save slot and no race calls. There is no Ju
 - **Prelims:** seven days of timed laps before each final. Every entry runs one lap; the fastest start the final.
 - **Prestige:** a garage's standing, from its entries, its gold-bordered drivers and its titles. It decides which sponsors, suppliers and executives will deal with you.
 - **Registry:** the profiles of everything and everyone in the game, with a tab each for drivers, cars, garages and rounds. Each tab is split into Champions, Race winners, Active, Retired and Obscure, and each name shows the years it was active, such as (2031-present).
+- **Fog:** what you do not know about someone else's numbers. It clears as you scout, race and deal. See What you know about others.
 - **Greylinked (Obscure):** a driver, car or garage that retired or folded without ever scoring a point. It is listed apart and its links are grey, but its profile still opens.
 - **Road affinity:** how good a driver is on forest, coast, mountain and night roads.
 - **Wear:** from 0 (new) to 100 (worn out), for the chassis and for each part.

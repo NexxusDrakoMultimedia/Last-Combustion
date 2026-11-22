@@ -1,0 +1,49 @@
+{
+  "levels": [
+    {
+      "id": "minor",
+      "prelimPercent": 5,
+      "places": 1
+    },
+    {
+      "id": "major",
+      "prelimPercent": 10,
+      "places": 2
+    },
+    {
+      "id": "severe",
+      "prelimPercent": 15,
+      "places": 3
+    },
+    {
+      "id": "flagrant",
+      "prelimPercent": 20,
+      "places": 4
+    },
+    {
+      "id": "egregious",
+      "prelimPercent": 25,
+      "places": 5
+    }
+  ],
+  "drone": {
+    "prelimChance": 0.08,
+    "finalChance": 0.05,
+    "severityWeights": [50, 28, 14, 6, 2],
+    "unfairWeight": 0.3
+  },
+  "types": ["drone", "technical", "sportsmanship"],
+  "unfairAct": {
+    "id": "palpably_unfair",
+    "maxBanRaces": 12
+  },
+  "technical": {
+    "tyreOverMm": [3, 8, 15, 25],
+    "legalityShort": [5, 15, 30, 50],
+    "obviousTyreOverMm": 40,
+    "obviousLegalityShort": 80
+  },
+  "sportsmanship": {
+    "contactWeights": [70, 22, 6, 2, 0]
+  }
+}

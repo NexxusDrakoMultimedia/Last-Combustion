@@ -10,15 +10,47 @@ import {
 import type { SkipMode } from '../sim/calendar';
 import { contactsBook, type Contact, type ContactType } from '../db/contacts';
 import { pressView, type PressView } from '../db/press';
+import {
+  courseMap as dbCourseMap,
+  defaultMapRound,
+  mapRounds as dbMapRounds,
+  type CourseMapData,
+} from '../db/coursemap';
+import { ghostView, setGhost as dbSetGhost, type GhostPick, type GhostView } from '../db/ghost';
+import { highlightTotal, newsFeed, type NewsLine } from '../db/news';
+import { liveRivalryCount } from '../db/rivalries';
+import { rivalryBoard, type RivalryBoardRow } from '../db/rivalryboard';
+import {
+  answerCard as dbAnswerCard,
+  liveStoryCount,
+  storyBoard,
+  type StoryBoard,
+} from '../db/storylines';
 import { converse as dbConverse, socialView, type SocialView } from '../db/social';
 import type { Manner } from '../sim/social';
 import { create } from 'zustand';
 import { createCareer, readCareer, type CareerRow } from '../db/career';
 import { getSchemaVersion } from '../db/migrate';
+import { IncompatibleSaveError, isCompatibleSave } from '../db/save-file';
 import { createNewDatabase, loadFromSlot, packDatabase, saveToSlot } from '../db/session';
 import { settleRound, type RoundSettlement } from '../db/finance';
-import { nextFinalRound, playFinal, type FinalSummary } from '../db/final';
-import { nextRoundNumber, playPrelims, type PrelimSummary } from '../db/prelims';
+import {
+  nextFinalRound,
+  playFinal,
+  setFinalCall,
+  startFinal,
+  stepFinal,
+  type FinalSummary,
+} from '../db/final';
+import { ensureCurrentBusinesses } from '../db/business';
+import { finalView, prelimView, type FinalView, type PrelimView } from '../db/racewatch';
+import { nextRoundNumber, setPrelimPlan, startPrelims, type PrelimSummary } from '../db/prelims';
+import {
+  playNextPrelimDay,
+  playPrelimsOnTheDays,
+  stepPrelims,
+  type PrelimStep,
+} from '../db/raceday';
 import { hubView, type HubView } from '../db/hub';
 import { foundPlayerGarage, type OwnerSetup } from '../db/player';
 import { endSeason, type SeasonEnd } from '../db/season';
@@ -35,7 +67,7 @@ import {
   type UpgradeView,
 } from '../db/upgrades';
 import type { PartCategory } from '../sim/upgrades';
-import { freeAgents, type FreeAgent } from '../db/freeagents';
+import { freeAgents, type FreeAgent, type SalaryHint } from '../db/freeagents';
 import {
   addEntry as dbAddEntry,
   garageEntries,
@@ -108,20 +140,24 @@ import {
 } from '../db/equity';
 import {
   buyStake as dbBuyStake,
-  investmentTargets,
-  investmentView,
   launchTakeover as dbLaunchTakeover,
   sellStake as dbSellStake,
-  wealthOf,
-  type InvestmentTarget,
-  type InvestmentView,
-  type Wealth,
 } from '../db/investments';
+import {
+  readCapTable,
+  readInvestmentTargets,
+  readTakeover,
+  readWealth,
+  type CapTableReading,
+  type InvestmentTargetReading,
+  type TakeoverEstimate,
+  type WealthReading,
+} from '../db/captable';
 import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
 import type { FacilityKind } from '../sim/facilities';
 import {
   dismissExecutive,
-  executiveCandidates,
+  executiveCandidateViews,
   executiveCapacity,
   garageExecutives,
   recentDepartures,
@@ -130,6 +166,7 @@ import {
   type Executive,
   type ExecutiveDeparture,
   type ExecutiveOutcome,
+  type ExecutiveOfferView,
 } from '../db/executives';
 import {
   activeYearsOf,
@@ -158,17 +195,37 @@ import {
   type SupplyView,
 } from '../db/supply';
 import type { SupplyCategory } from '../sim/supply';
-import { BUILT_ROLES, type ExecutiveOffer, type ExecutiveRole } from '../sim/executives';
+import { BUILT_ROLES, type ExecutiveRole } from '../sim/executives';
 import {
   fireMechanic,
   garageCrewStrength,
   garageStaff,
   hireMechanic,
-  mechanicCandidates,
+  mechanicCandidateViews,
   type Mechanic,
+  type MechanicOfferView,
 } from '../db/staff';
-import type { MechanicOffer } from '../sim/staff';
+import { inspectCar } from '../db/inspection';
+import { negotiationHint } from '../db/knowledge';
+import type { AmountRange, Reading } from '../sim/scouting';
+import {
+  assignScout,
+  clearAssignment,
+  fireScout,
+  garageScouts,
+  hireScout,
+  recentScoutRetirements,
+  risingDrivers,
+  scoutCandidates,
+  type HiredScout,
+  type RisingDriver,
+  type ScoutRetirement,
+} from '../db/scouts';
+import type { ScoutFocus, ScoutOffer, Subject } from '../sim/scouting';
+import type { Call } from '../sim/final/engine';
+import type { RunPlan } from '../sim/prelim/lap';
 import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
+import { loadSettings, saveSetting } from '../platform/settings';
 import { getServices } from './services';
 
 /**
@@ -200,11 +257,15 @@ function playerGarageId(db: Database): number | null {
   return typeof v === 'number' ? v : null;
 }
 
+/** How far a step in a final being watched goes. */
+export type WatchStep = 'sector' | 'lap' | 'incident' | 'end';
+
 export interface ActiveNegotiation {
   id: number;
   driverId: number;
   name: string;
-  fairValue: number;
+  /** What the player reads of a fair salary: a range, exact for their own drivers, or none. */
+  fair: SalaryHint | null;
   patience: number;
   last?: ContractOutcome;
 }
@@ -213,7 +274,8 @@ export interface ActiveSponsorNegotiation {
   id: number;
   stableId: string;
   name: string;
-  fairValue: number;
+  /** What the player reads of a fair fee: a range that narrows with what they know of the sponsor. */
+  fair: AmountRange | null;
   patience: number;
   last?: SponsorOutcome;
 }
@@ -228,8 +290,10 @@ export interface ActiveExecutiveNegotiation {
   id: number;
   role: ExecutiveRole;
   name: string;
-  skill: number;
-  fairValue: number;
+  /** What the player reads of their skill. */
+  skill: Reading;
+  /** What the player reads of a fair salary. */
+  fair: AmountRange | null;
   patience: number;
   last?: ExecutiveOutcome;
 }
@@ -239,8 +303,8 @@ export interface ActiveSupplyNegotiation {
   supplierId: number;
   name: string;
   category: SupplyCategory;
-  /** The fair discount, as a fraction. */
-  fairValue: number;
+  /** What the player reads of the fair discount, as fractions. */
+  fair: AmountRange | null;
   patience: number;
   last?: SupplyOutcome;
 }
@@ -257,6 +321,10 @@ interface CareerState {
   world: WorldSummary | undefined;
   nextRound: number | null;
   nextFinal: number | null;
+  /** The timing screen of the final under way, if one has been started and not finished. */
+  finalWatch: FinalView | null;
+  /** The timing screen of the prelims under way, if they have been started and not finished. */
+  prelimWatch: PrelimView | null;
   prelims: PrelimSummary | undefined;
   final: FinalSummary | undefined;
   settlement: RoundSettlement | undefined;
@@ -278,26 +346,46 @@ interface CareerState {
   /** Who owns the player's garage, what it is worth and how that has moved. */
   ownership: OwnershipView | undefined;
   /** The owner's own wealth: personal cash and shares held in other garages. */
-  wealth: Wealth | undefined;
+  wealth: WealthReading | undefined;
   /** The computer garages the owner could invest in (read when the Investments tab opens), and the one being looked at. */
-  investments: InvestmentTarget[];
+  investments: InvestmentTargetReading[];
   contacts: Contact[];
   calendar: CalendarView | undefined;
   social: SocialView | undefined;
   press: PressView | undefined;
-  investment: InvestmentView | undefined;
+  /** The latest news of the whole world, newest first. */
+  news: NewsLine[];
+  /** The map of a round's course, and the rounds that can be looked at. */
+  courseMap: CourseMapData | undefined;
+  /** The ghost record: what is on offer for the next prelims, the picks and how the last ones went. */
+  ghost: GhostView;
+  mapRounds: number[];
+  /** The live rivalries of the player's drivers. */
+  rivalries: RivalryBoardRow[];
+  /** The pending event cards and the live storylines of the player's drivers. */
+  story: StoryBoard;
+  /** The cap table of the garage being looked at, as the player reads it (never the true numbers), and an estimate of a bid for it. */
+  investment: CapTableReading | undefined;
+  takeoverEstimate: TakeoverEstimate | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
   transactionsFilter: LedgerFilter | undefined;
   transactionsView: TransactionsView | undefined;
   /** The mechanics the garage employs, the ones on offer, and how well they cover its entries (0 to 1). */
   staff: Mechanic[];
-  staffOffers: MechanicOffer[];
+  staffOffers: MechanicOfferView[];
   crew: number;
+  /** The scouts the garage employs and the ones on offer. */
+  scouts: HiredScout[];
+  /** The scouts who retired in the year that has just begun. */
+  scoutRetirements: ScoutRetirement[];
+  scoutOffers: ScoutOffer[];
+  /** Young drivers the Head of Scouting has heard of (none without one). */
+  risingDrivers: RisingDriver[];
   /** The executives the garage employs, the slots its prestige allows, and who is on offer for each empty role. */
   executives: Executive[];
   executiveCapacity: { slots: number; used: number };
-  executiveOffers: { role: ExecutiveRole; offers: ExecutiveOffer[] }[];
+  executiveOffers: { role: ExecutiveRole; offers: ExecutiveOfferView[] }[];
   executiveNegotiation: ActiveExecutiveNegotiation | undefined;
   /** The executives lost to retirement or a rival this year. */
   executiveDepartures: ExecutiveDeparture[];
@@ -339,11 +427,15 @@ interface CareerState {
   seasonEnd: SeasonEnd | undefined;
   rollover: Rollover | undefined;
   slotsInUse: number;
+  /** Slots holding a save from an earlier, incompatible version (see `isCompatibleSave`). */
+  incompatibleSlots: number;
   notice: Notice | undefined;
   createTestCareer(): Promise<void>;
   startCareer(setup: OwnerSetup): Promise<void>;
   chooseStarter(carId: number, driverId: number): Promise<void>;
   buyListing(listingId: number): Promise<void>;
+  /** Pays to inspect a car for sale, which takes it to exact for this sale. */
+  inspectCar(carId: number): Promise<void>;
   negotiate(driverId: number): Promise<void>;
   offerContract(salary: number, years: number, garageShare?: number): Promise<void>;
   endNegotiation(): void;
@@ -372,8 +464,15 @@ interface CareerState {
   skipTime(mode: SkipMode): Promise<void>;
   loadSocial(): void;
   loadPress(): void;
+  loadRivalries(): void;
+  loadStory(): void;
+  loadGhost(): void;
+  setGhostPick(entryId: number, pick: GhostPick | null): Promise<void>;
+  loadCourseMap(round?: number): void;
+  answerStoryCard(cardId: number, choice: string): Promise<void>;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
   lookAtInvestment(garageId: number | null): void;
+  estimateTakeover(garageId: number, premium: number): void;
   buyStake(holdingId: number): Promise<void>;
   sellStake(garageId: number): Promise<void>;
   launchTakeover(garageId: number, premium: number): Promise<void>;
@@ -395,6 +494,9 @@ interface CareerState {
   dismissExecutive(executiveId: number): Promise<void>;
   hireMechanic(offer: number): Promise<void>;
   fireMechanic(staffId: number): Promise<void>;
+  hireScout(offer: number, focus: ScoutFocus): Promise<void>;
+  fireScout(scoutId: number): Promise<void>;
+  assignScout(scoutId: number, subject: Subject | null): Promise<void>;
   buyNewCar(modelId: number): Promise<void>;
   sellCar(carId: number): Promise<void>;
   placeBid(lotId: number, amount: number): Promise<void>;
@@ -404,24 +506,59 @@ interface CareerState {
   finishSeason(): Promise<void>;
   newSeason(): Promise<void>;
   runNextPrelims(): Promise<void>;
+  /** Plays one prelim day of the next round (starting its prelims if need be), then stops. */
+  playPrelimDay(): Promise<void>;
+  /** Whether Continue stops after every prelim day instead of playing the prelims through. */
+  stopEveryDay: boolean;
+  /** Continue opens the Race screen when a race is due (kept with the saved settings). */
+  watchRaces: boolean;
+  setWatchRaces(value: boolean): void;
+  setStopEveryDay(value: boolean): void;
   runNextFinal(): Promise<void>;
+  /** Starts the prelims of the next round (or picks them up under way) so they can be watched and stepped. */
+  watchPrelims(): Promise<void>;
+  /** Plays on in prelims being watched: a run, ten runs, the rest of the day, or the rest of the prelims. */
+  stepPrelimWatch(mode: PrelimStep): Promise<void>;
+  /** Gives one of the player's runs in the prelims being watched a plan (null goes back to steady). */
+  planRun(entryId: number, plan: RunPlan | null): Promise<void>;
+  /** Starts the next final (or picks up one under way) so it can be watched and stepped. */
+  watchFinal(): Promise<void>;
+  /** Plays on in a final being watched: a sector, a lap, to the next incident, or to the flag. */
+  stepFinalWatch(mode: WatchStep): Promise<void>;
+  /** Sets the call of one of the player's cars in the final being watched (null leaves it to the computer). */
+  callFinal(entryId: number, call: Call | null): Promise<void>;
   saveSlot1(): Promise<void>;
   loadSlot1(): Promise<void>;
   exportFile(): Promise<void>;
   refreshSlots(): Promise<void>;
+  /** Downloads each incompatible save as it is, so the player can keep a copy. */
+  backupOldSaves(): Promise<void>;
 }
 
 /** The view of a garage the owner is looking at, or undefined if there is none or it has closed since. */
-function investmentNow(db: Database, garageId: number | undefined): InvestmentView | undefined {
+function investmentNow(db: Database, garageId: number | undefined): CapTableReading | undefined {
   if (garageId === undefined) return undefined;
   try {
-    return investmentView(db, garageId);
+    return readCapTable(db, garageId);
   } catch {
     return undefined;
   }
 }
 
+/** The timing screen of the prelims of the next round, if they are under way. */
+function prelimWatchOf(db: Database): PrelimView | null {
+  const round = nextRoundNumber(db);
+  return round === null ? null : prelimView(db, round);
+}
+
+/** The timing screen of the next final, if it is under way. */
+function finalWatchOf(db: Database): FinalView | null {
+  const round = nextFinalRound(db);
+  return round === null ? null : finalView(db, round);
+}
+
 function describeError(error: unknown): Notice {
+  if (error instanceof IncompatibleSaveError) return { key: 'save.incompatible' };
   return {
     key: 'debug.error',
     values: { message: error instanceof Error ? error.message : String(error) },
@@ -440,6 +577,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       nextRound: nextRoundNumber(db),
       calendar: calendarView(db),
       nextFinal: nextFinalRound(db),
+      finalWatch: finalWatchOf(db),
+      prelimWatch: prelimWatchOf(db),
       hub: hubView(db),
       dragonDrivers: dragonDriverIds(db),
       greylinked: greylinkedKeys(db),
@@ -448,7 +587,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       vyktory: vyktoryHappened(db),
       starter: starterOffers(db),
       cars: playerGarageId(db) === null ? [] : ownedCars(db, playerGarageId(db)!),
-      listings: openListings(db),
+      listings: openListings(db, playerGarageId(db) ?? undefined),
       agents: playerGarageId(db) === null ? [] : freeAgents(db, playerGarageId(db)!),
       gear: playerGarageId(db) === null ? [] : garageGear(db, playerGarageId(db)!),
       trained: playerGarageId(db) === null ? [] : trainedDrivers(db, playerGarageId(db)!),
@@ -468,7 +607,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
       ledgerYears: playerGarageId(db) === null ? [] : ledgerYears(db, playerGarageId(db)!),
       ownership: playerGarageId(db) === null ? undefined : ownershipView(db, playerGarageId(db)!),
-      wealth: playerGarageId(db) === null ? undefined : wealthOf(db, playerGarageId(db)!),
+      wealth: playerGarageId(db) === null ? undefined : readWealth(db, playerGarageId(db)!),
       // The garage being looked at moves on when money does; one that has closed is dropped.
       investment: investmentNow(db, get().investment?.garageId),
       // The summary on show moves on when money does.
@@ -496,14 +635,20 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               (role) => !garageExecutives(db, playerGarageId(db)!).some((e) => e.role === role),
             ).map((role) => ({
               role,
-              offers: executiveCandidates(db, playerGarageId(db)!, role),
+              offers: executiveCandidateViews(db, playerGarageId(db)!, role),
             })),
       years: seasonYears(db),
       supply: playerGarageId(db) === null ? undefined : supplyView(db, playerGarageId(db)!),
       facilities: playerGarageId(db) === null ? [] : facilityViews(db, playerGarageId(db)!),
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
-      staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
+      staffOffers:
+        playerGarageId(db) === null ? [] : mechanicCandidateViews(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
+      scouts: playerGarageId(db) === null ? [] : garageScouts(db, playerGarageId(db)!),
+      scoutRetirements:
+        playerGarageId(db) === null ? [] : recentScoutRetirements(db, playerGarageId(db)!),
+      scoutOffers: playerGarageId(db) === null ? [] : scoutCandidates(db, playerGarageId(db)!),
+      risingDrivers: playerGarageId(db) === null ? [] : risingDrivers(db, playerGarageId(db)!),
       auction: playerGarageId(db) === null ? undefined : currentAuction(db, playerGarageId(db)!),
       dealer: playerGarageId(db) === null ? [] : dealerOffers(db, playerGarageId(db)!),
       upgrades:
@@ -513,6 +658,28 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               upgradeView(db, playerGarageId(db)!, c.carId),
             ),
     });
+  };
+
+  /** Everything that follows the flag: the round's books, the auction, the press and the counts reported. */
+  const afterFinal = (db: Database, round: number, summary: FinalSummary) => {
+    const settlement = settleRound(db, round);
+    // The auction house closes its auction between rounds and opens the next one.
+    const closing = playerGarageId(db) === null ? undefined : auctionCycle(db, playerGarageId(db));
+    refresh(db);
+    set({ auctionClosing: closing });
+    track({
+      kind: 'progression',
+      status: 'Complete',
+      path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+    });
+    // How many rivalries the world holds after the race (a count, no names).
+    track({ kind: 'design', id: 'Rivalry:Live', value: liveRivalryCount(db) });
+    // How many storylines are running (a count, no names), and the cards they hold for the player.
+    track({ kind: 'design', id: 'Story:Live', value: liveStoryCount(db) });
+    // How many crashes have made the highlight reel so far (a count, no names).
+    track({ kind: 'design', id: 'Crash:Highlights', value: highlightTotal(db) });
+    set({ story: storyBoard(db) });
+    set({ final: summary, settlement });
   };
 
   const run = async (action: () => Promise<Notice | undefined>, name?: string) => {
@@ -540,6 +707,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     world: undefined,
     nextRound: null,
     nextFinal: null,
+    finalWatch: null,
+    prelimWatch: null,
     prelims: undefined,
     final: undefined,
     settlement: undefined,
@@ -563,7 +732,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     calendar: undefined,
     social: undefined,
     press: undefined,
+    news: [],
+    courseMap: undefined,
+    ghost: { available: false, round: null, options: [], entries: [], results: [] },
+    mapRounds: [],
+    rivalries: [],
+    story: { cards: [], stories: [] },
     investment: undefined,
+    takeoverEstimate: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
     transactionsView: undefined,
@@ -589,6 +765,10 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     registryPage: undefined,
     classificationView: undefined,
     staff: [],
+    scouts: [],
+    scoutRetirements: [],
+    scoutOffers: [],
+    risingDrivers: [],
     staffOffers: [],
     crew: 0,
     auction: undefined,
@@ -599,6 +779,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     seasonEnd: undefined,
     rollover: undefined,
     slotsInUse: 0,
+    incompatibleSlots: 0,
     notice: undefined,
 
     startCareer: (setup) =>
@@ -617,6 +798,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         createStarterOffers(db);
         refreshUsedMarket(db);
         ensureAuction(db);
+        // The computer garages are businesses from the first day, as they are when a save is opened.
+        ensureCurrentBusinesses(db);
         openDb?.close();
         openDb = db;
         set({
@@ -638,6 +821,16 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'ChooseStarter'),
+
+    inspectCar: (carId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        inspectCar(openDb, garageId, carId);
+        refresh(openDb);
+        return undefined;
+      }, 'InspectCar'),
 
     buyListing: (listingId) =>
       run(async () => {
@@ -661,7 +854,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             id: n.id,
             driverId,
             name: agent.name,
-            fairValue: n.fairValue,
+            fair: agent.fairSalary,
             patience: n.patience,
           },
         });
@@ -703,7 +896,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             id: n.id,
             stableId,
             name: sponsor.name,
-            fairValue: n.fairValue,
+            fair: negotiationHint(openDb, n.id),
             patience: n.patience,
           },
         });
@@ -861,7 +1054,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             role,
             name: chosen.name,
             skill: chosen.skill,
-            fairValue: n.fairValue,
+            fair: negotiationHint(openDb, n.id),
             patience: n.patience,
           },
         });
@@ -902,7 +1095,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
             supplierId,
             name: chosen.name,
             category: category.category,
-            fairValue: n.fairValue,
+            fair: negotiationHint(openDb, n.id, 0.0001),
             patience: n.patience,
           },
         });
@@ -1055,7 +1248,47 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         return undefined;
       }, 'InjectCapital'),
 
+    loadRivalries: () => {
+      if (openDb) set({ rivalries: rivalryBoard(openDb) });
+    },
+
+    loadCourseMap: (round) => {
+      if (!openDb) return;
+      set({
+        courseMap: dbCourseMap(openDb, round ?? defaultMapRound(openDb)),
+        mapRounds: dbMapRounds(openDb),
+      });
+    },
+
+    loadGhost: () => {
+      if (openDb) set({ ghost: ghostView(openDb) });
+    },
+
+    setGhostPick: (entryId, pick) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        dbSetGhost(openDb, entryId, pick);
+        if (pick !== null) track({ kind: 'design', id: 'Ghost:Picked', value: 1 });
+        set({ ghost: ghostView(openDb) });
+        return undefined;
+      }, 'SetGhost'),
+
+    loadStory: () => {
+      if (openDb) set({ story: storyBoard(openDb) });
+    },
+
+    answerStoryCard: (cardId, choice) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        dbAnswerCard(openDb, cardId, choice);
+        track({ kind: 'design', id: 'Story:CardAnswered', value: 1 });
+        refresh(openDb);
+        set({ story: storyBoard(openDb) });
+        return undefined;
+      }, 'AnswerStoryCard'),
+
     loadPress: () => {
+      if (openDb) set({ news: newsFeed(openDb) });
       const garageId = openDb ? playerGarageId(openDb) : null;
       if (openDb && garageId !== null) set({ press: pressView(openDb, garageId) });
     },
@@ -1092,7 +1325,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       if (!view) return;
       const due = view.due;
       if (!due) return get().skipTime('due');
-      if (due.kind === 'prelims') return get().runNextPrelims();
+      if (due.kind === 'prelims' || due.kind === 'prelim_day')
+        return get().stopEveryDay ? get().playPrelimDay() : get().runNextPrelims();
       if (due.kind === 'final') return get().runNextFinal();
       if (due.kind === 'end_season') return get().finishSeason();
       if (due.kind === 'new_season') return get().newSeason();
@@ -1105,12 +1339,24 @@ export const useCareerStore = create<CareerState>()((set, get) => {
 
     loadInvestments: () => {
       if (openDb && playerGarageId(openDb) !== null)
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
     },
 
     lookAtInvestment: (garageId) => {
       if (!openDb) return;
-      set({ investment: garageId === null ? undefined : investmentNow(openDb, garageId) });
+      set({
+        investment: garageId === null ? undefined : investmentNow(openDb, garageId),
+        takeoverEstimate: undefined,
+      });
+    },
+
+    estimateTakeover: (garageId, premium) => {
+      if (!openDb) return;
+      try {
+        set({ takeoverEstimate: readTakeover(openDb, garageId, premium) });
+      } catch {
+        set({ takeoverEstimate: undefined });
+      }
     },
 
     buyStake: (holdingId) =>
@@ -1120,7 +1366,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (garageId === null) return undefined;
         dbBuyStake(openDb, garageId, holdingId);
         refresh(openDb);
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
         return undefined;
       }, 'BuyStake'),
 
@@ -1131,7 +1377,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (garageId === null) return undefined;
         dbSellStake(openDb, garageId, targetId);
         refresh(openDb);
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
         return undefined;
       }, 'SellStake'),
 
@@ -1144,7 +1390,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const result = dbLaunchTakeover(openDb, garageId, targetId, premium);
         set({ investment: undefined });
         refresh(openDb);
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
         return {
           key: 'investments.takeoverDone',
           values: { name, cars: result.cars, drivers: result.drivers },
@@ -1180,6 +1426,37 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         refresh(openDb);
         return undefined;
       }, 'FireMechanic'),
+
+    hireScout: (offer, focus) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        hireScout(openDb, garageId, offer, focus);
+        refresh(openDb);
+        return undefined;
+      }, 'HireScout'),
+
+    fireScout: (scoutId) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        fireScout(openDb, garageId, scoutId);
+        refresh(openDb);
+        return undefined;
+      }, 'FireScout'),
+
+    assignScout: (scoutId, subject) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const garageId = playerGarageId(openDb);
+        if (garageId === null) return undefined;
+        if (subject) assignScout(openDb, garageId, scoutId, subject);
+        else clearAssignment(openDb, garageId, scoutId);
+        refresh(openDb);
+        return undefined;
+      }, 'AssignScout'),
 
     buyNewCar: (modelId) =>
       run(async () => {
@@ -1267,6 +1544,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
           difficulty: 'standard',
         });
         persistWorld(openDb, generateWorld(masterSeed));
+        ensureCurrentBusinesses(openDb);
         refresh(openDb);
         return undefined;
       }),
@@ -1276,17 +1554,45 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (!openDb) return undefined;
         const round = nextRoundNumber(openDb);
         if (round === null) return undefined;
-        bringForwardTo(openDb, 'prelims', round);
-        const summary = playPrelims(openDb, round);
+        const summary = playPrelimsOnTheDays(openDb, round);
         refresh(openDb);
         track({
           kind: 'progression',
           status: 'Start',
           path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
         });
-        set({ prelims: summary });
+        set({ prelims: summary, ghost: ghostView(openDb) });
         return undefined;
       }, 'RunPrelims'),
+
+    playPrelimDay: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextRoundNumber(openDb);
+        if (round === null) return undefined;
+        const progress = playNextPrelimDay(openDb, round);
+        refresh(openDb);
+        if (progress.summary) {
+          track({
+            kind: 'progression',
+            status: 'Start',
+            path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+          });
+          set({ prelims: progress.summary, ghost: ghostView(openDb) });
+        }
+        return undefined;
+      }, 'PlayPrelimDay'),
+
+    stopEveryDay: loadSettings().stopEveryDay,
+    setStopEveryDay: (value) => {
+      saveSetting('stopEveryDay', value);
+      set({ stopEveryDay: value });
+    },
+    watchRaces: loadSettings().watchRaces,
+    setWatchRaces: (value) => {
+      saveSetting('watchRaces', value);
+      set({ watchRaces: value });
+    },
 
     runNextFinal: () =>
       run(async () => {
@@ -1294,23 +1600,109 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const round = nextFinalRound(openDb);
         if (round === null) return undefined;
         bringForwardTo(openDb, 'final', round);
-        const summary = playFinal(openDb, round);
-        const settlement = settleRound(openDb, round);
-        // The auction house closes its auction between rounds and opens the next one.
-        const closing =
-          playerGarageId(openDb) === null
-            ? undefined
-            : auctionCycle(openDb, playerGarageId(openDb));
-        refresh(openDb);
-        set({ auctionClosing: closing });
-        track({
-          kind: 'progression',
-          status: 'Complete',
-          path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
-        });
-        set({ final: summary, settlement });
+        afterFinal(openDb, round, playFinal(openDb, round));
         return undefined;
       }, 'RunFinal'),
+
+    watchPrelims: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextRoundNumber(openDb);
+        if (round === null) return undefined;
+        // The first run starts the prelims on the day they open; the screen then shows them at the start.
+        if (prelimView(openDb, round) === null) {
+          bringForwardTo(openDb, 'prelims', round);
+          startPrelims(openDb, round);
+        }
+        refresh(openDb);
+        return undefined;
+      }, 'WatchPrelims'),
+
+    planRun: (entryId, plan) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextRoundNumber(openDb);
+        if (round === null || prelimView(openDb, round) === null) return undefined;
+        setPrelimPlan(openDb, round, entryId, plan);
+        refresh(openDb);
+        return undefined;
+      }, 'PlanRun'),
+
+    stepPrelimWatch: (mode) =>
+      run(
+        async () => {
+          if (!openDb) return undefined;
+          const round = nextRoundNumber(openDb);
+          if (round === null) return undefined;
+          const progress = stepPrelims(openDb, round, mode);
+          refresh(openDb);
+          if (progress.summary) {
+            track({
+              kind: 'progression',
+              status: 'Start',
+              path: ['Season', `Y${get().hub?.year ?? 0}`, `R${round}`],
+            });
+            set({ prelims: progress.summary, ghost: ghostView(openDb) });
+          }
+          return undefined;
+        },
+        mode === 'run'
+          ? 'WatchRun'
+          : mode === 'runs'
+            ? 'WatchRuns'
+            : mode === 'day'
+              ? 'WatchDay'
+              : 'WatchPrelimsEnd',
+      ),
+
+    watchFinal: () =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextFinalRound(openDb);
+        if (round === null) return undefined;
+        bringForwardTo(openDb, 'final', round);
+        if (finalView(openDb, round) === null) startFinal(openDb, round);
+        refresh(openDb);
+        return undefined;
+      }, 'WatchFinal'),
+
+    callFinal: (entryId, call) =>
+      run(async () => {
+        if (!openDb) return undefined;
+        const round = nextFinalRound(openDb);
+        if (round === null || finalView(openDb, round) === null) return undefined;
+        setFinalCall(openDb, round, entryId, call);
+        refresh(openDb);
+        return undefined;
+      }, 'CallFinal'),
+
+    stepFinalWatch: (mode) =>
+      run(
+        async () => {
+          if (!openDb) return undefined;
+          const round = nextFinalRound(openDb);
+          const view = round === null ? null : finalView(openDb, round);
+          if (round === null || !view) return undefined;
+          const progress =
+            mode === 'sector'
+              ? stepFinal(openDb, round, 1)
+              : mode === 'lap'
+                ? stepFinal(openDb, round, view.sectorCount - (view.progress % view.sectorCount))
+                : mode === 'incident'
+                  ? stepFinal(openDb, round, view.totalSectors, { untilPause: true })
+                  : stepFinal(openDb, round, view.totalSectors);
+          if (progress.summary) afterFinal(openDb, round, progress.summary);
+          else refresh(openDb);
+          return undefined;
+        },
+        mode === 'sector'
+          ? 'WatchSector'
+          : mode === 'lap'
+            ? 'WatchLap'
+            : mode === 'incident'
+              ? 'WatchIncident'
+              : 'WatchToFlag',
+      ),
 
     saveSlot1: () =>
       run(async () => {
@@ -1340,8 +1732,25 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       }, 'Export'),
 
     refreshSlots: async () => {
-      const used = await getServices().platform.saves.occupied();
-      set({ slotsInUse: used.length });
+      const { saves } = getServices().platform;
+      let compatible = 0;
+      let incompatible = 0;
+      for (const slot of await saves.occupied()) {
+        const bytes = await saves.read(slot);
+        if (!bytes) continue;
+        if (isCompatibleSave(bytes)) compatible += 1;
+        else incompatible += 1;
+      }
+      set({ slotsInUse: compatible, incompatibleSlots: incompatible });
+    },
+
+    backupOldSaves: async () => {
+      const { saves, files } = getServices().platform;
+      for (const slot of await saves.occupied()) {
+        const bytes = await saves.read(slot);
+        if (bytes && !isCompatibleSave(bytes))
+          await files.exportFile(`backup-${slot}.lcsave`, bytes);
+      }
     },
   };
 });

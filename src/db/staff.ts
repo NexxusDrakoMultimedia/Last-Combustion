@@ -5,12 +5,20 @@ import { moraleFactor } from '../sim/morale';
 import { createRng } from '../sim/rng';
 import { garageFacilityBonuses } from './facilities';
 import { crewOutageFactor } from './outages';
-import { crewStrength, mechanicOffers, wagePerRound, type MechanicOffer } from '../sim/staff';
+import {
+  crewStrength,
+  mechanicOffers,
+  wageFor,
+  wagePerRound,
+  type MechanicOffer,
+} from '../sim/staff';
+import type { AmountRange, Reading } from '../sim/scouting';
 import { onMarket } from '../sim/jobs';
 import { staffBalance } from '../sim/worldgen/data';
 import { ensureOrigins } from './origins';
 import { readCareer } from './career';
 import { all } from './entries';
+import { askFromSkill, knowledgeContext, readCandidateSkill } from './knowledge';
 
 /** A mechanic who was let go and is looking for work again. */
 export interface MarketMechanic {
@@ -131,6 +139,33 @@ export function mechanicCandidates(
     .slice(0, 3)
     .map((m) => ({ name: m.name, skill: m.skill, wagePerWeek: m.wagePerWeek, staffId: m.id }));
   return [...mechanicOffers(rng), ...known];
+}
+
+/** A mechanic on offer as the player sees them: the skill and the weekly wage are readings, never the truth. */
+export interface MechanicOfferView {
+  name: string;
+  skill: Reading;
+  /** 0 to 100: how well the player knows them. */
+  knowledge: number;
+  /** The wage asked each week, worked from the skill reading (one amount once the skill is exact). */
+  wagePerWeek: AmountRange;
+}
+
+/** The mechanics on offer as the player reads them (same order as `mechanicCandidates`). Anyone who worked for the garage before is exact. */
+export function mechanicCandidateViews(db: Database, garageId: number): MechanicOfferView[] {
+  const ctx = knowledgeContext(db, garageId);
+  return mechanicCandidates(db, garageId).map((o) => {
+    const worked =
+      o.staffId !== undefined &&
+      all(db, 'SELECT garage_id FROM staff WHERE id = ?', [o.staffId])[0]?.garage_id === garageId;
+    const read = readCandidateSkill(ctx, `mechanic:${o.name}`, o.skill, worked);
+    return {
+      name: o.name,
+      skill: read.reading,
+      knowledge: read.knowledge,
+      wagePerWeek: askFromSkill(read.reading, o.wagePerWeek, wageFor),
+    };
+  });
 }
 
 /** Hires one of the offered mechanics (by position in the list of offers). They are paid from the next round. */

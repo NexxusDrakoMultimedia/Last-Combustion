@@ -1,0 +1,109 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { expect, test, type Page } from '@playwright/test';
+import messages from '../locales/en.json' with { type: 'json' };
+
+/** Presses Continue until it is the button that runs the given step (it skips past the days and occasions between). */
+async function continueTo(page: Page, label: string): Promise<void> {
+  const primary = page.getByRole('button', {
+    name: new RegExp(`^(${messages['calendar.continue']}|${label})$`),
+  });
+  for (let i = 0; i < 12; i++) {
+    await expect(primary).toBeEnabled();
+    if ((await primary.textContent())?.trim() === label) return;
+    await primary.click();
+  }
+  throw new Error(`Never reached "${label}".`);
+}
+
+test('watches a final from the race screen: the tower, the steps and the flag', async ({
+  page,
+}) => {
+  test.setTimeout(180_000);
+  await page.goto('/');
+  await page.getByLabel(messages['newCareer.ownerName']).fill('Race Owner');
+  await page.getByLabel(messages['newCareer.garageName']).fill('Race Watching');
+  await page.getByRole('button', { name: messages['newCareer.start'] }).click();
+  await page.locator('input[name="starter-car"]').nth(1).check();
+  await page.locator('input[name="starter-driver"]').nth(2).check();
+  await page.getByRole('button', { name: messages['starter.confirm'] }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+
+  // The prelims first, from the race screen: a few runs, then the rest of the day, then to the end.
+  await continueTo(page, messages['hub.runPrelims']);
+  await page.getByRole('button', { name: messages['rail.race'], exact: true }).click();
+  await page.getByRole('button', { name: messages['race.watchPrelims'] }).click();
+  await expect(page.getByText(/^Round 1: prelim day 1 of 7, /)).toBeVisible();
+  await expect(page.getByText(/^0 of \d+ runs today$/)).toBeVisible();
+  // The player's own runs can be planned before they are run.
+  await expect(page.getByRole('heading', { name: messages['race.yourRuns'] })).toBeVisible();
+  const attack = page.getByRole('button', { name: messages['race.plan.attack'] }).first();
+  await attack.click();
+  await expect(attack).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: messages['race.next.runs'] }).click();
+  await expect(page.getByText(/^10 of \d+ runs today$/)).toBeVisible();
+  await expect(
+    page.getByRole('table', { name: messages['race.classificationCaption'] }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: messages['race.next.day'] }).click();
+  await expect(page.getByText(/^Round 1: prelim day 2 of 7, /)).toBeVisible();
+  await page.getByRole('button', { name: messages['race.next.prelimsEnd'] }).click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByText(/Round 1 prelims: \d+ set a time/)).toBeVisible({ timeout: 60_000 });
+  await continueTo(page, messages['hub.runFinal']);
+
+  // Open the race screen instead of running the final, and start watching it.
+  await page.getByRole('button', { name: messages['rail.race'], exact: true }).click();
+  await page.getByRole('button', { name: messages['race.watch'] }).click();
+  const tower = page.getByRole('table', { name: messages['race.tower'] });
+  await expect(tower).toBeVisible();
+  // A header row and the fifteen finalists, all with full tyres at the start.
+  await expect(tower.getByRole('row')).toHaveCount(16);
+  await expect(page.getByText(/^Lap 1 of \d+, sector 1 of \d+$/)).toBeVisible();
+  // The live map shows the cars on the course.
+  const liveMap = page.getByRole('img', { name: messages['race.map.aria'] });
+  await expect(liveMap).toBeVisible();
+  await expect(liveMap.locator('[data-car]')).toHaveCount(15);
+
+  await page.getByRole('button', { name: messages['race.next.sector'] }).click();
+  await expect(page.getByText(/^Lap 1 of \d+, sector 2 of \d+$/)).toBeVisible();
+  await page.getByRole('button', { name: messages['race.next.lap'] }).click();
+  await expect(page.getByText(/^Lap 2 of \d+, sector 1 of \d+$/)).toBeVisible();
+
+  // Play it to the flag: the race ends, the screen says so and the round is settled.
+  await page.getByRole('button', { name: messages['race.next.end'] }).click();
+  await expect(page.getByText(messages['race.over'])).toBeVisible({ timeout: 60_000 });
+  await page.keyboard.press('Escape');
+  await expect(page.getByText(/Round 1 final: \d+ finished/)).toBeVisible();
+});
+
+test('with Watch races by default on, Continue opens the race to watch, and the choice is kept', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto('/');
+  await page.getByLabel(messages['newCareer.ownerName']).fill('Watch Owner');
+  await page.getByLabel(messages['newCareer.garageName']).fill('Watch Default');
+  await page.getByRole('button', { name: messages['newCareer.start'] }).click();
+  await page.locator('input[name="starter-car"]').nth(1).check();
+  await page.locator('input[name="starter-driver"]').nth(2).check();
+  await page.getByRole('button', { name: messages['starter.confirm'] }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+
+  await page.getByRole('button', { name: messages['rail.calendar'], exact: true }).click();
+  const watch = page.getByLabel(messages['calendar.watchRaces']);
+  await expect(watch).not.toBeChecked();
+  await watch.check();
+  // The choice is kept for next time.
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('lc.settings')))
+    .toContain('"watchRaces":true');
+  await page.keyboard.press('Escape');
+  // Continue skips to the prelims, then offers to watch them instead of running them.
+  await continueTo(page, messages['race.watchPrelims']);
+  await page
+    .getByRole('button', { name: messages['race.watchPrelims'], exact: true })
+    .first()
+    .click();
+  await expect(page.getByText(/^Round 1: prelim day 1 of 7, /)).toBeVisible();
+});

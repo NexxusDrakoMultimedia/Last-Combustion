@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import { seasonAwards, type AwardWon } from './awards';
-import { flagNames } from '../sim/worldgen/data';
+import { balance, flagNames } from '../sim/worldgen/data';
 import { all } from './entries';
 
 /** One place on a record's leaderboard: someone with a non-zero score in that category. */
@@ -191,7 +191,10 @@ export function recordBook(db: Database): RecordBook {
     ),
     recordOf(titles('garage'), 'garage_titles', 'garage'),
     recordOf(bySeason('garage', 'SUM(r.points)'), 'garage_season_points', 'garage', true),
-    // Rankings of how many fans each has now, and of garages' prestige (the figures as they stand today).
+    // Rankings of how many fans each has now, and of garages' prestige (the figures as they stand today). A
+    // nation is ranked only while people really race or work under its flag (drivers, garages and the paddock)
+    // and it has more fans than the minimum every flag carries: the fans kept for a region that could one day
+    // leave, and the minimum itself, are hidden tallies and stay out of the list.
     rankingOf(
       all(db, 'SELECT id, name, fans AS value FROM driver ORDER BY fans DESC, id'),
       'driver_fans',
@@ -219,7 +222,16 @@ export function recordBook(db: Database): RecordBook {
       all(
         db,
         `SELECT flag, flag AS name, fans AS value FROM flag_fans
-          WHERE season_id = (SELECT MAX(season_id) FROM flag_fans) ORDER BY fans DESC, flag`,
+          WHERE season_id = (SELECT MAX(season_id) FROM flag_fans)
+            AND fans > ?
+            AND flag IN (
+              SELECT flag FROM driver UNION SELECT flag FROM garage
+              UNION SELECT nationality FROM executive WHERE nationality IS NOT NULL
+              UNION SELECT nationality FROM staff WHERE nationality IS NOT NULL
+              UNION SELECT nationality FROM scout WHERE nationality IS NOT NULL
+            )
+          ORDER BY fans DESC, flag`,
+        [balance.fans.flagMinimum],
       ).map((r) => ({ ...r, name: flagNames[String(r.flag)]?.short ?? String(r.flag) })),
       'nation_fans',
       'nation',

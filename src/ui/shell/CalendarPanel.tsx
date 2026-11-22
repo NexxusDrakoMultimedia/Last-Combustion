@@ -3,6 +3,7 @@
 import { formatDate, t } from '../../i18n';
 import type { CalendarEvent } from '../../sim/calendar';
 import { useCareerStore } from '../../state/career.store';
+import { CourseMapSection } from './CourseMapSection';
 
 const MS_PER_DAY = 86_400_000;
 
@@ -13,11 +14,15 @@ function daysBetween(from: string, to: string): number {
 const eventName = (e: CalendarEvent): string =>
   e.kind === 'occasion'
     ? t('calendar.event.occasion', { occasion: t(`social.occasion.${e.occasion}` as never) })
-    : t(`calendar.event.${e.kind}` as never, { round: e.round ?? 0 });
+    : t(`calendar.event.${e.kind}` as never, { round: e.round ?? 0, day: e.day ?? 0 });
 
 /** The calendar: today, what is waiting, what is coming and what has been. */
 export function CalendarPanel() {
   const calendar = useCareerStore((s) => s.calendar);
+  const stopEveryDay = useCareerStore((s) => s.stopEveryDay);
+  const setStopEveryDay = useCareerStore((s) => s.setStopEveryDay);
+  const watchRaces = useCareerStore((s) => s.watchRaces);
+  const setWatchRaces = useCareerStore((s) => s.setWatchRaces);
   if (!calendar) return <p className="text-sm text-lc-dim">{t('calendar.none')}</p>;
   const upcoming = calendar.events.filter((e) => !e.done);
   const past = calendar.events.filter((e) => e.done).slice(-8);
@@ -34,6 +39,28 @@ export function CalendarPanel() {
           ? t('calendar.due', { event: eventName(calendar.due) })
           : t('calendar.nothingDue')}
       </p>
+      <label className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          checked={stopEveryDay}
+          onChange={(e) => setStopEveryDay(e.target.checked)}
+        />
+        <span>
+          {t('calendar.stopEveryDay')}
+          <span className="block text-lc-dim">{t('calendar.stopEveryDayHint')}</span>
+        </span>
+      </label>
+      <label className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          checked={watchRaces}
+          onChange={(e) => setWatchRaces(e.target.checked)}
+        />
+        <span>
+          {t('calendar.watchRaces')}
+          <span className="block text-lc-dim">{t('calendar.watchRacesHint')}</span>
+        </span>
+      </label>
       <section className="space-y-2">
         <h3 className="lc-display text-sm text-lc-dim">{t('calendar.upcoming')}</h3>
         <ul className="space-y-1">
@@ -65,6 +92,7 @@ export function CalendarPanel() {
           </ul>
         </section>
       )}
+      <CourseMapSection />
     </div>
   );
 }

@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import {
+  readCarById,
+  readDriverById,
+  readGarageById,
+  type CarReading,
+  type DriverReading,
+  type GarageReading,
+} from './knowledge';
 import type { Database } from 'sql.js';
-import { restorationFloor } from '../sim/wear';
-import type { Tier } from '../sim/worldgen/types';
 import { registryStatuses, type RegistryStatus } from './status';
 import { badgesFor, NO_BADGE, type NumberBadge } from './badges';
 export { badgesFor, NO_BADGE, type NumberBadge };
@@ -20,6 +26,7 @@ import {
 import { businessView, ensureBusinesses, type BusinessView } from './business';
 import { computeStandings } from './season';
 import { titlesOf } from './titles';
+import { placeLabel } from '../sim/worldgen/placeLabel';
 
 const gameYear = (db: Database): number => {
   const career = readCareer(db);
@@ -174,16 +181,8 @@ export interface DriverProfile {
   badge: NumberBadge;
   goldBorderYear: number | null;
   silverBorderYear: number | null;
-  stats: Record<
-    | 'pace'
-    | 'consistency'
-    | 'racecraft'
-    | 'tyreManagement'
-    | 'composure'
-    | 'wetSkill'
-    | 'potential',
-    number
-  >;
+  /** What the player reads of the driver's hidden numbers (see "Scouting and fog of war"). */
+  skills: DriverReading;
   fans: number;
   fame: number;
   reputation: number;
@@ -216,7 +215,7 @@ export interface DriverProfile {
 export function driverProfile(db: Database, driverId: number): DriverProfile {
   const d = all(
     db,
-    `SELECT d.*, h.name AS hometown, h.region AS hometown_region, res.name AS residence, res.region AS residence_region
+    `SELECT d.*, h.name AS hometown, h.region AS hometown_region, h.country AS hometown_country, res.name AS residence, res.region AS residence_region, res.country AS residence_country
        FROM driver d JOIN place h ON h.id = d.hometown_place_id JOIN place res ON res.id = d.residence_place_id
       WHERE d.id = ?`,
     [driverId],
@@ -276,23 +275,23 @@ export function driverProfile(db: Database, driverId: number): DriverProfile {
     identity: d.identity as string,
     age,
     flag: d.flag as string,
-    hometown: `${d.hometown as string}, ${d.hometown_region as string}`,
-    residence: `${d.residence as string}, ${d.residence_region as string}`,
+    hometown: placeLabel(
+      d.hometown as string,
+      d.hometown_region as string,
+      d.hometown_country as string,
+    ),
+    residence: placeLabel(
+      d.residence as string,
+      d.residence_region as string,
+      d.residence_country as string,
+    ),
     retiredYear: (d.retired_year as number | null) ?? null,
     number: last?.number ?? null,
     preferredNumber: (d.preferred_number as number | null) ?? null,
     badge: badgesFor(db, latestYear(db)).get(driverId) ?? NO_BADGE,
     goldBorderYear: (d.gold_border_year as number | null) ?? null,
     silverBorderYear: (d.silver_border_year as number | null) ?? null,
-    stats: {
-      pace: d.pace as number,
-      consistency: d.consistency as number,
-      racecraft: d.racecraft as number,
-      tyreManagement: d.tyre_management as number,
-      composure: d.composure as number,
-      wetSkill: d.wet_skill as number,
-      potential: d.potential as number,
-    },
+    skills: readDriverById(db, driverId),
     fans: d.fans as number,
     fame: Math.round(Number(d.fame)),
     reputation: d.reputation as number,
@@ -349,12 +348,8 @@ export interface CarProfile {
   fans: number;
   roadKm: number;
   raceKm: number;
-  wear: number;
-  /** How many full restorations the chassis has had, and the least wear it can have now. */
-  restorations: number;
-  wearFloor: number;
-  kerbKg: number;
-  tyreWidthMm: number;
+  /** What the player reads of the car's hidden numbers (see "Scouting and fog of war"). */
+  reading: CarReading;
   /** The season it retired after, if it did (too old, never scored). */
   retiredYear: number | null;
   /** The garage that has it now, or null while it is for sale or once it has retired. */
@@ -416,11 +411,7 @@ export function carProfile(db: Database, carId: number): CarProfile {
     fans: c.fans as number,
     roadKm: c.road_km as number,
     raceKm: c.race_km as number,
-    wear: Math.round(Number(c.wear) * 10) / 10,
-    restorations: c.restorations as number,
-    wearFloor: restorationFloor(c.restorations as number, c.tier as Tier),
-    kerbKg: c.kerb_kg_current as number,
-    tyreWidthMm: c.tyre_width_mm as number,
+    reading: readCarById(db, carId),
     retiredYear: (c.retired_year as number | null) ?? null,
     garage:
       c.garage_kind === 'market'
@@ -480,8 +471,8 @@ export interface GarageProfile {
   headquarters: string;
   homeState: string;
   colours: [string, string];
-  prestige: number;
-  fans: number;
+  /** What the player reads of the garage's prestige and following (see "Scouting and fog of war"). */
+  reading: GarageReading;
   foundedYear: number;
   closedYear: number | null;
   isPlayer: boolean;
@@ -502,11 +493,17 @@ export interface GarageProfile {
   business: BusinessView | null;
 }
 
+/** Who a garage's sponsor and supplier are and what it builds are known only once enough is known of it. */
+function fogBusiness(business: BusinessView | null, known: boolean): BusinessView | null {
+  if (!business || known) return business;
+  return { ...business, sponsor: null, supplier: null, facilities: [] };
+}
+
 /** The profile of a garage: where it is, who and what it races now, its seasons, its cars and its past drivers. */
 export function garageProfile(db: Database, garageId: number): GarageProfile {
   const g = all(
     db,
-    `SELECT g.*, p.name AS base, p.region, h.name AS hq_name, h.region AS hq_region
+    `SELECT g.*, p.name AS base, p.region, p.country, h.name AS hq_name, h.region AS hq_region, h.country AS hq_country
        FROM garage g JOIN place p ON p.id = g.base_place_id
        LEFT JOIN place h ON h.id = g.hq_place_id
       WHERE g.id = ? AND g.kind = 'racing'`,
@@ -532,6 +529,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     [garageId],
   );
   const player = g.is_player === 1;
+  const reading = readGarageById(db, garageId);
   // A garage from an older save, or a new one, is given its business the first time it is looked at.
   const career = readCareer(db);
   if (career && !player) ensureBusinesses(db, Number(career.gameDate.slice(0, 4)));
@@ -539,14 +537,13 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
     id: garageId,
     name: g.name as string,
     flag: g.flag as string,
-    base: `${g.base as string}, ${g.region as string}`,
+    base: placeLabel(g.base as string, g.region as string, g.country as string),
     headquarters: g.hq_name
-      ? `${g.hq_name as string}, ${g.hq_region as string}`
-      : `${g.base as string}, ${g.region as string}`,
+      ? placeLabel(g.hq_name as string, g.hq_region as string, g.hq_country as string)
+      : placeLabel(g.base as string, g.region as string, g.country as string),
     homeState: g.home_state as string,
     colours: [g.primary_colour as string, g.secondary_colour as string],
-    prestige: g.prestige as number,
-    fans: g.fans as number,
+    reading,
     foundedYear: g.founded_year as number,
     closedYear: (g.closed_year as number | null) ?? null,
     isPlayer: player,
@@ -599,7 +596,7 @@ export function garageProfile(db: Database, garageId: number): GarageProfile {
       name: d.name as string,
       years: d.first === d.last ? String(d.first) : `${d.first as number}-${d.last as number}`,
     })),
-    business: player ? null : businessView(db, garageId),
+    business: player ? null : fogBusiness(businessView(db, garageId), reading.detail),
   };
 }
 

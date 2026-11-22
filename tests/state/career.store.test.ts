@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { latestSchemaVersion } from '../../src/db/migrate';
+import { encodeSave } from '../../src/db/save-file';
 import { loadSql } from '../../src/db/sql';
 import { createMemoryPlatform } from '../../src/platform/memory';
 import { addSink, clearSinks, type TelemetryEvent } from '../../src/platform/telemetry';
@@ -18,6 +19,7 @@ describe('career store', () => {
       schemaVersion: undefined,
       career: undefined,
       slotsInUse: 0,
+      incompatibleSlots: 0,
       notice: undefined,
     });
   });
@@ -37,6 +39,31 @@ describe('career store', () => {
     await useCareerStore.getState().loadSlot1();
     expect(useCareerStore.getState().career?.masterSeed).toBe(seed);
     expect(useCareerStore.getState().notice?.key).toBe('debug.loaded');
+  });
+
+  it('counts an old save apart, refuses to load it, and backs it up unchanged', async () => {
+    const old = await encodeSave(
+      {
+        schemaVersion: 1,
+        appVersion: '0.2.0',
+        createdAt: '2031-02-01T00:00:00.000Z',
+        label: 'old',
+        mods: [],
+        preview: { mode: 'garage_owner', gameDate: '2031-02-01', founderCareer: false },
+      },
+      new Uint8Array([9]),
+    );
+    old[4] = 1;
+    await platform.saves.write('slot1', old);
+    await useCareerStore.getState().refreshSlots();
+    expect(useCareerStore.getState().slotsInUse).toBe(0);
+    expect(useCareerStore.getState().incompatibleSlots).toBe(1);
+
+    await useCareerStore.getState().loadSlot1();
+    expect(useCareerStore.getState().notice?.key).toBe('save.incompatible');
+
+    await useCareerStore.getState().backupOldSaves();
+    expect([...(platform.exported.get('backup-slot1.lcsave') ?? [])]).toEqual([...old]);
   });
 
   it('runs the prelims of each round in order and then stops', async () => {
@@ -81,6 +108,130 @@ describe('career store', () => {
     expect(cal().due).toMatchObject({ kind: 'final', round: 1 });
   });
 
+  it('stops after every prelim day when asked, then plays on to the final', async () => {
+    await useCareerStore.getState().createTestCareer();
+    useCareerStore.setState({ prelims: undefined, stopEveryDay: true });
+    const cal = () => useCareerStore.getState().calendar!;
+    // To the day the prelims open, then play the first day only.
+    await useCareerStore.getState().continueTime();
+    await useCareerStore.getState().continueTime();
+    expect(cal().due).toMatchObject({ kind: 'prelims', round: 1 });
+    await useCareerStore.getState().continueTime();
+    expect(useCareerStore.getState().prelims).toBeUndefined();
+    const days = cal().events.filter((e) => e.kind === 'prelim_day');
+    expect(days.map((e) => e.done)).toEqual([true, false, false, false, false, false, false]);
+    expect(cal().events.some((e) => e.kind === 'prelims' && e.round === 1 && !e.done)).toBe(false);
+    // Each Continue after that moves to the next day or plays it, until the seventh is played.
+    let guard = 0;
+    while (!useCareerStore.getState().prelims && guard++ < 30)
+      await useCareerStore.getState().continueTime();
+    expect(useCareerStore.getState().prelims?.roundNumber).toBe(1);
+    expect(guard).toBeGreaterThanOrEqual(6);
+    expect(cal().due === null || cal().due!.kind === 'final').toBe(true);
+    expect(cal().next ?? cal().due).toMatchObject({ kind: 'final', round: 1 });
+  }, 120_000);
+
+  describe('watching the prelims', () => {
+    it('starts them, steps by run, ten runs, the day and to the end, with the same result as running them', async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().saveSlot1();
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ prelims: undefined });
+      await useCareerStore.getState().runNextPrelims();
+      const expected = useCareerStore.getState().prelims;
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ prelims: undefined });
+      expect(useCareerStore.getState().prelimWatch).toBeNull();
+      await useCareerStore.getState().watchPrelims();
+      const first = useCareerStore.getState().prelimWatch!;
+      expect(first).toMatchObject({ day: 1, daysPlayed: 0, runsPlayedToday: 0, runs: 313 });
+      await useCareerStore.getState().stepPrelimWatch('run');
+      expect(useCareerStore.getState().prelimWatch!.runsPlayedToday).toBe(1);
+      await useCareerStore.getState().stepPrelimWatch('runs');
+      expect(useCareerStore.getState().prelimWatch!.runsPlayedToday).toBe(11);
+      await useCareerStore.getState().stepPrelimWatch('day');
+      expect(useCareerStore.getState().prelimWatch).toMatchObject({ day: 2, daysPlayed: 1 });
+      // Nothing is written to the results until the last run.
+      expect(useCareerStore.getState().prelims).toBeUndefined();
+      await useCareerStore.getState().stepPrelimWatch('end');
+      expect(useCareerStore.getState().prelimWatch).toBeNull();
+      expect(useCareerStore.getState().prelims).toEqual(expected);
+    }, 180_000);
+  });
+
+  describe('watching a final', () => {
+    // Each test plays the final one way, loads the save made just before it, and plays it the other way.
+    // (A test career has a seed of its own, so two careers are never the same world.)
+    const beforeTheFinal = async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().runNextPrelims();
+      await useCareerStore.getState().saveSlot1();
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ final: undefined, settlement: undefined });
+    };
+    const again = async () => {
+      await useCareerStore.getState().loadSlot1();
+      useCareerStore.setState({ final: undefined, settlement: undefined });
+    };
+
+    it('settles a career just made exactly as the same career reloaded: computer garages are businesses from the first day', async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().runNextPrelims();
+      await useCareerStore.getState().saveSlot1();
+      useCareerStore.setState({ final: undefined, settlement: undefined });
+      await useCareerStore.getState().runNextFinal();
+      const fresh = useCareerStore.getState();
+      expect(fresh.settlement).toBeDefined();
+      await again();
+      await useCareerStore.getState().runNextFinal();
+      expect(useCareerStore.getState().final).toEqual(fresh.final);
+      expect(useCareerStore.getState().settlement).toEqual(fresh.settlement);
+    }, 180_000);
+
+    it('starts the final, steps it by sector, lap, incident and to the flag, and settles the round at the end', async () => {
+      await beforeTheFinal();
+      expect(useCareerStore.getState().finalWatch).toBeNull();
+      await useCareerStore.getState().watchFinal();
+      const first = useCareerStore.getState().finalWatch!;
+      expect(first.progress).toBe(0);
+      expect(first.rows).toHaveLength(15);
+      await useCareerStore.getState().stepFinalWatch('sector');
+      expect(useCareerStore.getState().finalWatch!.progress).toBe(1);
+      await useCareerStore.getState().stepFinalWatch('lap');
+      expect(useCareerStore.getState().finalWatch!.progress).toBe(first.sectorCount);
+      await useCareerStore.getState().stepFinalWatch('incident');
+      const stopped = useCareerStore.getState().finalWatch;
+      // A final with no incident runs on to the flag, so only a stop means the round is still open.
+      if (stopped) {
+        expect(stopped.progress).toBeGreaterThan(first.sectorCount);
+        // Nothing is settled until the flag falls.
+        expect(useCareerStore.getState().settlement).toBeUndefined();
+      }
+      await useCareerStore.getState().stepFinalWatch('end');
+      const watched = useCareerStore.getState();
+      expect(watched.finalWatch).toBeNull();
+      expect(watched.settlement).toBeDefined();
+      // The same final played in one go gives the same result.
+      await again();
+      await useCareerStore.getState().runNextFinal();
+      expect(useCareerStore.getState().final).toEqual(watched.final);
+      expect(useCareerStore.getState().settlement).toEqual(watched.settlement);
+    }, 180_000);
+
+    it('lets Continue finish a final that is being watched, with the same result', async () => {
+      await beforeTheFinal();
+      await useCareerStore.getState().runNextFinal();
+      const expected = useCareerStore.getState().final;
+      await again();
+      await useCareerStore.getState().watchFinal();
+      await useCareerStore.getState().stepFinalWatch('sector');
+      expect(useCareerStore.getState().finalWatch).not.toBeNull();
+      await useCareerStore.getState().continueTime();
+      expect(useCareerStore.getState().finalWatch).toBeNull();
+      expect(useCareerStore.getState().final).toEqual(expected);
+    }, 180_000);
+  });
+
   it('exports a .lcsave file through the platform', async () => {
     await useCareerStore.getState().createTestCareer();
     await useCareerStore.getState().exportFile();
@@ -90,6 +241,17 @@ describe('career store', () => {
   it('reports a clear error when loading an empty slot', async () => {
     await useCareerStore.getState().loadSlot1();
     expect(useCareerStore.getState().notice?.key).toBe('debug.error');
+  });
+
+  describe('the ghost record', () => {
+    it('is reloaded when the prelims have been run, so it is for the next round', async () => {
+      await useCareerStore.getState().createTestCareer();
+      useCareerStore.setState({
+        ghost: { available: true, round: 99, options: [], entries: [], results: [] },
+      });
+      await useCareerStore.getState().runNextPrelims();
+      expect(useCareerStore.getState().ghost.round).toBe(2);
+    });
   });
 
   describe('telemetry', () => {
@@ -121,6 +283,16 @@ describe('career store', () => {
       ]);
       // The test career has no player garage, so no money is reported for it.
       expect(seen.some((e) => e.kind === 'resource')).toBe(false);
+    });
+
+    it('reports how many rivalries are live after a final, as a count and nothing else', async () => {
+      await useCareerStore.getState().createTestCareer();
+      await useCareerStore.getState().runNextPrelims();
+      await useCareerStore.getState().runNextFinal();
+      const events = seen.filter((e) => e.kind === 'design' && e.id === 'Rivalry:Live');
+      expect(events).toHaveLength(1);
+      expect(Object.keys(events[0]!).sort()).toEqual(['id', 'kind', 'value']);
+      expect(typeof (events[0] as { value: number }).value).toBe('number');
     });
 
     it('reports a player garage’s money as sources and sinks once a round is settled', async () => {
@@ -284,6 +456,66 @@ describe('career store', () => {
       expect(useCareerStore.getState().staff).toEqual([]);
     });
 
+    it('inspects a car for sale, which takes it to exact', async () => {
+      await started();
+      const listing = useCareerStore.getState().listings[0]!;
+      expect(listing.reading.condition.kind).not.toBe('exact');
+      await useCareerStore.getState().inspectCar(listing.carId);
+      const after = useCareerStore.getState().listings.find((l) => l.id === listing.id)!;
+      expect(after.reading.inspected).toBe(true);
+      expect(after.reading.condition.kind).toBe('exact');
+    }, 120_000);
+
+    it('reports scouts and inspections as design events, counts only', async () => {
+      await started();
+      const seen: TelemetryEvent[] = [];
+      let scoutName: string | undefined;
+      addSink({ send: (e) => void seen.push(e) });
+      try {
+        await useCareerStore.getState().hireScout(0, 'drivers');
+        const scout = useCareerStore.getState().scouts[0]!;
+        scoutName = scout.name;
+        await useCareerStore.getState().assignScout(scout.id, {
+          kind: 'drivers',
+          id: useCareerStore.getState().agents[0]!.driverId,
+        });
+        await useCareerStore.getState().inspectCar(useCareerStore.getState().listings[0]!.carId);
+        await useCareerStore.getState().fireScout(scout.id);
+      } finally {
+        clearSinks();
+      }
+      const ids = seen.flatMap((e) => (e.kind === 'design' ? [e.id] : []));
+      expect(ids).toEqual(
+        expect.arrayContaining([
+          'Action:HireScout',
+          'Action:AssignScout',
+          'Action:InspectCar',
+          'Action:FireScout',
+        ]),
+      );
+      // No names or ids travel with an event.
+      expect(scoutName).toBeDefined();
+      expect(JSON.stringify(seen)).not.toContain(scoutName ?? 'no scout was hired');
+    }, 120_000);
+
+    it('hires, assigns and lets go a scout', async () => {
+      await started();
+      const offers = useCareerStore.getState().scoutOffers;
+      expect(offers).toHaveLength(4);
+      await useCareerStore.getState().hireScout(0, 'drivers');
+      const [scout] = useCareerStore.getState().scouts;
+      expect(scout).toMatchObject({ focus: 'drivers', skill: offers[0]!.skill });
+      const agent = useCareerStore.getState().agents[0]!;
+      await useCareerStore
+        .getState()
+        .assignScout(scout!.id, { kind: 'drivers', id: agent.driverId });
+      expect(useCareerStore.getState().scouts[0]!.subjectName).toBe(agent.name);
+      await useCareerStore.getState().assignScout(scout!.id, null);
+      expect(useCareerStore.getState().scouts[0]!.assignment).toBeNull();
+      await useCareerStore.getState().fireScout(scout!.id);
+      expect(useCareerStore.getState().scouts).toEqual([]);
+    }, 120_000);
+
     it('pays the wages when a round is settled, and reports hiring', async () => {
       await started();
       const seen: TelemetryEvent[] = [];
@@ -323,7 +555,7 @@ describe('career store', () => {
         .chooseStarter(starter.cars[0]!.carId, starter.drivers[0]!.driverId);
       const state = useCareerStore.getState();
       expect(state.executiveCapacity).toEqual({ slots: 0, used: 0 });
-      expect(state.executiveOffers).toHaveLength(8);
+      expect(state.executiveOffers).toHaveLength(9);
       expect(state.executiveOffers.every((o) => o.offers.length === 3)).toBe(true);
       expect(state.executives).toEqual([]);
       expect(state.supply?.categories.map((c) => c.category)).toEqual([

@@ -15,7 +15,7 @@ Versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Each
 | M9 Modes and release                       | 0.5.0     | All career modes, family and dynasty, listing on the exchange, the tutorial, audio and desktop builds                                                                               |
 | Feature complete                           | **1.0.0** | Not a milestone: the project owner declares 1.0.0 when the game is feature complete, whenever that is                                                                               |
 
-M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load: schema changes are new numbered migrations and a released migration is never edited.
+M0 to M4 were built before there were players and have no release. Before 1.0.0 a minor version may change the rules of the game, but a save from an earlier version must still load (0.3.0 is the one deliberate exception, because its calendar changed; see the changelog): schema changes are new numbered migrations and a released migration is never edited.
 
 ## Patch releases
 
@@ -88,7 +88,7 @@ The release site (`lc.nexxusdrako.au`, Cloudflare) is built from `main` only, so
 
 Before every release, all of the documentation gets a thorough pass. It is slow on purpose: take no shortcuts and check every claim against the code. It is done on the release pull request or just before it, in commits of its own that change words and structure only, never a game rule. If the pass finds a place where the code and the document disagree and it is not clear which is right, stop and ask the project owner.
 
-**What is covered.** Every Markdown file (`README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `TRADEMARKS.md`, `CREDITS.md`, `CHANGELOG.md`, everything in `docs/` and `docs/adr/`, and the issue and pull request templates), the player-facing text in `locales/en.json`, the `source` notes in the data files, and the comments that describe a rule.
+**What is covered.** Every Markdown file (`README.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `SECURITY.md`, `TRADEMARKS.md`, `CREDITS.md`, `CHANGELOG.md`, everything in `docs/` and `docs/adr/`, and the issue and pull request templates), the player-facing text in `locales/en.json`, the `source` notes in the data files, and the comments that describe a rule.
 
 1. **Fix.** Check every statement of fact against the code and the data: numbers against `data/*.json`, commands against `package.json`, file and function names against the source, "built" and "to come" labels against what the game does today, version and milestone status against this page. Follow every link and cross-reference. Correct what is stale, wrong or missing, and update the date or version of anything that names one.
 2. **Unify.** One name for each thing, used everywhere: the same words for the series, rounds, prelims, finals, entries, garages and the Registry, written the same way each time. One shape for headings, tables, lists, and "built so far" notes. One voice, tense and level of detail within a section.

@@ -14,6 +14,7 @@ import { readCareer } from './career';
 import { flushDailyLife, settleDay, type DailyLifeRun } from './daily';
 import { fireMissedConversations } from './social';
 import { all } from './entries';
+import { prelimPlans } from './racestate';
 
 export interface CalendarView {
   /** The game date. */
@@ -31,17 +32,22 @@ export function calendarView(db: Database): CalendarView | undefined {
   const career = readCareer(db);
   const season = all(db, 'SELECT id, year, status FROM season ORDER BY year DESC LIMIT 1')[0];
   if (!career || !season) return undefined;
+  const plans = new Map(prelimPlans(db).map((p) => [p.roundNumber, p]));
   const rounds = all(
     db,
     'SELECT number, practice_start, prelim_start, final_date, status FROM round WHERE season_id = ? ORDER BY number',
     [season.id as number],
-  ).map((r) => ({
-    number: r.number as number,
-    practiceStart: r.practice_start as string,
-    prelimStart: r.prelim_start as string,
-    finalDate: r.final_date as string,
-    status: r.status as string,
-  }));
+  ).map((r) => {
+    const plan = plans.get(r.number as number);
+    return {
+      number: r.number as number,
+      practiceStart: r.practice_start as string,
+      prelimStart: r.prelim_start as string,
+      finalDate: r.final_date as string,
+      status: r.status as string,
+      prelimDays: plan?.days.map((d) => ({ ...d, played: d.day <= plan.daysPlayed })),
+    };
+  });
   const year = season.year as number;
   const events = buildEvents(year, rounds, season.status === 'complete', career.gameDate);
   return {
@@ -87,8 +93,15 @@ export function skipTime(db: Database, mode: SkipMode): CalendarView {
 }
 
 /** Brings the date forward to an event's date if it has not got there yet (used when an event is run directly). */
-export function bringForwardTo(db: Database, kind: CalendarEvent['kind'], round?: number): void {
+export function bringForwardTo(
+  db: Database,
+  kind: CalendarEvent['kind'],
+  round?: number,
+  day?: number,
+): void {
   const view = calendarView(db);
-  const event = view?.events.find((e) => e.kind === kind && e.round === round && !e.done);
+  const event = view?.events.find(
+    (e) => e.kind === kind && e.round === round && e.day === day && !e.done,
+  );
   if (view && event && view.date < event.date) moveDateTo(db, event.date);
 }

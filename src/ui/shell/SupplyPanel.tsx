@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { amountText } from './DriverStats';
 import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
 import { OUTAGE_EFFECTS } from '../../sim/outages';
@@ -28,7 +29,7 @@ export function SupplyPanel() {
           {t('supply.negotiating', {
             name: supplyNegotiation.name,
             category: t(`supply.category.${supplyNegotiation.category}` as never),
-            fair: pct(supplyNegotiation.fairValue),
+            fair: amountText(supplyNegotiation.fair, (x) => String(pct(x))),
             patience: supplyNegotiation.patience,
           })}
         </p>

@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState } from 'react';
+import { sortAgents, type AgentSort } from '../../db/freeagents';
+import { ROAD_TYPES } from '../../sim/worldgen/types';
+import { DriverStats, salaryText } from './DriverStats';
 import { formatMoney, t } from '../../i18n';
 import { IDENTITY_SIGN } from '../../sim/identity';
 import type { Identity } from '../../sim/worldgen/types';
 import { useCareerStore } from '../../state/career.store';
 import { places, seasonBalance } from '../../sim/worldgen/data';
 import { button, field, quiet } from '../styles';
+import { RivalriesSection } from './RivalriesSection';
+import { StorylinesSection } from './StorylinesSection';
+import { placeLabel } from '../../sim/worldgen/placeLabel';
 
 /** Every place a driver could move to: Australia first, then the rest by country and name. */
 const PLACE_OPTIONS = [...places]
@@ -18,7 +24,10 @@ const PLACE_OPTIONS = [...places]
   )
   .map((p) => ({
     id: p.id,
-    label: `${p.name}, ${p.region}${p.country === 'AU' ? '' : ` (${p.country})`}`,
+    label:
+      p.country === 'AU'
+        ? placeLabel(p.name, p.region, p.country)
+        : `${p.name}, ${p.region} (${p.country})`,
   }));
 
 /** Free agents to negotiate with, and the drivers already signed, who can be seated in an entry. */
@@ -39,6 +48,7 @@ export function DriversPanel() {
     seatDriver,
     renewGear,
   } = useCareerStore();
+  const [sortBy, setSortBy] = useState<AgentSort>('rating');
   const [salary, setSalary] = useState('');
   const [years, setYears] = useState('2');
   const [share, setShare] = useState('80');
@@ -52,11 +62,16 @@ export function DriversPanel() {
     return (
       <div className="space-y-4">
         <p className="text-sm">
-          {t('drivers.negotiating', {
-            name: negotiation.name,
-            fair: formatMoney(negotiation.fairValue),
-            patience: negotiation.patience,
-          })}
+          {negotiation.fair
+            ? t('drivers.negotiating', {
+                name: negotiation.name,
+                fair: salaryText(negotiation.fair),
+                patience: negotiation.patience,
+              })
+            : t('drivers.negotiatingBlind', {
+                name: negotiation.name,
+                patience: negotiation.patience,
+              })}
         </p>
         {counter && (
           <p className="border border-lc-line bg-lc-raised p-2 text-sm">
@@ -137,9 +152,27 @@ export function DriversPanel() {
   const cash = hub?.player?.cash ?? 0;
   return (
     <div className="space-y-6">
+      <p className="text-sm text-lc-dim">{t('drivers.fogNote')}</p>
+      <label className="flex flex-wrap items-center gap-2 text-sm" htmlFor="agent-sort">
+        {t('drivers.sortBy')}
+        <select
+          id="agent-sort"
+          className={field}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as AgentSort)}
+        >
+          <option value="rating">{t('drivers.sort.rating')}</option>
+          <option value="potential">{t('drivers.sort.potential')}</option>
+          {ROAD_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {t('drivers.sort.road', { road: t(`road.${type}` as never) })}
+            </option>
+          ))}
+        </select>
+      </label>
       <ul className="space-y-2 text-sm">
         {agents.length === 0 && <li className="text-lc-dim">{t('drivers.none')}</li>}
-        {agents.map((a) => (
+        {sortAgents(agents, sortBy).map((a) => (
           <li
             key={a.driverId}
             className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
@@ -150,20 +183,10 @@ export function DriversPanel() {
               </span>{' '}
               <span className="text-lc-dim">{t('drivers.age', { age: a.age })}</span>
               <br />
-              <span className="lc-num text-xs text-lc-dim">
-                {t('drivers.stats', {
-                  rating: a.rating,
-                  pace: a.pace,
-                  consistency: a.consistency,
-                  racecraft: a.racecraft,
-                  tyres: a.tyreManagement,
-                  composure: a.composure,
-                  wet: a.wetSkill,
-                })}
-              </span>
+              <DriverStats reading={a.reading} />
             </span>
             <span className="flex items-center gap-2">
-              <span className="lc-num text-lc-dim">{formatMoney(a.fairValue)}</span>
+              <span className="lc-num text-lc-dim">{salaryText(a.fairSalary)}</span>
               {a.signed ? (
                 <button
                   type="button"
@@ -316,6 +339,8 @@ export function DriversPanel() {
           </ul>
         </section>
       )}
+      <RivalriesSection />
+      <StorylinesSection />
     </div>
   );
 }

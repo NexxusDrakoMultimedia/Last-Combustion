@@ -51,7 +51,7 @@ describe('executive slots and pay', () => {
   it('builds every role now that the Operations Director has utilities to cut', () => {
     expect(EXECUTIVE_ROLES).toContain('operations_director');
     expect(BUILT_ROLES).toContain('operations_director');
-    expect(BUILT_ROLES).toHaveLength(8);
+    expect(BUILT_ROLES).toHaveLength(9);
   });
 });
 
@@ -64,6 +64,9 @@ describe('what executives add up to', () => {
     const full = executiveBonuses([{ role: 'commercial_director', skill: 100 }]);
     expect(full.sponsorFee).toBeCloseTo(0.2, 8);
     expect(full.sponsorPrestige).toBe(10);
+    const scouting = executiveBonuses([{ role: 'head_of_scouting', skill: 100 }]);
+    expect(scouting.scouts).toBeCloseTo(0.25, 8);
+    expect(executiveBonuses([{ role: 'head_of_scouting', skill: 40 }]).scouts).toBeCloseTo(0.1, 8);
     const half = executiveBonuses([{ role: 'head_of_marketing', skill: 50 }]);
     expect(half.fans).toBeCloseTo(0.125, 8);
     expect(half.merchandise).toBeCloseTo(0.15, 8);

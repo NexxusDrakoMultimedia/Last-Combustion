@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { closeAuction, ensureAuction, openLots, placeBid } from '../../src/db/auction';
 import { createCareer } from '../../src/db/career';
 import { garageBonuses } from '../../src/db/bonuses';
+import { garageScoutLift } from '../../src/db/scouts';
 import {
   dismissExecutive,
   executiveCandidates,
@@ -71,6 +72,20 @@ function appoint(db: Database, garageId: number, role: ExecutiveRole, skill = 10
     [garageId, role, skill],
   );
 }
+
+describe('the Head of Scouting', () => {
+  it('lifts every scout, and is offered as a ninth role', () => {
+    const { db, garageId } = fresh('head-of-scouting');
+    db.run('UPDATE garage SET prestige = 10 WHERE id = ?', [garageId]);
+    expect(garageScoutLift(db, garageId)).toBe(0);
+    expect(() => openExecutiveNegotiation(db, garageId, 'head_of_scouting', 0)).not.toThrow();
+    appoint(db, garageId, 'head_of_scouting', 80);
+    // The executive's morale (50 by default) moves their skill a little; the lift is never past a quarter.
+    expect(garageScoutLift(db, garageId)).toBeGreaterThan(0);
+    expect(garageScoutLift(db, garageId)).toBeLessThanOrEqual(0.25);
+    expect(garageBonuses(db, garageId).scouts).toBe(garageScoutLift(db, garageId));
+  });
+});
 
 async function clone(db: Database): Promise<Database> {
   return (await unpackDatabase(SQL, await packDatabase(db, 'clone'))).db;

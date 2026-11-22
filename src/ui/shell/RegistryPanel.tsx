@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
+import { FogShare, FogValue } from '../FogValue';
+import { amountText } from './DriverStats';
 import { moraleText } from '../moraleText';
+import { ROAD_TYPES } from '../../sim/worldgen/types';
 import { useState, type ReactNode } from 'react';
 import { formatDate, formatMoney, formatPoints, hasText, t } from '../../i18n';
 import type { HoldingLine, PersonKind, PersonProfile, PersonRef } from '../../db/people';
@@ -12,7 +15,9 @@ import type {
   RegistryIndex,
   ScoringSpan,
 } from '../../db/registry';
-import { flagNames } from '../../sim/worldgen/data';
+import { carModels, flagNames } from '../../sim/worldgen/data';
+import { placeLabel } from '../../sim/worldgen/placeLabel';
+import { ScoutAssign } from './ScoutAssign';
 import { useCareerStore } from '../../state/career.store';
 import { AttentionList } from '../AttnFlag';
 import { DecalRow, DecalStrip, StarRow } from '../Decals';
@@ -24,6 +29,19 @@ import { RaceNumber } from '../RaceNumber';
 import { dataTable, field, quiet } from '../styles';
 
 const flagName = (code: string): string => flagNames[code]?.short ?? code;
+
+/** What the range bars of a car's kerb weight and tyre width are drawn against (the span of the car list). */
+const KERB_SCALE = {
+  min: Math.min(...carModels.map((m) => m.kerbKg)),
+  max: Math.max(...carModels.map((m) => m.kerbKg)),
+};
+const TYRE_SCALE = { min: 100, max: 300 };
+
+/** A place for the player: Australian places with their state and country, a city state with its country. */
+const placeText = (l: PlaceLine): string =>
+  l.country !== 'AU' && l.region === l.name
+    ? `${l.name}, ${flagName(l.country)}`
+    : placeLabel(l.name, l.region, l.country);
 const place = (rank: number | null): string => (rank === null ? t('registry.none') : String(rank));
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -77,6 +95,7 @@ function DriverPage({ p }: { p: DriverProfile }) {
         )}
         <DecalStrip decals={p.decals} />
       </div>
+      <ScoutAssign subject={{ kind: 'drivers', id: p.id }} owned={p.skills.owned} />
       <Facts
         items={[
           [t('registry.age'), p.age],
@@ -126,16 +145,43 @@ function DriverPage({ p }: { p: DriverProfile }) {
       <Section title={t('registry.skills')}>
         <Facts
           items={(
-            [
-              'pace',
-              'consistency',
-              'racecraft',
-              'tyreManagement',
-              'composure',
-              'wetSkill',
-              'potential',
-            ] as const
-          ).map((k) => [t(`registry.stat.${k}` as never), p.stats[k]] as [string, ReactNode])}
+            ['pace', 'consistency', 'racecraft', 'tyreManagement', 'composure', 'wetSkill'] as const
+          )
+            .map(
+              (k) =>
+                [
+                  t(`registry.stat.${k}` as never),
+                  <FogValue
+                    key={k}
+                    reading={p.skills.stats[k]}
+                    knowledge={p.skills.knowledge}
+                    confirmed={!p.skills.owned}
+                  />,
+                ] as [string, ReactNode],
+            )
+            .concat([
+              [
+                t('registry.stat.potential'),
+                <FogValue
+                  key="potential"
+                  reading={p.skills.potential}
+                  knowledge={Math.max(0, p.skills.knowledge - 10)}
+                  confirmed={!p.skills.owned}
+                />,
+              ],
+              ...ROAD_TYPES.map(
+                (type) =>
+                  [
+                    t('registry.affinity', { road: t(`road.${type}` as never) }),
+                    <FogValue
+                      key={`affinity-${type}`}
+                      reading={p.skills.affinities[type]}
+                      knowledge={p.skills.knowledge}
+                      confirmed={!p.skills.owned}
+                    />,
+                  ] as [string, ReactNode],
+              ),
+            ])}
         />
       </Section>
       <Section title={t('registry.driverDecals')}>
@@ -225,6 +271,7 @@ function CarPage({ p }: { p: CarProfile }) {
         </h2>
         <DecalStrip decals={p.decals} />
       </div>
+      <ScoutAssign subject={{ kind: 'cars', id: p.id }} owned={p.reading.owned} />
       <Facts
         items={[
           [t('registry.chassis'), p.chassisNo],
@@ -242,14 +289,58 @@ function CarPage({ p }: { p: CarProfile }) {
           ],
           [t('registry.roadKm'), p.roadKm.toLocaleString('en')],
           [t('registry.raceKm'), p.raceKm.toLocaleString('en')],
-          [t('registry.wear'), p.wear],
+          [
+            t('registry.wear'),
+            <FogValue
+              key="condition"
+              reading={p.reading.condition}
+              knowledge={p.reading.knowledge}
+              confirmed={p.reading.inspected}
+            />,
+          ],
+          [
+            t('registry.bestCondition'),
+            <FogValue
+              key="best"
+              reading={p.reading.bestCondition}
+              knowledge={p.reading.knowledge}
+              confirmed={p.reading.inspected}
+            />,
+          ],
           [
             t('registry.restorations'),
-            p.restorations === 0
-              ? t('registry.none')
-              : t('registry.restorationsValue', { count: p.restorations, floor: p.wearFloor }),
+            p.reading.restorations === null
+              ? t('registry.notKnown')
+              : p.reading.restorations === 0
+                ? t('registry.none')
+                : t('registry.restorationsValue', { count: p.reading.restorations }),
           ],
-          [t('registry.weight'), t('registry.weightValue', { kg: p.kerbKg, mm: p.tyreWidthMm })],
+          [
+            t('registry.kerb'),
+            p.reading.kerbKg ? (
+              <FogValue
+                key="kerb"
+                reading={p.reading.kerbKg}
+                knowledge={p.reading.knowledge}
+                scale={KERB_SCALE}
+              />
+            ) : (
+              t('registry.notKnown')
+            ),
+          ],
+          [
+            t('registry.tyreWidth'),
+            p.reading.tyreWidthMm ? (
+              <FogValue
+                key="tyre"
+                reading={p.reading.tyreWidthMm}
+                knowledge={p.reading.knowledge}
+                scale={TYRE_SCALE}
+              />
+            ) : (
+              t('registry.notKnown')
+            ),
+          ],
           [t('registry.fans'), p.fans.toLocaleString('en')],
         ]}
       />
@@ -357,14 +448,31 @@ function GaragePage({ p }: { p: GarageProfile }) {
         </h2>
         <DecalStrip decals={p.decals} />
       </div>
+      <ScoutAssign subject={{ kind: 'garages', id: p.id }} owned={p.isPlayer} />
       <Facts
         items={[
           [t('registry.nation'), flagName(p.flag)],
           [t('registry.base'), p.base],
           [t('registry.headquarters'), p.headquarters],
           [t('registry.founded'), p.foundedYear],
-          [t('registry.prestige'), p.prestige],
-          [t('registry.fans'), p.fans.toLocaleString('en')],
+          [
+            t('registry.prestige'),
+            <FogValue
+              key="prestige"
+              reading={p.reading.prestige}
+              knowledge={p.reading.knowledge}
+              confirmed={!p.reading.owned}
+            />,
+          ],
+          [
+            t('registry.following'),
+            <FogValue
+              key="following"
+              reading={p.reading.following}
+              knowledge={p.reading.knowledge}
+              confirmed={!p.reading.owned}
+            />,
+          ],
           [
             t('registry.status'),
             p.closedYear !== null
@@ -393,25 +501,35 @@ function GaragePage({ p }: { p: GarageProfile }) {
           <dl className="space-y-1">
             <div>
               <dt className="inline text-lc-dim">{t('registry.business.sponsor')} </dt>
-              <dd className="inline">{p.business.sponsor ?? t('registry.none')}</dd>
+              <dd className="inline">
+                {!p.reading.detail
+                  ? t('registry.notKnown')
+                  : (p.business.sponsor ?? t('registry.none'))}
+              </dd>
             </div>
             <div>
               <dt className="inline text-lc-dim">{t('registry.business.supplier')} </dt>
-              <dd className="inline">{p.business.supplier ?? t('registry.none')}</dd>
+              <dd className="inline">
+                {!p.reading.detail
+                  ? t('registry.notKnown')
+                  : (p.business.supplier ?? t('registry.none'))}
+              </dd>
             </div>
             <div>
               <dt className="inline text-lc-dim">{t('registry.business.facilities')} </dt>
               <dd className="inline">
-                {p.business.facilities.length === 0
-                  ? t('registry.none')
-                  : p.business.facilities
-                      .map((f) =>
-                        t('registry.business.facility', {
-                          name: t(`facility.name.${f.kind}` as never),
-                          level: f.level,
-                        }),
-                      )
-                      .join(', ')}
+                {!p.reading.detail
+                  ? t('registry.notKnown')
+                  : p.business.facilities.length === 0
+                    ? t('registry.none')
+                    : p.business.facilities
+                        .map((f) =>
+                          t('registry.business.facility', {
+                            name: t(`facility.name.${f.kind}` as never),
+                            level: f.level,
+                          }),
+                        )
+                        .join(', ')}
               </dd>
             </div>
           </dl>
@@ -693,9 +811,11 @@ function personRole(kind: PersonKind, role: string): string {
       ? `executive.role.${role}`
       : kind === 'staff'
         ? `person.role.${role}`
-        : kind === 'supplier' || kind === 'utility'
-          ? `person.role.${kind}`
-          : `ownership.type.${role}`;
+        : kind === 'scout'
+          ? 'person.role.scout'
+          : kind === 'supplier' || kind === 'utility'
+            ? `person.role.${kind}`
+            : `ownership.type.${role}`;
   return hasText(key) ? t(key as never) : role;
 }
 
@@ -727,18 +847,20 @@ function HoldingsSection({ holdings }: { holdings: HoldingLine[] }) {
           </thead>
           <tbody>
             {holdings.map((h) => (
-              <tr key={`${h.garage.id}-${h.class}-${h.since}`}>
+              <tr key={`${h.garage.id}-${h.class}-${h.since}-${h.shares}`}>
                 <td>
                   <RegistryLink to={{ kind: 'garage', id: h.garage.id }}>
                     {h.garage.name}
                   </RegistryLink>
                 </td>
-                <td>{t(`ownership.class.${h.class}` as never)}</td>
-                <td className="lc-num text-right">{h.shares.toLocaleString('en-AU')}</td>
-                <td className="lc-num text-right">{`${Math.round(h.stake * 1000) / 10}%`}</td>
-                <td className="lc-num text-right">{formatMoney(h.paid)}</td>
-                <td className="lc-num text-right">{formatMoney(h.worth)}</td>
-                <td className="lc-num">{formatDate(h.since)}</td>
+                <td>{h.class !== null && t(`ownership.class.${h.class}` as never)}</td>
+                <td className="lc-num text-right">
+                  {h.shares !== null && h.shares.toLocaleString('en-AU')}
+                </td>
+                <td className="text-right">{h.stake && <FogShare span={h.stake} />}</td>
+                <td className="lc-num text-right">{h.paid !== null && formatMoney(h.paid)}</td>
+                <td className="lc-num text-right">{h.worth && amountText(h.worth)}</td>
+                <td className="lc-num">{h.since !== null && formatDate(h.since)}</td>
               </tr>
             ))}
           </tbody>
@@ -751,8 +873,7 @@ function HoldingsSection({ holdings }: { holdings: HoldingLine[] }) {
 /** The facts of where a person is from and lives: their flag, hometown and residence. */
 function originFacts(origin: Origin | null): [string, ReactNode][] {
   if (!origin) return [];
-  const place = (l: PlaceLine | null): ReactNode =>
-    l ? `${l.name}, ${l.region === l.name ? flagName(l.country) : l.region}` : t('registry.none');
+  const place = (l: PlaceLine | null): ReactNode => (l ? placeText(l) : t('registry.none'));
   return [
     [
       t('person.flag'),
@@ -781,7 +902,15 @@ function PersonPage({ p }: { p: PersonProfile }) {
             ],
             ...originFacts(p.origin),
             [t('person.age'), p.age],
-            [t('person.skill'), p.skill],
+            [
+              t('person.skill'),
+              <FogValue
+                key="skill"
+                reading={p.skill.reading}
+                knowledge={p.skill.knowledge}
+                confirmed={!p.skill.owned}
+              />,
+            ],
             [t('person.salary'), formatMoney(p.salary)],
             [
               t('person.status'),
@@ -815,7 +944,15 @@ function PersonPage({ p }: { p: PersonProfile }) {
               </RegistryLink>,
             ],
             ...originFacts(p.origin),
-            [t('person.skill'), p.skill],
+            [
+              t('person.skill'),
+              <FogValue
+                key="skill"
+                reading={p.skill.reading}
+                knowledge={p.skill.knowledge}
+                confirmed={!p.skill.owned}
+              />,
+            ],
             [t('person.wage'), formatMoney(p.wagePerWeek)],
             [t('person.hiredOn'), formatDate(p.hiredOn)],
             [
@@ -827,6 +964,44 @@ function PersonPage({ p }: { p: PersonProfile }) {
               : []),
           ]}
         />
+      </div>
+    );
+  if (p.kind === 'scout')
+    return (
+      <div className="space-y-5 text-sm">
+        <h2 className="lc-display text-lg">{p.name}</h2>
+        <Facts
+          items={[
+            [t('person.role'), t('person.role.scout')],
+            [
+              t('person.garage'),
+              <RegistryLink key="g" to={{ kind: 'garage', id: p.garage.id }}>
+                {p.garage.name}
+              </RegistryLink>,
+            ],
+            ...originFacts(p.origin),
+            [t('person.age'), p.age],
+            [
+              t('person.skill'),
+              <FogValue
+                key="skill"
+                reading={p.skill.reading}
+                knowledge={p.skill.knowledge}
+                confirmed={!p.skill.owned}
+              />,
+            ],
+            [t('scouts.focus'), t(`scouts.focus.${p.focus}` as never)],
+            [t('person.wageYear'), formatMoney(p.wagePerYear)],
+            [t('person.hiredOn'), formatDate(p.hiredOn)],
+            [
+              t('person.status'),
+              p.leftOn ? t('person.left', { date: formatDate(p.leftOn) }) : t('person.employed'),
+            ],
+          ]}
+        />
+        {p.leftReason && (
+          <p className="text-lc-dim">{t(`person.reason.${p.leftReason}` as never)}</p>
+        )}
       </div>
     );
   if (p.kind !== 'shareholder')
@@ -847,12 +1022,7 @@ function PersonPage({ p }: { p: PersonProfile }) {
                 ] as [string, ReactNode][])
               : []),
             ...(p.headquarters
-              ? ([
-                  [
-                    t('person.headquarters'),
-                    `${p.headquarters.name}, ${p.headquarters.region === p.headquarters.name ? flagName(p.headquarters.country) : p.headquarters.region}`,
-                  ],
-                ] as [string, ReactNode][])
+              ? ([[t('person.headquarters'), placeText(p.headquarters)]] as [string, ReactNode][])
               : []),
             ...(p.tier
               ? ([[t('person.tier'), t(`sponsors.tier.${p.tier}` as never)]] as [
