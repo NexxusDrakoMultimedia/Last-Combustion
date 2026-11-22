@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { businessView, ensureBusinesses, settleBusinesses } from '../../src/db/business';
 import { createCareer } from '../../src/db/career';
 import { ensureCapTables } from '../../src/db/equity';
-import { buyStake, investmentView } from '../../src/db/investments';
+import { buyStake, investmentTruth as investmentView } from '../../src/db/investments';
 import { foundPlayerGarage, type OwnerSetup } from '../../src/db/player';
 import { garageProfile } from '../../src/db/registry';
 import { createNewDatabase } from '../../src/db/session';

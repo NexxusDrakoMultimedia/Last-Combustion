@@ -33,7 +33,7 @@ export function reserveOf(db: Database, holdingId: number, holderType: string): 
   );
 }
 
-function holdersOf(db: Database, targetId: number): TakeoverHolder[] {
+export function holdersOf(db: Database, targetId: number): TakeoverHolder[] {
   return all(
     db,
     `SELECT id, holder_type, holder_id, holder_name, class, shares FROM shareholding WHERE garage_id = ? ORDER BY id`,
@@ -89,7 +89,7 @@ function logEvent(
   ]);
 }
 
-export interface InvestmentTarget {
+export interface InvestmentTargetTruth {
   id: number;
   name: string;
   prestige: number;
@@ -99,7 +99,7 @@ export interface InvestmentTarget {
 }
 
 /** The computer garages the owner could invest in, with their worth and the owner's stake in each. */
-export function investmentTargets(db: Database): InvestmentTarget[] {
+export function investmentTargetsTruth(db: Database): InvestmentTargetTruth[] {
   ensureCapTables(db);
   return all(
     db,
@@ -122,7 +122,7 @@ export function investmentTargets(db: Database): InvestmentTarget[] {
   });
 }
 
-export interface InvestmentHolder {
+export interface InvestmentHolderTruth {
   id: number;
   type: string;
   name: string;
@@ -137,12 +137,12 @@ export interface InvestmentHolder {
   mine: boolean;
 }
 
-export interface InvestmentView {
+export interface InvestmentTruth {
   garageId: number;
   name: string;
   valuation: number;
   issued: number;
-  holders: InvestmentHolder[];
+  holders: InvestmentHolderTruth[];
   /** What the owner's own stake in it is worth now. */
   worth: number;
   /** The bidder's holdings count for the takeover, the rest are asked: all as the quote works them out. */
@@ -155,8 +155,11 @@ export function takeoverOpen(db: Database): boolean {
   return s?.status === 'complete';
 }
 
-/** Who owns a computer garage, and what each holder asks to sell. */
-export function investmentView(db: Database, targetId: number): InvestmentView {
+/**
+ * The TRUE cap table of a computer garage and what each holder asks to sell. Data layer only: a screen
+ * never reads these numbers (they would clear the fog), it takes `readInvestment` from `captable.ts`.
+ */
+export function investmentTruth(db: Database, targetId: number): InvestmentTruth {
   ensureCapTables(db);
   const t = openTarget(db, targetId);
   const holders = holdersOf(db, targetId);
@@ -207,7 +210,7 @@ export function buyStake(db: Database, playerId: number, holdingId: number): num
   if (h.holder_type === 'owner' && h.holder_id === 1)
     throw new Error('You already hold these shares.');
   if (h.class === 'option') throw new Error('Option pool shares cannot be bought.');
-  const view = investmentView(db, targetId);
+  const view = investmentTruth(db, targetId);
   const price = view.holders.find((x) => x.id === holdingId)!.asking;
   if (personalCash(db, playerId) < price)
     throw new Error('You cannot afford this with your own cash.');
@@ -252,7 +255,7 @@ export function buyStake(db: Database, playerId: number, holdingId: number): num
 export function sellStake(db: Database, playerId: number, targetId: number): number {
   playerOf(db, playerId);
   const t = openTarget(db, targetId);
-  const view = investmentView(db, targetId);
+  const view = investmentTruth(db, targetId);
   const mine = view.holders.filter((h) => h.mine && h.class !== 'option');
   const shares = mine.reduce((s, h) => s + h.shares, 0);
   if (shares === 0) throw new Error('You hold no shares in that garage.');
@@ -281,8 +284,8 @@ export function sellStake(db: Database, playerId: number, targetId: number): num
   return price;
 }
 
-/** What a bid for a garage at a premium would do, for the screen to show before the player commits. */
-export function quoteTakeover(db: Database, targetId: number, premium: number): TakeoverQuote {
+/** What a bid at a premium would truly do. Data layer only: the screen gets `readTakeover` (an estimate); this decides the outcome when the bid is launched. */
+export function trueTakeoverQuote(db: Database, targetId: number, premium: number): TakeoverQuote {
   ensureCapTables(db);
   openTarget(db, targetId);
   return takeoverQuote(holdersOf(db, targetId), garageValuation(db, targetId).total, premium);
@@ -312,7 +315,7 @@ export function launchTakeover(
   if (!takeoverOpen(db)) throw new Error('A takeover can only be launched between seasons.');
   if (!(premium >= 0 && premium <= MAX_PREMIUM)) throw new Error('That premium is out of range.');
   if (t.name === DRAKE_MOTORSPORTS) throw new Error('That garage is not for sale.');
-  const quote = quoteTakeover(db, targetId, premium);
+  const quote = trueTakeoverQuote(db, targetId, premium);
   if (!quote.success) throw new Error('Not enough of the votes accept that bid.');
   const cash = Number(all(db, 'SELECT cash FROM garage WHERE id = ?', [playerId])[0]!.cash);
   if (cash < quote.cost) throw new Error('The garage cannot afford this bid.');
@@ -374,7 +377,7 @@ export function launchTakeover(
   };
 }
 
-export interface HoldingLine {
+export interface HoldingTruth {
   garageId: number;
   name: string;
   class: ShareClass;
@@ -383,14 +386,14 @@ export interface HoldingLine {
   worth: number;
 }
 
-export interface Wealth {
+export interface WealthTruth {
   personalCash: number;
-  holdings: HoldingLine[];
+  holdings: HoldingTruth[];
   total: number;
 }
 
 /** The owner's own wealth: personal cash and the worth of the shares held in other garages. */
-export function wealthOf(db: Database, playerId: number): Wealth {
+export function wealthTruth(db: Database, playerId: number): WealthTruth {
   playerOf(db, playerId);
   const rows = all(
     db,
@@ -400,7 +403,7 @@ export function wealthOf(db: Database, playerId: number): Wealth {
       GROUP BY s.garage_id, s.class ORDER BY g.name`,
     [playerId],
   );
-  const holdings = rows.map((r): HoldingLine => {
+  const holdings = rows.map((r): HoldingTruth => {
     const garageId = r.garage_id as number;
     const all_ = all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [
       garageId,

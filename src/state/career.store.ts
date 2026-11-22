@@ -140,15 +140,19 @@ import {
 } from '../db/equity';
 import {
   buyStake as dbBuyStake,
-  investmentTargets,
-  investmentView,
   launchTakeover as dbLaunchTakeover,
   sellStake as dbSellStake,
-  wealthOf,
-  type InvestmentTarget,
-  type InvestmentView,
-  type Wealth,
 } from '../db/investments';
+import {
+  readCapTable,
+  readInvestmentTargets,
+  readTakeover,
+  readWealth,
+  type CapTableReading,
+  type InvestmentTargetReading,
+  type TakeoverEstimate,
+  type WealthReading,
+} from '../db/captable';
 import { buildFacility, facilityViews, type FacilityView } from '../db/facilities';
 import type { FacilityKind } from '../sim/facilities';
 import {
@@ -342,9 +346,9 @@ interface CareerState {
   /** Who owns the player's garage, what it is worth and how that has moved. */
   ownership: OwnershipView | undefined;
   /** The owner's own wealth: personal cash and shares held in other garages. */
-  wealth: Wealth | undefined;
+  wealth: WealthReading | undefined;
   /** The computer garages the owner could invest in (read when the Investments tab opens), and the one being looked at. */
-  investments: InvestmentTarget[];
+  investments: InvestmentTargetReading[];
   contacts: Contact[];
   calendar: CalendarView | undefined;
   social: SocialView | undefined;
@@ -360,7 +364,9 @@ interface CareerState {
   rivalries: RivalryBoardRow[];
   /** The pending event cards and the live storylines of the player's drivers. */
   story: StoryBoard;
-  investment: InvestmentView | undefined;
+  /** The cap table of the garage being looked at, as the player reads it (never the true numbers), and an estimate of a bid for it. */
+  investment: CapTableReading | undefined;
+  takeoverEstimate: TakeoverEstimate | undefined;
   ledgerView: LedgerSummary | undefined;
   /** The ledger lines on show in the Transactions tab, and the filter that picked them. */
   transactionsFilter: LedgerFilter | undefined;
@@ -466,6 +472,7 @@ interface CareerState {
   answerStoryCard(cardId: number, choice: string): Promise<void>;
   converse(target: { type: ContactType; id: number } | null, manner: Manner): Promise<void>;
   lookAtInvestment(garageId: number | null): void;
+  estimateTakeover(garageId: number, premium: number): void;
   buyStake(holdingId: number): Promise<void>;
   sellStake(garageId: number): Promise<void>;
   launchTakeover(garageId: number, premium: number): Promise<void>;
@@ -529,10 +536,10 @@ interface CareerState {
 }
 
 /** The view of a garage the owner is looking at, or undefined if there is none or it has closed since. */
-function investmentNow(db: Database, garageId: number | undefined): InvestmentView | undefined {
+function investmentNow(db: Database, garageId: number | undefined): CapTableReading | undefined {
   if (garageId === undefined) return undefined;
   try {
-    return investmentView(db, garageId);
+    return readCapTable(db, garageId);
   } catch {
     return undefined;
   }
@@ -600,7 +607,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       money: playerGarageId(db) === null ? undefined : garageFinance(db, playerGarageId(db)!),
       ledgerYears: playerGarageId(db) === null ? [] : ledgerYears(db, playerGarageId(db)!),
       ownership: playerGarageId(db) === null ? undefined : ownershipView(db, playerGarageId(db)!),
-      wealth: playerGarageId(db) === null ? undefined : wealthOf(db, playerGarageId(db)!),
+      wealth: playerGarageId(db) === null ? undefined : readWealth(db, playerGarageId(db)!),
       // The garage being looked at moves on when money does; one that has closed is dropped.
       investment: investmentNow(db, get().investment?.garageId),
       // The summary on show moves on when money does.
@@ -732,6 +739,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     rivalries: [],
     story: { cards: [], stories: [] },
     investment: undefined,
+    takeoverEstimate: undefined,
     ledgerView: undefined,
     transactionsFilter: undefined,
     transactionsView: undefined,
@@ -1331,12 +1339,24 @@ export const useCareerStore = create<CareerState>()((set, get) => {
 
     loadInvestments: () => {
       if (openDb && playerGarageId(openDb) !== null)
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
     },
 
     lookAtInvestment: (garageId) => {
       if (!openDb) return;
-      set({ investment: garageId === null ? undefined : investmentNow(openDb, garageId) });
+      set({
+        investment: garageId === null ? undefined : investmentNow(openDb, garageId),
+        takeoverEstimate: undefined,
+      });
+    },
+
+    estimateTakeover: (garageId, premium) => {
+      if (!openDb) return;
+      try {
+        set({ takeoverEstimate: readTakeover(openDb, garageId, premium) });
+      } catch {
+        set({ takeoverEstimate: undefined });
+      }
     },
 
     buyStake: (holdingId) =>
@@ -1346,7 +1366,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (garageId === null) return undefined;
         dbBuyStake(openDb, garageId, holdingId);
         refresh(openDb);
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
         return undefined;
       }, 'BuyStake'),
 
@@ -1357,7 +1377,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         if (garageId === null) return undefined;
         dbSellStake(openDb, garageId, targetId);
         refresh(openDb);
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
         return undefined;
       }, 'SellStake'),
 
@@ -1370,7 +1390,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
         const result = dbLaunchTakeover(openDb, garageId, targetId, premium);
         set({ investment: undefined });
         refresh(openDb);
-        set({ investments: investmentTargets(openDb) });
+        set({ investments: readInvestmentTargets(openDb) });
         return {
           key: 'investments.takeoverDone',
           values: { name, cars: result.cars, drivers: result.drivers },

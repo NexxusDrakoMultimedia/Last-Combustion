@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { t } from '../i18n';
+import type { Span } from '../sim/capfog';
 import type { Reading } from '../sim/scouting';
 
 /**
@@ -44,6 +45,35 @@ export function FogValue({
         <span
           className="absolute inset-y-0 bg-lc-accent"
           style={{ left: `${reading.low}%`, width: `${Math.max(2, reading.high - reading.low)}%` }}
+        />
+      </span>
+    </span>
+  );
+}
+
+const percent = (x: number): string => `${Math.round(x * 1000) / 10}%`;
+
+/**
+ * A share of a whole (a stake, a vote, a premium) as the player reads it: one figure when it is exact,
+ * otherwise a band drawn as a bar, like `FogValue`. The band always holds the truth and narrows as
+ * knowledge of the garage grows.
+ */
+export function FogShare({ span, knowledge }: { span: Span; knowledge?: number }) {
+  if (span.low === span.high) return <span className="lc-num">{percent(span.low)}</span>;
+  const score = knowledge === undefined ? '' : `${t('fog.knowledge', { score: knowledge })}. `;
+  return (
+    <span className="lc-num" title={`${score}${t('fog.hint.range')}`}>
+      {t('fog.range', { low: percent(span.low), high: percent(span.high) })}
+      <span
+        aria-hidden="true"
+        className="relative ml-1 inline-block h-1.5 w-12 bg-lc-line align-middle"
+      >
+        <span
+          className="absolute inset-y-0 bg-lc-accent"
+          style={{
+            left: `${span.low * 100}%`,
+            width: `${Math.max(2, (span.high - span.low) * 100)}%`,
+          }}
         />
       </span>
     </span>
