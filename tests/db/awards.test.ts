@@ -17,6 +17,7 @@ import { loadSql, type Database, type SqlJsStatic } from '../../src/db/sql';
 import { persistWorld } from '../../src/db/world';
 import { AWARDS } from '../../src/sim/awards';
 import { generateWorld } from '../../src/sim/worldgen';
+import { balance } from '../../src/sim/worldgen/data';
 
 let SQL: SqlJsStatic;
 beforeAll(async () => {
@@ -184,6 +185,29 @@ describe('season awards over two seasons', () => {
     for (const row of ranking('nation_fans').board) expect(row.flag).toMatch(/^[A-Za-z-]{2,}$/);
     // A car on a board has the plate to show.
     for (const row of ranking('car_fans').board.slice(0, 5)) expect(row.plate).toBeTruthy();
+  });
+
+  it('ranks only the nations people race or work for, with more than the minimum of fans', () => {
+    const board = recordBook(db).records.find((r) => r.id === 'nation_fans')!.board;
+    const racing = new Set(
+      db
+        .exec(
+          `SELECT flag FROM driver UNION SELECT flag FROM garage
+           UNION SELECT nationality FROM executive UNION SELECT nationality FROM staff
+           UNION SELECT nationality FROM scout`,
+        )[0]!
+        .values.map((v) => String(v[0])),
+    );
+    for (const row of board) expect(Number(row.value)).toBeGreaterThan(balance.fans.flagMinimum);
+    expect(board.length).toBeGreaterThan(0);
+    for (const row of board) expect(racing.has(String(row.flag))).toBe(true);
+    // The regions that could one day leave have a tally, but they are not nations yet.
+    for (const hidden of ['gb-eng', 'gb-sct', 'gb-wls', 'gb-nir', 'es-ct', 'es-pv', 'es-ga', 'ic'])
+      expect(board.some((row) => row.flag === hidden)).toBe(false);
+    // They do have a tally kept in the database, which is what used to leak.
+    expect(
+      Number(scalar(db, "SELECT COUNT(*) FROM flag_fans WHERE flag = 'gb-eng'")),
+    ).toBeGreaterThan(0);
   });
 
   it('leaves the used car market out of every ranking', () => {
