@@ -16,7 +16,7 @@ import type { RegistryStatus } from './status';
 
 /** The people the Registry keeps a profile of, apart from drivers: executives, staff and shareholders. */
 export type CompanyKind = 'sponsor' | 'manufacturer' | 'supplier' | 'utility';
-export type PersonKind = 'executive' | 'staff' | 'shareholder' | CompanyKind;
+export type PersonKind = 'executive' | 'staff' | 'scout' | 'shareholder' | CompanyKind;
 
 const COMPANY_KINDS: CompanyKind[] = ['sponsor', 'manufacturer', 'supplier', 'utility'];
 
@@ -94,6 +94,21 @@ export function peopleIndex(db: Database): PersonRef[] {
     flag: r.nationality as string | null,
     lookingForWork: r.left_on !== null && looking('staff', r),
     status: r.left_on === null || looking('staff', r) ? 'active' : 'retired',
+    years: activeYears(r.hired_on as string, r.left_on as string | null),
+  }));
+  const scouts = all(
+    db,
+    `SELECT s.id, s.name, s.hired_on, s.left_on, g.name AS garage FROM scout s
+       JOIN garage g ON g.id = s.garage_id ORDER BY s.name, s.id`,
+  ).map((r): PersonRef => ({
+    kind: 'scout',
+    id: r.id as number,
+    name: r.name as string,
+    role: 'scout',
+    garage: r.left_on === null ? (r.garage as string) : null,
+    flag: null,
+    lookingForWork: false,
+    status: r.left_on === null ? 'active' : 'retired',
     years: activeYears(r.hired_on as string, r.left_on as string | null),
   }));
   // The companies: sponsors, manufacturers and suppliers, all of whom can hold shares.
@@ -207,7 +222,7 @@ export function peopleIndex(db: Database): PersonRef[] {
       status: 'active',
       years: activeYears(p.since, null),
     }));
-  return [...executives, ...staff, ...companies, ...shareholders];
+  return [...executives, ...staff, ...scouts, ...companies, ...shareholders];
 }
 
 interface GarageRef {
@@ -257,6 +272,21 @@ export interface StaffProfile {
   morale: number | null;
   /** Their flag, hometown and residence. */
   origin: Origin | null;
+}
+
+/** A scout: someone a garage pays to learn about drivers, cars or garages. The player's own, so the numbers are exact. */
+export interface ScoutProfile {
+  kind: 'scout';
+  id: number;
+  name: string;
+  garage: GarageRef;
+  age: number;
+  skill: number;
+  focus: string;
+  wagePerYear: number;
+  hiredOn: string;
+  leftOn: string | null;
+  leftReason: string | null;
 }
 
 export interface HoldingLine {
@@ -403,7 +433,8 @@ function companyProfile(db: Database, kind: CompanyKind, id: number): CompanyPro
   };
 }
 
-export type PersonProfile = ExecutiveProfile | StaffProfile | ShareholderProfile | CompanyProfile;
+export type PersonProfile =
+  ExecutiveProfile | StaffProfile | ScoutProfile | ShareholderProfile | CompanyProfile;
 
 /** Whether a death is on record for someone (an executive's row says they retired; the death says why). */
 function diedOn(db: Database, kind: 'executive' | 'mechanic', id: number): boolean {
@@ -460,6 +491,29 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       leftOn: (r.left_on as string | null) ?? null,
       morale: r.left_on === null ? (r.morale as number) : null,
       origin: originOf(db, r.nationality, r.hometown_place_id, r.residence_place_id),
+    };
+  }
+  if (kind === 'scout') {
+    const r = all(
+      db,
+      `SELECT s.*, g.name AS garage FROM scout s JOIN garage g ON g.id = s.garage_id WHERE s.id = ?`,
+      [id],
+    )[0];
+    if (!r) throw new Error(`There is no scout ${id}.`);
+    const leftOn = (r.left_on as string | null) ?? null;
+    const leftYear = leftOn ? Number(leftOn.slice(0, 4)) : yearOf(db);
+    return {
+      kind,
+      id,
+      name: r.name as string,
+      garage: { id: r.garage_id as number, name: r.garage as string },
+      age: leftYear - (r.birth_year as number),
+      skill: r.skill as number,
+      focus: r.focus as string,
+      wagePerYear: r.wage_per_year as number,
+      hiredOn: r.hired_on as string,
+      leftOn,
+      leftReason: (r.left_reason as string | null) ?? null,
     };
   }
   ensureCapTables(db);

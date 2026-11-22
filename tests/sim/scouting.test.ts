@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import fc from 'fast-check';
+import { createRng } from '../../src/sim/rng';
+import { scoutingBalance } from '../../src/sim/worldgen/data';
 import { describe, expect, it } from 'vitest';
 import {
   bandFor,
@@ -14,6 +16,8 @@ import {
   readAmount,
   readScaled,
   readValue,
+  scoutOffers,
+  scoutRetires,
   scoutSkill,
   type KnowledgeInput,
   type Scout,
@@ -301,5 +305,38 @@ describe('the range a word covers', () => {
       expect(v).toBeLessThanOrEqual(r.high);
     }
     expect(() => bandRange('nonsense')).toThrow(/Unknown band/);
+  });
+});
+
+describe('scout age and retirement', () => {
+  it('offers scouts aged inside the range, whatever the seed', () => {
+    const [lo, hi] = scoutingBalance.staff.age as [number, number];
+    fc.assert(
+      fc.property(fc.string(), (seed) => {
+        for (const o of scoutOffers(createRng(seed).stream('scouts:test'))) {
+          expect(o.age).toBeGreaterThanOrEqual(lo);
+          expect(o.age).toBeLessThanOrEqual(hi);
+        }
+      }),
+    );
+  });
+
+  it('keeps every scout younger than the retirement age at the point of hiring', () => {
+    expect((scoutingBalance.staff.age as number[])[1]).toBeLessThan(
+      scoutingBalance.staff.retireAge,
+    );
+  });
+
+  it('retires a scout at the set age and not before', () => {
+    const at = scoutingBalance.staff.retireAge;
+    expect(scoutRetires(at - 1)).toBe(false);
+    expect(scoutRetires(at)).toBe(true);
+    expect(scoutRetires(at + 10)).toBe(true);
+  });
+
+  it('draws the same offers for the same seed', () => {
+    const a = scoutOffers(createRng('same').stream('scouts:1'));
+    const b = scoutOffers(createRng('same').stream('scouts:1'));
+    expect(a).toEqual(b);
   });
 });
