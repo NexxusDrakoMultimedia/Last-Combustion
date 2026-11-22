@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { salaryText } from './DriverStats';
+import { amountText, salaryText } from './DriverStats';
+import { FogValue } from '../FogValue';
+import { readingMidpoint } from '../../sim/scouting';
 import { moraleText } from '../moraleText';
 import { useState } from 'react';
 import { formatMoney, t } from '../../i18n';
@@ -101,7 +103,16 @@ export function ExecutivesSection() {
             patience: n.patience,
           })}
         </p>
-        <p className="text-lc-dim">{describeExecutive(n.role, n.skill)}</p>
+        <p className="text-lc-dim">
+          {t('executive.skillIs')} <FogValue reading={n.skill} />
+        </p>
+        <p className="text-lc-dim">
+          {n.skill.kind === 'exact'
+            ? describeExecutive(n.role, n.skill.value)
+            : t('executive.estimate', {
+                effect: describeExecutive(n.role, Math.round(readingMidpoint(n.skill))),
+              })}
+        </p>
         {counter && (
           <p className="border border-lc-line bg-lc-raised p-2">
             {t('executive.counter', {
@@ -239,14 +250,24 @@ export function ExecutivesSection() {
                   <span>
                     <span className="font-medium">{o.name}</span>{' '}
                     <span className="text-lc-dim">
-                      {t('executive.candidate', { age: o.age, skill: o.skill })}
+                      {t('executive.candidateAge', { age: o.age })}
+                    </span>{' '}
+                    <span className="text-lc-dim">
+                      {t('executive.skillIs')}{' '}
+                      <FogValue reading={o.skill} knowledge={o.knowledge} />
                     </span>
                     <br />
-                    <span className="text-xs text-lc-dim">{describeExecutive(role, o.skill)}</span>
+                    <span className="text-xs text-lc-dim">
+                      {o.skill.kind === 'exact'
+                        ? describeExecutive(role, o.skill.value)
+                        : t('executive.estimate', {
+                            effect: describeExecutive(role, Math.round(readingMidpoint(o.skill))),
+                          })}
+                    </span>
                   </span>
                   <span className="flex items-center gap-2">
                     <span className="lc-num text-lc-dim">
-                      {t('executive.asks', { salary: formatMoney(o.salary) })}
+                      {t('executive.asks', { salary: amountText(o.salary) })}
                     </span>
                     <button
                       type="button"

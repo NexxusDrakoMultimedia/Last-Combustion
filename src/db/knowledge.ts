@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import type { Database } from 'sql.js';
 import {
+  bandRange,
   knowledgeOf,
   placement,
   potentialKnowledge,
@@ -559,6 +560,72 @@ export function readStaffSkill(
     knowledge,
     owned: false,
   };
+}
+
+/** What the player reads of the skill of someone who could be hired (an executive, a mechanic). */
+export interface CandidateSkill {
+  reading: Reading;
+  /** 0 to 100. */
+  knowledge: number;
+}
+
+/**
+ * How well the player knows a stranger on offer: nobody has worked with them, so only the scouts that
+ * cover people in general count (at their kind rate), with the standing of the player's own garage.
+ */
+export function candidateKnowledge(ctx: KnowledgeContext): number {
+  return knowledgeOf({
+    // A scout assigned to a garage is not assigned to a stranger, so only what they cover in general counts.
+    subject: { kind: 'garages', id: -1 },
+    scouts: ctx.scouts,
+    scoutLift: ctx.scoutLift,
+    scoredFinals: 0,
+    fame: 0,
+    prestige: ctx.prestige,
+    playerFame: ctx.playerFame,
+    owned: false,
+    yearsSinceWorked: null,
+    flagged: false,
+  }).total;
+}
+
+/**
+ * What the player reads of a candidate's skill. `key` names the candidate for the draw that places the
+ * truth in the range (it must not hold the skill). Someone who has worked for the player's garage
+ * (`worked`) is known exactly.
+ */
+export function readCandidateSkill(
+  ctx: KnowledgeContext,
+  key: string,
+  skill: number,
+  worked = false,
+): CandidateSkill {
+  if (worked) return { reading: exact(skill), knowledge: 100 };
+  const knowledge = candidateKnowledge(ctx);
+  const subject: Subject = { kind: 'garages', id: -1 };
+  return {
+    reading: readValue(
+      Math.round(skill),
+      knowledge,
+      placement(ctx.seed, subject, ctx.year, `candidate:${key}`),
+    ),
+    knowledge,
+  };
+}
+
+/**
+ * What a candidate asks, as the player reads it: worked out from the skill reading so the price never
+ * says more than the skill does (a pay that rises with skill would give the truth away). The exact
+ * `truth` shows only when the skill is exact.
+ */
+export function askFromSkill(
+  reading: Reading,
+  truth: number,
+  pay: (skill: number) => number,
+): AmountRange {
+  if (reading.kind === 'exact') return { low: truth, high: truth };
+  const { low, high } = reading.kind === 'range' ? reading : bandRange(reading.band);
+  return { low: pay(low), high: pay(high) };
 }
 
 /**

@@ -2,6 +2,8 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { moraleText } from '../moraleText';
 import { formatMoney, t } from '../../i18n';
+import { FogValue } from '../FogValue';
+import { amountText } from './DriverStats';
 import { partWearFactor, repairFactor, wagePerRound } from '../../sim/staff';
 import { useCareerStore } from '../../state/career.store';
 import { RegistryLink } from '../RegistryLink';
@@ -84,13 +86,15 @@ export function StaffPanel() {
             >
               <span>
                 <span className="font-medium">{o.name}</span>{' '}
-                <span className="text-lc-dim">{t('staff.skill', { skill: o.skill })}</span>
+                <span className="text-lc-dim">
+                  {t('staff.skillIs')} <FogValue reading={o.skill} knowledge={o.knowledge} />
+                </span>
               </span>
               <span className="flex items-center gap-2">
                 <span className="lc-num text-lc-dim">
                   {t('staff.wageOffer', {
-                    week: formatMoney(o.wagePerWeek),
-                    round: formatMoney(wagePerRound(o.wagePerWeek)),
+                    week: amountText(o.wagePerWeek),
+                    round: amountText(o.wagePerWeek, (n) => formatMoney(wagePerRound(n))),
                   })}
                 </span>
                 <button
