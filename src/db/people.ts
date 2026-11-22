@@ -100,7 +100,7 @@ export function peopleIndex(db: Database): PersonRef[] {
   }));
   const scouts = all(
     db,
-    `SELECT s.id, s.name, s.hired_on, s.left_on, g.name AS garage FROM scout s
+    `SELECT s.id, s.name, s.nationality, s.hired_on, s.left_on, g.name AS garage FROM scout s
        JOIN garage g ON g.id = s.garage_id ORDER BY s.name, s.id`,
   ).map((r): PersonRef => ({
     kind: 'scout',
@@ -108,7 +108,7 @@ export function peopleIndex(db: Database): PersonRef[] {
     name: r.name as string,
     role: 'scout',
     garage: r.left_on === null ? (r.garage as string) : null,
-    flag: null,
+    flag: r.nationality as string | null,
     lookingForWork: false,
     status: r.left_on === null ? 'active' : 'retired',
     years: activeYears(r.hired_on as string, r.left_on as string | null),
@@ -289,19 +289,22 @@ export interface StaffProfile {
   origin: Origin | null;
 }
 
-/** A scout: someone a garage pays to learn about drivers, cars or garages. The player's own, so the numbers are exact. */
+/** A scout: someone a garage pays to learn about drivers, cars or garages. The player's own are exact; another garage's skill is read through the fog. */
 export interface ScoutProfile {
   kind: 'scout';
   id: number;
   name: string;
   garage: GarageRef;
   age: number;
-  skill: number;
+  /** What the player reads of their skill: exact for the player's own scouts. */
+  skill: { reading: Reading; knowledge: number; owned: boolean };
   focus: string;
   wagePerYear: number;
   hiredOn: string;
   leftOn: string | null;
   leftReason: string | null;
+  /** Their flag, hometown and residence. */
+  origin: Origin | null;
 }
 
 /**
@@ -558,12 +561,13 @@ export function personProfile(db: Database, kind: PersonKind, id: number): Perso
       name: r.name as string,
       garage: { id: r.garage_id as number, name: r.garage as string },
       age: leftYear - (r.birth_year as number),
-      skill: r.skill as number,
+      skill: readStaffSkill(db, r.garage_id as number, 'scout', id, r.skill as number),
       focus: r.focus as string,
       wagePerYear: r.wage_per_year as number,
       hiredOn: r.hired_on as string,
       leftOn,
       leftReason: (r.left_reason as string | null) ?? null,
+      origin: originOf(db, r.nationality, r.hometown_place_id, r.residence_place_id),
     };
   }
   ensureCapTables(db);

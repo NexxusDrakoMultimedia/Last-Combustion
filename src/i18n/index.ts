@@ -78,10 +78,12 @@ export function formatPoints(points: number): string {
 }
 
 /** Formats an amount in Australian dollars. */
-export function formatMoney(amount: number): string {
+export function formatMoney(amount: number, options: { cents?: boolean } = {}): string {
+  const digits = options.cents ? 2 : 0;
   return new Intl.NumberFormat(formatLocale(), {
     style: 'currency',
     currency: 'AUD',
-    maximumFractionDigits: 0,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   }).format(amount);
 }

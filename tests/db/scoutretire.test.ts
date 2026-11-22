@@ -89,8 +89,9 @@ describe('retiring scouts', () => {
       name: scout.name,
       role: 'scout',
       status: 'active',
-      flag: null,
+      flag: scout.nationality,
     });
+    expect(scout.nationality).toBeTruthy();
     expect(listed().garage).not.toBeNull();
     db.run('UPDATE scout SET birth_year = ? WHERE id = ?', [2031 - retireAge, scout.id]);
     retireScouts(db, 2031);

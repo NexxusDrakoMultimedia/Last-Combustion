@@ -15,7 +15,7 @@ import type {
   RegistryIndex,
   ScoringSpan,
 } from '../../db/registry';
-import { flagNames } from '../../sim/worldgen/data';
+import { carModels, flagNames } from '../../sim/worldgen/data';
 import { placeLabel } from '../../sim/worldgen/placeLabel';
 import { ScoutAssign } from './ScoutAssign';
 import { useCareerStore } from '../../state/career.store';
@@ -29,6 +29,13 @@ import { RaceNumber } from '../RaceNumber';
 import { dataTable, field, quiet } from '../styles';
 
 const flagName = (code: string): string => flagNames[code]?.short ?? code;
+
+/** What the range bars of a car's kerb weight and tyre width are drawn against (the span of the car list). */
+const KERB_SCALE = {
+  min: Math.min(...carModels.map((m) => m.kerbKg)),
+  max: Math.max(...carModels.map((m) => m.kerbKg)),
+};
+const TYRE_SCALE = { min: 100, max: 300 };
 
 /** A place for the player: Australian places with their state and country, a city state with its country. */
 const placeText = (l: PlaceLine): string =>
@@ -311,7 +318,12 @@ function CarPage({ p }: { p: CarProfile }) {
           [
             t('registry.kerb'),
             p.reading.kerbKg ? (
-              <FogValue key="kerb" reading={p.reading.kerbKg} knowledge={p.reading.knowledge} />
+              <FogValue
+                key="kerb"
+                reading={p.reading.kerbKg}
+                knowledge={p.reading.knowledge}
+                scale={KERB_SCALE}
+              />
             ) : (
               t('registry.notKnown')
             ),
@@ -323,6 +335,7 @@ function CarPage({ p }: { p: CarProfile }) {
                 key="tyre"
                 reading={p.reading.tyreWidthMm}
                 knowledge={p.reading.knowledge}
+                scale={TYRE_SCALE}
               />
             ) : (
               t('registry.notKnown')
@@ -966,8 +979,17 @@ function PersonPage({ p }: { p: PersonProfile }) {
                 {p.garage.name}
               </RegistryLink>,
             ],
+            ...originFacts(p.origin),
             [t('person.age'), p.age],
-            [t('person.skill'), p.skill],
+            [
+              t('person.skill'),
+              <FogValue
+                key="skill"
+                reading={p.skill.reading}
+                knowledge={p.skill.knowledge}
+                confirmed={!p.skill.owned}
+              />,
+            ],
             [t('scouts.focus'), t(`scouts.focus.${p.focus}` as never)],
             [t('person.wageYear'), formatMoney(p.wagePerYear)],
             [t('person.hiredOn'), formatDate(p.hiredOn)],

@@ -438,6 +438,7 @@ describe('a save from before rivalries', () => {
       'race_plan',
       'driver_ban',
       'scout_age',
+      'scout_origin',
     ]);
     expect(rows(db, 'SELECT buzz FROM season')).toEqual([[0]]);
     expect(rows(db, 'SELECT COUNT(*) FROM rivalry')).toEqual([[0]]);

@@ -5,6 +5,7 @@ import { formatMoney, t } from '../../i18n';
 import { scoutWagePerRound, type ScoutFocus } from '../../sim/scouting';
 import { scoutingBalance } from '../../sim/worldgen/data';
 import { useCareerStore } from '../../state/career.store';
+import { Flag } from '../Flag';
 import { FogValue } from '../FogValue';
 import { RegistryLink } from '../RegistryLink';
 import { button, quiet } from '../styles';
@@ -62,6 +63,7 @@ export function ScoutsSection() {
             <li key={s.id} className="space-y-2 border border-lc-line p-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span>
+                  {s.nationality && <Flag code={s.nationality} />}{' '}
                   <RegistryLink to={{ kind: 'person', person: 'scout', id: s.id }}>
                     {s.name}
                   </RegistryLink>{' '}
@@ -151,6 +153,7 @@ export function ScoutsSection() {
               className="flex flex-wrap items-center justify-between gap-2 border border-lc-line p-2"
             >
               <span>
+                {o.nationality && <Flag code={o.nationality} />}{' '}
                 <span className="font-medium">{o.name}</span>{' '}
                 <span className="text-lc-dim">{t('scouts.age', { age: o.age })}</span>{' '}
                 <span className="text-lc-dim">{t('scouts.skill', { skill: o.skill })}</span>

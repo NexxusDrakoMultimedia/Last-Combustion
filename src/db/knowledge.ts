@@ -614,7 +614,7 @@ export function readGarageById(db: Database, garageId: number): GarageReading {
 export function readStaffSkill(
   db: Database,
   garageId: number,
-  kind: 'executive' | 'staff',
+  kind: 'executive' | 'staff' | 'scout',
   personId: number,
   skill: number,
 ): { reading: Reading; knowledge: number; owned: boolean } {
