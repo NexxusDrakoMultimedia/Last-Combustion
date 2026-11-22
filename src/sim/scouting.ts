@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { createRng, type RandomStream } from './rng';
 import { scoutingBalance } from './worldgen/data';
-import { personName } from './worldgen/names';
+import { personName, pickNationality } from './worldgen/names';
 
 /** What a scout looks at by default. */
 export type ScoutFocus = 'drivers' | 'cars' | 'garages';
@@ -242,6 +242,8 @@ export function readingMidpoint(reading: Reading): number {
 /** A scout who could be hired. */
 export interface ScoutOffer {
   name: string;
+  /** Where they are from: their flag. */
+  nationality: string;
   /** 0 to 100. */
   skill: number;
   /** What they ask for a year. */
@@ -286,20 +288,35 @@ export function tipCount(lift: number, max: number, liftForFull: number): number
   return Math.min(max, Math.max(1, Math.ceil(max * Math.min(1, lift / liftForFull) - 1e-9)));
 }
 
-/** The scouts on offer, drawn from a stream. */
-export function scoutOffers(rng: RandomStream): ScoutOffer[] {
+/** One scout, drawn from a stream: the same draw for the scouts the player is offered and for a computer garage's. */
+export function drawScout(rng: RandomStream): ScoutOffer {
   const [lo, hi] = scoutingBalance.staff.skill as [number, number];
   const [ageLo, ageHi] = scoutingBalance.staff.age as [number, number];
-  return Array.from({ length: scoutingBalance.staff.candidates }, () => {
-    const skill = rng.int(lo, hi);
-    return {
-      name: personName(rng, 'AU', rng.chance(0.5) ? 'male' : 'female'),
-      skill,
-      wagePerYear: scoutWageFor(skill),
-      // Drawn last, so adding the age did not move the names and skills the same seed offered before.
-      age: rng.int(ageLo, ageHi),
-    };
-  });
+  const skill = rng.int(lo, hi);
+  const nationality = pickNationality(rng);
+  return {
+    name: personName(rng, nationality, rng.chance(0.5) ? 'male' : 'female'),
+    nationality,
+    skill,
+    wagePerYear: scoutWageFor(skill),
+    age: rng.int(ageLo, ageHi),
+  };
+}
+
+/** The scouts on offer, drawn from a stream. */
+export function scoutOffers(rng: RandomStream): ScoutOffer[] {
+  return Array.from({ length: scoutingBalance.staff.candidates }, () => drawScout(rng));
+}
+
+/**
+ * How many scouts a computer garage employs: the rules the player is held to set the most (`maxPerGarage`), and a
+ * garage's prestige sets how many it can afford: none until `computerFirstAt`, then one, and one more for every
+ * `computerPer` prestige above that.
+ */
+export function computerScoutSlots(prestige: number): number {
+  const { computerFirstAt, computerPer, maxPerGarage } = scoutingBalance.staff;
+  if (prestige < computerFirstAt) return 0;
+  return Math.min(maxPerGarage, 1 + Math.floor((prestige - computerFirstAt) / computerPer));
 }
 
 /** Whether a scout of this age has reached the age scouts retire at (`staff.retireAge` in the data). */

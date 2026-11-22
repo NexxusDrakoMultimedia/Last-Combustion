@@ -31,7 +31,7 @@ export function OwnershipPanel() {
         </div>
         <div>
           <dt className="lc-display text-xs text-lc-dim">{t('ownership.sharePrice')}</dt>
-          <dd className="lc-num">{formatMoney(Math.round(ownership.sharePrice * 100) / 100)}</dd>
+          <dd className="lc-num">{formatMoney(ownership.sharePrice, { cents: true })}</dd>
         </div>
         <div>
           <dt className="lc-display text-xs text-lc-dim">{t('ownership.issued')}</dt>
@@ -52,7 +52,7 @@ export function OwnershipPanel() {
               <th className="lc-display py-1 text-right text-xs">{t('ownership.diluted')}</th>
               <th className="lc-display py-1 text-right text-xs">{t('ownership.votes')}</th>
               <th className="lc-display py-1 text-right text-xs">{t('ownership.paid')}</th>
-              <th className="lc-display py-1 text-xs">{t('ownership.since')}</th>
+              <th className="lc-display py-1 pl-4 text-xs">{t('ownership.since')}</th>
             </tr>
           </thead>
           <tbody>
@@ -72,7 +72,7 @@ export function OwnershipPanel() {
                 <td className="lc-num py-1 text-right">{percent(h.diluted)}</td>
                 <td className="lc-num py-1 text-right">{percent(h.votes)}</td>
                 <td className="lc-num py-1 text-right">{formatMoney(h.paid)}</td>
-                <td className="lc-num py-1 text-lc-dim">{h.since}</td>
+                <td className="lc-num py-1 pl-4 text-lc-dim">{h.since}</td>
               </tr>
             ))}
           </tbody>

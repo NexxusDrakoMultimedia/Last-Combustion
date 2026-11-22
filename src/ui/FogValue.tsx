@@ -4,6 +4,26 @@ import { t } from '../i18n';
 import type { Span } from '../sim/capfog';
 import type { Reading } from '../sim/scouting';
 
+/** What the bar of a range is drawn against: the lowest and highest value a bar can show (0 to 100 by default). */
+export interface BarScale {
+  min: number;
+  max: number;
+}
+
+const PERCENT_SCALE: BarScale = { min: 0, max: 100 };
+
+/** Where a range sits in its bar, as a share of the bar's width: always inside the bar. */
+export function barPlacement(
+  low: number,
+  high: number,
+  scale: BarScale,
+): { left: number; width: number } {
+  const span = Math.max(1e-9, scale.max - scale.min);
+  const left = Math.min(98, Math.max(0, ((low - scale.min) / span) * 100));
+  const width = Math.min(100 - left, Math.max(2, ((high - low) / span) * 100));
+  return { left, width };
+}
+
 /**
  * A hidden number as the player reads it (see "Scouting and fog of war"): a word, a range drawn as a
  * bar, or the exact value. Hovering shows the knowledge score and what would clear the fog.
@@ -13,8 +33,11 @@ export function FogValue({
   reading,
   knowledge,
   confirmed = false,
+  scale = PERCENT_SCALE,
 }: {
   reading: Reading;
+  /** What the range bar is drawn against, for a number that is not a score out of 100 (a weight, a width). */
+  scale?: BarScale;
   /** The knowledge score behind the reading, shown on hover. */
   knowledge?: number;
   confirmed?: boolean;
@@ -44,7 +67,10 @@ export function FogValue({
       >
         <span
           className="absolute inset-y-0 bg-lc-accent"
-          style={{ left: `${reading.low}%`, width: `${Math.max(2, reading.high - reading.low)}%` }}
+          style={{
+            left: `${barPlacement(reading.low, reading.high, scale).left}%`,
+            width: `${barPlacement(reading.low, reading.high, scale).width}%`,
+          }}
         />
       </span>
     </span>

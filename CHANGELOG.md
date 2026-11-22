@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Fixed
 
+- **Flagless scouts, and the garages that had none.** Scouts now have a nationality, so they show a flag in the Registry's Paddock and on their own page, with a hometown and residence. Computer garages now employ scouts too, under the same rules as yours: as many as their prestige can afford (up to four), the same wages from their books, the same retirement age, and their skill is read through the fog.
+- **Graphics.** The Ownership table no longer runs the Paid and Since columns together, and a share worth less than a dollar shows its cents. The range bars on a car's kerb weight and tyre width no longer draw red marks over their own label.
 - **Personal cash from nowhere.** At the end of the first season your personal cash jumped by millions, because every computer garage's owner dividend was also paid to you. You are now paid only from a garage you hold shares in.
 
 ### Added

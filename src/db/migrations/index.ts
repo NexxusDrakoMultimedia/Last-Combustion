@@ -66,6 +66,7 @@ import { migration0062 } from './0062_race_state';
 import { migration0063 } from './0063_race_plan';
 import { migration0064 } from './0064_driver_ban';
 import { migration0065 } from './0065_scout_age';
+import { migration0066 } from './0066_scout_origin';
 
 /** Every migration, in order. Never edit a released migration: add a new one. */
 export const migrations: readonly Migration[] = [
@@ -134,4 +135,5 @@ export const migrations: readonly Migration[] = [
   migration0063,
   migration0064,
   migration0065,
+  migration0066,
 ];

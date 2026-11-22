@@ -16,6 +16,7 @@ import { splitDividend, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
 import type { FacilityKind } from '../sim/facilities';
 import { createRng } from '../sim/rng';
+import { computerScoutSlots, drawScout } from '../sim/scouting';
 import { supplierById } from '../sim/supply';
 import { readCareer } from './career';
 import { all } from './entries';
@@ -124,6 +125,29 @@ export function ensureBusinesses(db: Database, year: number): void {
       all(db, 'SELECT COUNT(*) AS n FROM staff WHERE garage_id = ? AND left_on IS NULL', [id])[0]!
         .n,
     );
+    // Scouts, under the same rules as the player's: as many as its prestige can afford, drawn last of all so
+    // nothing drawn before them moves. They are paid from the garage's books (see `settleBusinesses`).
+    const scouts = Number(
+      all(db, 'SELECT COUNT(*) AS n FROM scout WHERE garage_id = ? AND left_on IS NULL', [id])[0]!
+        .n,
+    );
+    const scoutStream = rng.stream(`scouts:computer:${id}:${year}`);
+    for (let i = scouts; i < computerScoutSlots(prestige); i++) {
+      const s = drawScout(scoutStream);
+      db.run(
+        'INSERT INTO scout (garage_id, name, skill, focus, wage_per_year, hired_on, birth_year, nationality) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          id,
+          s.name,
+          s.skill,
+          scoutStream.pick(['drivers', 'cars', 'garages']),
+          s.wagePerYear,
+          `${year}-02-01`,
+          year - s.age,
+          s.nationality,
+        ],
+      );
+    }
     for (let i = crew; i < crewSize(entries); i++) {
       // Half the time a vacancy goes to someone on the job market, who is the same person again.
       if (mechanicMarket.length > 0 && stream.chance(0.5)) {
@@ -156,9 +180,14 @@ export function settleBusinesses(db: Database, year: number): number {
   for (const g of all(db, COMPUTER_GARAGES)) {
     const id = g.id as number;
     const upkeep = yearlyUpkeep(
-      all(db, "SELECT salary FROM executive WHERE garage_id = ? AND status = 'employed'", [id]).map(
-        (r) => r.salary as number,
-      ),
+      [
+        ...all(db, "SELECT salary FROM executive WHERE garage_id = ? AND status = 'employed'", [
+          id,
+        ]).map((r) => r.salary as number),
+        ...all(db, 'SELECT wage_per_year FROM scout WHERE garage_id = ? AND left_on IS NULL', [
+          id,
+        ]).map((r) => r.wage_per_year as number),
+      ],
       garageFacilities(db, id),
       all(db, 'SELECT wage_per_week FROM staff WHERE garage_id = ? AND left_on IS NULL', [id]).map(
         (r) => r.wage_per_week as number,

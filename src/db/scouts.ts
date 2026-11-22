@@ -26,6 +26,8 @@ const gameYear = (db: Database): number => Number(readCareer(db)?.gameDate.slice
 export interface HiredScout {
   id: number;
   name: string;
+  /** Where they are from: their flag. */
+  nationality: string | null;
   skill: number;
   focus: ScoutFocus;
   wagePerYear: number;
@@ -52,7 +54,7 @@ const FOCI: ScoutFocus[] = ['drivers', 'cars', 'garages'];
 export function garageScouts(db: Database, garageId: number): HiredScout[] {
   return all(
     db,
-    `SELECT s.id, s.name, s.skill, s.focus, s.wage_per_year, s.hired_on, s.birth_year,
+    `SELECT s.id, s.name, s.nationality, s.skill, s.focus, s.wage_per_year, s.hired_on, s.birth_year,
             a.subject_kind, a.subject_id
        FROM scout s LEFT JOIN scout_assignment a ON a.scout_id = s.id
       WHERE s.garage_id = ? AND s.left_on IS NULL ORDER BY s.id`,
@@ -60,6 +62,7 @@ export function garageScouts(db: Database, garageId: number): HiredScout[] {
   ).map((r) => ({
     id: r.id as number,
     name: r.name as string,
+    nationality: (r.nationality as string | null) ?? null,
     skill: r.skill as number,
     focus: r.focus as ScoutFocus,
     wagePerYear: r.wage_per_year as number,
@@ -130,7 +133,7 @@ export function hireScout(
   const chosen = scoutCandidates(db, garageId)[offer];
   if (!chosen) throw new Error('There is no such scout on offer.');
   db.run(
-    'INSERT INTO scout (garage_id, name, skill, focus, wage_per_year, hired_on, birth_year) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO scout (garage_id, name, skill, focus, wage_per_year, hired_on, birth_year, nationality) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     [
       garageId,
       chosen.name,
@@ -139,6 +142,7 @@ export function hireScout(
       chosen.wagePerYear,
       career.gameDate,
       gameYear(db) - chosen.age,
+      chosen.nationality,
     ],
   );
   const id = Number(all(db, 'SELECT MAX(id) AS n FROM scout')[0]!.n);
