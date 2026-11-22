@@ -45,6 +45,28 @@ export function salaryHint(rating: Reading, gold: boolean): SalaryHint {
   };
 }
 
+/** What the free agents list can be ordered by: the rating, the potential or the affinity for one road type. */
+export type AgentSort = 'rating' | 'potential' | RoadType;
+
+/**
+ * The free agents ordered by what the player reads, best first: by the midpoint of the chosen reading
+ * (a word counts as the middle of its band), never the true number, so the order gives nothing away.
+ * Drivers already signed stay first, as they do in the list itself.
+ */
+export function sortAgents(agents: FreeAgent[], by: AgentSort): FreeAgent[] {
+  const key = (a: FreeAgent): number =>
+    readingMidpoint(
+      by === 'rating'
+        ? a.reading.rating
+        : by === 'potential'
+          ? a.reading.potential
+          : a.reading.affinities[by],
+    );
+  return [...agents].sort(
+    (x, y) => Number(y.signed) - Number(x.signed) || key(y) - key(x) || x.driverId - y.driverId,
+  );
+}
+
 /**
  * Drivers who are not entered with any garage this season and have not retired, best first as the
  * player reads them: the order follows the midpoint of each reading, never the true rating, so it
@@ -94,6 +116,7 @@ export function freeAgents(db: Database, garageId: number, limit = 25): FreeAgen
         composure: d.composure as number,
         wetSkill: d.wet_skill as number,
         potential: d.potential as number,
+        affinities: a,
       });
       return {
         driverId: d.id as number,

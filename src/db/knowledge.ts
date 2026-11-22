@@ -188,6 +188,8 @@ export interface DriverTruth {
   composure: number;
   wetSkill: number;
   potential: number;
+  /** How well the driver reads each kind of road, 0 to 100. */
+  affinities: Record<RoadType, number>;
 }
 
 export const DRIVER_STATS = [
@@ -210,6 +212,8 @@ export interface DriverReading {
   rating: Reading;
   potential: Reading;
   stats: Record<DriverStat, Reading>;
+  /** Road affinity for each road type, read like the stats. */
+  affinities: Record<RoadType, Reading>;
 }
 
 /** Whether the driver is under contract to the garage, or in one of its entries. */
@@ -248,6 +252,9 @@ export function exactReading(truth: DriverTruth, owned: boolean): DriverReading 
       DriverStat,
       Reading
     >,
+    affinities: Object.fromEntries(
+      ROAD_TYPES.map((type) => [type, exact(truth.affinities[type])]),
+    ) as Record<RoadType, Reading>,
   };
 }
 
@@ -267,6 +274,9 @@ export function readDriver(ctx: KnowledgeContext, truth: DriverTruth): DriverRea
       DriverStat,
       Reading
     >,
+    affinities: Object.fromEntries(
+      ROAD_TYPES.map((type) => [type, read(truth.affinities[type], `affinity:${type}`, knowledge)]),
+    ) as Record<RoadType, Reading>,
   };
 }
 
@@ -304,6 +314,7 @@ export function readDriverById(db: Database, driverId: number): DriverReading {
     composure: d.composure as number,
     wetSkill: d.wet_skill as number,
     potential: d.potential as number,
+    affinities,
   };
   const player = all(db, 'SELECT id FROM garage WHERE is_player = 1')[0];
   return player

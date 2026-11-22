@@ -321,6 +321,7 @@ export function risingDrivers(db: Database, garageId: number): RisingDriver[] {
         composure: d.composure as number,
         wetSkill: d.wet_skill as number,
         potential: d.potential as number,
+        affinities: { forest: 0, coast: 0, mountain: 0, night: 0 },
       });
       if (reading.owned || readingMidpoint(reading.potential) < tips.minPotential) return [];
       return [

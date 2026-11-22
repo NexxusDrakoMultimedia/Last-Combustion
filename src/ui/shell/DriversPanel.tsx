@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { useState } from 'react';
+import { sortAgents, type AgentSort } from '../../db/freeagents';
+import { ROAD_TYPES } from '../../sim/worldgen/types';
 import { DriverStats, salaryText } from './DriverStats';
 import { formatMoney, t } from '../../i18n';
 import { IDENTITY_SIGN } from '../../sim/identity';
@@ -46,6 +48,7 @@ export function DriversPanel() {
     seatDriver,
     renewGear,
   } = useCareerStore();
+  const [sortBy, setSortBy] = useState<AgentSort>('rating');
   const [salary, setSalary] = useState('');
   const [years, setYears] = useState('2');
   const [share, setShare] = useState('80');
@@ -150,9 +153,26 @@ export function DriversPanel() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-lc-dim">{t('drivers.fogNote')}</p>
+      <label className="flex flex-wrap items-center gap-2 text-sm" htmlFor="agent-sort">
+        {t('drivers.sortBy')}
+        <select
+          id="agent-sort"
+          className={field}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as AgentSort)}
+        >
+          <option value="rating">{t('drivers.sort.rating')}</option>
+          <option value="potential">{t('drivers.sort.potential')}</option>
+          {ROAD_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {t('drivers.sort.road', { road: t(`road.${type}` as never) })}
+            </option>
+          ))}
+        </select>
+      </label>
       <ul className="space-y-2 text-sm">
         {agents.length === 0 && <li className="text-lc-dim">{t('drivers.none')}</li>}
-        {agents.map((a) => (
+        {sortAgents(agents, sortBy).map((a) => (
           <li
             key={a.driverId}
             className="flex flex-wrap items-center justify-between gap-2 border border-lc-line bg-lc-raised p-2"
