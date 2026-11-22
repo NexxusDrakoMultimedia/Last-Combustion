@@ -784,9 +784,11 @@ function personRole(kind: PersonKind, role: string): string {
       ? `executive.role.${role}`
       : kind === 'staff'
         ? `person.role.${role}`
-        : kind === 'supplier' || kind === 'utility'
-          ? `person.role.${kind}`
-          : `ownership.type.${role}`;
+        : kind === 'scout'
+          ? 'person.role.scout'
+          : kind === 'supplier' || kind === 'utility'
+            ? `person.role.${kind}`
+            : `ownership.type.${role}`;
   return hasText(key) ? t(key as never) : role;
 }
 
@@ -933,6 +935,35 @@ function PersonPage({ p }: { p: PersonProfile }) {
               : []),
           ]}
         />
+      </div>
+    );
+  if (p.kind === 'scout')
+    return (
+      <div className="space-y-5 text-sm">
+        <h2 className="lc-display text-lg">{p.name}</h2>
+        <Facts
+          items={[
+            [t('person.role'), t('person.role.scout')],
+            [
+              t('person.garage'),
+              <RegistryLink key="g" to={{ kind: 'garage', id: p.garage.id }}>
+                {p.garage.name}
+              </RegistryLink>,
+            ],
+            [t('person.age'), p.age],
+            [t('person.skill'), p.skill],
+            [t('scouts.focus'), t(`scouts.focus.${p.focus}` as never)],
+            [t('person.wageYear'), formatMoney(p.wagePerYear)],
+            [t('person.hiredOn'), formatDate(p.hiredOn)],
+            [
+              t('person.status'),
+              p.leftOn ? t('person.left', { date: formatDate(p.leftOn) }) : t('person.employed'),
+            ],
+          ]}
+        />
+        {p.leftReason && (
+          <p className="text-lc-dim">{t(`person.reason.${p.leftReason}` as never)}</p>
+        )}
       </div>
     );
   if (p.kind !== 'shareholder')

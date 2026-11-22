@@ -6,6 +6,7 @@ import {
   formRise,
   readingMidpoint,
   scoutOffers,
+  scoutRetires,
   scoutWagePerRound,
   tipCount,
   type Scout,
@@ -20,6 +21,8 @@ import { knowledgeContext, readDriver } from './knowledge';
 import { readCareer } from './career';
 import { all } from './entries';
 
+const gameYear = (db: Database): number => Number(readCareer(db)?.gameDate.slice(0, 4) ?? 0);
+
 export interface HiredScout {
   id: number;
   name: string;
@@ -29,6 +32,8 @@ export interface HiredScout {
   /** What the scout costs the garage for one round. */
   wagePerRound: number;
   hiredOn: string;
+  /** Their age this year (the year less their birth year). */
+  age: number;
   /** The subject the scout is assigned to, if any. */
   assignment: Subject | null;
   /** What the assignment is called: a driver's or garage's name, or a car's chassis number. */
@@ -47,7 +52,7 @@ const FOCI: ScoutFocus[] = ['drivers', 'cars', 'garages'];
 export function garageScouts(db: Database, garageId: number): HiredScout[] {
   return all(
     db,
-    `SELECT s.id, s.name, s.skill, s.focus, s.wage_per_year, s.hired_on,
+    `SELECT s.id, s.name, s.skill, s.focus, s.wage_per_year, s.hired_on, s.birth_year,
             a.subject_kind, a.subject_id
        FROM scout s LEFT JOIN scout_assignment a ON a.scout_id = s.id
       WHERE s.garage_id = ? AND s.left_on IS NULL ORDER BY s.id`,
@@ -60,6 +65,7 @@ export function garageScouts(db: Database, garageId: number): HiredScout[] {
     wagePerYear: r.wage_per_year as number,
     wagePerRound: scoutWagePerRound(r.wage_per_year as number),
     hiredOn: r.hired_on as string,
+    age: gameYear(db) - (r.birth_year as number),
     assignment:
       r.subject_kind === null
         ? null
@@ -124,8 +130,16 @@ export function hireScout(
   const chosen = scoutCandidates(db, garageId)[offer];
   if (!chosen) throw new Error('There is no such scout on offer.');
   db.run(
-    'INSERT INTO scout (garage_id, name, skill, focus, wage_per_year, hired_on) VALUES (?, ?, ?, ?, ?, ?)',
-    [garageId, chosen.name, chosen.skill, focus, chosen.wagePerYear, career.gameDate],
+    'INSERT INTO scout (garage_id, name, skill, focus, wage_per_year, hired_on, birth_year) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [
+      garageId,
+      chosen.name,
+      chosen.skill,
+      focus,
+      chosen.wagePerYear,
+      career.gameDate,
+      gameYear(db) - chosen.age,
+    ],
   );
   const id = Number(all(db, 'SELECT MAX(id) AS n FROM scout')[0]!.n);
   return garageScouts(db, garageId).find((s) => s.id === id)!;
@@ -158,6 +172,57 @@ export function fireScout(db: Database, garageId: number, scoutId: number): numb
     throw error;
   }
   return notice;
+}
+
+/** A scout who has retired. */
+export interface ScoutRetirement {
+  id: number;
+  garageId: number;
+  name: string;
+  age: number;
+}
+
+/**
+ * Sends home every scout who has reached the retirement age (`staff.retireAge`) in `year`: they leave on 1 February
+ * with the reason `retired`, and their assignment is cleared so the player's knowledge of that subject falls back
+ * to what the other scouts cover. Called when a season starts. Returns who retired.
+ */
+export function retireScouts(db: Database, year: number): ScoutRetirement[] {
+  const retired = all(
+    db,
+    'SELECT id, garage_id, name, birth_year FROM scout WHERE left_on IS NULL ORDER BY id',
+  )
+    .map((r) => ({
+      id: r.id as number,
+      garageId: r.garage_id as number,
+      name: r.name as string,
+      age: year - (r.birth_year as number),
+    }))
+    .filter((s) => scoutRetires(s.age));
+  for (const s of retired) {
+    db.run("UPDATE scout SET left_on = ?, left_reason = 'retired' WHERE id = ?", [
+      `${year}-02-01`,
+      s.id,
+    ]);
+    db.run('DELETE FROM scout_assignment WHERE scout_id = ?', [s.id]);
+  }
+  return retired;
+}
+
+/** The scouts a garage lost to retirement in the year that has just begun, for the report on the Scouts tab. */
+export function recentScoutRetirements(db: Database, garageId: number): ScoutRetirement[] {
+  const year = gameYear(db);
+  return all(
+    db,
+    `SELECT id, garage_id, name, birth_year FROM scout
+      WHERE garage_id = ? AND left_reason = 'retired' AND left_on >= ? ORDER BY id`,
+    [garageId, `${year}-01-01`],
+  ).map((r) => ({
+    id: r.id as number,
+    garageId: r.garage_id as number,
+    name: r.name as string,
+    age: year - (r.birth_year as number),
+  }));
 }
 
 const SUBJECT_TABLE: Record<ScoutFocus, string> = {

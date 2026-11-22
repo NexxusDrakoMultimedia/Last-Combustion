@@ -208,10 +208,12 @@ import {
   fireScout,
   garageScouts,
   hireScout,
+  recentScoutRetirements,
   risingDrivers,
   scoutCandidates,
   type HiredScout,
   type RisingDriver,
+  type ScoutRetirement,
 } from '../db/scouts';
 import type { ScoutFocus, ScoutOffer, Subject } from '../sim/scouting';
 import type { Call } from '../sim/final/engine';
@@ -367,6 +369,8 @@ interface CareerState {
   crew: number;
   /** The scouts the garage employs and the ones on offer. */
   scouts: HiredScout[];
+  /** The scouts who retired in the year that has just begun. */
+  scoutRetirements: ScoutRetirement[];
   scoutOffers: ScoutOffer[];
   /** Young drivers the Head of Scouting has heard of (none without one). */
   risingDrivers: RisingDriver[];
@@ -631,6 +635,8 @@ export const useCareerStore = create<CareerState>()((set, get) => {
       staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
       scouts: playerGarageId(db) === null ? [] : garageScouts(db, playerGarageId(db)!),
+      scoutRetirements:
+        playerGarageId(db) === null ? [] : recentScoutRetirements(db, playerGarageId(db)!),
       scoutOffers: playerGarageId(db) === null ? [] : scoutCandidates(db, playerGarageId(db)!),
       risingDrivers: playerGarageId(db) === null ? [] : risingDrivers(db, playerGarageId(db)!),
       auction: playerGarageId(db) === null ? undefined : currentAuction(db, playerGarageId(db)!),
@@ -749,6 +755,7 @@ export const useCareerStore = create<CareerState>()((set, get) => {
     classificationView: undefined,
     staff: [],
     scouts: [],
+    scoutRetirements: [],
     scoutOffers: [],
     risingDrivers: [],
     staffOffers: [],

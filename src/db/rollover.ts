@@ -25,6 +25,7 @@ import { rollBreaks } from './companies';
 import { driversInvest } from './driverinvest';
 import { leaveUnhappy } from './morale';
 import { expireExecutives } from './executives';
+import { retireScouts } from './scouts';
 import { refreshPlayerPrestige } from './prestige';
 import { openNewGarages, refurbishAiGear, settleGarages } from './garages';
 import { settleTraining } from './training';
@@ -351,6 +352,7 @@ export function startNextSeason(db: Database): Rollover {
     // New garages come with their owners.
     ensureCapTables(db);
     expireExecutives(db, year);
+    retireScouts(db, year);
     ensureBusinesses(db, year);
     leaveUnhappy(db, year);
     refreshPlayerPrestige(db);

@@ -16,6 +16,7 @@ export function ScoutsSection() {
   const { scouts, scoutOffers, agents, hub, status, hireScout, fireScout, assignScout } =
     useCareerStore();
   const rising = useCareerStore((s) => s.risingDrivers);
+  const retirements = useCareerStore((s) => s.scoutRetirements);
   const [focus, setFocus] = useState<ScoutFocus>('drivers');
   const busy = status === 'busy';
   const cash = hub?.player?.cash ?? 0;
@@ -28,6 +29,11 @@ export function ScoutsSection() {
         <dd className="lc-num">{t('scouts.perRound', { amount: formatMoney(perRound) })}</dd>
       </dl>
       <p className="text-lc-dim">{t('scouts.explain')}</p>
+      {retirements.map((r) => (
+        <p key={r.id} className="border border-lc-line bg-lc-raised p-2">
+          {t('scouts.retired', { name: r.name, age: r.age })}
+        </p>
+      ))}
       {rising.length > 0 && (
         <section className="space-y-1 border border-lc-line bg-lc-raised p-3">
           <h3 className="lc-display text-sm text-lc-dim">{t('scouts.rising')}</h3>
@@ -56,7 +62,10 @@ export function ScoutsSection() {
             <li key={s.id} className="space-y-2 border border-lc-line p-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span>
-                  <span className="font-medium">{s.name}</span>{' '}
+                  <RegistryLink to={{ kind: 'person', person: 'scout', id: s.id }}>
+                    {s.name}
+                  </RegistryLink>{' '}
+                  <span className="text-lc-dim">{t('scouts.age', { age: s.age })}</span>{' '}
                   <span className="text-lc-dim">{t('scouts.skill', { skill: s.skill })}</span>{' '}
                   <span className="text-lc-dim">{t(`scouts.focus.${s.focus}`)}</span>
                 </span>
@@ -143,6 +152,7 @@ export function ScoutsSection() {
             >
               <span>
                 <span className="font-medium">{o.name}</span>{' '}
+                <span className="text-lc-dim">{t('scouts.age', { age: o.age })}</span>{' '}
                 <span className="text-lc-dim">{t('scouts.skill', { skill: o.skill })}</span>
               </span>
               <span className="flex items-center gap-2">

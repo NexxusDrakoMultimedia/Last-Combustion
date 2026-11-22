@@ -246,6 +246,8 @@ export interface ScoutOffer {
   skill: number;
   /** What they ask for a year. */
   wagePerYear: number;
+  /** Their age when they would join. */
+  age: number;
 }
 
 /** A scout's yearly wage from their skill: $20,000 plus $600 a point, so $50,000 for a middling 50. */
@@ -287,12 +289,20 @@ export function tipCount(lift: number, max: number, liftForFull: number): number
 /** The scouts on offer, drawn from a stream. */
 export function scoutOffers(rng: RandomStream): ScoutOffer[] {
   const [lo, hi] = scoutingBalance.staff.skill as [number, number];
+  const [ageLo, ageHi] = scoutingBalance.staff.age as [number, number];
   return Array.from({ length: scoutingBalance.staff.candidates }, () => {
     const skill = rng.int(lo, hi);
     return {
       name: personName(rng, 'AU', rng.chance(0.5) ? 'male' : 'female'),
       skill,
       wagePerYear: scoutWageFor(skill),
+      // Drawn last, so adding the age did not move the names and skills the same seed offered before.
+      age: rng.int(ageLo, ageHi),
     };
   });
+}
+
+/** Whether a scout of this age has reached the age scouts retire at (`staff.retireAge` in the data). */
+export function scoutRetires(age: number): boolean {
+  return age >= scoutingBalance.staff.retireAge;
 }
