@@ -21,7 +21,7 @@ It is a management game first: as much a garage simulation as a racing one. The 
 
 ## Where it is
 
-The game is being built in milestones (M0 to M9, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is released as **0.1.0**. Milestone M6, depth, is built on its own branch and comes out as **0.2.0**, with betas along the way. It is an early version with one career mode, so expect rough edges (see [what the game does not have yet](docs/HOW_TO_PLAY.md#what-the-game-does-not-have-yet)). Bugs and ideas are welcome through the Feedback button in the game or the [issue form](https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose).
+The game is being built in milestones (M0 to M9, listed in the [Game Design Document](docs/GAME_DESIGN_DOCUMENT.md)). Milestone M5, the first playable season, is released as **0.1.0**. Milestone M6, depth, is released as **0.2.0**. Milestone M7, story and fog of war, is released as **0.3.0**: it starts a new six-round calendar from Tasmania to Healesville, so saves from earlier versions do not load. The next milestones come out as 0.4.0 and later, with betas along the way. It is an early version with one career mode, so expect rough edges (see [what the game does not have yet](docs/HOW_TO_PLAY.md#what-the-game-does-not-have-yet)). Bugs and ideas are welcome through the Feedback button in the game or the [issue form](https://github.com/NexxusDrakoMultimedia/Last-Combustion/issues/new/choose).
 
 You can already:
 

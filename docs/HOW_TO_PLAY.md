@@ -1,6 +1,6 @@
 # How to play
 
-This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for 0.2.0. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
+This guide covers the Garage owner career, the only mode built so far. It follows the game as it stands for 0.3.0. The rules and numbers behind it are in the [Game Design Document](GAME_DESIGN_DOCUMENT.md).
 
 ## The idea
 
