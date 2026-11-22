@@ -42,6 +42,23 @@ function fresh(): { db: Database; garageId: number } {
   return { db, garageId };
 }
 
+/**
+ * Gives the player enough knowledge of some garages to read bands of their cap tables: ten scouts
+ * of top skill (scouts count for every garage) and a share in each, which counts as dealing with it.
+ */
+function learn(db: Database, garages: number[]): void {
+  for (let i = 0; i < 10; i++)
+    db.run(
+      "INSERT INTO scout (garage_id, name, skill, focus, wage_per_year, hired_on) SELECT id, 'Scout ' || ?, 100, 'garages', 0, '2031-01-01' FROM garage WHERE is_player = 1",
+      [i],
+    );
+  for (const g of garages)
+    db.run(
+      "INSERT INTO shareholding (garage_id, holder_type, holder_id, holder_name, class, shares, paid, since) VALUES (?, 'owner', 1, 'Test Owner', 'ordinary', 1, 0, '2031-01-01')",
+      [g],
+    );
+}
+
 describe('the people the Registry keeps', () => {
   it('lists executives who have been employed, staff and every shareholder, but not candidates', () => {
     const { db, garageId } = fresh();
@@ -95,6 +112,12 @@ describe('the people the Registry keeps', () => {
          VALUES (?, 'investor', NULL, 'Test Investor', 'ordinary', 111112, 0, '2031-02-01')`,
         [g],
       );
+    learn(db, [a, b]);
+    // The owner's own garage is worth the most of all, so it is their byline despite the token shares elsewhere.
+    db.run(
+      "INSERT OR REPLACE INTO valuation (garage_id, date, value) VALUES (?, '2031-02-01', 5000000000)",
+      [garageId],
+    );
     db.run(
       "INSERT OR REPLACE INTO valuation (garage_id, date, value) VALUES (?, '2031-02-01', 1000000)",
       [a],
@@ -140,13 +163,17 @@ describe('the people the Registry keeps', () => {
       "INSERT INTO shareholding (garage_id, holder_type, holder_name, class, shares, paid, since) VALUES (?, 'investor', 'Shared Investor', 'preferred', 50000, 2000, '2031-02-01')",
       [another],
     );
+    learn(db, [other, another]);
     const listed = peopleIndex(db).filter((p) => p.name === 'Shared Investor');
     expect(listed).toHaveLength(1);
     const profile = personProfile(db, 'shareholder', listed[0]!.id);
     if (profile.kind !== 'shareholder') throw new Error('not a shareholder');
-    expect(profile.holdings.map((h) => h.shares).sort((a, b) => a - b)).toEqual([50_000, 100_000]);
-    expect(profile.holdings.every((h) => h.stake > 0 && h.stake < 1)).toBe(true);
-    expect(profile.holdings.every((h) => h.worth > 0)).toBe(true);
+    // The player reads bands (they know these garages well, but not exactly), and each holds the truth.
+    expect(profile.holdings).toHaveLength(2);
+    expect(
+      profile.holdings.every((h) => h.stake !== null && h.stake.high > 0 && h.stake.low < 1),
+    ).toBe(true);
+    expect(profile.holdings.every((h) => h.worth !== null && h.worth.high > 0)).toBe(true);
   });
 });
 
@@ -201,7 +228,11 @@ describe('a person’s profile', () => {
     if (p.kind !== 'shareholder') throw new Error('not a shareholder');
     expect(p.name).toBe('Test Owner');
     expect(p.holdings).toHaveLength(1);
-    expect(p.holdings[0]).toMatchObject({ shares: 1_000_000, stake: 1, paid: 0 });
+    expect(p.holdings[0]).toMatchObject({
+      shares: 1_000_000,
+      stake: { low: 1, high: 1 },
+      paid: 0,
+    });
   });
 
   it('opens through the Registry like any other page, and refuses someone who is not there', () => {

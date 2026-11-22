@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
-import { FogValue } from '../FogValue';
+import { FogShare, FogValue } from '../FogValue';
+import { amountText } from './DriverStats';
 import { moraleText } from '../moraleText';
 import { ROAD_TYPES } from '../../sim/worldgen/types';
 import { useState, type ReactNode } from 'react';
@@ -833,18 +834,20 @@ function HoldingsSection({ holdings }: { holdings: HoldingLine[] }) {
           </thead>
           <tbody>
             {holdings.map((h) => (
-              <tr key={`${h.garage.id}-${h.class}-${h.since}`}>
+              <tr key={`${h.garage.id}-${h.class}-${h.since}-${h.shares}`}>
                 <td>
                   <RegistryLink to={{ kind: 'garage', id: h.garage.id }}>
                     {h.garage.name}
                   </RegistryLink>
                 </td>
-                <td>{t(`ownership.class.${h.class}` as never)}</td>
-                <td className="lc-num text-right">{h.shares.toLocaleString('en-AU')}</td>
-                <td className="lc-num text-right">{`${Math.round(h.stake * 1000) / 10}%`}</td>
-                <td className="lc-num text-right">{formatMoney(h.paid)}</td>
-                <td className="lc-num text-right">{formatMoney(h.worth)}</td>
-                <td className="lc-num">{formatDate(h.since)}</td>
+                <td>{h.class !== null && t(`ownership.class.${h.class}` as never)}</td>
+                <td className="lc-num text-right">
+                  {h.shares !== null && h.shares.toLocaleString('en-AU')}
+                </td>
+                <td className="text-right">{h.stake && <FogShare span={h.stake} />}</td>
+                <td className="lc-num text-right">{h.paid !== null && formatMoney(h.paid)}</td>
+                <td className="lc-num text-right">{h.worth && amountText(h.worth)}</td>
+                <td className="lc-num">{h.since !== null && formatDate(h.since)}</td>
               </tr>
             ))}
           </tbody>

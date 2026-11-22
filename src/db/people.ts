@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { readStaffSkill } from './knowledge';
-import type { Reading } from '../sim/scouting';
+import type { AmountRange, Reading } from '../sim/scouting';
+import { spanMidpoint, type Span } from '../sim/capfog';
+import { holdingSighter } from './captable';
 import type { Database } from 'sql.js';
 import { shareTotals, type ShareClass } from '../sim/equity';
 import type { ExecutiveRole } from '../sim/executives';
@@ -112,15 +114,22 @@ export function peopleIndex(db: Database): PersonRef[] {
     years: activeYears(r.hired_on as string, r.left_on as string | null),
   }));
   // The companies: sponsors, manufacturers and suppliers, all of whom can hold shares.
-  const held = new Map<string, string>(
-    all(
-      db,
-      `SELECT holder_type || ':' || holder_id AS k, GROUP_CONCAT(DISTINCT g.name) AS garages
-         FROM shareholding s JOIN garage g ON g.id = s.garage_id
-        WHERE holder_type IN ('sponsor', 'manufacturer') AND holder_id IS NOT NULL
-        GROUP BY holder_type, holder_id`,
-    ).map((r) => [r.k as string, String(r.garages).replaceAll(',', ', ')]),
-  );
+  // Only the holdings the player can see yet (see "Ownership and the cap table") count here.
+  const sight = holdingSighter(db);
+  const heldBy = new Map<string, string[]>();
+  for (const r of all(
+    db,
+    `SELECT s.id, s.garage_id, holder_type || ':' || holder_id AS k, g.name AS garage
+       FROM shareholding s JOIN garage g ON g.id = s.garage_id
+      WHERE holder_type IN ('sponsor', 'manufacturer') AND holder_id IS NOT NULL
+      ORDER BY g.name, s.id`,
+  )) {
+    if (!sight(r.garage_id as number, r.id as number)) continue;
+    const names = heldBy.get(r.k as string) ?? [];
+    if (!names.includes(r.garage as string)) names.push(r.garage as string);
+    heldBy.set(r.k as string, names);
+  }
+  const held = new Map<string, string>([...heldBy].map(([k, names]) => [k, names.join(', ')]));
   const company = (
     kind: CompanyKind,
     id: number,
@@ -187,8 +196,14 @@ export function peopleIndex(db: Database): PersonRef[] {
   for (const h of holdings) {
     const key = `${h.holder_type as string}|${h.holder_name as string}|${(h.holder_id as number | null) ?? -1}`;
     const gid = h.garage_id as number;
-    const stake =
-      ((h.shares as number) / Math.max(1, issued.get(gid) ?? 1)) * (worth.get(gid) ?? 0);
+    const seeing = sight(gid, h.id as number);
+    if (!seeing) continue;
+    // What a position is worth is read from the bands the player has, never from the truth.
+    const stake = seeing.holder
+      ? seeing.holder.stake && seeing.valuation
+        ? spanMidpoint(seeing.holder.stake) * spanMidpoint(seeing.valuation)
+        : 0
+      : ((h.shares as number) / Math.max(1, issued.get(gid) ?? 1)) * (worth.get(gid) ?? 0);
     const seen = people.get(key);
     if (!seen) {
       people.set(key, {
@@ -289,16 +304,21 @@ export interface ScoutProfile {
   leftReason: string | null;
 }
 
+/**
+ * One holding of a person or company in a garage, as the player reads it (see "Ownership and the cap
+ * table"): a figure is null while the player does not know the garage well enough to see it, and a
+ * share or a worth is a band until they do. Holdings in the player's own garage are exact.
+ */
 export interface HoldingLine {
   garage: GarageRef;
-  class: ShareClass;
-  shares: number;
+  class: ShareClass | null;
+  shares: number | null;
   /** Their share of the issued shares of that garage. */
-  stake: number;
-  paid: number;
-  since: string;
+  stake: Span | null;
+  paid: number | null;
+  since: string | null;
   /** What the holding is worth now: the stake of the garage's valuation. */
-  worth: number;
+  worth: AmountRange | null;
 }
 
 export interface ShareholderProfile {
@@ -313,26 +333,56 @@ export interface ShareholderProfile {
   driver: { id: number; name: string } | null;
 }
 
-/** The holdings a set of shareholding rows make: where, how much, what was paid and what it is worth now. */
+/**
+ * The holdings a set of shareholding rows make: where, how much, what was paid and what it is worth now.
+ * A holding the player cannot see yet is left out, and the others are read through their garage's fog.
+ */
 function holdingLines(db: Database, rows: Record<string, unknown>[]): HoldingLine[] {
-  return rows.map((r): HoldingLine => {
+  const sight = holdingSighter(db);
+  const lines: HoldingLine[] = [];
+  for (const r of rows) {
     const garageId = r.garage_id as number;
-    const all_ = all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [
-      garageId,
-    ]).map((x) => ({ shares: x.shares as number, class: x.class as ShareClass }));
-    const outstanding = shareTotals(all_).outstanding;
-    const stake =
-      r.class === 'option' || outstanding === 0 ? 0 : (r.shares as number) / outstanding;
-    return {
-      garage: { id: garageId, name: r.garage as string },
-      class: r.class as ShareClass,
-      shares: r.shares as number,
-      stake,
-      paid: r.paid as number,
-      since: r.since as string,
-      worth: Math.round(stake * garageValuation(db, garageId).total),
-    };
-  });
+    const seeing = sight(garageId, r.id as number);
+    if (!seeing) continue;
+    const garage = { id: garageId, name: r.garage as string };
+    if (seeing.holder === null) {
+      const all_ = all(db, 'SELECT shares, class FROM shareholding WHERE garage_id = ?', [
+        garageId,
+      ]).map((x) => ({ shares: x.shares as number, class: x.class as ShareClass }));
+      const outstanding = shareTotals(all_).outstanding;
+      const stake =
+        r.class === 'option' || outstanding === 0 ? 0 : (r.shares as number) / outstanding;
+      const worth = Math.round(stake * garageValuation(db, garageId).total);
+      lines.push({
+        garage,
+        class: r.class as ShareClass,
+        shares: r.shares as number,
+        stake: { low: stake, high: stake },
+        paid: r.paid as number,
+        since: r.since as string,
+        worth: { low: worth, high: worth },
+      });
+      continue;
+    }
+    const h = seeing.holder;
+    const exact = h.shares !== null;
+    lines.push({
+      garage,
+      class: h.class,
+      shares: h.shares,
+      stake: h.stake,
+      paid: exact ? (r.paid as number) : null,
+      since: h.class === null ? null : (r.since as string),
+      worth:
+        h.stake && seeing.valuation
+          ? {
+              low: Math.floor(h.stake.low * seeing.valuation.low),
+              high: Math.ceil(h.stake.high * seeing.valuation.high),
+            }
+          : null,
+    });
+  }
+  return lines;
 }
 
 /** What a driver holds in garages: the stakes they have bought with their winnings. */
