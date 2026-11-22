@@ -152,36 +152,84 @@ describe('the Head of Scouting’s tips', () => {
     return c;
   };
 
+  /** A young driver in a rival garage, with a top potential and the given final places over rounds 1 to 4. */
+  const prospect = (db: Database, garage: number, places: number[]): number => {
+    const entry = db.exec(
+      `SELECT id, driver_id FROM entry WHERE garage_id <> ${garage} ORDER BY id LIMIT 1`,
+    )[0]!.values[0]!;
+    db.run('UPDATE driver SET birth_date = ?, potential = 100 WHERE id = ?', [
+      '2012-05-01',
+      entry[1]!,
+    ]);
+    places.forEach((place, i) =>
+      db.run('INSERT INTO result (round_id, entry_id, final_pos) VALUES (?, ?, ?)', [
+        i + 1,
+        entry[0]!,
+        place,
+      ]),
+    );
+    return Number(entry[1]);
+  };
+
   it('are empty without a Head of Scouting', () => {
     const { db, garage } = newCareer('tips-none');
+    prospect(db, garage, [20, 20, 3, 3]);
     expect(risingDrivers(db, garage)).toEqual([]);
   });
 
-  it('name young drivers who are not the garage’s own, by what their potential reads, never more than the cap', () => {
-    let seen = 0;
-    for (const seed of ['tips-a', 'tips-b', 'tips-c']) {
-      const { db, garage } = withHead(seed);
-      const tips = risingDrivers(db, garage);
-      expect(tips.length).toBeLessThanOrEqual(scoutingBalance.tips.max);
-      const owned = new Set(
-        db
-          .exec(`SELECT driver_id FROM entry WHERE garage_id = ${garage}`)[0]
-          ?.values.map((r) => r[0]) ?? [],
-      );
-      for (const tip of tips) {
-        seen += 1;
-        expect(tip.age).toBeLessThanOrEqual(scoutingBalance.tips.maxAge);
-        expect(owned.has(tip.driverId)).toBe(false);
-        expect(readingMidpoint(tip.potential)).toBeGreaterThanOrEqual(
-          scoutingBalance.tips.minPotential,
-        );
-      }
-      // Best reading first.
-      for (let i = 1; i < tips.length; i++)
-        expect(readingMidpoint(tips[i - 1]!.potential)).toBeGreaterThanOrEqual(
-          readingMidpoint(tips[i]!.potential),
-        );
-    }
-    expect(seen).toBeGreaterThan(0);
-  }, 60_000);
+  it('are empty while no driver has finals to compare', () => {
+    const { db, garage } = withHead('tips-fresh');
+    expect(risingDrivers(db, garage)).toEqual([]);
+  });
+
+  it('name a young rival driver whose places are improving, with the public places and a reading', () => {
+    const { db, garage } = withHead('tips-rising');
+    const driver = prospect(db, garage, [20, 20, 3, 3]);
+    const tips = risingDrivers(db, garage);
+    expect(tips.length).toBeLessThanOrEqual(scoutingBalance.tips.max);
+    const tip = tips.find((t) => t.driverId === driver)!;
+    expect(tip).toBeDefined();
+    expect(tip).toMatchObject({ age: 19, earlierPlace: 20, recentPlace: 3 });
+    expect(readingMidpoint(tip.potential)).toBeGreaterThanOrEqual(
+      scoutingBalance.tips.minPotential,
+    );
+    // Nothing of the true potential (100) is carried beyond the reading the player has.
+    expect(Object.keys(tip).sort()).toEqual(
+      ['age', 'driverId', 'earlierPlace', 'knowledge', 'name', 'potential', 'recentPlace'].sort(),
+    );
+  });
+
+  it('pass over a driver whose places are slipping, who is not young, or who is the garage’s own', () => {
+    const slipping = withHead('tips-slipping');
+    prospect(slipping.db, slipping.garage, [3, 3, 20, 20]);
+    expect(risingDrivers(slipping.db, slipping.garage)).toEqual([]);
+
+    const old = withHead('tips-old');
+    const driver = prospect(old.db, old.garage, [20, 20, 3, 3]);
+    old.db.run("UPDATE driver SET birth_date = '1990-01-01' WHERE id = ?", [driver]);
+    expect(risingDrivers(old.db, old.garage)).toEqual([]);
+
+    const own = withHead('tips-own');
+    const mine = own.db.exec(
+      `SELECT id, driver_id FROM entry WHERE garage_id = ${own.garage} ORDER BY id LIMIT 1`,
+    )[0]!.values[0]!;
+    own.db.run('UPDATE driver SET birth_date = ?, potential = 100 WHERE id = ?', [
+      '2012-05-01',
+      mine[1]!,
+    ]);
+    [20, 20, 3, 3].forEach((p, i) =>
+      own.db.run('INSERT INTO result (round_id, entry_id, final_pos) VALUES (?, ?, ?)', [
+        i + 1,
+        mine[0]!,
+        p,
+      ]),
+    );
+    expect(risingDrivers(own.db, own.garage).map((t) => t.driverId)).not.toContain(Number(mine[1]));
+  });
+
+  it('are the same every time they are asked for', () => {
+    const { db, garage } = withHead('tips-same');
+    prospect(db, garage, [20, 20, 3, 3]);
+    expect(risingDrivers(db, garage)).toEqual(risingDrivers(db, garage));
+  });
 });
