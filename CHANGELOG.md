@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.
 
 ### Changed
 
+- **Knowing a garage through dealing with it.** A garage you have bought a car from or sold one to (privately or at auction), shared a driver with, or hold shares in is now clearer to read: its prestige and following narrow sooner, the closer in time the dealing was.
 - **Road affinity behind the fog.** A driver you do not own now shows how well they read each kind of road (forest, coast, mountain, night) as a word, a range or the exact value, on the Drivers panel and the Registry. The Drivers panel can order free agents by rating, potential or a road's affinity, by what you can read, never by the true number.
 - **Hiring through the fog.** The skill of an executive or mechanic on offer is now a reading (a word, a range or the exact value), narrowed by your scouts, and so is their asking pay, which is worked from the reading so it never gives the skill away. A mechanic you employed before is still exact.
 - **Old saves no longer load.** The season calendar changed, so a career from before 0.3.0 cannot carry on. The start screen says "Due to breaking changes, your previous saves are incompatible." and offers a download of the old saves as a backup. Start a new career to play 0.3.0.

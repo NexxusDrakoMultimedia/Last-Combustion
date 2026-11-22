@@ -49,10 +49,74 @@ export interface KnowledgeContext {
   /** Garages: scored finals of their entries in the last three seasons and attention flags this season. */
   garageFinals: Map<number, number>;
   garageFlagged: Set<number>;
+  /**
+   * The last year the player's garage worked with each other garage: a car sold between them (privately or at auction),
+   * a driver who moved from one to the other, or shares the owner holds in it now.
+   */
+  garageWorked: Map<number, number>;
   /** Cars the garage owns now. */
   carsOwned: Set<number>;
   /** Cars with a paid inspection that still counts (the car has the same owner as when it was inspected). */
   inspected: Set<number>;
+}
+
+/** The last year the garage dealt with each other garage (see `KnowledgeContext.garageWorked`), never after `year`. */
+function garagesWorkedWith(db: Database, garageId: number, year: number): Map<number, number> {
+  const worked = new Map<number, number>();
+  const note = (rows: Record<string, unknown>[]): void => {
+    for (const r of rows) {
+      const y = Math.min(year, Number(r.year));
+      if (Number.isFinite(y))
+        worked.set(r.id as number, Math.max(worked.get(r.id as number) ?? y, y));
+    }
+  };
+  // A car that went from one garage straight to the other (a private sale): the date of the later row is the sale.
+  note(
+    all(
+      db,
+      `SELECT x.garage_id AS id,
+              MAX(CAST(SUBSTR(CASE WHEN x.to_date = p.from_date THEN p.from_date ELSE x.from_date END, 1, 4) AS INTEGER)) AS year
+         FROM car_ownership p JOIN car_ownership x
+           ON x.car_id = p.car_id AND x.garage_id <> p.garage_id
+          AND (x.to_date = p.from_date OR p.to_date = x.from_date)
+        WHERE p.garage_id = ? GROUP BY x.garage_id`,
+      [garageId],
+    ),
+  );
+  // A car sold at auction by one to the other.
+  note(
+    all(
+      db,
+      `SELECT CASE WHEN l.seller_garage_id = ? THEN l.buyer_garage_id ELSE l.seller_garage_id END AS id,
+              MAX(CAST(SUBSTR(a.closes_on, 1, 4) AS INTEGER)) AS year
+         FROM auction_lot l JOIN auction a ON a.id = l.auction_id
+        WHERE l.status = 'sold' AND l.buyer_garage_id IS NOT NULL
+          AND (l.seller_garage_id = ? OR l.buyer_garage_id = ?)
+          AND l.seller_garage_id <> l.buyer_garage_id
+        GROUP BY 1`,
+      [garageId, garageId, garageId],
+    ),
+  );
+  // A driver who raced for both: the year the earlier contract ended is the year they moved.
+  note(
+    all(
+      db,
+      `SELECT x.garage_id AS id, MAX(MIN(p.end_year, x.end_year)) AS year
+         FROM contract p JOIN contract x ON x.driver_id = p.driver_id AND x.garage_id <> p.garage_id
+        WHERE p.garage_id = ? GROUP BY x.garage_id`,
+      [garageId],
+    ),
+  );
+  // Shares the owner holds in a garage now count as working with it this year.
+  note(
+    all(
+      db,
+      `SELECT DISTINCT garage_id AS id, ? AS year FROM shareholding
+        WHERE holder_type = 'owner' AND holder_id = 1 AND garage_id <> ?`,
+      [year, garageId],
+    ),
+  );
+  return worked;
 }
 
 export function knowledgeContext(db: Database, garageId: number): KnowledgeContext {
@@ -162,6 +226,7 @@ export function knowledgeContext(db: Database, garageId: number): KnowledgeConte
         [year],
       ).map((r) => r.id as number),
     ),
+    garageWorked: garagesWorkedWith(db, garageId, year),
     carsOwned: new Set(
       all(db, 'SELECT id FROM car WHERE garage_id = ?', [garageId]).map((r) => r.id as number),
     ),
@@ -491,7 +556,9 @@ export function garageKnowledge(ctx: KnowledgeContext, truth: GarageTruth): numb
     prestige: ctx.prestige,
     playerFame: ctx.playerFame,
     owned: false,
-    yearsSinceWorked: null,
+    yearsSinceWorked: ctx.garageWorked.has(truth.id)
+      ? ctx.year - ctx.garageWorked.get(truth.id)!
+      : null,
     flagged: ctx.garageFlagged.has(truth.id),
   }).total;
 }
