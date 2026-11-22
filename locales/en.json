@@ -1148,7 +1148,7 @@
   "scouts.covering": "Covering {kind} in general",
   "scouts.assignedTo": "Assigned to {name}",
   "scouts.rising": "Your Head of Scouting has heard of these young drivers",
-  "scouts.risingAge": "age {age}, potential",
+  "scouts.risingAge": "age {age}, finishing {recent} on average (it was {earlier}), potential",
   "scouts.hireFirst": "Hire a scout in Staff to learn more about this.",
   "scouts.watching": "Watched by {names}",
   "scouts.assignHere": "Assign a scout here",

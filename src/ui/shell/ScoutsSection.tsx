@@ -41,7 +41,13 @@ export function ScoutsSection() {
             {rising.map((r) => (
               <li key={r.driverId} className="flex flex-wrap items-center gap-2">
                 <RegistryLink to={{ kind: 'driver', id: r.driverId }}>{r.name}</RegistryLink>
-                <span className="text-lc-dim">{t('scouts.risingAge', { age: r.age })}</span>
+                <span className="text-lc-dim">
+                  {t('scouts.risingAge', {
+                    age: r.age,
+                    recent: r.recentPlace,
+                    earlier: r.earlierPlace,
+                  })}
+                </span>
                 <FogValue reading={r.potential} knowledge={r.knowledge} />
               </li>
             ))}

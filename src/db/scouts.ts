@@ -3,10 +3,12 @@
 import type { Database } from 'sql.js';
 import { createRng } from '../sim/rng';
 import {
+  formRise,
   readingMidpoint,
   scoutOffers,
   scoutRetires,
   scoutWagePerRound,
+  tipCount,
   type Scout,
   type ScoutFocus,
   type Reading,
@@ -267,27 +269,46 @@ export interface RisingDriver {
   /** What the player reads of the driver's potential, with the knowledge behind it. */
   potential: Reading;
   knowledge: number;
+  /** The average final place before the last few finals, and over them. Public results, so exact. */
+  earlierPlace: number;
+  recentPlace: number;
 }
 
 /**
- * The young drivers a Head of Scouting hears of first: up to `tips.max` drivers aged `tips.maxAge` or younger, not
- * the garage's own, whose potential reads `tips.minPotential` or more, best reading first. Chosen by the midpoint of
- * the reading the player has (never the true potential), so the tip never gives the truth away. Empty when the garage
- * has no Head of Scouting.
+ * The young drivers a Head of Scouting hears of first: drivers aged `tips.maxAge` or younger, not the garage's own,
+ * whose results are rising (the last `tips.form` finals average at least `tips.minRise` places better than the finals
+ * before; public results, so exact) and whose potential reads `tips.minPotential` or more. The potential is judged
+ * by the midpoint of the reading the player has, never the truth, so a tip gives no hidden number away. The most
+ * improved come first, and a better Head hears of more of them (`tipCount`). Empty when the garage has no Head of
+ * Scouting, and for a driver with too few finals.
  */
 export function risingDrivers(db: Database, garageId: number): RisingDriver[] {
-  if (garageScoutLift(db, garageId) <= 0) return [];
+  const lift = garageScoutLift(db, garageId);
+  if (lift <= 0) return [];
   const career = readCareer(db);
   if (!career) return [];
   const year = Number(career.gameDate.slice(0, 4));
   const tips = scoutingBalance.tips;
+  const places = new Map<number, number[]>();
+  for (const r of all(
+    db,
+    `SELECT e.driver_id, r.final_pos FROM result r
+       JOIN entry e ON e.id = r.entry_id JOIN round ro ON ro.id = r.round_id
+      WHERE r.final_pos IS NOT NULL ORDER BY ro.season_id, ro.number, r.id`,
+  ))
+    places.set(r.driver_id as number, [
+      ...(places.get(r.driver_id as number) ?? []),
+      r.final_pos as number,
+    ]);
   const ctx = knowledgeContext(db, garageId);
   return all(
     db,
     'SELECT * FROM driver WHERE retired_year IS NULL AND birth_date >= ? ORDER BY id',
     [`${year - tips.maxAge}-01-01`],
   )
-    .map((d) => {
+    .flatMap((d) => {
+      const form = formRise(places.get(d.id as number) ?? [], tips.form);
+      if (!form || form.rise < tips.minRise) return [];
       // Only the potential and the knowledge are used, so the rating read here is a placeholder.
       const reading = readDriver(ctx, {
         id: d.id as number,
@@ -301,26 +322,29 @@ export function risingDrivers(db: Database, garageId: number): RisingDriver[] {
         wetSkill: d.wet_skill as number,
         potential: d.potential as number,
       });
-      return {
-        driverId: d.id as number,
-        name: d.name as string,
-        age: year - Number(String(d.birth_date).slice(0, 4)),
-        potential: reading.potential,
-        knowledge: reading.knowledge,
-        owned: reading.owned,
-      };
+      if (reading.owned || readingMidpoint(reading.potential) < tips.minPotential) return [];
+      return [
+        {
+          driverId: d.id as number,
+          name: d.name as string,
+          age: year - Number(String(d.birth_date).slice(0, 4)),
+          potential: reading.potential,
+          knowledge: reading.knowledge,
+          earlierPlace: Math.round(form.earlier * 10) / 10,
+          recentPlace: Math.round(form.recent * 10) / 10,
+          rise: form.rise,
+        },
+      ];
     })
-    .filter((d) => !d.owned && readingMidpoint(d.potential) >= tips.minPotential)
-    .sort(
-      (a, b) =>
-        readingMidpoint(b.potential) - readingMidpoint(a.potential) || a.driverId - b.driverId,
-    )
-    .slice(0, tips.max)
+    .sort((a, b) => b.rise - a.rise || a.driverId - b.driverId)
+    .slice(0, tipCount(lift, tips.max, tips.liftForFull))
     .map((d) => ({
       driverId: d.driverId,
       name: d.name,
       age: d.age,
       potential: d.potential,
       knowledge: d.knowledge,
+      earlierPlace: d.earlierPlace,
+      recentPlace: d.recentPlace,
     }));
 }

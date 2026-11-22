@@ -8,6 +8,8 @@ import {
   bandFor,
   bandRange,
   coverOf,
+  formRise,
+  tipCount,
   halfWidth,
   knowledgeOf,
   placement,
@@ -338,5 +340,52 @@ describe('scout age and retirement', () => {
     const a = scoutOffers(createRng('same').stream('scouts:1'));
     const b = scoutOffers(createRng('same').stream('scouts:1'));
     expect(a).toEqual(b);
+  });
+});
+
+describe('rising results and the Head’s tips', () => {
+  it('reads a rise as the earlier average less the recent one', () => {
+    expect(formRise([10, 12, 4, 6], 2)).toEqual({ rise: 6, earlier: 11, recent: 5 });
+    expect(formRise([4, 6, 10, 12], 2)!.rise).toBe(-6);
+    expect(formRise([5, 5, 5], 2)).toBeNull();
+    expect(formRise([], 1)).toBeNull();
+  });
+
+  it('is positive exactly when the recent places are better, whatever the places', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer({ min: 1, max: 30 }), { minLength: 4, maxLength: 20 }),
+        fc.integer({ min: 1, max: 2 }),
+        (places, window) => {
+          const form = formRise(places, window)!;
+          expect(form.rise).toBeCloseTo(form.earlier - form.recent, 9);
+          // Making the recent finals better never lowers the rise.
+          const better = [
+            ...places.slice(0, -window),
+            ...places.slice(-window).map((p) => Math.max(1, p - 1)),
+          ];
+          expect(formRise(better, window)!.rise).toBeGreaterThanOrEqual(form.rise);
+        },
+      ),
+    );
+  });
+
+  it('hears of none without a Head, at least one with any, and more with a better one, up to the cap', () => {
+    expect(tipCount(0, 3, 0.25)).toBe(0);
+    expect(tipCount(0.01, 3, 0.25)).toBe(1);
+    expect(tipCount(0.25, 3, 0.25)).toBe(3);
+    expect(tipCount(0.5, 3, 0.25)).toBe(3);
+    fc.assert(
+      fc.property(
+        fc.double({ min: 0.001, max: 0.25, noNaN: true }),
+        fc.double({ min: 0.001, max: 0.25, noNaN: true }),
+        (a, b) => {
+          const [lo, hi] = a <= b ? [a, b] : [b, a];
+          expect(tipCount(lo, 3, 0.25)).toBeLessThanOrEqual(tipCount(hi, 3, 0.25));
+          expect(tipCount(hi, 3, 0.25)).toBeGreaterThanOrEqual(1);
+          expect(tipCount(hi, 3, 0.25)).toBeLessThanOrEqual(3);
+        },
+      ),
+    );
   });
 });
