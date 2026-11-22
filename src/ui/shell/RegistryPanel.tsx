@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: Nexxus Drako Multimedia
 import { FogValue } from '../FogValue';
 import { moraleText } from '../moraleText';
+import { ROAD_TYPES } from '../../sim/worldgen/types';
 import { useState, type ReactNode } from 'react';
 import { formatDate, formatMoney, formatPoints, hasText, t } from '../../i18n';
 import type { HoldingLine, PersonKind, PersonProfile, PersonRef } from '../../db/people';
@@ -160,6 +161,18 @@ function DriverPage({ p }: { p: DriverProfile }) {
                   confirmed={!p.skills.owned}
                 />,
               ],
+              ...ROAD_TYPES.map(
+                (type) =>
+                  [
+                    t('registry.affinity', { road: t(`road.${type}` as never) }),
+                    <FogValue
+                      key={`affinity-${type}`}
+                      reading={p.skills.affinities[type]}
+                      knowledge={p.skills.knowledge}
+                      confirmed={!p.skills.owned}
+                    />,
+                  ] as [string, ReactNode],
+              ),
             ])}
         />
       </Section>

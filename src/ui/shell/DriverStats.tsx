@@ -3,6 +3,7 @@
 import { formatMoney, t } from '../../i18n';
 import type { DriverReading } from '../../db/knowledge';
 import { DRIVER_STATS } from '../../db/knowledge';
+import { ROAD_TYPES } from '../../sim/worldgen/types';
 import type { SalaryHint } from '../../db/freeagents';
 import { FogValue } from '../FogValue';
 
@@ -19,6 +20,19 @@ export function DriverStats({ reading }: { reading: DriverReading }) {
           {t(`registry.stat.${k}` as never)}{' '}
           <FogValue
             reading={reading.stats[k]}
+            knowledge={reading.knowledge}
+            confirmed={confirmed}
+          />
+        </span>
+      ))}
+      {'. '}
+      {t('fog.stat.roads')}
+      {ROAD_TYPES.map((type) => (
+        <span key={type}>
+          {' '}
+          {t(`road.${type}` as never)}{' '}
+          <FogValue
+            reading={reading.affinities[type]}
             knowledge={reading.knowledge}
             confirmed={confirmed}
           />
