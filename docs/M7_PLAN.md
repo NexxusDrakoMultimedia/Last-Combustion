@@ -56,7 +56,7 @@ What the player knows about anything outside their own garage becomes an estimat
 
 **Risks.** Ratings show in about a dozen files, so piece 3 centralises them or numbers will leak; with no scouts a rookie reads as pure fog, so free-agent choices must stay reasonable (a well-known driver reads at about 40 to 50 knowledge, a useful range); and knowledge is worked out for each subject on screen, so it is cached for each refresh.
 
-**Status: slice 2 is built** (pieces 1 to 6, each its own pull request into `feature/0.3.x`). What it left (the skill of a candidate on offer and a driver's road affinity are built as follow-up pull requests; a driver has no mood number yet, so there is nothing to hide): the cap table, the experience part of a garage's knowledge beyond deals. The beta for the slice (`0.3.0-betaN`) is a release step for the project owner (see `docs/RELEASING.md`).
+**Status: slice 2 is built** (pieces 1 to 6, each its own pull request into `feature/0.3.x`). What it left (the skill of a candidate on offer, a driver's road affinity and the experience part of a garage's knowledge beyond deals are built as follow-up pull requests; a driver has no mood number yet, so there is nothing to hide). The cap table of a garage the player does not own is left as built, with exact numbers, per the owner's decision recorded in the GDD: fogging it means moving the takeover quote to the server, which nobody has asked for. The beta for the slice (`0.3.0-betaN`) is a release step for the project owner (see `docs/RELEASING.md`).
 
 ## Slice 3 in detail: racing by the day and the final in view
 
