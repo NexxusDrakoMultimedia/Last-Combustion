@@ -153,7 +153,7 @@ import { buildFacility, facilityViews, type FacilityView } from '../db/facilitie
 import type { FacilityKind } from '../sim/facilities';
 import {
   dismissExecutive,
-  executiveCandidates,
+  executiveCandidateViews,
   executiveCapacity,
   garageExecutives,
   recentDepartures,
@@ -162,6 +162,7 @@ import {
   type Executive,
   type ExecutiveDeparture,
   type ExecutiveOutcome,
+  type ExecutiveOfferView,
 } from '../db/executives';
 import {
   activeYearsOf,
@@ -190,18 +191,19 @@ import {
   type SupplyView,
 } from '../db/supply';
 import type { SupplyCategory } from '../sim/supply';
-import { BUILT_ROLES, type ExecutiveOffer, type ExecutiveRole } from '../sim/executives';
+import { BUILT_ROLES, type ExecutiveRole } from '../sim/executives';
 import {
   fireMechanic,
   garageCrewStrength,
   garageStaff,
   hireMechanic,
-  mechanicCandidates,
+  mechanicCandidateViews,
   type Mechanic,
+  type MechanicOfferView,
 } from '../db/staff';
 import { inspectCar } from '../db/inspection';
 import { negotiationHint } from '../db/knowledge';
-import type { AmountRange } from '../sim/scouting';
+import type { AmountRange, Reading } from '../sim/scouting';
 import {
   assignScout,
   clearAssignment,
@@ -218,7 +220,6 @@ import {
 import type { ScoutFocus, ScoutOffer, Subject } from '../sim/scouting';
 import type { Call } from '../sim/final/engine';
 import type { RunPlan } from '../sim/prelim/lap';
-import type { MechanicOffer } from '../sim/staff';
 import { ledgerDeltas, safeMessage, track, trackDesign } from '../platform/telemetry';
 import { loadSettings, saveSetting } from '../platform/settings';
 import { getServices } from './services';
@@ -285,7 +286,8 @@ export interface ActiveExecutiveNegotiation {
   id: number;
   role: ExecutiveRole;
   name: string;
-  skill: number;
+  /** What the player reads of their skill. */
+  skill: Reading;
   /** What the player reads of a fair salary. */
   fair: AmountRange | null;
   patience: number;
@@ -365,7 +367,7 @@ interface CareerState {
   transactionsView: TransactionsView | undefined;
   /** The mechanics the garage employs, the ones on offer, and how well they cover its entries (0 to 1). */
   staff: Mechanic[];
-  staffOffers: MechanicOffer[];
+  staffOffers: MechanicOfferView[];
   crew: number;
   /** The scouts the garage employs and the ones on offer. */
   scouts: HiredScout[];
@@ -377,7 +379,7 @@ interface CareerState {
   /** The executives the garage employs, the slots its prestige allows, and who is on offer for each empty role. */
   executives: Executive[];
   executiveCapacity: { slots: number; used: number };
-  executiveOffers: { role: ExecutiveRole; offers: ExecutiveOffer[] }[];
+  executiveOffers: { role: ExecutiveRole; offers: ExecutiveOfferView[] }[];
   executiveNegotiation: ActiveExecutiveNegotiation | undefined;
   /** The executives lost to retirement or a rival this year. */
   executiveDepartures: ExecutiveDeparture[];
@@ -626,13 +628,14 @@ export const useCareerStore = create<CareerState>()((set, get) => {
               (role) => !garageExecutives(db, playerGarageId(db)!).some((e) => e.role === role),
             ).map((role) => ({
               role,
-              offers: executiveCandidates(db, playerGarageId(db)!, role),
+              offers: executiveCandidateViews(db, playerGarageId(db)!, role),
             })),
       years: seasonYears(db),
       supply: playerGarageId(db) === null ? undefined : supplyView(db, playerGarageId(db)!),
       facilities: playerGarageId(db) === null ? [] : facilityViews(db, playerGarageId(db)!),
       staff: playerGarageId(db) === null ? [] : garageStaff(db, playerGarageId(db)!),
-      staffOffers: playerGarageId(db) === null ? [] : mechanicCandidates(db, playerGarageId(db)!),
+      staffOffers:
+        playerGarageId(db) === null ? [] : mechanicCandidateViews(db, playerGarageId(db)!),
       crew: playerGarageId(db) === null ? 0 : garageCrewStrength(db, playerGarageId(db)!),
       scouts: playerGarageId(db) === null ? [] : garageScouts(db, playerGarageId(db)!),
       scoutRetirements:
