@@ -258,6 +258,32 @@ export function scoutWagePerRound(wagePerYear: number): number {
   return Math.round(wagePerYear / scoutingBalance.staff.roundsPerSeason);
 }
 
+/**
+ * How much a driver's results are rising: the average finishing place of the finals before their last `window` finals,
+ * less the average of those last `window` (so a positive number means better recent places). `positions` are the
+ * final places, oldest first. Null while there are fewer than `window` earlier finals to compare with. Public
+ * results, so the numbers are exact.
+ */
+export function formRise(
+  positions: number[],
+  window: number,
+): { rise: number; earlier: number; recent: number } | null {
+  if (window < 1 || positions.length < window * 2) return null;
+  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const recent = mean(positions.slice(-window));
+  const earlier = mean(positions.slice(0, -window));
+  return { rise: earlier - recent, earlier, recent };
+}
+
+/**
+ * How many rising drivers a Head of Scouting hears of: `max` once their lift reaches `liftForFull`, fewer below it,
+ * at least one with any Head at all, and none without one.
+ */
+export function tipCount(lift: number, max: number, liftForFull: number): number {
+  if (lift <= 0 || max <= 0) return 0;
+  return Math.min(max, Math.max(1, Math.ceil(max * Math.min(1, lift / liftForFull) - 1e-9)));
+}
+
 /** The scouts on offer, drawn from a stream. */
 export function scoutOffers(rng: RandomStream): ScoutOffer[] {
   const [lo, hi] = scoutingBalance.staff.skill as [number, number];
